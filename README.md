@@ -2,7 +2,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/okarras/EmpiRE-Compass">
-    <img src="logo.png" alt="Logo" width="500" height="350">
+    <img src="logo.png" alt="Logo" width="500" height="250">
   </a>
 
 <h2 align="center">EmpiRE-Compass<br/>
