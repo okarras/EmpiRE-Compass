@@ -8,7 +8,6 @@ const Dashboard = () => {
   data.sort((a, b) => a.year - b.year);
   // get the unique years from the data
   const years = [...new Set(data.map((item) => item.year))];
-  console.log(years);
   // get number of items for each year
   const itemsPerYear = years.map((year) => {
     return {
@@ -16,7 +15,6 @@ const Dashboard = () => {
       year: year,
     };
   });
-  console.log(itemsPerYear);
 
   const chartSetting = {
     yAxis: [
