@@ -1,7 +1,13 @@
 import { Box } from '@mui/material';
 import type { ReactElement } from 'react';
 
-const Question = ({ children }: {children: ReactElement}) => {
+const Question = ({
+  children,
+  dataAnalysisInformation,
+}: {
+  children: ReactElement;
+  dataAnalysisInformation: { question: string };
+}) => {
   return (
     <Box
       sx={{
@@ -12,8 +18,10 @@ const Question = ({ children }: {children: ReactElement}) => {
         backgroundColor: '#FFFFFF',
         borderRadius: '10px',
         padding: '20px',
+        flexDirection: 'column',
       }}
     >
+      <h1>{dataAnalysisInformation.question}</h1>
       {children}
     </Box>
   );
