@@ -1,0 +1,4082 @@
+[
+  {
+    "paper": "http://orkg.org/orkg/resource/R158044",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R159690",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192345",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192386",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192398",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192428",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192445",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193022",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193025",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193035",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193044",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193070",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193089",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193108",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193295",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193308",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193330",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193336",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193341",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193357",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193371",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193385",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193406",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193418",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193441",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193467",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193473",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193481",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193490",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193798",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193818",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193828",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193849",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193866",
+    "year": 2021,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193898",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193920",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193925",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193929",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194054",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194084",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194093",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194114",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194125",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194139",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194237",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194253",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194281",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194317",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194345",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194360",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194373",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194401",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194414",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194425",
+    "year": 2019,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194428",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194431",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194445",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194458",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194474",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194607",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194610",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194641",
+    "year": 2020,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194686",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194698",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194870",
+    "year": 2019,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194875",
+    "year": 2019,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194884",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194895",
+    "year": 2019,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194905",
+    "year": 2019,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194922",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194932",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194954",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194974",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195005",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195023",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195107",
+    "year": 2018,
+    "dc_label": "no collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195113",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195124",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195129",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195144",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195153",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195173",
+    "year": 2018,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195179",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195182",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195201",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195216",
+    "year": 2018,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195218",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195224",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195495",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195513",
+    "year": 2017,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195519",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195551",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195578",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195587",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195597",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195664",
+    "year": 2017,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195669",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195679",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195692",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195713",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195728",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195743",
+    "year": 2017,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195749",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195767",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195789",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195806",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195849",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195857",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195866",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195982",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195986",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195995",
+    "year": 2017,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195998",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196009",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196014",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196021",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196033",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196046",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196065",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196070",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R197609",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198663",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198673",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198681",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198689",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198706",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198724",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198795",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198797",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198808",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198833",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198856",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198877",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198904",
+    "year": 2016,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198917",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198944",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198964",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198972",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198979",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198994",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199005",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199014",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199023",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199028",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199039",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199113",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199123",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199136",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199149",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199158",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199162",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200042",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200045",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200049",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200061",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200098",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200106",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200119",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211096",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211106",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211121",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211137",
+    "year": 2014,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211145",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211154",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211177",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211188",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211198",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211279",
+    "year": 2014,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211283",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211294",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211302",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211327",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211336",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211351",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211361",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211370",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211380",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211394",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211404",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211411",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211428",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211438",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211452",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211459",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211467",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211474",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211485",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211494",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211502",
+    "year": 2014,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220303",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220314",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220323",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220343",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220354",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220364",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220371",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220378",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220383",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220388",
+    "year": 2013,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220390",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220538",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220583",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220605",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220611",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220618",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220624",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220629",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220633",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220643",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220798",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220810",
+    "year": 2013,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220823",
+    "year": 2012,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220831",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220838",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220845",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220858",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220874",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220881",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220892",
+    "year": 2012,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220898",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597400",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597409",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597880",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597889",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597910",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598064",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598067",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598083",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598217",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598220",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598223",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598230",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598244",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598249",
+    "year": 2000,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598274",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598281",
+    "year": 2000,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598284",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598496",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598506",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598583",
+    "year": 2000,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598586",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598595",
+    "year": 2000,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598598",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598606",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598614",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598631",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598694",
+    "year": 2000,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R600479",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R600488",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R601221",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R602865",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R602883",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603577",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603583",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603586",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603589",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603600",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603616",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603619",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603622",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603625",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605077",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605419",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605866",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605881",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605922",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606056",
+    "year": 1998,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606061",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606148",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606247",
+    "year": 1998,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606260",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606293",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606302",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606309",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606569",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606576",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606839",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606846",
+    "year": 1999,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606860",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606868",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606919",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606928",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606978",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R607051",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R607060",
+    "year": 1999,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R608032",
+    "year": 1999,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R608041",
+    "year": 1999,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R608147",
+    "year": 1999,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R608150",
+    "year": 1999,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R609340",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644458",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644464",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644601",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644689",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644694",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R647097",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R651407",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R651411",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554452",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554460",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554468",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554861",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R555217",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R555710",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R556041",
+    "year": 2007,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R556363",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R556637",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R557163",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R558201",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R558790",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576739",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576748",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576757",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576765",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576776",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576789",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576793",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576802",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578004",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578008",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578016",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578020",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578027",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578035",
+    "year": 2006,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578043",
+    "year": 2006,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578050",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578059",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580049",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580056",
+    "year": 2005,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580060",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580068",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580077",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580091",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580100",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580108",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580119",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580127",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580133",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580141",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580149",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583009",
+    "year": 2005,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583013",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583022",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583034",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583048",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583052",
+    "year": 2005,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583056",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583066",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583074",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583082",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583090",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583098",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583105",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583115",
+    "year": 2005,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583119",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583127",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583135",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583143",
+    "year": 2005,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583147",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583153",
+    "year": 2005,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583161",
+    "year": 2004,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583166",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583172",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583188",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583205",
+    "year": 2004,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583209",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583218",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583226",
+    "year": 2004,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583860",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583866",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583872",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583880",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583886",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583895",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583903",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583912",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583920",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583928",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583935",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583944",
+    "year": 2004,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583948",
+    "year": 2004,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583952",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584012",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584020",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584028",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584036",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584044",
+    "year": 2004,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584052",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584056",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584065",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584073",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584081",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584085",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584093",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584097",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584105",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584109",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584117",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586445",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586458",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586470",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586481",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586485",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586489",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586504",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586508",
+    "year": 2003,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586512",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586519",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586527",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587084",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587093",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587101",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587110",
+    "year": 2003,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587118",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587127",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587135",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587141",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587149",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587153",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588483",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588487",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588494",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588498",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588508",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588512",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588523",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588540",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588553",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588557",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588565",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588569",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588573",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588967",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588979",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589002",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589009",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589016",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589022",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589029",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589038",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589047",
+    "year": 2002,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589055",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589059",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589063",
+    "year": 2002,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596003",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596015",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596028",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596037",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596045",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597081",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597102",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597176",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597183",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597186",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597383",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597386",
+    "year": 2001,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597394",
+    "year": 2001,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R108199",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R111988",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R112434",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113008",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113067",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113160",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113204",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R74547",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R76792",
+    "year": 2017,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R76818",
+    "year": 2018,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R78392",
+    "year": 2015,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R78432",
+    "year": 2016,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659290",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659408",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659413",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659470",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659479",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R660083",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R660094",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R660217",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661887",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661896",
+    "year": 1997,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661904",
+    "year": 1997,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661908",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661923",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R671037",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R671056",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R671096",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675312",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675325",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675329",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675336",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675340",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675344",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675349",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675356",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675363",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675371",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675391",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675395",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675399",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R677200",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R677204",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R677208",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678138",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678142",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678146",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678199",
+    "year": 1996,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678216",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678227",
+    "year": 1996,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678962",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678968",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678982",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680008",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680028",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680038",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680046",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680050",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680058",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684186",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684194",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684203",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684218",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684234",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684242",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684253",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684258",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684279",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684283",
+    "year": 1995,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684287",
+    "year": 1995,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684329",
+    "year": 1994,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221137",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221147",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221156",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221163",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221169",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221176",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221183",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221187",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221801",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221821",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221838",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R222366",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R222372",
+    "year": 2012,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R222375",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225574",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225580",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225589",
+    "year": 2012,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227465",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227482",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227501",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227514",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227533",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227551",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228189",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228211",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228222",
+    "year": 2022,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228229",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228262",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229273",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229316",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229340",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229369",
+    "year": 2022,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229375",
+    "year": 2022,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249016",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249021",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249030",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254495",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254508",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254521",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R256580",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R263000",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R264011",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R265006",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R265019",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R265028",
+    "year": 2011,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276000",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276005",
+    "year": 2011,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276009",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276015",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276020",
+    "year": 2011,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276024",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276031",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276045",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276051",
+    "year": 2011,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276059",
+    "year": 2011,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279079",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279086",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279109",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279116",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279126",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279133",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279136",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279141",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279151",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279158",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280299",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280303",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280308",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280317",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280329",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280335",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280347",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280375",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280412",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280448",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280481",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280486",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280498",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280511",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280521",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280526",
+    "year": 2010,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280529",
+    "year": 2010,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280738",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280747",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280754",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280758",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280765",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280785",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280789",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280793",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280798",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280811",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280818",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281162",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281166",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281172",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281188",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281194",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281210",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281215",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283066",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283069",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283077",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283080",
+    "year": 2009,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283089",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283092",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283095",
+    "year": 2009,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283098",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283106",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285771",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285776",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285781",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285790",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285805",
+    "year": 2008,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285808",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285813",
+    "year": 2008,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285816",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285826",
+    "year": 2008,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287812",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287825",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287836",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287845",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287851",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287863",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287873",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288432",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288440",
+    "year": 2008,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288443",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288450",
+    "year": 2008,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288453",
+    "year": 2008,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288460",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288476",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288482",
+    "year": 2007,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288485",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288494",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288507",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288513",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288742",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288764",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288766",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288783",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288794",
+    "year": 2007,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288798",
+    "year": 2007,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288801",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288808",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369142",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369238",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369339",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369483",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369602",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "no analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369685",
+    "year": 2007,
+    "dc_label": "collection",
+    "da_label": "analysis"
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369715",
+    "year": 2007,
+    "dc_label": "no collection",
+    "da_label": "no analysis"
+  }
+]

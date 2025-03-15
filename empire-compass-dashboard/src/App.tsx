@@ -1,8 +1,27 @@
 import Dashboard from './components/Dashboard';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import SampleData from './../data/query_1_data_2024-07-26.json'
 
 function App() {
+
+  let chartData = SampleData;
+
+  chartData.sort((a: { year: number }, b: { year: number }) => a.year - b.year);
+
+  const dataYears = [
+    ...new Set(chartData.map((item: { year: unknown }) => item.year)),
+  ];
+
+  const itemsPerYear = dataYears.map((year) => {
+    return {
+      count: chartData.filter((item: { year: unknown }) => item.year === year && item.dc_label == 'collection' && item.da_label == 'analysis' )
+        .length,
+      year: year,
+    };
+  });
+
+
   return (
     <Box
       sx={{
@@ -15,6 +34,7 @@ function App() {
         alignItems: 'center',
       }}
     >
+
       {/* Header Section */}
       <Box
         sx={{
@@ -39,6 +59,7 @@ function App() {
           alignItems: 'center',
           width: '100%',
           flexGrow: 1,
+          flexDirection: "column"
         }}
       >
         <Dashboard />
