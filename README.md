@@ -4,66 +4,62 @@
   <a href="https://github.com/okarras/EmpiRE-Compass">
     <img src="logo.png" alt="Logo" width="500" height="250">
   </a>
-
+</div>
 <h2 align="center">EmpiRE-Compass<br/>
 <i>"Navigating the EmpiRE of Empirical Research in Requirements Engineering"</i></h2>
 
----
+<p>
+  <img src="https://user-images.githubusercontent.com/PLACEHOLDER/logo.png" alt="EmpiRE-Compass Logo" width="300" />
+</p>
 
-# EmpiRE-Compass
+"Navigating the EmpiRE of Empirical Research in Requirements Engineering"
 
-EmpiRE-Compass is a comprehensive platform that facilitates the exploration, reproduction, and enrichment of empirical research data within the KG-EmpiRE ecosystem. By leveraging live data from the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contributions—all while aligning with ACM standards.
+EmpiRE-Compass is a comprehensive platform that facilitates the exploration, reproduction, and enrichment of empirical research data within the KG-EmpiRE ecosystem. By leveraging live data from the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution—all while aligning with ACM standards.
 
 ---
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Usage](#usage)
-- [License](#license)
-- [Repository Links](#repository-links)
+1. [Overview](#overview)  
+2. [Key Features](#key-features)  
+3. [Getting Started](#getting-started)  
+   1. [Prerequisites](#prerequisites)  
+   2. [Installation](#installation)  
+4. [Usage](#usage)  
+5. [License](#license)  
+6. [Repository Links](#repository-links)
 
 ---
 
 ## Overview
 
-EmpiRE-Compass serves as a central hub for empirical research data management within KG-EmpiRE. It is designed to:
+EmpiRE-Compass serves as a central hub for empirical research data management. It provides interactive diagrams connected to live ORKG data, offers reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. A Study Designer Knowledge Base helps users find similar research and receive design recommendations aligned with ACM standards.
 
-- Present 16 core competency questions alongside their answers and visual diagrams.
-- Provide interactive diagrams that fetch live data from ORKG, including lists of relevant papers and direct links.
-- Enable reproduction of published states of KG-EmpiRE and comparison with live data snapshots.
-- Offer statistical insights (e.g., counts of conferences, papers, triples, resources, and literals).
-- Support a structured survey for authors to submit empirical research data, including paper DOIs and related metadata.
-- Serve as a study designer knowledge base to help users find similar empirical research studies and receive design recommendations.
+<p>
+  <img src="https://user-images.githubusercontent.com/PLACEHOLDER/demo-screenshot.png" alt="EmpiRE-Compass Screenshot" width="700" />
+</p>
 
 ---
 
 ## Key Features
 
-- **Dashboard Display:**  
-  Visualizes the 16 competency questions with corresponding answers and diagrams to provide an at-a-glance view of KG-EmpiRE data.
+### Dashboard Display
+Visualizes 16 competency questions and their answers with interactive diagrams, providing an overview of KG-EmpiRE data.
 
-- **Interactive Diagrams:**  
-  Dynamically pulls live data from ORKG, displaying interactive diagrams with clickable elements that lead to related research papers.
+### Live Interactive Diagrams
+Dynamically fetches real-time data from ORKG. Users can click diagram elements to explore related research papers and insights.
 
-- **Reproduction & Comparison:**  
-  Allows users to review historical published states of KG-EmpiRE and compare them with current live data.
+### Reproduction & Comparison
+Allows reviewing historical published states of KG-EmpiRE and comparing them with the current live data to understand how research evolves.
 
-- **Statistics & Metrics:**  
-  Presents real-time statistics such as the number of conferences, papers, triples, resources, and literals in the KG-EmpiRE.
+### Statistics & Metrics
+Displays real-time counts of conferences, papers, triples, resources, and literals to keep track of the KG-EmpiRE scope.
 
-- **Data Contribution Workflow:**  
-  Integrates a survey system that collects key empirical research data (including paper DOIs and curator-reviewed submissions) for incorporation into ORKG.
+### Data Contribution Workflow
+Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
 
-- **Study Designer Knowledge Base:**  
-  Helps users identify similar empirical research and offers design recommendations based on the accumulated knowledge within KG-EmpiRE.
-
-- **Deployment:**  
-  Optimized for hosting on GitHub Pages, accompanied by comprehensive documentation for easy setup and use.
+### Study Designer Knowledge Base
+Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
 
 ---
 
@@ -71,64 +67,51 @@ EmpiRE-Compass serves as a central hub for empirical research data management wi
 
 ### Prerequisites
 
-Ensure you have the following installed before running EmpiRE-Compass locally or deploying it:
-
-- **Node.js:** Required for running development scripts.
-- **Modern Web Browser:** For accessing and testing the application.
-- **Git (Optional):** For version control and repository management.
+Node.js (version 14 or higher), a modern web browser, and optionally Git for version control.
 
 ### Installation
 
-1. **Clone the Repository:**
+Clone the repository:
+```
+git clone https://github.com/okarras/EmpiRE-Compass.git
+cd EmpiRE-Compass
+```
 
-   ```bash
-   git clone https://github.com/okarras/EmpiRE-Compass.git
-   cd EmpiRE-Compass
-   ```
+Install dependencies:
+```
+npm install
+```
+or
+```
+yarn install
+```
 
-2. **Install Dependencies:**
+Start the development server:
+```
+npm start
+```
+or
+```
+yarn start
+```
 
-   ```bash
-   npm install
-   ```
-
-3. **Start the Development Server:**
-
-   ```bash
-   npm start
-   ```
-
-4. **Access the Application:**  
-   Open your web browser and navigate to [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your web browser.
 
 ---
 
 ## Usage
 
-- **Dashboard:**  
-  View the 16 competency questions, along with their answers and visual diagrams that provide an overview of the KG-EmpiRE data.
-
-- **Interactive Exploration:**  
-  Interact with diagrams to access detailed empirical research insights, including related papers fetched in real time from ORKG.
-
-- **Reproduction & Comparison:**  
-  Use tools to load and compare different published states of KG-EmpiRE with current live data.
-
-- **Data Contribution:**  
-  Authors can use the integrated survey to submit empirical research details, which are then reviewed and incorporated into the ORKG database after curator approval.
-
-- **Study Designer:**  
-  Explore the knowledge base to identify similar studies and get tailored design recommendations based on ACM standards.
+The dashboard offers an immediate view of 16 competency questions with their answers and corresponding diagrams. Users can interact with the diagrams to navigate through empirical research data and discover relevant papers from ORKG. Historical states of KG-EmpiRE can be reproduced and compared to monitor data evolution. A statistics page displays up-to-date metrics such as the number of conferences, papers, and triples. Authors can submit new data via a survey, providing paper DOIs and research details for curator review. The Study Designer Knowledge Base aids in finding similar research and offers design recommendations aligned with ACM standards.
 
 ---
 
 ## License
 
-EmpiRE-Compass is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 ## Repository Links
 
-- [EmpiRE-Compass Repository](https://github.com/okarras/EmpiRE-Compass)
-- [EmpiRE-Analysis Repository](https://github.com/okarras/EmpiRE-Analysis)
+EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
+EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)
