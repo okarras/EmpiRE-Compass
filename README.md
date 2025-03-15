@@ -8,9 +8,9 @@
 <h2 align="center">EmpiRE-Compass<br/>
 <i>"Navigating the EmpiRE of Empirical Research in Requirements Engineering"</i></h2>
 
-<p>
+<!-- <p>
   <img src="https://user-images.githubusercontent.com/PLACEHOLDER/logo.png" alt="EmpiRE-Compass Logo" width="300" />
-</p>
+</p> -->
 
 "Navigating the EmpiRE of Empirical Research in Requirements Engineering"
 
@@ -35,9 +35,9 @@ EmpiRE-Compass is a comprehensive platform that facilitates the exploration, rep
 
 EmpiRE-Compass serves as a central hub for empirical research data management. It provides interactive diagrams connected to live ORKG data, offers reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. A Study Designer Knowledge Base helps users find similar research and receive design recommendations aligned with ACM standards.
 
-<p>
+<!-- <p>
   <img src="https://user-images.githubusercontent.com/PLACEHOLDER/demo-screenshot.png" alt="EmpiRE-Compass Screenshot" width="700" />
-</p>
+</p> -->
 
 ---
 
