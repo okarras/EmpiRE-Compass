@@ -36,11 +36,11 @@ const Dashboard = () => {
     <>
       {AllCharts().map((value, index)=>{
         let Module = value.ChartComponent;
-        return <>
-          <DisplayQuestions key={"allCharts" + index} question={value.question} >
-            <Module/>
-          </DisplayQuestions>
-        </>
+        return Module ? <>
+        <DisplayQuestions key={"allCharts" + index} question={value.question} >
+          <Module/>
+        </DisplayQuestions>
+      </> : <> </>
       })} 
       
       {queries.map((query, index) => (

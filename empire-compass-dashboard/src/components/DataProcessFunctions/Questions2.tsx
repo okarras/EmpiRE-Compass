@@ -71,7 +71,7 @@ const Questions2 = () => {
     <div>
       { chart1 ? 
         <>
-        <BarChartCustom settings={chartSetting} heading={"Number of empirical methods used for data collection per year"} data={chart1} chartConfig={ {
+        <BarChartCustom showLabel={false} settings={chartSetting} heading={"Number of empirical methods used for data collection per year"} data={chart1} chartConfig={ {
           "xaxis": [{ scaleType: 'band', dataKey: 'year' }],
           "series": [
             { dataKey: 'case study', label: 'case study' },
@@ -129,7 +129,7 @@ const Questions2 = () => {
         </div>
 
 
-        <BarChartCustom settings={chartSetting} heading={"Normalized number of empirical methods used for data collection per year"} data={chart1} chartConfig={ {
+        <BarChartCustom showLabel={false} settings={chartSetting} heading={"Normalized number of empirical methods used for data collection per year"} data={chart1} chartConfig={ {
           "xaxis": [{ scaleType: 'band', dataKey: 'year' }],
           "series": [
             { dataKey: 'case study ratio', label: 'case study' },

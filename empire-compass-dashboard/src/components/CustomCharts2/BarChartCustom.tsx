@@ -7,21 +7,21 @@ const BarChartCustom = (props) => {
     <div style={{textAlign: "center"}}>
       <h4> {props.heading} </h4>
       { props.layout == 'horizontal' ? <BarChart
-        style={{width: "100%", padding: "0px"}}
+        style={{width: "100%", padding: "0px", height: "auto"}}
         dataset={props.data}
         yAxis={props.chartConfig.yaxis}
         series={props.chartConfig.series}
-        barLabel='value'
+        barLabel={props.showLabel == false ? "" : "value"}
         layout="horizontal"
         {...props.settings}
       /> 
       : 
       <BarChart
-      style={{width: "100%" , padding: "0px"}}
+      style={{width: "100%" , padding: "0px", height: "auto"}}
       dataset={props.data}
       xAxis={props.chartConfig.xaxis}
       series={props.chartConfig.series}
-      barLabel='value'
+      barLabel={props.showLabel == false ? "" : "value"}
       {...props.settings}
     /> }
       
