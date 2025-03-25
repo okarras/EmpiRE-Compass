@@ -19,18 +19,18 @@ import questions15_2Data from '../../data/query_15.1_data_2025-02-27.json'
 let chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
     transform: 'translateX(-10px)',
-  },
+  }
 }
 
 let chartHeight = 400;
 
-function xAxisSettings(dataKey = 'year', label: 'Year'){
+function xAxisSettings(dataKey = 'year', label = 'Year'){
   return [{
     scaleType: 'band',
     dataKey: dataKey,
     valueFormatter: (v) => v.toString(),
     tickPlacement: 'middle',
-    label: label
+    label: label,
   }]
 } 
 
@@ -77,6 +77,7 @@ export const queries = [
     id: 2_1,
     uid: 'query_2_1',
     chartSetting: [{
+      heading: 'Number of emperical methods used for data collection per year',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
@@ -98,6 +99,7 @@ export const queries = [
       sx: chartStyles,
     },
     {
+      heading: 'Number of case studies used for data collection per year',
       xAxis: xAxisSettings(),
       colors: ['#4c72b0'],
       barLabel: "value",
@@ -114,6 +116,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Number of experiments used for data collection per year',
       colors: ['#dd8452'],
       barLabel: "value",
       yAxis: [
@@ -129,6 +132,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Number of surveys used for data collection per year',
       colors: ['#5f9e6e'],
       barLabel: "value",
       yAxis: [
@@ -144,6 +148,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Number of interviews used for data collection per year',
       colors: ['#b55d60'],
       barLabel: "value",
       yAxis: [
@@ -159,6 +164,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Number Of secondary research used for data collection per year',
       colors: ['#857aab'],
       barLabel: "value",
       yAxis: [
@@ -175,6 +181,7 @@ export const queries = [
     {
       xAxis: xAxisSettings(),
       colors: ['#8d7866'],
+      heading: 'Number Of actions research used for data collection per year',
       barLabel: "value",
       yAxis: [
         {
@@ -190,6 +197,7 @@ export const queries = [
     {
       xAxis: xAxisSettings(),
       colors: ['#d095bf'],
+      heading: 'Number of other methods used for data collection per year',
       barLabel: "value",
       yAxis: [
         {
@@ -203,6 +211,7 @@ export const queries = [
       sx: chartStyles,
     }, 
     {
+      heading: 'Normalized number of empirical methods used for data collection per year',
       className: "fullWidth",
       xAxis: xAxisSettings(),
       colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
@@ -225,6 +234,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number Of case studies used for data collection per year',
       colors: ['#4c72b0'],
       barLabel: "value",
       yAxis: [
@@ -240,6 +250,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number Of experiments used for data collection per year',
       colors: ['#dd8452'],
       barLabel: "value",
       yAxis: [
@@ -255,6 +266,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of surveys used for data collection per year',
       colors: ['#5f9e6e'],
       barLabel: "value",
       yAxis: [
@@ -270,6 +282,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of interviews used for data collection per year',
       colors: ['#b55d60'],
       barLabel: "value",
       yAxis: [
@@ -285,6 +298,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of secondary research used for data collection per year',
       colors: ['#857aab'],
       barLabel: "value",
       yAxis: [
@@ -300,6 +314,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of actions research used for data collection per year',
       colors: ['#8d7866'],
       barLabel: "value",
       yAxis: [
@@ -315,6 +330,7 @@ export const queries = [
     }, 
     {
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of other methods used for data collection per year',
       colors: ['#d095bf'],
       barLabel: "value",
       yAxis: [
@@ -387,6 +403,8 @@ export const queries = [
       className: 'fullWidth',
       colors: ['#5975a4'],
       xAxis: xAxisSettings(),
+      heading: 'Number of papers without an empirical study per year',
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Number of papers without an empirical study',
@@ -400,8 +418,10 @@ export const queries = [
     },
     {
       className: 'fullWidth',
+      heading: 'Normalized number of papers without an empirical study per year',
       colors: ['#5975a4'],
       xAxis: xAxisSettings(),
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of papers without an empirical study',
@@ -451,6 +471,7 @@ export const queries = [
     chartSetting: [{
       className: 'fullWidth',
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
+      heading: 'Normalized number of empirical methods used for data collection per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -469,7 +490,9 @@ export const queries = [
     },
     {
       colors: ['#5975a4'],
+      heading: 'Normalized number of experiments used for data collection per year',
       xAxis: xAxisSettings(),
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of experiments',
@@ -484,6 +507,8 @@ export const queries = [
     {
       colors: ['#cc8963'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of case studies used for data collection per year',
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of case studies',
@@ -498,6 +523,8 @@ export const queries = [
     {
       colors: ['#5f9e6e'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of secondary research used for data collection per year',
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of secondary research',
@@ -512,6 +539,8 @@ export const queries = [
     {
       colors: ['#857aab'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of surveys used for data collection per year',
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of survey',
@@ -526,6 +555,8 @@ export const queries = [
     {
       colors: ['#8d7866'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of actions research used for data collection per year',
+      barLabel: 'value',
       yAxis: [
         {
           label: 'Proportion of action research',
@@ -592,29 +623,43 @@ export const queries = [
     uid: 'query_6_1',
     chartSetting: [{
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText',
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
+      heading: 'Number of statistical methods of descriptive statistics used for data analysis',
       barLabel: "value",
+      xAxis: [
+        { label: 'Number of Statistical Method used' }
+      ],
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Statistical Method used' }
       ],
       series: [
         { dataKey: 'count' }
       ],
+      margin: {
+        left: 150
+      },
       height: chartHeight,
       sx: chartStyles,
     },
     {
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText',
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
+      heading: 'Normalized number of statistical methods of descriptive statistics used for data analysis',
       barLabel: "value",
+      xAxis: [
+        { label: 'Proportion of Statistical Method used' }
+      ],
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Statistical Method used' }
       ],
       series: [
         { dataKey: 'ratio' }
       ],
+      margin: {
+        left: 150
+      },
       height: chartHeight,
       sx: chartStyles,
     }],
@@ -661,6 +706,7 @@ export const queries = [
       className: 'fullWidth',
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8172b3', '#937860', '#da8bc3', '#8c8c8c', '#ccb974', '#64b5cd', '#4c72b0'],
       xAxis: xAxisSettings(),
+      heading: 'Number of statistical methods of descriptive statistics used for data analysis per year',
       yAxis: [
         {
           label: 'Number of statistical methods used',
@@ -685,6 +731,7 @@ export const queries = [
     {
       colors: ['#5975a4'],
       xAxis: xAxisSettings(),
+      heading: 'Number of count method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -700,6 +747,7 @@ export const queries = [
     {
       colors: ['#cc8963'],
       xAxis: xAxisSettings(),
+      heading: 'Number of percent method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -715,6 +763,7 @@ export const queries = [
     {
       colors: ['#5f9e6e'],
       xAxis: xAxisSettings(),
+      heading: 'Number of mean method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -730,6 +779,7 @@ export const queries = [
     {
       colors: ['#c44e52'],
       xAxis: xAxisSettings(),
+      heading: 'Number of median method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -745,6 +795,7 @@ export const queries = [
     {
       colors: ['#8172b3'],
       xAxis: xAxisSettings(),
+      heading: 'Number of mode method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -760,6 +811,7 @@ export const queries = [
     {
       colors: ['#937860'],
       xAxis: xAxisSettings(),
+      heading: 'Number of minimum method used for data analyis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -775,6 +827,7 @@ export const queries = [
     {
       colors: ['#da8bc3'],
       xAxis: xAxisSettings(),
+      heading: 'Number Of maximum method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -790,6 +843,7 @@ export const queries = [
     {
       colors: ['#8c8c8c'],
       xAxis: xAxisSettings(),
+      heading: 'Number of range method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -805,6 +859,7 @@ export const queries = [
     {
       colors: ['#ccb974'],
       xAxis: xAxisSettings(),
+      heading: 'Number of variance method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -820,6 +875,7 @@ export const queries = [
     {
       colors: ['#64b5cd'],
       xAxis: xAxisSettings(),
+      heading: 'Number of standard deviation method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -835,6 +891,7 @@ export const queries = [
     {
       colors: ['#4c72b0'],
       xAxis: xAxisSettings(),
+      heading: 'Number of boxplot method used tor data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -851,6 +908,7 @@ export const queries = [
       className: 'fullWidth',
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8172b3', '#937860', '#da8bc3', '#8c8c8c', '#ccb974', '#64b5cd', '#4c72b0'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized statistical methods of descriptive statistics used for data analysis per year',
       yAxis: [
         {
           label: 'Proportion of statistical methods used',
@@ -875,6 +933,7 @@ export const queries = [
     {
       colors: ['#5975a4'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of count method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -890,6 +949,7 @@ export const queries = [
     {
       colors: ['#cc8963'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of precent method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -905,6 +965,7 @@ export const queries = [
     {
       colors: ['#5f9e6e'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of mean method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -920,6 +981,7 @@ export const queries = [
     {
       colors: ['#c44e52'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of median method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -935,6 +997,7 @@ export const queries = [
     {
       colors: ['#8172b3'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of mode method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -950,6 +1013,7 @@ export const queries = [
     {
       colors: ['#937860'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of minimum method used for data analyis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -965,6 +1029,7 @@ export const queries = [
     {
       colors: ['#da8bc3'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of maximum method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -980,6 +1045,7 @@ export const queries = [
     {
       colors: ['#8c8c8c'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of range method used for data analyis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -995,6 +1061,7 @@ export const queries = [
     {
       colors: ['#ccb974'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of variance method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -1010,6 +1077,7 @@ export const queries = [
     {
       colors: ['#64b5cd'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of standard deviation method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -1025,6 +1093,7 @@ export const queries = [
     {
       colors: ['#4c72b0'],
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of boxplot method used for data analysis per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -1094,6 +1163,7 @@ export const queries = [
       barLabel: 'value',
       colors: ['#5975a4'],
       xAxis: xAxisSettings(),
+      heading: 'Number of papers reporting threats to validity per year',
       yAxis: [
         {
           label: 'Number of papers reporting threats to validity',
@@ -1109,6 +1179,7 @@ export const queries = [
       colors: ['#5975a4'],
       className: 'fullWidth',
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of papers reporting threats to validity per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -1159,25 +1230,39 @@ export const queries = [
     uid: 'query_9',
     chartSetting: [{
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText',
+      heading: 'Number of threats to validity reported in papers',
       colors: ['#5975a4'],
       barLabel: "value",
+      xAxis: [
+        { label: 'Number of threats to validity reported' }
+      ],
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Threats to validity reported' }
       ],
       series: [
         { dataKey: 'count' }
       ],
       height: chartHeight,
       sx: chartStyles,
+      margin: {
+        left: 150
+      },
     },
     {
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText',
+      heading: 'Normalized number of threats to validity reported in papers',
       colors: ['#5975a4'],
       barLabel: "value",
+      margin: {
+        left: 150
+      },
+      xAxis: [
+        { label: 'Proportion of threats to validity reported' }
+      ],
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Threats to validity reported' }
       ],
       series: [
         { dataKey: 'normalized' }
@@ -1226,7 +1311,8 @@ export const queries = [
     uid: 'query_10',
     chartSetting: [{
       className: 'fullWidth',
-      colors: ['#5975a4'],
+      colors: ['#5975a4', '#dd8452'],
+      heading: 'Normalized number of case studies and action research used for data collection per year',
       barLabel: "value",
       xAxis: xAxisSettings(),
       yAxis: [
@@ -1245,9 +1331,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of case studies used for data collection per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of case studies',
         },
       ],
       series: [
@@ -1257,12 +1344,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#dd8452'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of action research used for data collection per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of action research',
         },
       ],
       series: [
@@ -1325,11 +1413,12 @@ export const queries = [
     chartSetting: [{
       className: 'fullWidth',
       colors: ['#5975a4'],
+      heading: 'Number of papers that provide at least one URL to data per year',
       barLabel: "value",
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Number of papers with data',
         },
       ],
       series: [
@@ -1340,12 +1429,13 @@ export const queries = [
     },
     {
       className: 'fullWidth',
+      heading: 'Normalized number of papers that provide at least one URL to data per year',
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers with data',
         },
       ],
       series: [
@@ -1394,9 +1484,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Number of papers with highlighted research question(s) and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Numbers of papers',
         },
       ],
       series: [
@@ -1406,12 +1497,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#cc8963'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Number of papers with highlighted research question(s) and hidden answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Numbers of papers',
         },
       ],
       series: [
@@ -1421,12 +1513,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#5f9e6e'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Number of papers with hidden research question(s) and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Numbers of papers',
         },
       ],
       series: [
@@ -1436,12 +1529,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#b55d60'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Number of papers with hidden research questions(s) and hidden answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Numbers of papers',
         },
       ],
       series: [
@@ -1454,9 +1548,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers With highlighted research question(s) and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1466,12 +1561,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#cc8963'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers with highlighted research question(s) and hidden answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1481,12 +1577,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#5f9e6e'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers with hidden research question(s) and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1496,12 +1593,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#b55d60'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers with hidden research question(s) and hidden answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1514,9 +1612,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Number of papers without research question and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Number of papers',
         },
       ],
       series: [
@@ -1526,12 +1625,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#cc8963'],
       barLabel: "value",
+      heading: 'Number of papers without research question and hidden answers per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Number of papers',
         },
       ],
       series: [
@@ -1544,9 +1644,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers without research question and highlighted answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1556,12 +1657,13 @@ export const queries = [
       sx: chartStyles,
     },
     {
-      colors: ['#5975a4'],
+      colors: ['#cc8963'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Proportion of papers without research question and hidden answers per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of papers',
         },
       ],
       series: [
@@ -1639,26 +1741,40 @@ export const queries = [
     uid: 'query_13',
     chartSetting: [{
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText2',
+      heading: 'Number of empirical methods used for secondary research',
       colors: ['#5975a4'],
       barLabel: "value",
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Empirical method used'  }
       ],
       series: [
         { dataKey: 'count' }
       ],
+      xAxis: [
+        { label: 'Number of empirical method used'}
+      ],
+      margin: {
+        left: 190
+      },
       height: chartHeight,
       sx: chartStyles,
     },
     {
       layout: "horizontal",
-      className: 'fullWidth',
+      className: 'fullWidth fixText2',
+      heading: 'Normalized number of empirical methods used for secondary research',
       colors: ['#5975a4'],
       barLabel: "value",
       yAxis: [
-        { scaleType: 'band', dataKey: 'method' }
+        { scaleType: 'band', dataKey: 'method', label: 'Empirical method used' }
       ],
+      xAxis: [
+        { label: 'Proportion of empirical method used'}
+      ],
+      margin: {
+        left: 190
+      },
       series: [
         { dataKey: 'normalized' }
       ],
@@ -1687,7 +1803,7 @@ export const queries = [
       }
     },
     dataAnalysisInformation:{
-      question: 'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?'
+      question: 'What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?'
     }
   },
   {
@@ -1697,6 +1813,7 @@ export const queries = [
     chartSetting: [{
       colors: ['#5975a4', "#dd8452", "#55a868", "#c44e52", "#8172b3", "#937860", "#da8bc3", "#8c8c8c", "#ccb974", "#64b5cd"],
       className: 'fullWidth',
+      heading: 'Normalized number of empirical methods used for secondary research per year',
       barLabel: "value",
       xAxis: xAxisSettings(),
       yAxis: [
@@ -1723,9 +1840,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of archive analysis used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of archive analysis',
         },
       ],
       series: [
@@ -1737,10 +1855,11 @@ export const queries = [
     {
       colors: ['#cc8963'],
       barLabel: "value",
+      heading: 'Normalized number of systematic literature review used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of systematic literature review',
         },
       ],
       series: [
@@ -1753,9 +1872,10 @@ export const queries = [
       colors: ['#5f9e6e'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of literature review used tor secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of literature review',
         },
       ],
       series: [
@@ -1768,9 +1888,10 @@ export const queries = [
       colors: ['#857aab'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of systematic literature map used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of systematic literature map',
         },
       ],
       series: [
@@ -1783,9 +1904,10 @@ export const queries = [
       colors: ['#8d7866'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of systematic review used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of systematic review',
         },
       ],
       series: [
@@ -1797,10 +1919,11 @@ export const queries = [
     {
       colors: ['#d095bf'],
       barLabel: "value",
+      heading: 'Normalized number of tertiary literature review used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of tertiary literature review',
         },
       ],
       series: [
@@ -1813,9 +1936,10 @@ export const queries = [
       colors: ['#8c8c8c'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of document analysis used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of document analysis',
         },
       ],
       series: [
@@ -1828,9 +1952,10 @@ export const queries = [
       colors: ['#c1b37f'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of document inspection used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of document inspection',
         },
       ],
       series: [
@@ -1843,9 +1968,10 @@ export const queries = [
       colors: ['#71aec0'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of literature study used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of literature study',
         },
       ],
       series: [
@@ -1858,9 +1984,10 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings(),
+      heading: 'Normalized number of literature survey used for secondary research per year',
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportions of literature survey',
         },
       ],
       series: [
@@ -1915,6 +2042,7 @@ export const queries = [
       colors: ['#5975a4'],
       barLabel: "value",
       xAxis: xAxisSettings('methodDistribution'),
+      heading: 'Number of papers using X empirical methods for data collection and data analysis',
       yAxis: [
         {
           label: 'Proportions of empirical methods used',
