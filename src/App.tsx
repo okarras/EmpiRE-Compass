@@ -1,8 +1,11 @@
 import Dashboard from './components/Dashboard';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import  './main.css'
 
 function App() {
+
+
   return (
     <Box
       sx={{
@@ -15,6 +18,7 @@ function App() {
         alignItems: 'center',
       }}
     >
+
       {/* Header Section */}
       <Box
         sx={{
@@ -39,6 +43,7 @@ function App() {
           alignItems: 'center',
           width: '100%',
           flexGrow: 1,
+          flexDirection: "column"
         }}
       >
         <Dashboard />

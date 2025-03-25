@@ -12,17 +12,9 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
   return (
     <BarChart
       dataset={dataset}
-      xAxis={[
-        {
-          scaleType: 'band',
-          dataKey: 'year',
-          valueFormatter: (v) => v.toString(),
-          tickPlacement: 'middle',
-        },
-      ]}
       {...chartSetting}
-      colors={['#e86161']}
     />
+    
   );
 };
 

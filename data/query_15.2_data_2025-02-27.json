@@ -1,0 +1,4178 @@
+[
+  {
+    "paper": "http://orkg.org/orkg/resource/R199158",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199039",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576757",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661908",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584097",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605866",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596028",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659470",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583928",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288432",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198944",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195107",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288485",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221838",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193330",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 4,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580060",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287873",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194974",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596003",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586527",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598631",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193418",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211404",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200042",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220364",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583872",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193828",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 3,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R558201",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225580",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580091",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 5,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605881",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584117",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220629",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580133",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583886",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285781",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193336",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229273",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580141",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195679",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211380",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583935",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228189",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276024",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578050",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198673",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589022",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554452",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587153",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684194",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597880",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198724",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606860",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588540",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195986",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588557",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606247",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606302",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281194",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193798",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280375",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281188",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195789",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583895",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220605",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281166",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588487",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R197609",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211145",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606569",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220343",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598496",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194431",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280747",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211411",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221176",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249030",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R725453",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R265006",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R76818",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195669",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R263000",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583066",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211351",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R264011",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195587",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249016",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680050",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195728",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R660217",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598586",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280412",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586519",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287851",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680008",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R159690",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596037",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580049",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588979",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R108199",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606978",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194317",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598506",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587127",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680058",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R607060",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194686",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583098",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198706",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R724132",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554468",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684186",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192345",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193481",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198689",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276009",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R76792",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589009",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194114",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606260",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194607",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605419",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195597",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198795",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584020",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606293",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597186",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588573",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606839",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606928",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211485",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584012",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279079",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587101",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194641",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603589",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227533",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R647097",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580149",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288494",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288801",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R752003",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1993
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195224",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583127",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199149",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228229",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254508",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193308",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220874",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227465",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R734867",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194139",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684242",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583013",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R555710",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606576",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193025",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195519",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279116",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586489",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288764",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369483",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 4,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200119",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220618",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R256580",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276045",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R74547",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583952",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195495",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283080",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220303",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287836",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199014",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211327",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227501",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583218",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211294",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200049",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193089",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194954",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195153",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R265019",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280818",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195005",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 4,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195129",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661896",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220390",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229340",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113067",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 6,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279141",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588512",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221801",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220354",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283106",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678227",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193929",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198979",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229316",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211474",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280765",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589047",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194610",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R716500",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193371",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196014",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R602865",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221821",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R712785",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587141",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583209",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584052",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R558790",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369142",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225589",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684218",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675329",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R556363",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198663",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193925",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221137",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113160",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198994",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194281",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227551",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198972",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280511",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194895",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220371",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195713",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281210",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221183",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R713795",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196046",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211467",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199113",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586512",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R607051",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606148",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193818",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211283",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195857",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584073",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288742",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597400",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R78432",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588523",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211121",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211494",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587093",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199028",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211106",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280347",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 4,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R555217",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220643",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583920",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211096",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R112434",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598606",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680038",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194360",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576765",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280498",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R603600",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220838",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606309",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220323",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598598",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196033",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597409",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193108",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220881",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280798",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R644694",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285776",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220633",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198917",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598614",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R588498",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195767",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583135",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192398",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586445",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198833",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R111988",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576739",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288808",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589002",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193341",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678216",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193035",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211198",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194445",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576776",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584044",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220583",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589029",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195201",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211394",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369238",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200098",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280811",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195113",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R78392",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195218",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R661887",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583048",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194414",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586470",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288443",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194253",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195144",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194373",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279109",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200061",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193070",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606868",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583090",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285816",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596015",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597386",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221187",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580100",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192445",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597081",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279126",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227482",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R716507",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580108",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196009",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578035",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254521",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211452",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598067",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195998",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583022",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200106",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193044",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580068",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554861",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583034",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194125",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675363",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578027",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580077",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R576793",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R557163",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192386",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R708774",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584036",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194884",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193490",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583082",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220845",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220538",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198681",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194084",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R606919",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1999
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R589038",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R671037",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194401",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R227514",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583074",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194698",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280481",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193357",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584109",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R680028",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211370",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283069",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280335",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194428",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193295",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196070",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280521",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280329",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578059",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196021",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R229375",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280738",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194922",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R254495",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211177",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580127",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R222366",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288453",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195578",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195179",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276015",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R578020",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287825",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194054",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195806",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659290",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193406",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 5,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283098",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194345",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198856",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584056",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288460",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193441",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220858",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228211",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598284",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211361",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194458",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R222375",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280486",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220611",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195182",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194093",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R281172",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193920",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276000",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195866",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598274",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R659413",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220798",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211438",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195849",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211459",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220810",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211188",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288513",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113204",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597910",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 4,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583105",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583188",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193866",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R225574",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584065",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198797",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220383",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211336",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R716516",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R605077",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R660083",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1997
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678968",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R192428",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R671056",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583153",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198877",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583172",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R725768",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1994
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597176",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199162",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584028",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583903",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R580119",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193467",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R228262",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 2,
+    "year": 2022
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369685",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675312",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220831",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279086",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221147",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R554460",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285790",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R597889",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598223",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583056",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598694",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2000
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199005",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194932",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2018
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R684258",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 3,
+    "year": 1995
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288476",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280758",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195692",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211302",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675349",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287845",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198964",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288507",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R675399",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R198808",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2016
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R279151",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2010
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R113008",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211428",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R596045",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587118",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2002
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R587110",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276051",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288766",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195749",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R742443",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1993
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R249021",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220898",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287812",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193849",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221163",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583119",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R283077",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R220314",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2013
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R556637",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2006
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R276031",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2011
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R211502",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2014
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R369339",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 3,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R598230",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2001
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193022",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2021
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194474",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199023",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R221156",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2012
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193898",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 1,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199123",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R287863",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R199136",
+    "number_of_inf_methods": 1,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583866",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2004
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R200045",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2015
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R678146",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 1996
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195551",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R285771",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2008
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R193385",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 1,
+    "number_of_other_methods": 0,
+    "year": 2020
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R601221",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R586458",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2003
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R194237",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 2019
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R196065",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R583147",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2005
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R602883",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R288783",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2007
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R280754",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2009
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R195982",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 0,
+    "year": 2017
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R600479",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 1,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 2,
+    "year": 1998
+  },
+  {
+    "paper": "http://orkg.org/orkg/resource/R584085",
+    "number_of_inf_methods": 0,
+    "number_of_des_methods": 0,
+    "number_of_ml_methods": 0,
+    "number_of_other_methods": 1,
+    "year": 2003
+  }
+]

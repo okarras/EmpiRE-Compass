@@ -22,7 +22,9 @@ const Question = ({
       }}
     >
       <h1>{dataAnalysisInformation.question}</h1>
-      {children}
+      <div style={{display: "grid", gridTemplateColumns: '1fr 1fr', width: '100%'}}>
+        {children}
+      </div>
     </Box>
   );
 };
