@@ -1,11 +1,9 @@
 import Dashboard from './components/Dashboard';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import  './main.css'
+import './main.css';
+import Header from './components/Header';
 
 function App() {
-
-
   return (
     <Box
       sx={{
@@ -18,36 +16,8 @@ function App() {
         alignItems: 'center',
       }}
     >
-
-      {/* Header Section */}
-      <Box
-        sx={{
-          width: '98%',
-          backgroundColor: '#e86161',
-          padding: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-          EmpiRE-Compass Dashboard
-        </Typography>
-      </Box>
-
-      {/* Main Content Section */}
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          width: '100%',
-          flexGrow: 1,
-          flexDirection: "column"
-        }}
-      >
-        <Dashboard />
-      </Box>
+      <Header />
+      <Dashboard />
     </Box>
   );
 }
