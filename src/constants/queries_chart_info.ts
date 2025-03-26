@@ -1,18 +1,5 @@
+//TODO: fix types and some styles
 import { axisClasses } from '@mui/x-charts';
-import questions2Data from '../../data/query_2.1_data_2024-07-26.json'
-import questions3Data from '../../data/query_3_data_2025-02-27.json' 
-import questions5Data from '../../data/query_5_data_2025-02-27.json'
-import questions6Data from '../../data/query_6.1_data_2024-07-26.json'
-import questions7Data from '../../data/query_7.1_data_2025-02-27.json'
-import questions8Data from '../../data/query_8_data_2025-02-27.json'
-import questions9Data from '../../data/query_9_data_2025-02-27.json'
-import questions10Data from '../../data/query_10_data_2025-02-27.json'
-import questions11Data from '../../data/query_11_data_2025-02-27.json'
-import questions12Data from '../../data/query_12_data_2025-02-27.json'
-import questions13Data from '../../data/query_13_data_2025-02-27.json'
-import questions14Data from '../../data/query_14_data_2025-02-27.json'
-import questions15Data from '../../data/query_15.1_data_2025-02-27.json'
-import questions15_2Data from '../../data/query_15.1_data_2025-02-27.json'
 
 
 
@@ -72,329 +59,331 @@ export const queries = [
       question: 'How has the proportion of empirical studies evolved over time?'
     }
   },
-  {
-    title: 'Number of papers per year',
-    id: 2_1,
-    uid: 'query_2_1',
-    chartSetting: [{
-      heading: 'Number of emperical methods used for data collection per year',
-      className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
-      yAxis: [
-        {
-          label: 'Number of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' }
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    },
-    {
-      heading: 'Number of case studies used for data collection per year',
-      xAxis: xAxisSettings(),
-      colors: ['#4c72b0'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of case studies',
-        },
-      ],
-      series: [
-        { dataKey: 'case study'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Number of experiments used for data collection per year',
-      colors: ['#dd8452'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of experiments',
-        },
-      ],
-      series: [
-        { dataKey: 'experiment'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Number of surveys used for data collection per year',
-      colors: ['#5f9e6e'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of survey',
-        },
-      ],
-      series: [
-        { dataKey: 'survey'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Number of interviews used for data collection per year',
-      colors: ['#b55d60'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of interview',
-        },
-      ],
-      series: [
-        { dataKey: 'interview'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Number Of secondary research used for data collection per year',
-      colors: ['#857aab'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of secondary research',
-        },
-      ],
-      series: [
-        { dataKey: 'secondary research'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      colors: ['#8d7866'],
-      heading: 'Number Of actions research used for data collection per year',
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of action research',
-        },
-      ],
-      series: [
-        { dataKey: 'action research'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      colors: ['#d095bf'],
-      heading: 'Number of other methods used for data collection per year',
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Number of others',
-        },
-      ],
-      series: [
-        { dataKey: 'others'}
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      heading: 'Normalized number of empirical methods used for data collection per year',
-      className: "fullWidth",
-      xAxis: xAxisSettings(),
-      colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
-      yAxis: [
-        {
-          label: 'Proportion of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'case study ratio', label: 'case study' },
-        { dataKey: 'experiment ratio', label: 'Experiment' },
-        { dataKey: 'survey ratio', label: 'Survey' },
-        { dataKey: 'interview ratio', label: 'Interview' },
-        { dataKey: 'secondary research ratio', label: 'Secondary research' },
-        { dataKey: 'action research ratio', label: 'action research' },
-        { dataKey: 'others ratio', label: 'Other' }
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number Of case studies used for data collection per year',
-      colors: ['#4c72b0'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of case studies',
-        },
-      ],
-      series: [
-        { dataKey: 'case study ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number Of experiments used for data collection per year',
-      colors: ['#dd8452'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of experiments',
-        },
-      ],
-      series: [
-        { dataKey: 'experiment ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number of surveys used for data collection per year',
-      colors: ['#5f9e6e'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of survey',
-        },
-      ],
-      series: [
-        { dataKey: 'survey ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number of interviews used for data collection per year',
-      colors: ['#b55d60'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of interview',
-        },
-      ],
-      series: [
-        { dataKey: 'interview ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number of secondary research used for data collection per year',
-      colors: ['#857aab'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of secondary research',
-        },
-      ],
-      series: [
-        { dataKey: 'secondary research ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number of actions research used for data collection per year',
-      colors: ['#8d7866'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of action research',
-        },
-      ],
-      series: [
-        { dataKey: 'action research ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }, 
-    {
-      xAxis: xAxisSettings(),
-      heading: 'Normalized number of other methods used for data collection per year',
-      colors: ['#d095bf'],
-      barLabel: "value",
-      yAxis: [
-        {
-          label: 'Proportion of others',
-        },
-      ],
-      series: [
-        { dataKey: 'others ratio' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }],
-    dataProcessingFunction: (SampleData = questions2Data) => {
-      //sort the data by year
-      let years;
-      if (SampleData != undefined) {
-        years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))];
+  //Query 2
+  // {
+  //   title: 'Number of papers per year',
+  //   id: 2_1,
+  //   uid: 'query_2_1',
+  //   chartSetting: [{
+  //     heading: 'Number of emperical methods used for data collection per year',
+  //     className: 'fullWidth',
+  //     xAxis: xAxisSettings(),
+  //     colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
+  //     yAxis: [
+  //       {
+  //         label: 'Number of empirical methods used',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'case study', label: 'case study' },
+  //       { dataKey: 'experiment', label: 'Experiment' },
+  //       { dataKey: 'survey', label: 'Survey' },
+  //       { dataKey: 'interview', label: 'Interview' },
+  //       { dataKey: 'secondary research', label: 'Secondary research' },
+  //       { dataKey: 'action research', label: 'action research' },
+  //       { dataKey: 'others', label: 'Other' }
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   },
+  //   {
+  //     heading: 'Number of case studies used for data collection per year',
+  //     xAxis: xAxisSettings(),
+  //     colors: ['#4c72b0'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of case studies',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'case study'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Number of experiments used for data collection per year',
+  //     colors: ['#dd8452'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of experiments',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'experiment'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Number of surveys used for data collection per year',
+  //     colors: ['#5f9e6e'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of survey',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'survey'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Number of interviews used for data collection per year',
+  //     colors: ['#b55d60'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of interview',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'interview'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Number Of secondary research used for data collection per year',
+  //     colors: ['#857aab'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of secondary research',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'secondary research'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     colors: ['#8d7866'],
+  //     heading: 'Number Of actions research used for data collection per year',
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of action research',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'action research'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     colors: ['#d095bf'],
+  //     heading: 'Number of other methods used for data collection per year',
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Number of others',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'others'}
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     heading: 'Normalized number of empirical methods used for data collection per year',
+  //     className: "fullWidth",
+  //     xAxis: xAxisSettings(),
+  //     colors: ['#4c72b0', '#dd8452', '#55a868', '#c44e52', '#8172b3', '#937860', '#da8bc3'],
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of empirical methods used',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'case study ratio', label: 'case study' },
+  //       { dataKey: 'experiment ratio', label: 'Experiment' },
+  //       { dataKey: 'survey ratio', label: 'Survey' },
+  //       { dataKey: 'interview ratio', label: 'Interview' },
+  //       { dataKey: 'secondary research ratio', label: 'Secondary research' },
+  //       { dataKey: 'action research ratio', label: 'action research' },
+  //       { dataKey: 'others ratio', label: 'Other' }
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number Of case studies used for data collection per year',
+  //     colors: ['#4c72b0'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of case studies',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'case study ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number Of experiments used for data collection per year',
+  //     colors: ['#dd8452'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of experiments',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'experiment ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number of surveys used for data collection per year',
+  //     colors: ['#5f9e6e'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of survey',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'survey ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number of interviews used for data collection per year',
+  //     colors: ['#b55d60'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of interview',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'interview ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number of secondary research used for data collection per year',
+  //     colors: ['#857aab'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of secondary research',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'secondary research ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number of actions research used for data collection per year',
+  //     colors: ['#8d7866'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of action research',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'action research ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }, 
+  //   {
+  //     xAxis: xAxisSettings(),
+  //     heading: 'Normalized number of other methods used for data collection per year',
+  //     colors: ['#d095bf'],
+  //     barLabel: "value",
+  //     yAxis: [
+  //       {
+  //         label: 'Proportion of others',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'others ratio' },
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }],
+  //   dataProcessingFunction: (SampleData) => {
+  //     //sort the data by year
+  //     let years;
+  //     if (SampleData != undefined) {
+  //       years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))];
       
-      years = years.map((value)=>{
-        return {"year": value}
-      })
+  //     years = years.map((value)=>{
+  //       return {"year": value}
+  //     })
 
-      let processedData = years.map((value, index)=>{
+  //     let processedData = years.map((value, index)=>{
 
-        let filteredData = SampleData.filter((dataValue)=>{
-          return dataValue.year == value.year
-        })
-        let result = {"year":value.year, "total": 0};
+  //       let filteredData = SampleData.filter((dataValue)=>{
+  //         return dataValue.year == value.year
+  //       })
+  //       let result = {"year":value.year, "total": 0};
 
-        filteredData.forEach((value: {dc_method_type_label: string}, index)=>{
-          if (value.dc_method_type_label == "action research" || value.dc_method_type_label == "case study" || value.dc_method_type_label == "experiment"|| value.dc_method_type_label == "interview" || value.dc_method_type_label == "secondary research" || value.dc_method_type_label == "survey" || value.dc_method_type_label == "secondary research" ) {
-            if (result.hasOwnProperty(value.dc_method_type_label)) {
-              result[value.dc_method_type_label] = result[value.dc_method_type_label] + 1;
-            } else{
-              result[value.dc_method_type_label] = 1;
-            }  
-          } else {
-            if (result.hasOwnProperty("others")) {
-              result.others = result.others + 1;
-            } else {
-              result.others = 1
-            }
-          }
+  //       filteredData.forEach((value: {dc_method_type_label: string}, index)=>{
+  //         if (value.dc_method_type_label == "action research" || value.dc_method_type_label == "case study" || value.dc_method_type_label == "experiment"|| value.dc_method_type_label == "interview" || value.dc_method_type_label == "secondary research" || value.dc_method_type_label == "survey" || value.dc_method_type_label == "secondary research" ) {
+  //           if (result.hasOwnProperty(value.dc_method_type_label)) {
+  //             result[value.dc_method_type_label] = result[value.dc_method_type_label] + 1;
+  //           } else{
+  //             result[value.dc_method_type_label] = 1;
+  //           }  
+  //         } else {
+  //           if (result.hasOwnProperty("others")) {
+  //             result.others = result.others + 1;
+  //           } else {
+  //             result.others = 1
+  //           }
+  //         }
 
-          result.total = result.total + 1;
-        })
+  //         result.total = result.total + 1;
+  //       })
 
-        Object.entries(result).forEach((value, index)=>{
-          if (value[0] != "year" && value[0] != "total" ) {
-            result[value[0] + " ratio"] = Number((value[1]/result.total).toFixed(2));
-          } 
-        })
-        return result;
-      })
-      processedData.sort((a,b)=>{ return a.year - b.year });
+  //       Object.entries(result).forEach((value, index)=>{
+  //         if (value[0] != "year" && value[0] != "total" ) {
+  //           result[value[0] + " ratio"] = Number((value[1]/result.total).toFixed(2));
+  //         } 
+  //       })
+  //       return result;
+  //     })
+  //     processedData.sort((a,b)=>{ return a.year - b.year });
 
-      return processedData;
-     }
-    },
-    dataAnalysisInformation:{
-      question: 'How often are which empirical methods used over time?'
-    }
-  },
+  //     return processedData;
+  //    }
+  //   },
+  //   dataAnalysisInformation:{
+  //     question: 'How often are which empirical methods used over time?'
+  //   }
+  // },
+  //Query 3
   {
     title: 'Number of papers per year',
     id: 3,
@@ -433,7 +422,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions3Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
 
@@ -464,6 +453,7 @@ export const queries = [
       question: 'How has the proportion of papers that do not have an empirical study evolved over time?'
     }
   },
+  //Query 4
   {
     title: 'Number of papers per year',
     id: 5,
@@ -568,7 +558,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions5Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
 
@@ -617,6 +607,7 @@ export const queries = [
       question: 'How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?'
     }
   },
+  //Query 5
   {
     title: 'Number of papers per year',
     id: 6.1,
@@ -663,7 +654,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions6Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let processedData = {};
@@ -698,6 +689,7 @@ export const queries = [
       question: 'How often are which statistical methods used?'
     }
   },
+  //Query 6
   {
     title: 'Number of papers per year',
     id: 7.1,
@@ -1107,7 +1099,7 @@ export const queries = [
       sx: chartStyles,
     },
     ],
-    dataProcessingFunction: (SampleData = questions7Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))];
@@ -1154,6 +1146,7 @@ export const queries = [
       question: 'How has the use of statistical methods evolved over time?'
     }
   },
+  //Query 7
   {
     title: 'Number of papers per year',
     id: 8,
@@ -1192,7 +1185,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions8Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))]
@@ -1224,6 +1217,7 @@ export const queries = [
       question: 'How has the reporting of threats to validity evolved over time?'
     }
   },
+  //Query 8
   {
     title: 'Number of papers per year',
     id: 9,
@@ -1270,7 +1264,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions9Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let processedData = {};
@@ -1305,6 +1299,7 @@ export const queries = [
       question: 'What types of threats to validity do the authors report?'
     }
   },
+  //Query 9
   {
     title: 'Number of papers per year',
     id: 10,
@@ -1359,7 +1354,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions10Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))]
@@ -1406,6 +1401,7 @@ export const queries = [
       question: 'How have the proportions of case studies and action research in the empirical methods used evolved over time?'
     }
   },
+  //Query 10
   {
     title: 'Number of papers per year',
     id: 11,
@@ -1444,7 +1440,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions11Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let years = [...new Set(SampleData.map((item: { year: unknown }) => item.year))]
@@ -1476,6 +1472,7 @@ export const queries = [
       question: 'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?'
     }
   },
+  //Query 11
   {
     title: 'Number of papers per year',
     id: 12,
@@ -1672,7 +1669,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions12Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         const papersByYear = {};
@@ -1735,6 +1732,7 @@ export const queries = [
       question: 'How has the reporting of research questions and answers evolved over time?'
     }
   },
+  //Query 12
   {
     title: 'Number of papers per year',
     id: 13,
@@ -1781,7 +1779,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions13Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         let methods = [...new Set(SampleData.map((item) => item.dc_method_name))];
@@ -1806,6 +1804,7 @@ export const queries = [
       question: 'What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?'
     }
   },
+  //Query 13
   {
     title: 'Number of papers per year',
     id: 14,
@@ -1996,7 +1995,7 @@ export const queries = [
       height: chartHeight,
       sx: chartStyles,
     }],
-    dataProcessingFunction: (SampleData = questions14Data) => {
+    dataProcessingFunction: (SampleData) => {
 
       if (SampleData != undefined) {
         const uniquePapers = {};
@@ -2032,95 +2031,96 @@ export const queries = [
       question: 'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?'
     }
   },
-  {
-    title: 'Number of papers per year',
-    id: 15.1,
-    uid: 'query_15_1',
-    chartSetting: [
-    {
-      className: 'fullWidth',
-      colors: ['#5975a4'],
-      barLabel: "value",
-      xAxis: xAxisSettings('methodDistribution'),
-      heading: 'Number of papers using X empirical methods for data collection and data analysis',
-      yAxis: [
-        {
-          label: 'Proportions of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'count'},
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }],
-    dataProcessingFunction: (SampleData = questions15Data, SampleData2 = questions15_2Data) => {
+  //Query 14
+  // {
+  //   title: 'Number of papers per year',
+  //   id: 15.1,
+  //   uid: 'query_15_1',
+  //   chartSetting: [
+  //   {
+  //     className: 'fullWidth',
+  //     colors: ['#5975a4'],
+  //     barLabel: "value",
+  //     xAxis: xAxisSettings('methodDistribution'),
+  //     heading: 'Number of papers using X empirical methods for data collection and data analysis',
+  //     yAxis: [
+  //       {
+  //         label: 'Proportions of empirical methods used',
+  //       },
+  //     ],
+  //     series: [
+  //       { dataKey: 'count'},
+  //     ],
+  //     height: chartHeight,
+  //     sx: chartStyles,
+  //   }],
+  //   dataProcessingFunction: (SampleData, SampleData2) => {
 
-      if (SampleData != undefined) {
-            // Create a map for SampleData
-            const dataMap = new Map();
-            SampleData.forEach(entry => {
-                dataMap.set(entry.paper, {
-                    number_of_dc_methods: entry.number_of_dc_methods || 0,
-                    number_of_inf_methods: 0,
-                    number_of_des_methods: 0,
-                    number_of_ml_methods: 0,
-                    number_of_other_methods: 0
-                });
-            });
+  //     if (SampleData != undefined) {
+  //           // Create a map for SampleData
+  //           const dataMap = new Map();
+  //           SampleData.forEach(entry => {
+  //               dataMap.set(entry.paper, {
+  //                   number_of_dc_methods: entry.number_of_dc_methods || 0,
+  //                   number_of_inf_methods: 0,
+  //                   number_of_des_methods: 0,
+  //                   number_of_ml_methods: 0,
+  //                   number_of_other_methods: 0
+  //               });
+  //           });
         
-            // Merge SampleData2 into the map
-            SampleData2.forEach(entry => {
-                if (dataMap.has(entry.paper)) {
-                    const existing = dataMap.get(entry.paper);
-                    existing.number_of_inf_methods += entry.number_of_inf_methods || 0;
-                    existing.number_of_des_methods += entry.number_of_des_methods || 0;
-                    existing.number_of_ml_methods += entry.number_of_ml_methods || 0;
-                    existing.number_of_other_methods += entry.number_of_other_methods || 0;
-                } else {
-                    dataMap.set(entry.paper, {
-                        number_of_dc_methods: 0,
-                        number_of_inf_methods: entry.number_of_inf_methods || 0,
-                        number_of_des_methods: entry.number_of_des_methods || 0,
-                        number_of_ml_methods: entry.number_of_ml_methods || 0,
-                        number_of_other_methods: entry.number_of_other_methods || 0
-                    });
-                }
-            });
+  //           // Merge SampleData2 into the map
+  //           SampleData2.forEach(entry => {
+  //               if (dataMap.has(entry.paper)) {
+  //                   const existing = dataMap.get(entry.paper);
+  //                   existing.number_of_inf_methods += entry.number_of_inf_methods || 0;
+  //                   existing.number_of_des_methods += entry.number_of_des_methods || 0;
+  //                   existing.number_of_ml_methods += entry.number_of_ml_methods || 0;
+  //                   existing.number_of_other_methods += entry.number_of_other_methods || 0;
+  //               } else {
+  //                   dataMap.set(entry.paper, {
+  //                       number_of_dc_methods: 0,
+  //                       number_of_inf_methods: entry.number_of_inf_methods || 0,
+  //                       number_of_des_methods: entry.number_of_des_methods || 0,
+  //                       number_of_ml_methods: entry.number_of_ml_methods || 0,
+  //                       number_of_other_methods: entry.number_of_other_methods || 0
+  //                   });
+  //               }
+  //           });
         
-            // Aggregate data by empirical method count
-            const methodCounts = {};
-            dataMap.forEach(entry => {
-                const numberOfAllMethods = entry.number_of_dc_methods +
-                    entry.number_of_inf_methods +
-                    entry.number_of_des_methods +
-                    entry.number_of_ml_methods +
-                    entry.number_of_other_methods;
+  //           // Aggregate data by empirical method count
+  //           const methodCounts = {};
+  //           dataMap.forEach(entry => {
+  //               const numberOfAllMethods = entry.number_of_dc_methods +
+  //                   entry.number_of_inf_methods +
+  //                   entry.number_of_des_methods +
+  //                   entry.number_of_ml_methods +
+  //                   entry.number_of_other_methods;
         
-                if (!methodCounts[numberOfAllMethods]) {
-                    methodCounts[numberOfAllMethods] = { count: 0, methodDistribution: numberOfAllMethods };
-                }
-                methodCounts[numberOfAllMethods].count++;
-            });
+  //               if (!methodCounts[numberOfAllMethods]) {
+  //                   methodCounts[numberOfAllMethods] = { count: 0, methodDistribution: numberOfAllMethods };
+  //               }
+  //               methodCounts[numberOfAllMethods].count++;
+  //           });
         
-            // Convert object to sorted array
-            const sortedMethodCounts = Object.values(methodCounts).sort((a, b) => a.methodDistribution - b.methodDistribution);
+  //           // Convert object to sorted array
+  //           const sortedMethodCounts = Object.values(methodCounts).sort((a, b) => a.methodDistribution - b.methodDistribution);
         
-            // Compute total count for normalization
-            const totalPapers = sortedMethodCounts.reduce((sum, data) => sum + data.count, 0);
+  //           // Compute total count for normalization
+  //           const totalPapers = sortedMethodCounts.reduce((sum, data) => sum + data.count, 0);
         
-            // Construct the result array
-            const result = sortedMethodCounts.map(entry => ({
-                methodDistribution: entry.methodDistribution,
-                count: entry.count,
-                normalized: parseFloat((entry.count / totalPapers).toFixed(3))
-            }));
-        console.log(result);
-        return result;
-      }
-    },
-    dataAnalysisInformation:{
-      question: 'How many different research methods are used per publication?'
-    }
-  },
+  //           // Construct the result array
+  //           const result = sortedMethodCounts.map(entry => ({
+  //               methodDistribution: entry.methodDistribution,
+  //               count: entry.count,
+  //               normalized: parseFloat((entry.count / totalPapers).toFixed(3))
+  //           }));
+  //       console.log(result);
+  //       return result;
+  //     }
+  //   },
+  //   dataAnalysisInformation:{
+  //     question: 'How many different research methods are used per publication?'
+  //   }
+  // },
 ];

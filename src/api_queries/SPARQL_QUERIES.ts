@@ -9,7 +9,8 @@ export const PREFIXES = `
     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 `;
 
-export const query_1 = `
+export const SPARQL_QUERIES = {
+  query_1: `
     SELECT ?paper, ?year, ?dc_label, ?da_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -28,9 +29,9 @@ export const query_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_2_1 = `
+  query_2_1: `
     SELECT ?paper, ?year, ?dc_method_type_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -50,9 +51,9 @@ export const query_2_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_2_2 = `
+  query_2_2: `
     SELECT ?paper, ?year, ?da_label, ?descriptive, ?inferential, ?machine_learning, ?method
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -74,9 +75,9 @@ export const query_2_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_3 = `
+  query_3: `
     SELECT ?paper, ?year, ?dc_label, ?da_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -95,9 +96,9 @@ export const query_3 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)    
             }
-`;
+`,
 
-export const query_4_1 = `
+  query_4_1: `
     SELECT ?paper, ?dc_method_type_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -117,9 +118,9 @@ export const query_4_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_4_2 = `
+  query_4_2: `
     SELECT ?paper, ?year, ?da_label, ?descriptive, ?inferential, ?machine_learning, ?method
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -141,9 +142,9 @@ export const query_4_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_5 = `
+  query_5: `
     SELECT ?paper, ?year, ?dc_method_type_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -163,9 +164,9 @@ export const query_5 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_6_1 = `
+  query_6_1: `
     SELECT ?paper, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
                 ?range, ?variance, ?standard_deviation, ?boxplot
             WHERE {
@@ -201,9 +202,9 @@ export const query_6_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_6_2 = `
+  query_6_2: `
     SELECT ?paper, ?da_label, ?test
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -225,9 +226,9 @@ export const query_6_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_7_1 = `
+  query_7_1: `
     SELECT ?paper, ?year, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
                 ?range, ?variance, ?standard_deviation, ?boxplot
             WHERE {
@@ -263,9 +264,9 @@ export const query_7_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_7_2 = `
+  query_7_2: `
     SELECT ?paper, ?year, ?da_label, ?test
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -287,9 +288,9 @@ export const query_7_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_8 = `
+  query_8: `
     SELECT ?paper, ?year, ?external, ?internal, ?construct, ?conclusion, ?reliability, ?generalizability, ?content, ?descriptive, ?theoretical, ?repeatability, ?mentioned
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -315,9 +316,9 @@ export const query_8 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_9 = `
+  query_9: `
     SELECT ?paper, ?year, ?external, ?internal, ?construct, ?conclusion, ?reliability, ?generalizability, ?content, ?descriptive, ?theoretical, ?repeatability, ?mentioned
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -343,9 +344,9 @@ export const query_9 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_10 = `
+  query_10: `
     SELECT ?paper, ?year, ?dc_method_type_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -365,9 +366,9 @@ export const query_10 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_11 = `
+  query_11: `
     SELECT ?paper, ?year, ?data, ?url
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -387,9 +388,9 @@ export const query_11 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_12 = `
+  query_12: `
     SELECT ?paper, ?year, ?question, ?highlighted_q, ?highlighted_a
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -409,9 +410,9 @@ export const query_12 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
-`;
+`,
 
-export const query_13 = `
+  query_13: `
     SELECT ?paper, ?dc_method_type_label, ?dc_method_name
         WHERE {
                 ?paper orkgp:P31 ?contribution;
@@ -431,9 +432,9 @@ export const query_13 = `
                 #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                 FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
         }
-`;
+`,
 
-export const query_14 = `
+  query_14: `
     SELECT ?paper, ?year, ?dc_method_type_label, ?dc_method_name
         WHERE {
                 ?paper orkgp:P31 ?contribution;
@@ -453,9 +454,9 @@ export const query_14 = `
                 #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                 FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
         }
-`;
+`,
 
-export const query_15_1 = `
+  query_15_1: `
     SELECT ?paper, (COUNT(?dc_method_type_label) AS ?number_of_dc_methods), ?year
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -474,9 +475,9 @@ export const query_15_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             } GROUP BY ?paper ?year
-`;
+`,
 
-export const query_15_2 = `
+  query_15_2: `
     SELECT ?paper, (COUNT(DISTINCT ?inferential) AS ?number_of_inf_methods), (COUNT(DISTINCT ?descriptive) AS ?number_of_des_methods), (COUNT(DISTINCT ?machine_learning) AS ?number_of_ml_methods), (COUNT(DISTINCT ?other_methods) AS ?number_of_other_methods), ?year
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -497,9 +498,9 @@ export const query_15_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             } GROUP BY ?paper ?year
-`;
+`,
 
-export const query_16_1 = `
+  query_16_1: `
     SELECT ?paper, (COUNT(?dc_method_type_label) AS ?number_of_dc_methods), ?year
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -518,9 +519,9 @@ export const query_16_1 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             } GROUP BY ?paper ?year
-`;
+`,
 
-export const query_16_2 = `
+  query_16_2: `
     SELECT ?paper, (COUNT(DISTINCT ?inferential) AS ?number_of_inf_methods), (COUNT(DISTINCT ?descriptive) AS ?number_of_des_methods), (COUNT(DISTINCT ?machine_learning) AS ?number_of_ml_methods), (COUNT(DISTINCT ?other_methods) AS ?number_of_other_methods), ?year
             WHERE {
                     ?paper orkgp:P31 ?contribution;
@@ -541,4 +542,5 @@ export const query_16_2 = `
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             } GROUP BY ?paper ?year
-`;
+`,
+};

@@ -2,42 +2,43 @@ import Question from './Question';
 import CustomBarChart from './CustomCharts/CustomBarChart';
 import { useEffect, useState } from 'react';
 import fetchSPARQLData from '../helpers/fetch_query';
-import { query_1 } from '../queries/queries';
-import { query_2_1 } from '../queries/queries';
-import { query_3 } from '../queries/queries';
+import { SPARQL_QUERIES } from '../api_queries/SPARQL_QUERIES';
 import { queries } from '../constants/queries_chart_info';
 
 interface OrkgData {
   [key: string]: unknown[]; // Make this dynamic, allowing different keys for each query
 }
 
-interface QuestionData {
-  fileName: string;
-  function: (data: any) => any;
-  chartDataSettings: {
-    xAxis: any;
-  };
-}
 
 const Dashboard = () => {
-
-  const [orkgData, setOrkgData] = useState<OrkgData>({
-    query_1: [],
-  });
-
+  const [orkgData, setOrkgData] = useState<OrkgData>({});
 
   useEffect(() => {
-    // fetchSPARQLData(query_1).then((data) => {
-    //   setOrkgData((prevData) => ({ ...prevData, query_1: data }));
-    // });
-    // fetchSPARQLData(query_2_1).then((data) => {
-    //   setOrkgData((prevData) => ({ ...prevData, query_2_1: data }));
-    // });
-    // fetchSPARQLData(query_3).then((data) => {
-    //   setOrkgData((prevData) => ({ ...prevData, query_3: data }));
-    // }); 
+    const fetchData = async () => {
+      const dataEntries = await Promise.all(
+        Object.keys(SPARQL_QUERIES).map(async (query) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-expect-error
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query]);
+          return { [query]: data };
+        })
+      );
+  
+      // Merge all fetched data into a single object
+      const newData = Object.assign({}, ...dataEntries);
+      
+      // Update state properly
+      setOrkgData(newData);
+    };
+  
+    fetchData();
   }, []);
+  
 
+  console.log(orkgData);
+  if (Object.keys(orkgData).length === 0) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
       {queries.map((query, index) => (
