@@ -3,13 +3,13 @@ import { axisClasses } from '@mui/x-charts';
 
 
 
-let chartStyles = {
+const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
     transform: 'translateX(-10px)',
   }
 }
 
-let chartHeight = 400;
+const chartHeight = 400;
 
 function xAxisSettings(dataKey = 'year', label = 'Year'){
   return [{
