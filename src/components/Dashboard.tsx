@@ -2,7 +2,7 @@ import Question from './Question';
 import CustomBarChart from './CustomCharts/CustomBarChart';
 import { useEffect, useState } from 'react';
 import fetchSPARQLData from '../helpers/fetch_query';
-import { SPARQL_QUERIES } from '../api_queries/SPARQL_QUERIES';
+import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import { queries } from '../constants/queries_chart_info';
 import { Box } from '@mui/system';
 import { Divider } from '@mui/material';

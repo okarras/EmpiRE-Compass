@@ -1,4 +1,4 @@
-import { PREFIXES } from "../api_queries/SPARQL_QUERIES";
+import { PREFIXES } from "../api/SPARQL_QUERIES";
 
 const fetchSPARQLData = async (query: string, endpoint: string = 'https://orkg.org/triplestore') => {
     try {
