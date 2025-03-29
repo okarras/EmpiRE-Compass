@@ -1,11 +1,7 @@
-import Question from './Question';
-import CustomBarChart from './CustomCharts/CustomBarChart';
 import { useEffect, useState } from 'react';
 import fetchSPARQLData from '../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
-import { queries } from '../constants/queries_chart_info';
 import { Box } from '@mui/system';
-import { Divider } from '@mui/material';
 
 interface OrkgData {
   [key: string]: unknown[]; // Make this dynamic, allowing different keys for each query
@@ -35,7 +31,6 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  console.log(orkgData);
   if (Object.keys(orkgData).length === 0) {
     return <div>Loading...</div>;
   }
@@ -50,40 +45,7 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
-      {queries.map((query, index) => (
-        <>
-          <Question
-            key={index}
-            dataAnalysisInformation={query.dataAnalysisInformation}
-          >
-            {/* TODO: for each query, the chart can be different */}
-            <>
-              {query.chartSettings.map((chart, index) => {
-                return (
-                  <CustomBarChart
-                    key={index}
-                    question_id={query.uid}
-                    dataset={
-                      query.dataProcessingFunction(
-                        orkgData[query.uid] as { year: number }[]
-                      ) ?? []
-                    } // Cast the dynamic value to unknown[] to match the expected type
-                    chartSetting={chart}
-                  />
-                );
-              })}
-            </>
-          </Question>
-          <Divider
-            variant="fullWidth"
-            sx={{
-              backgroundColor: 'black',
-            }}
-          />
-        </>
-      ))}
 
-      {}
     </Box>
   );
 };
