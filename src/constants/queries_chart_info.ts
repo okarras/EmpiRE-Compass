@@ -22,7 +22,7 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
     {
       scaleType: 'band',
       dataKey: dataKey,
-      valueFormatter: (v) => v.toString(),
+      valueFormatter: (v: any) => v.toString(),
       tickPlacement: 'middle',
       label: label,
     },
@@ -40,13 +40,15 @@ export interface ChartSetting {
   sx: Record<string, unknown>;
   barLabel?: string;
   layout?: string;
+  margin?: Record<string, unknown>;
 }
 export interface Query {
   title: string;
   id: number;
   uid: string;
   chartSettings: ChartSetting[];
-  dataProcessingFunction: (data: any, data2?: any) => Record<string, unknown>[];
+  //TODO: fix types
+  dataProcessingFunction: (data: any, data2?: any) => any[];
   dataAnalysisInformation: {
     question: string;
   };
