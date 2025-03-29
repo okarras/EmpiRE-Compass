@@ -64,7 +64,8 @@ const Dashboard = () => {
                     question_id={query.uid}
                     dataset={
                       query.dataProcessingFunction(
-                        orkgData[query.uid] as { year: number }[]
+                        orkgData[query.uid] as { year: number }[],
+                        query.uid
                       ) ?? []
                     } // Cast the dynamic value to unknown[] to match the expected type
                     chartSetting={chart}

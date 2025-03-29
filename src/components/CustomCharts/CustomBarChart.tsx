@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BarChart } from '@mui/x-charts/BarChart';
+import { useRef } from 'react';
 
 interface CustomBarChartInterface {
   dataset: any[];
@@ -9,6 +10,7 @@ interface CustomBarChartInterface {
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
   const { dataset, chartSetting, question_id } = props;
+  const normalizedDatasetRef = useRef<any[]>([]);
 
   return (
     <div
@@ -20,7 +22,15 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       id={`chart-${question_id}`}
     >
       <h4 style={{ textAlign: 'center' }}> {chartSetting.heading} </h4>
-      <BarChart dataset={dataset} {...chartSetting} colors={['#e86161']} />
+      <BarChart
+        dataset={
+          normalizedDatasetRef.current.length
+            ? normalizedDatasetRef.current
+            : dataset
+        }
+        {...chartSetting}
+        colors={['#e86161']}
+      />
     </div>
   );
 };

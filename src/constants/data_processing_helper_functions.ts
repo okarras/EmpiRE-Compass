@@ -1,54 +1,74 @@
-interface RawDataItem {
-  [key: string]: number;
+export interface RawDataItem {
+  [key: string]: unknown;
 }
 
-export const sortDataByYear = (rawData: { year: number }[]) => {
-  //sort the data by year
-  rawData.sort((a: { year: number }, b: { year: number }) => a.year - b.year);
-  // get the unique years from the data
-  const years = [
-    ...new Set(rawData.map((item: { year: unknown }) => item.year)),
-  ];
-  // get number of items for each year
+export const sortDataByYear = (
+  rawData: { year: number }[],
+  query_id?: string
+) => {
+  if (query_id === 'query_12') {
+    console.log('query_12', rawData);
+  }
+
+  // Sort the data by year
+  rawData.sort((a, b) => a.year - b.year);
+
+  // Get the unique years from the data
+  const years = [...new Set(rawData.map((item) => item.year))];
+
+  // Get the number of items for each year
   const itemsPerYear = years.map((year) => {
+    const count = rawData.filter((item) => item.year === year).length;
     return {
-      count: rawData.filter((item: { year: unknown }) => item.year === year)
-        .length,
-      year: year,
+      count,
+      year,
+      ...rawData.find((item) => item.year === year), // Other properties
     };
   });
-  return itemsPerYear;
+
+  // Find min and max counts
+  const counts = itemsPerYear.map((item) => item.count);
+  const minCount = Math.min(...counts);
+  const maxCount = Math.max(...counts);
+
+  // Normalize the counts
+  return itemsPerYear.map((item) => ({
+    ...item,
+    normalizedRatio:
+      maxCount !== minCount
+        ? Number(((item.count - minCount) / (maxCount - minCount)).toFixed(2))
+        : 0, // Avoid division by zero
+  }));
 };
 
-interface SortDataByCountReturnInterface {
+export interface SortDataByCountReturnInterface {
   method: string;
   count: number;
-  ratio: number;
+  normalizedRatio: number;
 }
 
 export const sortDataByCount = (
   rawData: RawDataItem[] = []
 ): SortDataByCountReturnInterface[] => {
-  console.log('rawData', rawData);
   if (!rawData.length) return [];
 
   const processedData: Record<string, number> = {};
 
   rawData.forEach((dataValue) => {
     Object.keys(dataValue).forEach((key) => {
-      if (dataValue[key] > 0) {
+      if (dataValue[key] as number > 0) {
         processedData[key] = (processedData[key] || 0) + 1;
       }
     });
   });
 
-  const result: SortDataByCountReturnInterface[] = Object.entries(processedData).map(
-    ([method, count]) => ({
-      method,
-      count,
-      ratio: Number((count / rawData.length).toFixed(2)),
-    })
-  );
+  const result: SortDataByCountReturnInterface[] = Object.entries(
+    processedData
+  ).map(([method, count]) => ({
+    method,
+    count,
+    normalizedRatio: Number((count / rawData.length).toFixed(2)),
+  }));
 
   return result.sort((a, b) => b.count - a.count);
 };
@@ -56,31 +76,37 @@ export const sortDataByCount = (
 interface AggregateMethodUsageReturnInterface {
   method: string;
   count: number;
-  normalized: number;
+  normalizedRatio: number;
 }
 
-export const aggregateMethodUsage = (rawData: RawDataItem[] = []): AggregateMethodUsageReturnInterface[] => {
+export const aggregateMethodUsage = (
+  rawData: RawDataItem[] = []
+): AggregateMethodUsageReturnInterface[] => {
   if (!rawData.length) return [];
 
   const processedData: Record<string, number> = {};
   let grandTotal = 0;
 
-  rawData.forEach(valueObject => {
-    Object.keys(valueObject).forEach(method => {
-      if (method !== "year" && method !== "paper") {
-        processedData[method] = (processedData[method] || 0) + valueObject[method];
+  rawData.forEach((valueObject) => {
+    Object.keys(valueObject).forEach((method) => {
+      if (method !== 'year' && method !== 'paper') {
+        // Convert binary string to decimal number
+        const countAsNumber = parseInt(valueObject[method] as string, 2);
+
+        // Ensure valid number conversion
+        if (!isNaN(countAsNumber)) {
+          processedData[method] = (processedData[method] || 0) + countAsNumber;
+          grandTotal += countAsNumber; // Correct grand total calculation
+        }
       }
     });
-    
-    if (Object.values(valueObject).includes(1)) {
-      grandTotal += 1;
-    }
   });
 
   return Object.entries(processedData).map(([method, count]) => ({
     method,
     count,
-    normalized: Number((count / grandTotal).toFixed(3)),
+    normalizedRatio:
+      grandTotal > 0 ? Number((count / grandTotal).toFixed(3)) : 0, // Avoid division by zero
   }));
 };
 
@@ -95,7 +121,9 @@ interface ProcessedYearlyData {
   [method: string]: number | string;
 }
 
-export const processYearlyMethodData = (rawData: RawDataEntry[] = []): ProcessedYearlyData[] => {
+export const processYearlyMethodData = (
+  rawData: RawDataEntry[] = []
+): ProcessedYearlyData[] => {
   if (!rawData.length) return [];
 
   const uniquePapers: Record<number, Set<string>> = {};
@@ -103,7 +131,7 @@ export const processYearlyMethodData = (rawData: RawDataEntry[] = []): Processed
     if (!uniquePapers[year]) uniquePapers[year] = new Set();
     uniquePapers[year].add(paper);
   });
-  
+
   const papersPerYear = Object.fromEntries(
     Object.entries(uniquePapers).map(([year, papers]) => [
       Number(year),
@@ -119,17 +147,16 @@ export const processYearlyMethodData = (rawData: RawDataEntry[] = []): Processed
   });
 
   return Object.entries(methodCounts).map(([year, methods]) => {
-    const normalized: Record<string, number> = {};
+    const normalizedRatio: Record<string, number> = {};
     Object.entries(methods).forEach(([method, count]) => {
-      normalized[method] = count;
-      normalized[`normalized_${method}`] = parseFloat(
+      normalizedRatio[method] = count;
+      normalizedRatio[`normalized_${method}`] = parseFloat(
         (count / papersPerYear[Number(year)]).toFixed(2)
       );
     });
-    return { year: Number(year), ...normalized };
+    return { year: Number(year), ...normalizedRatio };
   });
 };
-
 
 interface PaperData {
   paper: string;
@@ -143,10 +170,15 @@ interface PaperData {
 interface ProcessedMethodDistribution {
   methodDistribution: number;
   count: number;
-  normalized: number;
+  normalizedRatio: number;
 }
 
-export const processMethodDistribution = (rawData: PaperData[] = [], rawData2: PaperData[] = []): ProcessedMethodDistribution[] => {
+export const processMethodDistribution = (
+  rawData: PaperData[] = []
+): ProcessedMethodDistribution[] => {
+  //TODO: Add the second rawData parameter
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawData2: any[] = [];
   if (!rawData.length && !rawData2.length) return [];
 
   const dataMap = new Map<string, Required<PaperData>>();
@@ -168,7 +200,8 @@ export const processMethodDistribution = (rawData: PaperData[] = [], rawData2: P
       Object.keys(methods).forEach((key) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-expect-error
-        existing[key as keyof PaperData] += methods[key as keyof PaperData] || 0;
+        existing[key as keyof PaperData] +=
+          methods[key as keyof PaperData] || 0;
       });
     } else {
       dataMap.set(paper, {
@@ -182,21 +215,45 @@ export const processMethodDistribution = (rawData: PaperData[] = [], rawData2: P
     }
   });
 
-  const methodCounts: Record<number, { count: number; methodDistribution: number }> = {};
-  dataMap.forEach(({ number_of_dc_methods, number_of_inf_methods, number_of_des_methods, number_of_ml_methods, number_of_other_methods }) => {
-    const totalMethods = number_of_dc_methods + number_of_inf_methods + number_of_des_methods + number_of_ml_methods + number_of_other_methods;
-    if (!methodCounts[totalMethods]) {
-      methodCounts[totalMethods] = { count: 0, methodDistribution: totalMethods };
+  const methodCounts: Record<
+    number,
+    { count: number; methodDistribution: number }
+  > = {};
+  dataMap.forEach(
+    ({
+      number_of_dc_methods,
+      number_of_inf_methods,
+      number_of_des_methods,
+      number_of_ml_methods,
+      number_of_other_methods,
+    }) => {
+      const totalMethods =
+        number_of_dc_methods +
+        number_of_inf_methods +
+        number_of_des_methods +
+        number_of_ml_methods +
+        number_of_other_methods;
+      if (!methodCounts[totalMethods]) {
+        methodCounts[totalMethods] = {
+          count: 0,
+          methodDistribution: totalMethods,
+        };
+      }
+      methodCounts[totalMethods].count++;
     }
-    methodCounts[totalMethods].count++;
-  });
+  );
 
-  const sortedMethodCounts = Object.values(methodCounts).sort((a, b) => a.methodDistribution - b.methodDistribution);
-  const totalPapers = sortedMethodCounts.reduce((sum, { count }) => sum + count, 0);
+  const sortedMethodCounts = Object.values(methodCounts).sort(
+    (a, b) => a.methodDistribution - b.methodDistribution
+  );
+  const totalPapers = sortedMethodCounts.reduce(
+    (sum, { count }) => sum + count,
+    0
+  );
 
   return sortedMethodCounts.map(({ methodDistribution, count }) => ({
     methodDistribution,
     count,
-    normalized: parseFloat((count / totalPapers).toFixed(3)),
+    normalizedRatio: parseFloat((count / totalPapers).toFixed(3)),
   }));
 };

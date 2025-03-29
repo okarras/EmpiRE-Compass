@@ -5,7 +5,9 @@ import {
   aggregateMethodUsage,
   processMethodDistribution,
   processYearlyMethodData,
+  RawDataItem,
   sortDataByCount,
+  SortDataByCountReturnInterface,
   sortDataByYear,
 } from './data_processing_helper_functions';
 
@@ -48,7 +50,7 @@ export interface Query {
   uid: string;
   chartSettings: ChartSetting[];
   //TODO: fix types
-  dataProcessingFunction: (data: any, data2?: any) => any[];
+  dataProcessingFunction: (data: any, query_id?: string) => any[];
   dataAnalysisInformation: {
     question: string;
   };
@@ -442,7 +444,7 @@ export const queries: Query[] = [
             label: 'Proportion of papers without an empirical study',
           },
         ],
-        series: [{ dataKey: 'ratio' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -605,7 +607,7 @@ export const queries: Query[] = [
             label: 'Statistical Method used',
           },
         ],
-        series: [{ dataKey: 'ratio' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         margin: {
           left: 150,
         },
@@ -1064,7 +1066,7 @@ export const queries: Query[] = [
             label: 'Proportion of papers reporting threats to validity',
           },
         ],
-        series: [{ dataKey: 'normalized' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1119,7 +1121,7 @@ export const queries: Query[] = [
             label: 'Threats to validity reported',
           },
         ],
-        series: [{ dataKey: 'normalized' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1225,7 +1227,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers with data',
           },
         ],
-        series: [{ dataKey: 'normalized' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1236,7 +1238,7 @@ export const queries: Query[] = [
         'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?',
     },
   },
-  //Query 12
+  //Query 12 TODO: this query should be checked
   {
     title: 'Number of papers per year',
     id: 12,
@@ -1253,7 +1255,7 @@ export const queries: Query[] = [
             label: 'Numbers of papers',
           },
         ],
-        series: [{ dataKey: 'high_q_high_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1268,7 +1270,7 @@ export const queries: Query[] = [
             label: 'Numbers of papers',
           },
         ],
-        series: [{ dataKey: 'high_q_hid_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1283,7 +1285,7 @@ export const queries: Query[] = [
             label: 'Numbers of papers',
           },
         ],
-        series: [{ dataKey: 'hid_q_high_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1298,7 +1300,7 @@ export const queries: Query[] = [
             label: 'Numbers of papers',
           },
         ],
-        series: [{ dataKey: 'hid_q_hid_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1313,7 +1315,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'high_q_high_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1328,7 +1330,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'high_q_hid_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1343,7 +1345,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'hid_q_high_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1358,7 +1360,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'hid_q_hid_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1373,7 +1375,7 @@ export const queries: Query[] = [
             label: 'Number of papers',
           },
         ],
-        series: [{ dataKey: 'no_rq_high_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1388,7 +1390,7 @@ export const queries: Query[] = [
             label: 'Number of papers',
           },
         ],
-        series: [{ dataKey: 'no_rq_hid_a' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1403,7 +1405,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'no_rq_high_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1418,7 +1420,7 @@ export const queries: Query[] = [
             label: 'Proportions of papers',
           },
         ],
-        series: [{ dataKey: 'no_rq_hid_a_normalized' }],
+        series: [{ dataKey: 'highlighted_q' }, {dataKey: 'highlighted_a'}],
         height: chartHeight,
         sx: chartStyles,
       },
@@ -1474,12 +1476,32 @@ export const queries: Query[] = [
         margin: {
           left: 190,
         },
-        series: [{ dataKey: 'normalized' }],
+        series: [{ dataKey: 'normalizedRatio' }],
         height: chartHeight,
         sx: chartStyles,
       },
     ],
-    dataProcessingFunction: sortDataByCount,
+    dataProcessingFunction: (
+      rawData: RawDataItem[] = [],
+    ): SortDataByCountReturnInterface[] => {
+      if (!rawData.length) return [];
+    
+      const methodCount: Record<string, number> = {};
+    
+      rawData.forEach(({ dc_method_name }) => {
+        methodCount[dc_method_name as string] = (methodCount[dc_method_name as string] || 0) + 1;
+      });
+    
+      const result: SortDataByCountReturnInterface[] = Object.entries(methodCount).map(
+        ([method, count]) => ({
+          method,
+          count,
+          normalizedRatio: Number((count / rawData.length).toFixed(2)),
+        })
+      );
+    
+      return result.sort((a, b) => b.count - a.count);
+    },
     dataAnalysisInformation: {
       question:
         'What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?',
@@ -1716,26 +1738,26 @@ export const queries: Query[] = [
     id: 15.1,
     uid: 'query_15_1',
     chartSettings: [
-    {
-      className: 'fullWidth',
-      colors: ['#5975a4'],
-      barLabel: "value",
-      xAxis: xAxisSettings('methodDistribution'),
-      heading: 'Number of papers using X empirical methods for data collection and data analysis',
-      yAxis: [
-        {
-          label: 'Proportions of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'count'},
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    }],
+      {
+        className: 'fullWidth',
+        colors: ['#5975a4'],
+        barLabel: 'value',
+        xAxis: xAxisSettings('methodDistribution'),
+        heading:
+          'Number of papers using X empirical methods for data collection and data analysis',
+        yAxis: [
+          {
+            label: 'Proportions of empirical methods used',
+          },
+        ],
+        series: [{ dataKey: 'count' }],
+        height: chartHeight,
+        sx: chartStyles,
+      },
+    ],
     dataProcessingFunction: processMethodDistribution,
-    dataAnalysisInformation:{
-      question: 'How many different research methods are used per publication?'
-    }
+    dataAnalysisInformation: {
+      question: 'How many different research methods are used per publication?',
+    },
   },
 ];
