@@ -36,7 +36,7 @@ export const sortDataByYear = (
     ...item,
     normalizedRatio:
       maxCount !== minCount
-        ? Number(((item.count - minCount) / (maxCount - minCount)).toFixed(2))
+        ? Number((((item.count - minCount) / (maxCount - minCount)) * 100).toFixed(2)) 
         : 0, // Avoid division by zero
   }));
 };
@@ -67,7 +67,7 @@ export const sortDataByCount = (
   ).map(([method, count]) => ({
     method,
     count,
-    normalizedRatio: Number((count / rawData.length).toFixed(2)),
+    normalizedRatio: Number((count * 100 / rawData.length).toFixed(2)),
   }));
 
   return result.sort((a, b) => b.count - a.count);
@@ -250,10 +250,9 @@ export const processMethodDistribution = (
     (sum, { count }) => sum + count,
     0
   );
-
   return sortedMethodCounts.map(({ methodDistribution, count }) => ({
     methodDistribution,
     count,
-    normalizedRatio: parseFloat((count / totalPapers).toFixed(3)),
+    normalizedRatio: parseFloat((count * 100 / totalPapers).toFixed(2)),
   }));
 };
