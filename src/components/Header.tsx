@@ -1,46 +1,62 @@
-import {
-  AppBar,
-  IconButton,
-  Toolbar,
-  Typography,
-  Box,
-} from '@mui/material';
+import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useState } from 'react';
+import MenuDrawer from './MenuDrawer';
 
 const Header = () => {
+  const [open, setOpen] = useState(false);
+
+  const handleDrawerClose = () => {
+    setOpen(false);
+  };
+
   return (
-    <Box sx={{
-      width: '92%',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      flexDirection: 'column',
-    }}>
-      <AppBar
-        position="static"
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: '#e86161',
+        padding: { xs: '8px', sm: '12px', md: '16px' },
+        width: '88%',
+        margin: '0 auto', // Center the AppBar
+        boxShadow: 'none', // Remove shadow for a cleaner look
+        borderRadius: '8px', // Rounded corners
+      }}
+    >
+      <Toolbar
         sx={{
-          width: '100%',
-          backgroundColor: '#e86161',
-          padding: '16px',
           display: 'flex',
+          alignItems: 'center',
+          width: '100%',
+          paddingX: { xs: 2, sm: 3 }, // Horizontal padding for responsiveness
         }}
+        id="back-to-top-anchor"
       >
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            EmpiRE-Compass Dashboard
-          </Typography>
-        </Toolbar>
-      </AppBar>
-    </Box>
+        {/* Menu Icon */}
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={() => setOpen(!open)}
+          sx={{ mr: 1 }} // Adds spacing between the icon and text
+        >
+          <MenuIcon />
+        </IconButton>
+        {/* Dashboard Title */}
+        <Typography
+          variant="h6"
+          component="div"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: { xs: '16px', sm: '20px', md: '24px' },
+            whiteSpace: 'nowrap', // Prevents text wrapping
+          }}
+        >
+          EmpiRE-Compass Dashboard
+        </Typography>
+        <MenuDrawer open={open} handleDrawerClose={handleDrawerClose} />
+      </Toolbar>
+    </AppBar>
   );
 };
 

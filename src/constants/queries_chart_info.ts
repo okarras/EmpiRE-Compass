@@ -4,7 +4,6 @@ import { axisClasses } from '@mui/x-charts';
 import {
   aggregateMethodUsage,
   countMethodDistribution,
-  processMethodDistribution,
   processYearlyMethodData,
   RawDataItem,
   sortDataByCount,
@@ -220,7 +219,7 @@ export const queries: Query[] = [
       sx: chartStyles,
     },
     dataProcessingFunction: (rawData: any): any[] => {
-      const labelCounts = rawData.reduce((acc, item) => {
+      const labelCounts = rawData.reduce((acc: { [x: string]: any; }, item: { dc_method_type_label: string | number; }) => {
         acc[item.dc_method_type_label] =
           (acc[item.dc_method_type_label] || 0) + 1;
         return acc;
@@ -371,6 +370,8 @@ export const queries: Query[] = [
           // Convert encoded string into a numeric value (count of occurrences)
           result[method] = filteredData.reduce(
             (sum, item) =>
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              //@ts-ignore
               sum + (item[method]?.replace(/[^1]/g, '').length || 0), // Counting occurrences of '1'
             0
           );

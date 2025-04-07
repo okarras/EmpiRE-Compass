@@ -2,6 +2,9 @@ import Dashboard from './components/Dashboard';
 import Box from '@mui/material/Box';
 import './main.css';
 import Header from './components/Header';
+import { Fab } from '@mui/material';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import ScrollTop from './components/ScrollTop';
 
 function App() {
   return (
@@ -18,6 +21,11 @@ function App() {
     >
       <Header />
       <Dashboard />
+      <ScrollTop>
+        <Fab size="small" aria-label="scroll back to top">
+          <KeyboardArrowUpIcon />
+        </Fab>
+      </ScrollTop>
     </Box>
   );
 }

@@ -17,7 +17,19 @@ const Dashboard = () => {
     >
       {queries.map((query, index) => (
         <>
-          <Question key={index} query={query} />
+          <div
+            style={{
+              width: '92%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              padding: '16px',
+            }}
+            id={`question-${query.id}`}
+          >
+            <Question key={index} query={query} />
+          </div>
           <Divider
             variant="fullWidth"
             sx={{
