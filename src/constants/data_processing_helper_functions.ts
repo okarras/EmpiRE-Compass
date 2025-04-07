@@ -4,12 +4,7 @@ export interface RawDataItem {
 
 export const sortDataByYear = (
   rawData: { year: number }[],
-  query_id?: string
 ) => {
-  if (query_id === 'query_12') {
-    console.log('query_12', rawData);
-  }
-
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
 
@@ -36,7 +31,9 @@ export const sortDataByYear = (
     ...item,
     normalizedRatio:
       maxCount !== minCount
-        ? Number((((item.count - minCount) / (maxCount - minCount)) * 100).toFixed(2)) 
+        ? Number(
+            (((item.count - minCount) / (maxCount - minCount)) * 100).toFixed(2)
+          )
         : 0, // Avoid division by zero
   }));
 };
@@ -56,7 +53,7 @@ export const sortDataByCount = (
 
   rawData.forEach((dataValue) => {
     Object.keys(dataValue).forEach((key) => {
-      if (dataValue[key] as number > 0) {
+      if ((dataValue[key] as number) > 0) {
         processedData[key] = (processedData[key] || 0) + 1;
       }
     });
@@ -67,7 +64,7 @@ export const sortDataByCount = (
   ).map(([method, count]) => ({
     method,
     count,
-    normalizedRatio: Number((count * 100 / rawData.length).toFixed(2)),
+    normalizedRatio: Number(((count * 100) / rawData.length).toFixed(2)),
   }));
 
   return result.sort((a, b) => b.count - a.count);
@@ -253,6 +250,27 @@ export const processMethodDistribution = (
   return sortedMethodCounts.map(({ methodDistribution, count }) => ({
     methodDistribution,
     count,
-    normalizedRatio: parseFloat((count * 100 / totalPapers).toFixed(2)),
+    normalizedRatio: parseFloat(((count * 100) / totalPapers).toFixed(2)),
   }));
+};
+
+interface CountMethodsRawDataInterface {
+  dc_method_type_label: string;
+  paper: string;
+  year: string;
+}
+export const countMethodDistribution = (
+  rawData: CountMethodsRawDataInterface[] = []
+): Record<string, unknown>[] => {
+  const aggregatedData: Record<string, Record<string, number>> = {};
+  rawData.forEach(({ dc_method_type_label, year }) => {
+    if (!aggregatedData[year]) aggregatedData[year] = {};
+    aggregatedData[year][dc_method_type_label] =
+      (aggregatedData[year][dc_method_type_label] || 0) + 1;
+  });
+  const chartData = Object.entries(aggregatedData).map(([year, methods]) => ({
+    year,
+    ...methods,
+  }));
+  return chartData;
 };

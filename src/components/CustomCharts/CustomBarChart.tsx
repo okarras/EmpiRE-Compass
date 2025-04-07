@@ -29,7 +29,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
           ...s,
           dataKey: normalized ? s.dataKey : 'count', // Override dataKey based on normalized
         }))}
-        colors={['#e86161']}
+        colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
       />
     </div>

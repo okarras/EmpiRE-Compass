@@ -3,6 +3,7 @@
 import { axisClasses } from '@mui/x-charts';
 import {
   aggregateMethodUsage,
+  countMethodDistribution,
   processMethodDistribution,
   processYearlyMethodData,
   RawDataItem,
@@ -53,8 +54,26 @@ export interface Query {
   dataProcessingFunction: (data: any, query_id?: string) => any[];
   dataAnalysisInformation: {
     question: string;
+    questionExplanation?: string;
+    dataAnalysis?: string;
+    dataInterpretation?: string;
+    requiredDataForAnalysis?: string;
   };
 }
+
+type StatisticalData = {
+  year: number;
+  da_label: string; // Type of data analysis
+  count: number;
+  mean: number;
+  median: number;
+  standard_deviation: number;
+  variance: number;
+  mode: number;
+  range: number;
+  maximum: number;
+  minimum: number;
+};
 
 export const queries: Query[] = [
   // Query 1
@@ -80,12 +99,20 @@ export const queries: Query[] = [
     dataAnalysisInformation: {
       question:
         'How has the proportion of empirical studies evolved over time?',
+      questionExplanation:
+        'According to Sjøberg et al. (2007), the "current" state of practice (2007) shows that there are relatively few empirical studies. For the target state (2020 - 2025), Sjøberg et al. (2007) envision a large number of studies. This predicted change from a few to a large number of empirical studies leads to the corresponding competency question.',
+      dataAnalysis:
+        'For this data analysis, we select all papers that have an empirical study according to our definition (data collection and data analysis). For this reason, we remove all papers that have "no collection" and/or "no analysis". In addition, a paper can involve more than one empirical method for data collection and data analysis so that we must exclude duplicate papers. In this way, we can determine the number of all unique papers. For more detailed insights, we normalize the number of all papers with an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.',
+      dataInterpretation:
+        'Based on the figure "Normalized number of papers with an empirical study per year", an increasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers with an empirical study is 69.5%, the average proportion for the period 2010 - 2019 is 85.2%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 94.3%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the large number of studies envisioned for the target state (2020 - 2025) can be achieved.',
+      requiredDataForAnalysis:
+        'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
   //Query 2.1
   {
     title: 'Number of papers per year',
-    id: 2.1,
+    id: 2,
     uid: 'query_2_1',
     chartSettings: {
       heading: 'Number of emperical methods used for data collection per year',
@@ -117,55 +144,17 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (
-      rawData: { year: number; dc_method_type_label: string }[]
-    ) => {
-      // Extract unique years and map them into an array of objects
-      const years = [...new Set(rawData.map((item) => item.year))].map(
-        (year) => ({ year })
-      );
-
-      // Define valid method labels
-      const validMethods = new Set([
-        'action research',
-        'case study',
-        'experiment',
-        'interview',
-        'secondary research',
-        'survey',
-      ]);
-
-      const processedData = years.map(({ year }) => {
-        const filteredData = rawData.filter((item) => item.year === year);
-        const result: { year: number; total: number; [key: string]: number } = {
-          year,
-          total: 0,
-        };
-
-        filteredData.forEach(({ dc_method_type_label }) => {
-          const key = validMethods.has(dc_method_type_label)
-            ? dc_method_type_label
-            : 'others';
-          result[key] = (result[key] || 0) + 1;
-          result.total += 1;
-        });
-
-        // Compute ratios
-        Object.keys(result).forEach((key) => {
-          if (key !== 'year' && key !== 'total') {
-            result[`${key} ratio`] = Number(
-              (result[key] / result.total).toFixed(2)
-            );
-          }
-        });
-
-        return result;
-      });
-
-      return processedData.sort((a, b) => a.year - b.year);
-    },
+    dataProcessingFunction: countMethodDistribution,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used over time?',
+      questionExplanation:
+        'According to Sjøberg et al. (2007), the "current" state of practice (2007) shows a that there are relatively few empirical studies. For the target state (2020 - 2025), Sjøberg et al. (2007) envision a large number of studies [...] using different empirical methods. This predicted change from a few to a large number of empirical studies using different empirical methods leads to the corresponding competency question.',
+      requiredDataForAnalysis:
+        'We must retrieve all papers with their publication year that use our ORKG template and report on the use of empirical methods. According to Dan (2017), empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.',
+      dataAnalysis:
+        'For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year.',
+      //TODO
+      dataInterpretation: '',
     },
   },
   //Query 3
@@ -194,6 +183,67 @@ export const queries: Query[] = [
     dataAnalysisInformation: {
       question:
         'How has the proportion of papers that do not have an empirical study evolved over time?',
+      questionExplanation:
+        'For the target state (2020 - 2025), Sjøberg et al. (2007) envision that there should be good reason for not including a proper evaluation. This predicted state leads to the corresponding competency question.',
+      requiredDataForAnalysis:
+        'We must retrieve all papers with their publication year that use our ORKG template and do not report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study. Therefore, we must retrieve all papers that do not have data collection, data analysis, or both.',
+      dataAnalysis:
+        'For this data analysis, we select all papers that do not have an empirical study according to our definition (data collection and data analysis). For this reason, we only keep all papers that have "no collection" and/or "no analysis". For more detailed insights, we normalize the number of all papers without an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.',
+      dataInterpretation:
+        'Based on the figure "Normalized number of papers without an empirical study per year", an decreasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers without an empirical study is 30.5%, the average proportion for the period 2010 - 2019 is 14.8%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 5.7%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the small number of papers without an empiricial study envisioned for the target state (2020 - 2025) can be achieved. Regarding the aspect that the papers should provide a good reason for not including a proper evaluation, further analysis is needed as we have not yet examined how papers without empiricial studies justify why they do not provide proper evaluations.',
+    },
+  },
+  //Query 4
+  {
+    title: 'Number of papers per year',
+    id: 4,
+    uid: 'query_4_1',
+    chartSettings: {
+      layout: 'horizontal',
+      className: 'fullWidth fixText',
+      heading:
+        'Number of statistical methods of descriptive statistics used for data analysis',
+      barLabel: 'value',
+      xAxis: [{ label: 'Number of Statistical Method used' }],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'methodType',
+          label: 'Statistical Method used',
+        },
+      ],
+      series: [{ dataKey: 'normalizedRatio' }],
+      margin: {
+        left: 150,
+      },
+      height: chartHeight,
+      sx: chartStyles,
+    },
+    dataProcessingFunction: (rawData: any): any[] => {
+      const labelCounts = rawData.reduce((acc, item) => {
+        acc[item.dc_method_type_label] =
+          (acc[item.dc_method_type_label] || 0) + 1;
+        return acc;
+      }, {});
+      const chartData = Object.keys(labelCounts).map((label) => ({
+        methodType: label,
+        count: labelCounts[label],
+        normalizedRatio: Number(
+          (labelCounts[label] / rawData.length).toFixed(2)
+        ),
+      }));
+      return chartData;
+    },
+    dataAnalysisInformation: {
+      question: 'How often are which empirical methods used?',
+      questionExplanation:
+        'For the target state (2020 - 2025), Sjøberg et al. (2007) envision that researchers are trained in using a large set of research methods and technqiues. This predicted state leads to the corresponding competency question.',
+      requiredDataForAnalysis:
+        'We must retrieve all papers that use our ORKG template and report on the use of empirical methods. According to Dan (2017), empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.',
+      dataAnalysis:
+        'For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers using empirical methods for data collection. We normalize the number of empirical methods used for data collection based on the number of all papers using at least one empirical methods for data collection.',
+      //TODO
+      dataInterpretation: '',
     },
   },
   //Query 5
@@ -213,30 +263,29 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'experiment ratio', label: 'Experiment' },
-        { dataKey: 'case study ratio', label: 'case study' },
-        { dataKey: 'secondary research ratio', label: 'Secondary research' },
-        { dataKey: 'survey ratio', label: 'Survey' },
-        { dataKey: 'action research ratio', label: 'action research' },
+        { dataKey: 'experiment', label: 'Experiment' },
+        { dataKey: 'case study', label: 'case study' },
+        { dataKey: 'secondary research', label: 'Secondary research' },
+        { dataKey: 'survey', label: 'Survey' },
+        { dataKey: 'action research', label: 'action research' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: countMethodDistribution,
     dataAnalysisInformation: {
       question:
         'How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?',
     },
   },
-  //Query 6.1
+  //Query 6
   {
     title: 'Number of papers per year',
-    id: 6.1,
+    id: 6,
     uid: 'query_6_1',
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
-      colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
       heading:
         'Number of statistical methods of descriptive statistics used for data analysis',
       barLabel: 'value',
@@ -263,7 +312,7 @@ export const queries: Query[] = [
   //Query 7.1
   {
     title: 'Number of papers per year',
-    id: 7.1,
+    id: 7,
     uid: 'query_7_1',
     chartSettings: {
       className: 'fullWidth',
@@ -304,7 +353,34 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: StatisticalData[]): any[] => {
+      if (!rawData.length) return [];
+      // Extract unique years
+      const years = [...new Set(rawData.map((item) => item.year))];
+
+      // Identify all statistical method keys dynamically
+      const methodKeys = Object.keys(rawData[0]).filter(
+        (key) => key !== 'year' && key !== 'paper'
+      );
+
+      const processedData = years.map((year) => {
+        const filteredData = rawData.filter((item) => item.year === year);
+        const result: { year: number; [key: string]: number } = { year };
+
+        methodKeys.forEach((method) => {
+          // Convert encoded string into a numeric value (count of occurrences)
+          result[method] = filteredData.reduce(
+            (sum, item) =>
+              sum + (item[method]?.replace(/[^1]/g, '').length || 0), // Counting occurrences of '1'
+            0
+          );
+        });
+
+        return result;
+      });
+
+      return processedData.sort((a, b) => a.year - b.year);
+    },
     dataAnalysisInformation: {
       question: 'How has the use of statistical methods evolved over time?',
     },
@@ -373,10 +449,21 @@ export const queries: Query[] = [
     uid: 'query_10',
     chartSettings: {
       className: 'fullWidth',
-      colors: ['#5975a4', '#dd8452'],
+      colors: [
+        '#5975a4',
+        '#cc8963',
+        '#5f9e6e',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+        '#8c8c8c',
+        '#ccb974',
+        '#64b5cd',
+        '#4c72b0',
+      ],
       heading:
         'Normalized number of case studies and action research used for data collection per year',
-      barLabel: 'value',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -384,13 +471,20 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'case study ratio', label: 'Case Study' },
-        { dataKey: 'action research ratio', label: 'Action Research' },
+        { dataKey: 'case study', label: 'case study' },
+        { dataKey: 'experiment', label: 'Experiment' },
+        { dataKey: 'survey', label: 'Survey' },
+        { dataKey: 'interview', label: 'Interview' },
+        { dataKey: 'secondary research', label: 'Secondary research' },
+        { dataKey: 'action research', label: 'action research' },
+        { dataKey: 'others', label: 'Other' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData) => {
+      return countMethodDistribution(rawData);
+    },
     dataAnalysisInformation: {
       question:
         'How have the proportions of case studies and action research in the empirical methods used evolved over time?',
@@ -429,6 +523,7 @@ export const queries: Query[] = [
     id: 12,
     uid: 'query_12',
     chartSettings: {
+      className: 'fullWidth',
       barLabel: 'value',
       xAxis: xAxisSettings(),
       heading:
@@ -438,7 +533,7 @@ export const queries: Query[] = [
           label: 'Numbers of papers',
         },
       ],
-      series: [{ dataKey: 'highlighted_q' }, { dataKey: 'highlighted_a' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
     },
@@ -521,7 +616,6 @@ export const queries: Query[] = [
       className: 'fullWidth',
       heading:
         'Normalized number of empirical methods used for secondary research per year',
-      barLabel: 'value',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -576,12 +670,12 @@ export const queries: Query[] = [
   // Query 15 TODO: check if this is correct
   {
     title: 'Number of papers per year',
-    id: 15.1,
+    id: 15,
     uid: 'query_15_1',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
-      xAxis: xAxisSettings('methodDistribution'),
+      xAxis: xAxisSettings(),
       heading:
         'Number of papers using X empirical methods for data collection and data analysis',
       yAxis: [
@@ -593,7 +687,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: processMethodDistribution,
+    dataProcessingFunction: sortDataByYear,
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },
