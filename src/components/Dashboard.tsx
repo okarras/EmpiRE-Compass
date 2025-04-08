@@ -1,7 +1,6 @@
 import Question from './Question';
 import { queries } from '../constants/queries_chart_info';
 import { Box } from '@mui/system';
-import { Divider } from '@mui/material';
 
 const Dashboard = () => {
   return (
@@ -30,12 +29,6 @@ const Dashboard = () => {
           >
             <Question key={index} query={query} />
           </div>
-          <Divider
-            variant="fullWidth"
-            sx={{
-              backgroundColor: 'black',
-            }}
-          />
         </>
       ))}
     </Box>

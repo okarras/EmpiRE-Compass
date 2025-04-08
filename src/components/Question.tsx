@@ -5,6 +5,7 @@ import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import CustomBarChart from './CustomCharts/CustomBarChart';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
+import QuestionInformation from './QuestionInformation';
 
 const Question = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -29,8 +30,8 @@ const Question = ({ query }: { query: Query }) => {
     <Box
       sx={{
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+        // justifyContent: 'center',
+        // alignItems: 'center',
         width: '90%',
         backgroundColor: '#FFFFFF',
         borderRadius: '10px',
@@ -39,6 +40,14 @@ const Question = ({ query }: { query: Query }) => {
       }}
     >
       <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
+      <QuestionInformation
+        information={query.dataAnalysisInformation.questionExplanation}
+        label="Explanation of the Competency Question"
+      />
+      <QuestionInformation
+        information={query.dataAnalysisInformation.requiredDataForAnalysis}
+        label="Required Data for Analysis"
+      />
       <div
         style={{
           display: 'grid',
@@ -60,6 +69,14 @@ const Question = ({ query }: { query: Query }) => {
           loading={loading}
         />
       </div>
+      <QuestionInformation
+        information={query.dataAnalysisInformation.dataAnalysis}
+        label="Data Analysis"
+      />
+      <QuestionInformation
+        information={query.dataAnalysisInformation.dataInterpretation}
+        label="Data Interpretation"
+      />
     </Box>
   );
 };
