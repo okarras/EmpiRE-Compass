@@ -6,6 +6,7 @@ import CustomBarChart from './CustomCharts/CustomBarChart';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
+import QuestionDialog from './QuestionDialog';
 
 const Question = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -39,7 +40,16 @@ const Question = ({ query }: { query: Query }) => {
         flexDirection: 'column',
       }}
     >
-      <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: '20px',
+      }}>
+        <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
+        <QuestionDialog query={query} />
+      </Box>
       <QuestionInformation
         information={query.dataAnalysisInformation.questionExplanation}
         label="Explanation of the Competency Question"

@@ -39,7 +39,7 @@ function ChartParamsSelector({
       sx={{ width: '100%' }}
     >
       <FormControl component="fieldset">
-        <FormLabel component="legend">Bar Chart Options</FormLabel>
+        <FormLabel component="legend">Chart Options</FormLabel>
         <FormGroup>
           {normalizedOption ? (
             <FormControlLabel
