@@ -58,6 +58,14 @@ export interface Query {
     dataInterpretation?: string;
     requiredDataForAnalysis?: string;
   };
+  additionalData?: {
+    charts?: {
+      uid: string;
+      type: string;
+      title: string;
+      chartSettings: ChartSetting;
+    }[];
+  };
 }
 
 type StatisticalData = {
@@ -108,7 +116,7 @@ export const queries: Query[] = [
         'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
-  //Query 2.1
+  //Query 2
   {
     title: 'Number of papers per year',
     id: 2,
@@ -154,6 +162,52 @@ export const queries: Query[] = [
         'For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year.',
       //TODO
       dataInterpretation: '',
+    },
+    additionalData: {
+      charts: [
+        {
+          uid: 'query_2_2',
+          type: 'bar',
+          title: 'Number of emperical methods used for data analysis per year',
+          chartSettings: {
+            heading:
+              'Number of emperical methods used for data analysis per year',
+            className: 'fullWidth',
+            xAxis: xAxisSettings(),
+            colors: [
+              '#4c72b0',
+              '#dd8452',
+              '#55a868',
+              '#c44e52',
+              '#8172b3',
+              '#937860',
+              '#da8bc3',
+            ],
+            yAxis: [
+              {
+                label: 'Number of empirical methods used',
+              },
+            ],
+            series: [
+              {
+                dataKey: 'descriptive statistic',
+                label: 'Descriptive statistic',
+              },
+              {
+                dataKey: 'inferential statistic',
+                label: 'Inferential statistic',
+              },
+              {
+                dataKey: 'machine learning method',
+                label: 'Machine learning method',
+              },
+              { dataKey: 'other method', label: 'Other method' },
+            ],
+            height: chartHeight,
+            sx: chartStyles,
+          },
+        },
+      ],
     },
   },
   //Query 3
@@ -219,11 +273,17 @@ export const queries: Query[] = [
       sx: chartStyles,
     },
     dataProcessingFunction: (rawData: any): any[] => {
-      const labelCounts = rawData.reduce((acc: { [x: string]: any; }, item: { dc_method_type_label: string | number; }) => {
-        acc[item.dc_method_type_label] =
-          (acc[item.dc_method_type_label] || 0) + 1;
-        return acc;
-      }, {});
+      const labelCounts = rawData.reduce(
+        (
+          acc: { [x: string]: any },
+          item: { dc_method_type_label: string | number }
+        ) => {
+          acc[item.dc_method_type_label] =
+            (acc[item.dc_method_type_label] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
       const chartData = Object.keys(labelCounts).map((label) => ({
         methodType: label,
         count: labelCounts[label],
