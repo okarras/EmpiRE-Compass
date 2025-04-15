@@ -9,6 +9,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import { queries } from '../constants/queries_chart_info';
+import { useLocation, useNavigate } from 'react-router';
 
 const drawerWidth = 240;
 
@@ -19,13 +20,20 @@ interface MenuDrawerProps {
 
 function MenuDrawer(props: MenuDrawerProps) {
   const { open, handleDrawerClose } = props;
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const handleListItemClick = (id: number) => {
-    const element = document.getElementById(`question-${id}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (location.pathname !== '/') {
+      navigate('/');
     }
-    handleDrawerClose();
+    requestAnimationFrame(() => {
+      const element = document.getElementById(`question-${id}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+      handleDrawerClose();
+    });
   };
 
   return (
@@ -57,6 +65,26 @@ function MenuDrawer(props: MenuDrawerProps) {
       </Box>
       <Divider />
       <List>
+        <ListItem
+          onClick={() => navigate('/statistics')}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '16px',
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: '#f0f0f0',
+            },
+          }}
+        >
+          <ListItemText
+            primary="Statistics"
+            sx={{
+              color: '#e86161',
+            }}
+          />
+        </ListItem>
         {queries.map((query) => (
           <ListItem
             key={query.id}

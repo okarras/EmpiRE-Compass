@@ -1,32 +1,31 @@
-import Dashboard from './components/Dashboard';
-import Box from '@mui/material/Box';
-import './main.css';
-import Header from './components/Header';
-import { Fab } from '@mui/material';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import ScrollTop from './components/ScrollTop';
+import { BrowserRouter, Routes, Route } from 'react-router';
+import Home from './pages/Home.tsx';
+import Statistics from './pages/Statistics.tsx';
+import NotFound from './pages/NotFound.tsx';
+import ErrorFallback from './pages/ErrorFallback.tsx';
+import Layout from './pages/Layout.tsx';
 
 function App() {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        width: '100%',
-        minHeight: '100vh',
-        backgroundColor: '#F8F8F8',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Header />
-      <Dashboard />
-      <ScrollTop>
-        <Fab size="small" aria-label="scroll back to top">
-          <KeyboardArrowUpIcon />
-        </Fab>
-      </ScrollTop>
-    </Box>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route
+              path="/"
+              element={<Home />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/statistics"
+              element={<Statistics />}
+              errorElement={<ErrorFallback />}
+            />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 
