@@ -27,13 +27,11 @@ function MenuDrawer(props: MenuDrawerProps) {
     if (location.pathname !== '/') {
       navigate('/');
     }
-    requestAnimationFrame(() => {
-      const element = document.getElementById(`question-${id}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-      handleDrawerClose();
-    });
+    const element = document.getElementById(`question-${id}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    handleDrawerClose();
   };
 
   return (
@@ -66,7 +64,10 @@ function MenuDrawer(props: MenuDrawerProps) {
       <Divider />
       <List>
         <ListItem
-          onClick={() => navigate('/statistics')}
+          onClick={() => {
+            navigate('/statistics');
+            handleDrawerClose();
+          }}
           sx={{
             display: 'flex',
             justifyContent: 'center',

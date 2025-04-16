@@ -12,10 +12,11 @@ const Layout = () => {
         display: 'flex',
         flexDirection: 'column',
         width: '100%',
-        minHeight: '100vh',
         backgroundColor: '#F8F8F8',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 0,
+        margin: 0,
       }}
     >
       <Header />
