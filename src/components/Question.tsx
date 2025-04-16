@@ -7,6 +7,9 @@ import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
+import DataGrid, { Column, Paging, FilterRow, Sorting, Pager } from 'devextreme-react/data-grid';
+import QuestionInformationTable from './QuestionInformationTable';
+
 
 const Question = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -20,6 +23,7 @@ const Question = ({ query }: { query: Query }) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid]);
+      // console.log('Fetched Data:', data);
       setQuestionData(data);
       setLoading(false);
     };
@@ -87,6 +91,25 @@ const Question = ({ query }: { query: Query }) => {
         information={query.dataAnalysisInformation.dataInterpretation}
         label="Data Interpretation"
       />
+      <DataGrid
+        dataSource={questionData}
+        showBorders={true}
+        style={{ marginTop: 20 }}
+      >
+        <FilterRow visible={true} />
+
+        <Sorting mode="multiple" />
+
+        <Paging defaultPageSize={10} />
+        <Pager
+          showPageSizeSelector={true}
+          allowedPageSizes={[5, 10, 20, 50]}
+          showNavigationButtons={true}
+        />
+
+        <Column dataField="year" dataType="number" />
+        <Column dataField="count" caption="Count" dataType="number" />
+      </DataGrid>
     </Box>
   );
 };
