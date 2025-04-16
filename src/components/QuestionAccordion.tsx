@@ -1,4 +1,4 @@
-import { AccordionSummary, Box, Typography, Accordion, Tabs, Tab } from '@mui/material';
+import { AccordionSummary, Box, Typography, Accordion } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
@@ -9,119 +9,34 @@ import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const QuestionAccordion = ({ query }: { query: Query }) => {
-  // Tab state for uid/uid_2
-  const [tab, setTab] = useState(0);
-  
-  // State for primary data (uid)
-  const [normalized1, setNormalized1] = useState(true);
-  const [data1, setData1] = useState<Record<string, unknown>[]>([]);
-  const [loading1, setLoading1] = useState(true);
-
-  // State for secondary data (uid_2)
-  const [normalized2, setNormalized2] = useState(true);
-  const [data2, setData2] = useState<Record<string, unknown>[]>([]);
-  const [loading2, setLoading2] = useState(false);
-
+const QuestionAccordion = ({ query }: { query: Query}) => {
+  const [normalized, setNormalized] = useState(true);
+  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
-  // Fetch primary data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading1(true);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid]);
-        setData1(data);
+        setQuestionData(data);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
-        setLoading1(false);
+        setLoading(false);
       }
     };
 
     if (expanded) {
       fetchData();
     }
-  }, [query.uid, expanded]);
-
-  // Fetch secondary data if uid_2 exists
-  useEffect(() => {
-    if (!query.uid_2 || !expanded) return;
-    
-    const fetchData = async () => {
-      try {
-        setLoading2(true);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
-        setData2(data);
-      } catch (error) {
-        console.error('Error fetching secondary data:', error);
-      } finally {
-        setLoading2(false);
-      }
-    };
-
-    fetchData();
-  }, [query.uid_2, expanded]);
+  }, [query, expanded]);
 
   const handleAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded);
   };
-
-  // Helper to render content for a dataset
-  const renderContent = (
-    data: Record<string, unknown>[],
-    normalized: boolean,
-    setNormalized: React.Dispatch<React.SetStateAction<boolean>>,
-    loading: boolean,
-    queryId: string
-  ) => (
-    <Box 
-      sx={{ 
-        p: { xs: 2, sm: 3 },
-        pt: { xs: 2, sm: 2 },
-      }}
-    >
-      <QuestionInformation
-        information={query.dataAnalysisInformation.requiredDataForAnalysis}
-        label="Required Data for Analysis"
-      />
-
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-          width: '100%',
-          gap: 3,
-          my: 3,
-        }}
-      >
-        <ChartParamsSelector
-          normalized={normalized}
-          setNormalized={setNormalized}
-          query={query}
-        />
-        <ChartWrapper
-          key={`${queryId}-chart`}
-          question_id={queryId}
-          dataset={query.dataProcessingFunction([...data]) ?? []}
-          chartSetting={query.chartSettings}
-          normalized={normalized}
-          loading={loading}
-          defaultChartType={query.chartType ?? 'bar'}
-          availableCharts={['bar', 'pie']}
-        />
-      </Box>
-
-      <QuestionInformation
-        information={query.dataAnalysisInformation.dataInterpretation}
-        label="Data Interpretation"
-      />
-    </Box>
-  );
 
   return (
     <Accordion
@@ -210,39 +125,57 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
           }}
         >
           <QuestionDialog
+            questionData={questionData}
             query={query}
-            data1={data1}
-            data2={data2}
-            normalized1={normalized1}
-            setNormalized1={setNormalized1}
-            normalized2={normalized2}
-            setNormalized2={setNormalized2}
+            chartData={query.dataProcessingFunction(questionData) ?? []}
+            normalized={normalized}
+            setNormalized={setNormalized}
           />
         </Box>
       </AccordionSummary>
 
-      {query.uid_2 ? (
-        <>
-          <Tabs
-            value={tab}
-            onChange={(_, v) => setTab(v)}
-            sx={{ px: 3, pt: 2 }}
-            indicatorColor="primary"
-            textColor="primary"
-          >
-            <Tab label="Primary Data" />
-            <Tab label="Secondary Data" />
-          </Tabs>
-          <Box hidden={tab !== 0}>
-            {renderContent(data1, normalized1, setNormalized1, loading1, query.uid)}
-          </Box>
-          <Box hidden={tab !== 1}>
-            {renderContent(data2, normalized2, setNormalized2, loading2, query.uid_2)}
-          </Box>
-        </>
-      ) : (
-        renderContent(data1, normalized1, setNormalized1, loading1, query.uid)
-      )}
+      <Box 
+        sx={{ 
+          p: { xs: 2, sm: 3 },
+          pt: { xs: 2, sm: 2 },
+        }}
+      >
+        <QuestionInformation
+          information={query.dataAnalysisInformation.requiredDataForAnalysis}
+          label="Required Data for Analysis"
+        />
+
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            width: '100%',
+            gap: 3,
+            my: 3,
+          }}
+        >
+          <ChartParamsSelector
+            normalized={normalized}
+            setNormalized={setNormalized}
+            query={query}
+          />
+          <ChartWrapper
+            key={`${query.uid}-chart`}
+            question_id={query.uid}
+            dataset={query.dataProcessingFunction([...questionData]) ?? []}
+            chartSetting={query.chartSettings}
+            normalized={normalized}
+            loading={loading}
+            defaultChartType={query.chartType ?? 'bar'}
+            availableCharts={['bar', 'pie']}
+          />
+        </Box>
+
+        <QuestionInformation
+          information={query.dataAnalysisInformation.dataInterpretation}
+          label="Data Interpretation"
+        />
+      </Box>
     </Accordion>
   );
 };
