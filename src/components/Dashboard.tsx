@@ -1,8 +1,31 @@
 import Question from './Question';
-import { queries } from '../constants/queries_chart_info';
+import { queries, Query } from '../constants/queries_chart_info';
 import { Box } from '@mui/system';
+import { useEffect, useState } from 'react';
+import CRUDQuestions from '../firestore/CRUDQuestions';
 
 const Dashboard = () => {
+  const [questions, setQuestions] = useState<Query[]>([]);
+  useEffect(() => {
+    CRUDQuestions.getQuestions().then((questions) => {
+      const finalQuestions: Query[] = questions.map((question) => {
+        const targetQuery = queries.find((query) => query.uid === question.uid);
+
+        if (!targetQuery) {
+          console.error(`Query with uid ${question.uid} not found.`);
+          return question as Query;
+        }
+
+        return {
+          ...targetQuery,
+          ...question,
+        } as Query;
+      });
+
+      setQuestions(finalQuestions);
+    });
+  }, []);
+
   return (
     <Box
       sx={{
@@ -14,7 +37,7 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
-      {queries.map((query, index) => (
+      {questions.map((query, index) => (
         <>
           <div
             style={{

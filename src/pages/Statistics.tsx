@@ -37,6 +37,9 @@ interface StatisticsData {
   propertyCount: number;
   perVenueData: Array<VenueData>;
   venueCount: number;
+  distinctResourceCount: number;
+  distinctLiteralCount: number;
+  distinctPropertyCount: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -47,6 +50,9 @@ const DEFAULT_STATS: StatisticsData = {
   propertyCount: 0,
   perVenueData: [],
   venueCount: 0,
+  distinctResourceCount: 0,
+  distinctLiteralCount: 0,
+  distinctPropertyCount: 0,
 };
 
 export default function Statistics() {
@@ -83,6 +89,15 @@ export default function Statistics() {
             paperCount: Number(row.paperCount ?? 0),
           })),
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
+          distinctResourceCount: Number(
+            resourcesData[0]?.distinctResourceCount ?? 0
+          ),
+          distinctLiteralCount: Number(
+            literalsData[0]?.distinctLiteralCount ?? 0
+          ),
+          distinctPropertyCount: Number(
+            propertiesData[0]?.distinctPropertyCount ?? 0
+          ),
         });
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
@@ -127,6 +142,21 @@ export default function Statistics() {
             icon={BarChartIcon}
             value={propertyCount}
             label="Properties"
+          />
+          <StatCard
+            icon={BarChartIcon}
+            value={statistics.distinctResourceCount}
+            label="Distinct Resources"
+          />
+          <StatCard
+            icon={BarChartIcon}
+            value={statistics.distinctLiteralCount}
+            label="Distinct Literals"
+          />
+          <StatCard
+            icon={BarChartIcon}
+            value={statistics.distinctPropertyCount}
+            label="Distinct Properties"
           />
         </Stack>
 

@@ -35,7 +35,6 @@ const QuestionDialog = (props: Props) => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         const data = await fetchSPARQLData(SPARQL_QUERIES[chart.uid]);
-        console.log(data);
         setQuestionData(data);
         setLoading(false);
       });
