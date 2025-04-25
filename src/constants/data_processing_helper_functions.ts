@@ -174,3 +174,46 @@ export const countMethodDistribution = (
   }));
   return chartData;
 };
+
+type StatisticItem = {
+  year: number;
+  descriptive: number;
+  inferential: number;
+  machine_learning: number;
+  others: number;
+};
+
+export const countDataAnalysisStatisticsMethods = (
+  data: StatisticItem[]
+) => {
+  const processedData: StatisticItem[] = [];
+  // get unique year values
+  const uniqueYears = [...new Set(data.map((item) => item.year))];
+
+  for (const year of uniqueYears) {
+    const yearData = data.filter((item: StatisticItem) => item.year === year);
+    // count the number of descriptive, inferential, machine learning and others
+    const descriptiveCount = yearData.filter(
+      (item: StatisticItem) => item.descriptive
+    ).length;
+    const inferentialCount = yearData.filter(
+      (item: StatisticItem) => item.inferential
+    ).length;
+    const machineLearningCount = yearData.filter(
+      (item: StatisticItem) => item.machine_learning
+    ).length;
+    const othersCount = yearData.filter(
+      (item: StatisticItem) => item.others
+    ).length;
+    // add the counts to the data
+    processedData.push({
+      year,
+      descriptive: descriptiveCount,
+      inferential: inferentialCount,
+      machine_learning: machineLearningCount,
+      others: othersCount,
+    });
+  }
+  processedData.sort((a, b) => a.year - b.year);
+  return processedData;
+};

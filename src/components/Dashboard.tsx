@@ -15,6 +15,10 @@ const Dashboard = () => {
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
 
+  const sortedFirebaseQuestions = Object.values(firebaseQuestions).sort(
+    (a, b) => a.id - b.id
+  );
+
   return (
     <Box
       sx={{
@@ -26,7 +30,7 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
-      {Object.values(firebaseQuestions).map((query: FirebaseQuestion) => (
+      {Object.values(sortedFirebaseQuestions).map((query: FirebaseQuestion) => (
         <>
           <div
             style={{
@@ -39,16 +43,22 @@ const Dashboard = () => {
             }}
             id={`question-${query.id}`}
           >
-            <QuestionAccordion
-              key={`question-${query.uid}`}
-              query={mergeQueryWithFirebase(
-                queries.find((q) => q.uid === query.uid) as unknown as Query,
-                firebaseQuestions[query.uid] as unknown as Record<
-                  string,
-                  unknown
-                >
-              )}
-            />
+            {queries.find((q) => q.uid === query.uid) ? (
+              <QuestionAccordion
+                key={`question-${query.uid}`}
+                query={mergeQueryWithFirebase(
+                  queries.find((q) => q.uid === query.uid) as unknown as Query,
+                  firebaseQuestions[query.uid] as unknown as Record<
+                    string,
+                    unknown
+                  >
+                )}
+              />
+            ) : (
+              <div>
+                <h3>Question 16 Not found</h3>
+              </div>
+            )}
           </div>
         </>
       ))}

@@ -61,9 +61,6 @@ export default function Statistics() {
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
 
   useEffect(() => {
-    CRUDStatistics.getStatistics().then((statistics) => {
-      console.log(statistics);
-    });
     const fetchData = async () => {
       try {
         const results = await Promise.all(
@@ -102,8 +99,6 @@ export default function Statistics() {
       });
     });
   }, []);
-
-  console.log(statistics);
 
   if (loading) return <StatisticsPageLoadingSkeleton />;
 
