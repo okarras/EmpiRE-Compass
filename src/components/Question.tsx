@@ -7,8 +7,8 @@ import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
-import DataGrid, { Column, Paging, FilterRow, Sorting, Pager } from 'devextreme-react/data-grid';
-import QuestionInformationTable from './QuestionInformationTable';
+import DataGrid, { Column, Paging, FilterRow, Sorting } from 'devextreme-react/data-grid';
+// import QuestionInformationTable from './QuestionInformationTable';
 
 
 const Question = ({ query }: { query: Query }) => {
@@ -30,6 +30,14 @@ const Question = ({ query }: { query: Query }) => {
 
     fetchData();
   }, [query, setQuestionData]);
+
+  
+  // if exists get column keys from the first data item
+  let columnKeys: string[] = [];
+  if (questionData.length > 0) {
+    const firstRow = questionData[0];
+    columnKeys = Object.keys(firstRow);
+  }
 
   return (
     <Box
@@ -94,22 +102,37 @@ const Question = ({ query }: { query: Query }) => {
       <DataGrid
         dataSource={questionData}
         showBorders={true}
+        rowAlternationEnabled={true}
+        columnAutoWidth={true}
+        wordWrapEnabled={true}
         style={{ marginTop: 20 }}
       >
-        <FilterRow visible={true} />
-
+        {/* <FilterRow visible={true} /> */}
         <Sorting mode="multiple" />
+        <Paging defaultPageSize={15} />
 
-        <Paging defaultPageSize={10} />
-        <Pager
-          showPageSizeSelector={true}
-          allowedPageSizes={[5, 10, 20, 50]}
-          showNavigationButtons={true}
-        />
-
-        <Column dataField="year" dataType="number" />
-        <Column dataField="count" caption="Count" dataType="number" />
+        {columnKeys.map((key) => (
+          <Column key={key} dataField={key} caption={key} />
+        ))}
       </DataGrid>
+      {questionData.length > 0 && (
+        <Box sx={{ marginTop: 3, fontSize: '14px' }}>
+          <p><strong>Total Rows:</strong> {questionData.length}</p>
+          <p><strong>Columns:</strong> {Object.keys(questionData[0]).length}</p>
+          <ul style={{ marginLeft: '1rem' }}>
+            {Object.entries(questionData[0]).map(([key, _]) => {
+              const nonNullCount = questionData.filter((row) => row[key] !== null && row[key] !== '').length;
+              const sampleValue = questionData.find((row) => row[key])?.[key];
+              const dtype = typeof sampleValue;
+              return (
+                <li key={key}>
+                  <strong>{key}</strong>: {nonNullCount} non-null, type <code>{dtype}</code>
+                </li>
+              );
+            })}
+          </ul>
+        </Box>
+      )}
     </Box>
   );
 };
