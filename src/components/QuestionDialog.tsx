@@ -7,41 +7,21 @@ import {
   Button,
   Box,
 } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import type { Query } from '../constants/queries_chart_info';
 import QuestionInformation from './QuestionInformation';
 import CustomBarChart from './CustomCharts/CustomBarChart';
-import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
-import fetchSPARQLData from '../helpers/fetch_query';
-
+import DevExGrid from './DevExGrid';
+import { Query } from '../constants/queries_chart_info';
 
 interface Props {
+  questionData: Record<string, unknown>[];
   query: Query;
 }
 
 const QuestionDialog = (props: Props) => {
-  const { query } = props;
+  const { questionData, query } = props;
   const [open, setOpen] = useState(false);
-  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>(
-    []
-  );
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      query.additionalData?.charts?.forEach(async (chart) => {
-        console.log("getting data for chart", chart.uid);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[chart.uid]);
-        setQuestionData(data);
-        setLoading(false);
-      });
-    };
-
-    fetchData();
-  }, [query, setQuestionData]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -100,10 +80,11 @@ const QuestionDialog = (props: Props) => {
                 chartSetting={chart.chartSettings}
                 question_id={chart.uid}
                 normalized={false}
-                loading={loading}
+                loading={false}
               />
             ))}
           </Box>
+          <DevExGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>
           <Button

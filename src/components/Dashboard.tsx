@@ -22,6 +22,13 @@ const Dashboard = () => {
         } as Query;
       });
 
+      // Sort questions by their id
+      finalQuestions.sort((a, b) => {
+        const idA = a.id;
+        const idB = b.id;
+        return idA - idB;
+      });
+
       setQuestions(finalQuestions);
     });
   }, []);
@@ -37,7 +44,7 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
-      {questions.map((query, index) => (
+      {questions.map((query) => (
         <>
           <div
             style={{
@@ -50,7 +57,7 @@ const Dashboard = () => {
             }}
             id={`question-${query.id}`}
           >
-            <Question key={index} query={query} />
+            <Question key={`question-${query.uid}`} query={query} />
           </div>
         </>
       ))}

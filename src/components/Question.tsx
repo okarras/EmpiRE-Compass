@@ -40,15 +40,17 @@ const Question = ({ query }: { query: Query }) => {
         flexDirection: 'column',
       }}
     >
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: '20px',
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          marginBottom: '20px',
+        }}
+      >
         <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
-        <QuestionDialog query={query} />
+        <QuestionDialog questionData={questionData} query={query} />
       </Box>
       <QuestionInformation
         information={query.dataAnalysisInformation.questionExplanation}
