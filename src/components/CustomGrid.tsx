@@ -6,6 +6,16 @@ interface Props {
 }
 
 const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
+  // Function to check if a string is a valid URL
+  const isValidUrl = (str: string) => {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   // Generate columns based on keys from the first data object
   const columns: GridColDef[] = React.useMemo(() => {
     if (questionData.length === 0) return [];
@@ -16,6 +26,19 @@ const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
       flex: 1,
       sortable: true,
       filterable: true,
+      renderCell: (params) => {
+        const value = params.value;
+        // If the cell content is a URL, render it as a link
+        if (typeof value === 'string' && isValidUrl(value)) {
+          return (
+            <a href={value} target="_blank" rel="noopener noreferrer">
+              {value}
+            </a>
+          );
+        }
+        // Otherwise, just render the value
+        return value;
+      },
     }));
   }, [questionData]);
 

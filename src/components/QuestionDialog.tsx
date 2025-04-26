@@ -5,13 +5,13 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-  Box,
+  // Box,
 } from '@mui/material';
 import { useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionInformation from './QuestionInformation';
-import CustomBarChart from './CustomCharts/CustomBarChart';
-import DevExGrid from './DevExGrid';
+// import CustomBarChart from './CustomCharts/CustomBarChart';
+import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
 
 interface Props {
@@ -73,7 +73,7 @@ const QuestionDialog = (props: Props) => {
               label="Data Interpretation"
             />
           </DialogContentText>
-          <Box>
+          {/* <Box>
             {query.additionalData?.charts?.map((chart) => (
               <CustomBarChart
                 dataset={questionData}
@@ -83,8 +83,8 @@ const QuestionDialog = (props: Props) => {
                 loading={false}
               />
             ))}
-          </Box>
-          <DevExGrid questionData={questionData} />
+          </Box> */}
+          <MuiDataGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>
           <Button
