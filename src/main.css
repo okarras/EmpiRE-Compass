@@ -13,3 +13,8 @@
 .MuiBarLabel-root{
   font-size: 0.6rem!important;
 }
+
+/* alternating row colors for the dynamic tables */
+.dx-datagrid-rowsview .dx-row.dx-row-alt {
+  background-color: #eef2f6;
+}

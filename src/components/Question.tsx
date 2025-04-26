@@ -119,18 +119,27 @@ const Question = ({ query }: { query: Query }) => {
         <Box sx={{ marginTop: 3, fontSize: '14px' }}>
           <p><strong>Total Rows:</strong> {questionData.length}</p>
           <p><strong>Columns:</strong> {Object.keys(questionData[0]).length}</p>
-          <ul style={{ marginLeft: '1rem' }}>
-            {Object.entries(questionData[0]).map(([key, _]) => {
+          <Box component="ul" sx={{ marginLeft: '1rem', padding: 0 }}>
+            {Object.entries(questionData[0]).map(([key, _], index) => {
               const nonNullCount = questionData.filter((row) => row[key] !== null && row[key] !== '').length;
               const sampleValue = questionData.find((row) => row[key])?.[key];
               const dtype = typeof sampleValue;
               return (
-                <li key={key}>
+                <Box
+                  component="li"
+                  key={key}
+                  sx={{
+                    listStyle: 'none',
+                    padding: '8px 12px',
+                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                    borderBottom: '1px solid #eee',
+                  }}
+                >
                   <strong>{key}</strong>: {nonNullCount} non-null, type <code>{dtype}</code>
-                </li>
+                </Box>
               );
             })}
-          </ul>
+          </Box>
         </Box>
       )}
     </Box>
