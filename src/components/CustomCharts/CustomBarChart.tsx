@@ -11,6 +11,7 @@ interface CustomBarChartInterface {
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
   const { dataset, chartSetting, question_id, loading, normalized } = props;
+  console.log('CustomBarChart', normalized, chartSetting, dataset);
 
   return (
     <div

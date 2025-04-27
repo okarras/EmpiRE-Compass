@@ -6,13 +6,14 @@ import {
   DialogActions,
   Button,
   Box,
+  Divider,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionInformation from './QuestionInformation';
-import CustomBarChart from './CustomCharts/CustomBarChart';
 import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
+import CustomBarChart from './CustomCharts/CustomBarChart';
 
 interface Props {
   questionData: Record<string, unknown>[];
@@ -22,7 +23,10 @@ interface Props {
 
 const QuestionDialog = (props: Props) => {
   const { questionData, query, chartData } = props;
+  console.log('chartData', chartData);
   const [open, setOpen] = useState(false);
+  const detailedChartData: { dataKey: string; label: string }[] =
+    query.chartSettings.series;
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -93,17 +97,38 @@ const QuestionDialog = (props: Props) => {
               label="Data Interpretation"
             />
           </DialogContentText>
-          <Box>
-            {query.additionalData?.charts?.map((chart) => (
-              <CustomBarChart
-                dataset={chartData}
-                chartSetting={chart.chartSettings}
-                question_id={chart.uid}
-                normalized={false}
-                loading={false}
-              />
-            ))}
-          </Box>
+          {detailedChartData.length > 1 ? (
+            <Box>
+              {detailedChartData.map((chart, index) => (
+                <>
+                  <CustomBarChart
+                    key={`${query.uid}-barchart-${index}`}
+                    question_id={query.uid}
+                    dataset={chartData}
+                    chartSetting={{
+                      ...query.chartSettings,
+                      series: [chart],
+                      heading: 'number of ' + chart.label + 's used',
+                      colors: [
+                        query.chartSettings.colors?.[index] ?? '#e86161',
+                      ],
+                      yAxis: [
+                        {
+                          label: chart.label,
+                          dataKey: chart.dataKey,
+                        },
+                      ],
+                    }}
+                    normalized={true}
+                    loading={false}
+                  />
+                  <Divider />
+                </>
+              ))}
+            </Box>
+          ) : (
+            <></>
+          )}
           <MuiDataGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>
