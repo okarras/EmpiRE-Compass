@@ -60,8 +60,13 @@ const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
           pagination: { paginationModel: { pageSize: 15, page: 0 } },
         }}
         disableRowSelectionOnClick
-        autoHeight
         sx={{
+          '& .MuiDataGrid-row:nth-of-type(odd)': {
+            backgroundColor: '#f9f9f9', // light grey for odd rows
+          },
+          '& .MuiDataGrid-row:nth-of-type(even)': {
+            backgroundColor: '#ffffff', // white for even rows
+          },
           '& .MuiDataGrid-cell': {
             whiteSpace: 'normal',
             wordWrap: 'break-word',
