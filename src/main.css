@@ -18,3 +18,9 @@
 .dx-datagrid-rowsview .dx-row.dx-row-alt {
   background-color: #eef2f6;
 }
+
+/* make datagrid headers bold and darker background*/
+.dx-datagrid-headers .dx-row > td {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
