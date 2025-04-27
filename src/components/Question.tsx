@@ -50,7 +50,11 @@ const Question = ({ query }: { query: Query }) => {
         }}
       >
         <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
-        <QuestionDialog questionData={questionData} query={query} />
+        <QuestionDialog
+          questionData={questionData}
+          query={query}
+          chartData={query.dataProcessingFunction(questionData) ?? []}
+        />
       </Box>
       <QuestionInformation
         information={query.dataAnalysisInformation.questionExplanation}

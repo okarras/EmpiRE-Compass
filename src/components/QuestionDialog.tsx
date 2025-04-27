@@ -5,22 +5,23 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-  // Box,
+  Box,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionInformation from './QuestionInformation';
-// import CustomBarChart from './CustomCharts/CustomBarChart';
+import CustomBarChart from './CustomCharts/CustomBarChart';
 import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
 
 interface Props {
   questionData: Record<string, unknown>[];
   query: Query;
+  chartData: Record<string, unknown>[];
 }
 
 const QuestionDialog = (props: Props) => {
-  const { questionData, query } = props;
+  const { questionData, query, chartData } = props;
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -30,6 +31,25 @@ const QuestionDialog = (props: Props) => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   if (open) {
+  //     query.additionalData?.charts?.forEach((chart) => {});
+  //   }
+  // }, [open]);
 
   return (
     <>
@@ -73,17 +93,17 @@ const QuestionDialog = (props: Props) => {
               label="Data Interpretation"
             />
           </DialogContentText>
-          {/* <Box>
+          <Box>
             {query.additionalData?.charts?.map((chart) => (
               <CustomBarChart
-                dataset={questionData}
+                dataset={chartData}
                 chartSetting={chart.chartSettings}
                 question_id={chart.uid}
                 normalized={false}
                 loading={false}
               />
             ))}
-          </Box> */}
+          </Box>
           <MuiDataGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>

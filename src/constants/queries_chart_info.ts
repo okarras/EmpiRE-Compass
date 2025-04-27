@@ -49,6 +49,7 @@ export interface Query {
   id: number;
   uid: string;
   chartSettings: ChartSetting;
+  chartType?: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
   //TODO: fix types
   dataProcessingFunction: (data: any, query_id?: string) => any[];
   dataAnalysisInformation: {
@@ -88,6 +89,7 @@ export const queries: Query[] = [
     title: 'Number of papers per year',
     id: 1,
     uid: 'query_1',
+    chartType: 'pie',
     chartSettings: {
       className: 'fullWidth',
       xAxis: xAxisSettings(),
