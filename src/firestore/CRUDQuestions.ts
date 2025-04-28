@@ -7,7 +7,7 @@ const addQuestion = async () => {
   try {
     for (const query of queries) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { dataProcessingFunction, chartSettings, additionalData, ...rest } = query;
+      const { dataProcessingFunction, chartSettings, ...rest } = query;
       const docRef = doc(queriesCollection, query.uid); // Specify the UID as the document ID
       await setDoc(docRef, rest);
       console.log(`Document with UID ${query.uid} added successfully!`);
