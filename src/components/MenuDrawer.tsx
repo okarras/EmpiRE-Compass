@@ -7,9 +7,11 @@ import {
   List,
   ListItem,
   ListItemText,
+  Tooltip,
 } from '@mui/material';
 import { queries } from '../constants/queries_chart_info';
 import { useLocation, useNavigate } from 'react-router';
+import { useEffect } from 'react';
 
 const drawerWidth = 240;
 
@@ -33,6 +35,18 @@ function MenuDrawer(props: MenuDrawerProps) {
     }
     handleDrawerClose();
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        handleDrawerClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleDrawerClose]);
 
   return (
     <Drawer
@@ -87,27 +101,29 @@ function MenuDrawer(props: MenuDrawerProps) {
           />
         </ListItem>
         {queries.map((query) => (
-          <ListItem
-            key={query.id}
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '16px',
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: '#f0f0f0',
-              },
-            }}
-            onClick={() => handleListItemClick(query.id)}
-          >
-            <ListItemText
-              primary={`Question ${query.id}`}
+          <Tooltip title={query.dataAnalysisInformation.question}>
+            <ListItem
+              key={query.id}
               sx={{
-                color: '#e86161',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                padding: '16px',
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: '#f0f0f0',
+                },
               }}
-            />
-          </ListItem>
+              onClick={() => handleListItemClick(query.id)}
+            >
+              <ListItemText
+                primary={`Question ${query.id}`}
+                sx={{
+                  color: '#e86161',
+                }}
+              />
+            </ListItem>
+          </Tooltip>
         ))}
       </List>
     </Drawer>

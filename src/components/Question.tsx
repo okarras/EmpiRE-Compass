@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { AccordionSummary, Box, Typography, Accordion } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
@@ -7,6 +7,7 @@ import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const Question = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -28,7 +29,7 @@ const Question = ({ query }: { query: Query }) => {
   }, [query, setQuestionData]);
 
   return (
-    <Box
+    <Accordion
       sx={{
         display: 'flex',
         // justifyContent: 'center',
@@ -40,22 +41,36 @@ const Question = ({ query }: { query: Query }) => {
         flexDirection: 'column',
       }}
     >
-      <Box
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1-content"
+        id="panel1-header"
         sx={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: '20px',
+          '& .MuiAccordionSummary-content': {
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          },
+          padding: '0px', // your existing padding
         }}
       >
-        <h1>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h1>
-        <QuestionDialog
-          questionData={questionData}
-          query={query}
-          chartData={query.dataProcessingFunction(questionData) ?? []}
-        />
-      </Box>
+        <Typography variant="h6">{`${query.id}- ${query.dataAnalysisInformation.question}`}</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <QuestionDialog
+            questionData={questionData}
+            query={query}
+            chartData={query.dataProcessingFunction(questionData) ?? []}
+          />
+        </Box>
+      </AccordionSummary>
+
       <QuestionInformation
         information={query.dataAnalysisInformation.questionExplanation}
         label="Explanation of the Competency Question"
@@ -93,7 +108,7 @@ const Question = ({ query }: { query: Query }) => {
         information={query.dataAnalysisInformation.dataInterpretation}
         label="Data Interpretation"
       />
-    </Box>
+    </Accordion>
   );
 };
 
