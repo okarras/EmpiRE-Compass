@@ -13,3 +13,7 @@
 .MuiBarLabel-root {
   font-size: 0.6rem !important;
 }
+
+#root {
+  height: 100vh;
+}

@@ -39,6 +39,7 @@ const Question = ({ query }: { query: Query }) => {
         borderRadius: '10px',
         padding: '20px',
         flexDirection: 'column',
+        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.1)',
       }}
     >
       <AccordionSummary
@@ -53,6 +54,11 @@ const Question = ({ query }: { query: Query }) => {
             alignItems: 'center',
           },
           padding: '0px', // your existing padding
+
+          //hover make bigger
+          '&:hover': {
+            transform: 'scale(1.02)',
+          },
         }}
       >
         <Typography variant="h6">{`${query.id}- ${query.dataAnalysisInformation.question}`}</Typography>
@@ -67,18 +73,17 @@ const Question = ({ query }: { query: Query }) => {
             questionData={questionData}
             query={query}
             chartData={query.dataProcessingFunction(questionData) ?? []}
+            normalized={normalized}
+            setNormalized={setNormalized}
           />
         </Box>
       </AccordionSummary>
 
       <QuestionInformation
-        information={query.dataAnalysisInformation.questionExplanation}
-        label="Explanation of the Competency Question"
-      />
-      <QuestionInformation
         information={query.dataAnalysisInformation.requiredDataForAnalysis}
         label="Required Data for Analysis"
       />
+
       <div
         style={{
           display: 'grid',
@@ -100,10 +105,7 @@ const Question = ({ query }: { query: Query }) => {
           loading={loading}
         />
       </div>
-      <QuestionInformation
-        information={query.dataAnalysisInformation.dataAnalysis}
-        label="Data Analysis"
-      />
+
       <QuestionInformation
         information={query.dataAnalysisInformation.dataInterpretation}
         label="Data Interpretation"

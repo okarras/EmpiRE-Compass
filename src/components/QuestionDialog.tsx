@@ -14,15 +14,18 @@ import QuestionInformation from './QuestionInformation';
 import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
 import CustomBarChart from './CustomCharts/CustomBarChart';
+import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 
 interface Props {
   questionData: Record<string, unknown>[];
   query: Query;
   chartData: Record<string, unknown>[];
+  normalized: boolean;
+  setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const QuestionDialog = (props: Props) => {
-  const { questionData, query, chartData } = props;
+  const { questionData, query, chartData, normalized, setNormalized } = props;
   console.log('chartData', chartData);
   const [open, setOpen] = useState(false);
   const detailedChartData: { dataKey: string; label: string }[] =
@@ -61,10 +64,23 @@ const QuestionDialog = (props: Props) => {
         startIcon={<BarChartIcon />}
         variant="outlined"
         onClick={handleClickOpen}
-        sx={{ color: '#e86161', borderColor: '#e86161', marginLeft: '10px' }}
+        sx={{
+          color: '#e86161',
+          borderColor: '#e86161',
+          marginLeft: '10px',
+          minWidth: '15vw',
+          '&:hover': {
+            backgroundColor: '#e86161',
+            color: 'white',
+            borderColor: '#e86161',
+          },
+          '&.MuiButton-outlined': {
+            borderColor: '#e86161',
+          },
+        }}
         size="small"
       >
-        Additional Information
+        Question Information
       </Button>
 
       <Dialog
@@ -129,6 +145,19 @@ const QuestionDialog = (props: Props) => {
           ) : (
             <></>
           )}
+          <ChartParamsSelector
+            normalized={normalized}
+            setNormalized={setNormalized}
+            query={query}
+          />
+          <CustomBarChart
+            key={`${query.uid}-barchart`}
+            question_id={query.uid}
+            dataset={query.dataProcessingFunction(questionData) ?? []} // Cast the dynamic value to unknown[] to match the expected type
+            chartSetting={query.chartSettings}
+            normalized={normalized}
+            loading={false}
+          />
           <MuiDataGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>

@@ -2,10 +2,11 @@ import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useState } from 'react';
 import MenuDrawer from './MenuDrawer';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [open, setOpen] = useState(false);
-
+  const navigate = useNavigate();
   const handleDrawerClose = () => {
     setOpen(false);
   };
@@ -50,6 +51,10 @@ const Header = () => {
             fontWeight: 'bold',
             fontSize: { xs: '16px', sm: '20px', md: '24px' },
             whiteSpace: 'nowrap', // Prevents text wrapping
+            cursor: 'pointer', // Changes cursor to pointer
+          }}
+          onClick={() => {
+            navigate('/'); // Navigate to the home page on title click
           }}
         >
           EmpiRE-Compass Dashboard

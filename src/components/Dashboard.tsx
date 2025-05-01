@@ -3,6 +3,10 @@ import { queries, Query } from '../constants/queries_chart_info';
 import { Box } from '@mui/system';
 import { useEffect, useState } from 'react';
 import CRUDQuestions from '../firestore/CRUDQuestions';
+import StatCard from './StatCard';
+import tibLogo from '../assets/TIB.png';
+import orkgLogo from '../assets/ORKG.png';
+import orkgaskLogo from '../assets/ORKGask.png';
 
 const Dashboard = () => {
   const [questions, setQuestions] = useState<Query[]>([]);
@@ -44,6 +48,57 @@ const Dashboard = () => {
         flexDirection: 'column',
       }}
     >
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-evenly',
+          width: '100%',
+          margin: '16px',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}
+      >
+        <StatCard
+          label="TIB"
+          link="https://www.tib.eu/de/forschung-entwicklung/open-research-knowledge-graph"
+        >
+          <img
+            src={tibLogo}
+            alt="TIB Logo"
+            style={{
+              width: '50px',
+              height: '50px',
+              marginBottom: '8px',
+            }}
+          />
+        </StatCard>
+        <StatCard label="ORKG" link="https://orkg.org/class/C27001">
+          <img
+            src={orkgLogo}
+            alt="ORKG Logo"
+            style={{
+              width: '50px',
+              height: '50px',
+              marginBottom: '8px',
+            }}
+          />
+        </StatCard>
+
+        <StatCard
+          label="ORKG ask"
+          link="https://ask.orkg.org/search?query=what%20is%20empirical%20research"
+        >
+          <img
+            src={orkgaskLogo}
+            alt="ORKGask Logo"
+            style={{
+              width: '50px',
+              height: '50px',
+              marginBottom: '8px',
+            }}
+          />
+        </StatCard>
+      </Box>
       {questions.map((query) => (
         <>
           <div

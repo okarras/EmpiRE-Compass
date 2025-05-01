@@ -78,14 +78,14 @@ type StatisticalData = {
 export const queries: Query[] = [
   // Query 1
   {
-    title: 'Number of papers per year',
+    title: 'Number of papers with an empirical study per year',
     id: 1,
     uid: 'query_1',
     chartType: 'pie',
     chartSettings: {
       className: 'fullWidth',
       xAxis: xAxisSettings(),
-      heading: 'Number of papers without an empirical study per year',
+      heading: 'Number of papers with an empirical study per year',
       barLabel: 'value',
       yAxis: [
         {
@@ -112,11 +112,11 @@ export const queries: Query[] = [
   },
   //Query 2
   {
-    title: 'Number of papers per year',
+    title: 'Number of empirical methods used for data analysis per year',
     id: 2,
     uid: 'query_2_1',
     chartSettings: {
-      heading: 'Number of emperical methods used for data collection per year',
+      heading: 'Number of empirical methods used for data analysis per year',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -160,13 +160,13 @@ export const queries: Query[] = [
   },
   //Query 3
   {
-    title: 'Number of papers per year',
+    title: 'Number of papers without an empirical study per year',
     id: 3,
     uid: 'query_3',
     chartSettings: {
       className: 'fullWidth',
       heading:
-        'Normalized number of papers without an empirical study per year',
+        'Number of papers without an empirical study per year',
 
       xAxis: xAxisSettings(),
       barLabel: 'value',
@@ -196,14 +196,14 @@ export const queries: Query[] = [
   },
   //Query 4
   {
-    title: 'Number of papers per year',
+    title: 'Number of empirical methods used for data analysis',
     id: 4,
     uid: 'query_4_1',
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'Number of empirical methods used for data analysis',
       barLabel: 'value',
       xAxis: [{ label: 'Number of Statistical Method used' }],
       yAxis: [
@@ -255,7 +255,7 @@ export const queries: Query[] = [
   },
   //Query 5
   {
-    title: 'Number of papers per year',
+    title: 'Normalized number of empirical methods used for data collection per year',
     id: 5,
     uid: 'query_5',
     chartSettings: {
@@ -287,7 +287,7 @@ export const queries: Query[] = [
   },
   //Query 6
   {
-    title: 'Number of papers per year',
+    title: 'Number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
     uid: 'query_6_1',
     chartSettings: {
@@ -318,7 +318,7 @@ export const queries: Query[] = [
   },
   //Query 7.1
   {
-    title: 'Number of papers per year',
+    title: 'Number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
     uid: 'query_7_1',
     chartSettings: {
@@ -338,7 +338,7 @@ export const queries: Query[] = [
       ],
       xAxis: xAxisSettings(),
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis per year',
+        'Number of statistical methods of descriptive statistics used for data analysis',
       yAxis: [
         {
           label: 'Number of statistical methods used',
@@ -394,7 +394,7 @@ export const queries: Query[] = [
       question: 'How has the use of statistical methods evolved over time?',
     },
   },
-  //Query 8
+  //=>>Query 8 
   {
     title: 'Number of papers per year',
     id: 8,

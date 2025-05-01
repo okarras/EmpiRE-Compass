@@ -123,41 +123,44 @@ export default function Statistics() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container sx={{ mt: 8 }}>
+      <Container sx={{ mt: 8, height: '100vh' }}>
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
-          <StatCard icon={FeedIcon} value={paperCount} label="Papers" />
+          <StatCard value={paperCount} label="Papers">
+            <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={tripleCount} label="Triples">
+            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={venueCount} label="Venues">
+            <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={resourceCount} label="Resources">
+            <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={literalCount} label="Literals">
+            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={propertyCount} label="Properties">
+            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
           <StatCard
-            icon={BubbleChartIcon}
-            value={tripleCount}
-            label="Triples"
-          />
-          <StatCard icon={FlagIcon} value={venueCount} label="Venues" />
-          <StatCard
-            icon={StorageIcon}
-            value={resourceCount}
-            label="Resources"
-          />
-          <StatCard icon={BarChartIcon} value={literalCount} label="Literals" />
-          <StatCard
-            icon={BarChartIcon}
-            value={propertyCount}
-            label="Properties"
-          />
-          <StatCard
-            icon={BarChartIcon}
             value={statistics.distinctResourceCount}
             label="Distinct Resources"
-          />
+          >
+            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
           <StatCard
-            icon={BarChartIcon}
             value={statistics.distinctLiteralCount}
             label="Distinct Literals"
-          />
+          >
+            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
           <StatCard
-            icon={BarChartIcon}
             value={statistics.distinctPropertyCount}
             label="Distinct Properties"
-          />
+          >
+            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
         </Stack>
 
         <Divider sx={{ mt: 2 }} />
