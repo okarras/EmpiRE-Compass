@@ -1,4 +1,4 @@
-import { Divider } from "@mui/material";
+import { Divider } from '@mui/material';
 
 interface Props {
   information?: string;
@@ -12,7 +12,10 @@ const QuestionInformation = (props: Props) => {
       {information ? (
         <>
           <h4 style={{ margin: '5px 0' }}>{label}</h4>
-          <p style={{ marginBottom: 10 }}>{information}</p>
+          <div
+            dangerouslySetInnerHTML={{ __html: information }}
+            style={{ marginBottom: 10 }}
+          />
           <Divider />
         </>
       ) : (
