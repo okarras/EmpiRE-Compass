@@ -1,0 +1,824 @@
+[
+  {
+    "title": "Number of papers with an empirical study per year",
+    "id": 1,
+    "uid": "query_1",
+    "chartType": "pie",
+    "chartSettings": {
+      "className": "fullWidth",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "heading": "Number of papers with an empirical study per year",
+      "barLabel": "value",
+      "yAxis": [
+        {
+          "label": "Number of papers without an empirical study"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, \n  the <strong>\"current\" state of practice (2007)</strong> shows that there are relatively \n  <strong>few empirical studies</strong>. For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision \n  a <strong>large number of studies</strong>. This predicted change from a few to a large number of \n  empirical studies leads to the corresponding competency question.\n</p>",
+      "dataInterpretation": "<p>\n  Based on the figure <em>\"Normalized number of papers with an empirical study per year\"</em>, \n  an increasing proportion of empirical studies can be observed over time.\n  While before 2010 the average proportion of papers with an empirical study is <strong>69.5%</strong>,\n  the average proportion for the period 2010–2019 is <strong>85.2%</strong>.\n  For the <strong>target state (2020–2025)</strong>, the average proportion of papers with an empirical study \n  is <strong>94.3%</strong>. Based on these data, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> that the large number \n  of studies envisioned for the <strong>target state (2020–2025)</strong> can be achieved.\n</p>",
+      "question": "How has the proportion of empirical studies evolved over time?",
+      "dataAnalysis": "For this data analysis, we select all papers that have an empirical study according to our definition (data collection and data analysis). For this reason, we remove all papers that have \"no collection\" and/or \"no analysis\". In addition, a paper can involve more than one empirical method for data collection and data analysis so that we must exclude duplicate papers. In this way, we can determine the number of all unique papers. For more detailed insights, we normalize the number of all papers with an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, \"Empirical studies presented here usually involve the collection and analysis of data and experience...\". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study."
+    }
+  },
+  {
+    "title": "Number of empirical methods used for data analysis per year",
+    "id": 2,
+    "uid": "query_2_1",
+    "chartSettings": {
+      "heading": "Number of empirical methods used for data analysis per year",
+      "className": "fullWidth",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "colors": [
+        "#4c72b0",
+        "#dd8452",
+        "#55a868",
+        "#c44e52",
+        "#8172b3",
+        "#937860",
+        "#da8bc3"
+      ],
+      "yAxis": [
+        {
+          "label": "Number of empirical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "case study",
+          "label": "case study"
+        },
+        {
+          "dataKey": "experiment",
+          "label": "Experiment"
+        },
+        {
+          "dataKey": "survey",
+          "label": "Survey"
+        },
+        {
+          "dataKey": "interview",
+          "label": "Interview"
+        },
+        {
+          "dataKey": "secondary research",
+          "label": "Secondary research"
+        },
+        {
+          "dataKey": "action research",
+          "label": "action research"
+        },
+        {
+          "dataKey": "others",
+          "label": "Other"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "question": "How often are which empirical methods used over time?",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, the <strong>\"current\" state of practice (2007)</strong> shows that there are relatively <strong>few empirical studies</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision a <strong>large number of studies [...] using different empirical methods</strong>. This predicted change from a few to a large number of empirical studies using different empirical methods leads to the corresponding competency question.\n</p>",
+      "requiredDataForAnalysis": "<p>\n  We must retrieve all papers with their publication year that use our ORKG template and report on the use of empirical methods. According to \n  <a href=\"https://doi.org/10.1002/9781118901731.iecrm0083\" target=\"_blank\">Dan (2017)</a>, empirical methods include data collection and data analysis. \n  An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or \n  data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.\n</p>",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of empirical methods used for data collection per year\", we observe that mainly seven empirical methods are used for data collection. These seven methods are <em>case study</em> (192 times), <em>experiment</em> (128 times), <em>survey</em> (88 times), <em>interview</em> (86 times), <em>secondary research</em> (81 times), <em>action research</em> (10 times), and <em>study</em> as a default category (175 times). While the use of <em>experiment</em>, <em>survey</em>, and <em>interview</em> is more or less constant over time, we observe three important aspects:\n</p>\n\n<ol>\n  <li>\n    The proportion of <em>case studies</em> decreases over time. We assume this change is a result of a clear definition of the term. According to \n    <a href=\"https://doi.org/10.1016/j.infsof.2021.106514\" target=\"_blank\">Wohlin</a>, the term case study is often misused in software engineering research. Based on the manual curation of the 570 papers, we can confirm this finding. Prior to 2013, we found many papers that use the term case study (with an average proportion of 53.2%), although at best they report an experiment or a larger use case in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE as researchers appear to be more aware of how a case study is defined.\n  </li>\n  <li>\n    The proportion of <em>secondary research</em>, including literature reviews and archive analysis, is steadily increasing over time. While before 2010 the average proportion of secondary research is 11.5%, the average proportion for the period 2010 - 2019 is 16.4%. For the <strong>target state (2020 - 2025)</strong>, the average proportion of secondary research is already 40% which is more than double the previous averages. In the last year 2022 we observe the current maximum with a proportion of 50% of the analyzed papers using some kind of secondary research.\n  </li>\n  <li>\n    The proportion of <em>action research</em> is constantly low over the entire analyzed timeframe (2000 - 2022). In all years analyzed, the proportion of action research is at most 10% of the respective papers with an overall average proportion of only 2%. Furthermore, as of 2018, there is no publication using action research.\n  </li>\n</ol>\n\n<p>\n  The default category <em>study</em> with 175 entries is quite extensive and requires a more fine-grained analysis in the future.\n</p>\n\n<p>\n  Based on the figure \"Normalized number of empirical methods used for data analysis per year\", we observe that mainly four empirical methods are used for data analysis. These four methods are <em>descriptive statistic</em> (510 times), <em>inferential statistic</em> (104 times), <em>machine learning</em> (109 times), and <em>other method</em> as a default category (278 times). We observe four important aspects:\n</p>\n\n<ol>\n  <li>\n    The proportion of <em>descriptive statistics</em> is constantly high with an average proportion of 87.6% of all papers reporting descriptive statistics over the entire analyzed timeframe (2000 - 2022).\n  </li>\n  <li>\n    The proportion of <em>inferential statistics</em> varies significantly but is relatively low overall with an average proportion of 19.2% of all papers reporting on data analysis over the entire analyzed timeframe (2000 - 2022).\n  </li>\n  <li>\n    The proportion of <em>machine learning</em> has increased slightly over time with its maximum of 58% in 2020. This increase reflects the current importance and high relevance of the topic of artificial intelligence in academia and industry.\n  </li>\n  <li>\n    The proportion of <em>other methods</em> has its minimum with 36% in 2022 and its maximum with 94% in 2003. Based on the manual review of the 570 papers, we can report that these other methods often include some kind of <em>coding</em> as qualitative analysis method. For this reason, the default category <em>other method</em> requires a more fine-grained analysis in the future.\n  </li>\n</ol>\n\n<p>\n  The results show that over time, more and more papers report empirical studies using different empirical methods. In particular, there are essentially six different methods used for data collection and three different methods used for data analysis.\n</p>",
+      "dataAnalysis": "For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year."
+    }
+  },
+  {
+    "title": "Number of papers without an empirical study per year",
+    "id": 3,
+    "uid": "query_3",
+    "chartSettings": {
+      "className": "fullWidth",
+      "heading": "Number of papers without an empirical study per year",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "barLabel": "value",
+      "yAxis": [
+        {
+          "label": "Proportion of papers without an empirical study"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "requiredDataForAnalysis": "<p>\n  We must retrieve all papers with their publication year that use our ORKG template and do not report an empirical study. \n  However, we need to define what we mean by an empirical study. According to the \n  <a href=\"https://www.springer.com/journal/10664\" target=\"_blank\">Empirical Software Engineering Journal</a>, \n  \"<em>Empirical studies presented here usually involve the collection and analysis of data and experience...</em>\". \n  For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study \n  (<strong>Necessity</strong>) and data collection as a sufficient condition to be an empirical study (<strong>Sufficiency</strong>).\n</p>\n\n<p>\n  Thus, a study must always include data analysis and an empirical study must include both data collection and data analysis. \n  We do not consider the mere reporting of a data collection as a study or even an empirical study. \n  Therefore, we must retrieve all papers that do not have data collection, data analysis, or both.\n</p>",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of papers without an empirical study per year\", a decreasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers without an empirical study is 30.5%, the average proportion for the period 2010 - 2019 is 14.8%. For the <strong>target state (2020 - 2025)</strong>, the average proportion of papers with an empirical study is 5.7%.\n</p>\n\n<p>\n  Based on these data, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> \n  that the small number of papers without an empirical study envisioned for the \n  <strong>target state (2020 - 2025)</strong> can be achieved.\n</p>\n\n<p>\n  Regarding the aspect that the papers should provide a good reason for \n  <strong>not including</strong> a proper evaluation, further analysis is needed as we have not yet examined how papers without empirical studies justify why they do not provide proper evaluations.\n</p>",
+      "dataAnalysis": "For this data analysis, we select all papers that do not have an empirical study according to our definition (data collection and data analysis). For this reason, we only keep all papers that have \"no collection\" and/or \"no analysis\". For more detailed insights, we normalize the number of all papers without an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.",
+      "question": "How has the proportion of papers that do not have an empirical study evolved over time?",
+      "questionExplanation": "<p>\n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> \n  envision that there should be good reason for <strong>not including</strong> a proper evaluation. \n  This predicted state leads to the corresponding competency question.\n</p>"
+    }
+  },
+  {
+    "title": "Number of empirical methods used for data analysis",
+    "id": 4,
+    "uid": "query_4_1",
+    "chartSettings": {
+      "layout": "horizontal",
+      "className": "fullWidth fixText",
+      "heading": "Number of empirical methods used for data analysis",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "label": "Number of Statistical Method used"
+        }
+      ],
+      "yAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "methodType",
+          "label": "Statistical Method used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "margin": {
+        "left": 150
+      },
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "questionExplanation": "<p>\n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> \n  envision that researchers are trained in using a <strong>large set of research methods and techniques</strong>. \n  This predicted state leads to the corresponding competency question.\n</p>",
+      "question": "How often are which empirical methods used?",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of empirical methods used for data collection\", we observe that mainly seven empirical methods are used for data collection. These seven methods are <em>case study</em> (192 times), <em>experiment</em> (128 times), <em>survey</em> (88 times), <em>interview</em> (86 times), <em>secondary research</em> (81 times), <em>action research</em> (10 times), and <em>study</em> as a default category (175 times). \n  <em>Case study</em> (25.3%), <em>experiment</em> (16.8%), and <em>other method</em> as default category (23%) are most commonly used for data collection, with a very similar proportion of about 20%. \n  These methods are followed by <em>survey</em> (11.6%), <em>secondary research</em> (10.7%), and <em>interview</em> (11.3%) that also have a very similar proportion of about 12%. \n  Only <em>action research</em> is rarely used with a proportion of only 1.3% of all analyzed papers with a data collection.\n</p>\n\n<p>\n  Based on the figure \"Normalized number of empirical methods used for data analysis\", we observe that mainly four empirical methods are used for data analysis. \n  These four methods are <em>descriptive statistic</em> (398 times), <em>inferential statistic</em> (89 times), <em>machine learning</em> (94 times), and <em>other method</em> as a default category (278 times). \n  Most frequently <em>descriptive statistic</em> is used with a proportion of 88% of all analyzed papers with a data analysis. \n  <em>Other methods</em> are used second most frequently with a proportion of 61%. This large proportion requires further analysis in the future for more fine-grained insights. \n  While <em>machine learning</em> is used in 21% of the analyzed papers, <em>inferential statistics</em> is used least frequently with a proportion of only 20%.\n</p>\n\n<p>\n  Overall, the results show researchers use a <strong>larger set of research methods and techniques</strong>. \n  In particular, there are essentially six different methods used for data collection and three different methods used for data analysis. \n  However, the proportion of <em>action research</em> for data collection and especially <em>inferential statistics</em> for data analysis is very low.\n</p>",
+      "requiredDataForAnalysis": "<p>\n  We must retrieve all papers that use our ORKG template and report on the use of empirical methods. \n  According to <a href=\"https://doi.org/10.1002/9781118901731.iecrm0083\" target=\"_blank\">Dan (2017)</a>, \n  empirical methods include data collection and data analysis. \n  An empirical method can therefore be a method for data collection and data analysis. \n  We consider the empirical method used for data collection or data analysis respectively, \n  as our template allows for a correspondingly more fine-grained analysis.\n</p>",
+      "dataAnalysis": "For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers using empirical methods for data collection. We normalize the number of empirical methods used for data collection based on the number of all papers using at least one empirical methods for data collection."
+    }
+  },
+  {
+    "title": "Number of papers per yearNormalized number of empirical methods used for data collection per year",
+    "id": 5,
+    "uid": "query_5",
+    "chartSettings": {
+      "className": "fullWidth",
+      "colors": [
+        "#5975a4",
+        "#cc8963",
+        "#5f9e6e",
+        "#c44e52",
+        "#8d7866"
+      ],
+      "heading": "Normalized number of empirical methods used for data collection per year",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "yAxis": [
+        {
+          "label": "Proportion of empirical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "experiment",
+          "label": "Experiment"
+        },
+        {
+          "dataKey": "case study",
+          "label": "case study"
+        },
+        {
+          "dataKey": "secondary research",
+          "label": "Secondary research"
+        },
+        {
+          "dataKey": "survey",
+          "label": "Survey"
+        },
+        {
+          "dataKey": "action research",
+          "label": "action research"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider all papers that report on the use of the empirical methods: experiment, secondary research, survey, case study, action research. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. We normalize the number of empirical methods (experiment, secondary research, survey, case study, action research) used based on the number of all unique papers per year.",
+      "question": "How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report on the use of the empirical methods: experiments, secondary reserach (reviews), surveys, case studies, and action research.",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of empirical methods used for data collection per year\", we observe the following trends for the five empirical methods considered for data collection.\n</p>\n\n<p>\n  Mainly seven empirical methods are used for data collection. These seven methods are <em>case study</em> (192 times), <em>experiment</em> (128 times), <em>survey</em> (88 times), <em>interview</em> (86 times), <em>secondary research</em> (81 times), <em>action research</em> (10 times), and <em>study</em> as a default category (175 times). While the use of <em>experiment</em>, <em>survey</em>, and <em>interview</em> is more or less constant over time, we observe three important aspects:\n</p>\n\n<ol>\n  <li>\n    The proportion of <em>experiment</em> is more or less constant over time with an average proportion of 27.4% of all analyzed papers.\n  </li>\n  <li>\n    The proportion of <em>case studies</em> decreases over time. We assume this change is a result of a clear definition of the term. According to <a href=\"https://doi.org/10.1016/j.infsof.2021.106514\" target=\"_blank\">Wohlin</a>, the term case study is often misused in software engineering research. Based on the manual curation of the 570 papers, we can confirm this finding. Prior to 2013, we found many papers that use the term case study (with an average proportion of 53.2% of all analyzed papers), although at best they report an experiment or a larger use case in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE as researchers appear to be more aware of how a case study is defined.\n  </li>\n  <li>\n    The proportion of <em>secondary research</em>, including literature reviews and archive analysis, is steadily increasing over time. While before 2010 the average proportion of secondary research is 11.5%, the average proportion for the period 2010 - 2019 is 16.4%. For the <strong>target state (2020 - 2025)</strong>, the average proportion of secondary research is already 40%, which is more than double the previous averages. In the last year 2022, we observe the current maximum with a proportion of 50% of the analyzed papers using some kind of secondary research.\n  </li>\n  <li>\n    The proportion of <em>survey</em> is more or less constant with an average proportion of 17.4% of all analyzed papers.\n  </li>\n  <li>\n    The proportion of <em>action research</em> is consistently low over the entire analyzed timeframe (2000 - 2022). In all years analyzed, the proportion of action research is at most 10% of the respective papers, with an overall average proportion of only 2% of all analyzed papers. Furthermore, as of 2018, there is no publication using action research.\n  </li>\n</ol>\n\n<p>\n  While <em>experiment</em> and <em>survey</em> are used more or less constantly over time, we observe an increasing use of <em>secondary research</em>. Regarding <em>case study</em>, we observe a decrease over time, and <em>action research</em> is rarely used overall. These findings are in line with the vision of <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, as researchers often use experiments as well as literature reviews and partially surveys. However, the envisioned use of case studies and action research is not yet achieved. While action research is fundamentally used very little over the entire analyzed timeframe (2000 - 2022), we even observe a decrease in the use of case studies. Although the latter does not fundamentally help achieve the vision of <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, we believe this change nonetheless represents a positive development in empirical research in RE, as researchers appear to be more aware of how a case study is defined.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, the <strong>\"current\" state of practice (2007)</strong> shows that <strong>researchers are skilled</strong> (frequently use) <strong>experiments and reviews</strong> (secondary research), but <strong>researchers are not skilled</strong> (do not frequently use) <strong>surveys, case studies, and action research</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision that researchers are trained in using a <strong>large set of research methods and techniques</strong> and that their <strong>skills</strong> (frequent use) <strong>of conducting case studies and action research are stimulated</strong>. This predicted change leads to the corresponding competency question.\n</p>"
+    }
+  },
+  {
+    "title": "Number of statistical methods of descriptive statistics used for data analysis",
+    "id": 6,
+    "uid": "query_6_1",
+    "chartSettings": {
+      "layout": "horizontal",
+      "className": "fullWidth fixText",
+      "heading": "Number of statistical methods of descriptive statistics used for data analysis",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "label": "Number of Statistical Method used"
+        }
+      ],
+      "yAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "method",
+          "label": "Statistical Method used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "count"
+        }
+      ],
+      "margin": {
+        "left": 150
+      },
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of statistical methods of descriptive statistics used for data analysis\", we observe that ten out of twelve statistical methods of descriptive statistics are used for data analysis. These ten methods are <em>count</em> (390 times), <em>percent</em> (266 times), <em>mean</em> (194 times), <em>range</em> (110 times), <em>minimum</em> (56 times), <em>standard deviation</em> (53 times), <em>median</em> (49 times), <em>maximum</em> (47 times), <em>boxplot</em> (43 times), <em>variance</em> (7 times), and <em>mode</em> (3 times). Most frequently the analyzed papers report <em>count</em> with a proportion of 86%, followed by <em>percent</em> with a proportion of 59%, <em>mean</em> with a proportion of 43%, and <em>range</em> with a proportion of at least 24%. These results show that researchers mainly report absolute (<em>count</em>) and relative (<em>percent</em>) values as well as averages. While they also report ranges occasionally, most other statistical methods of descriptive statistics are rarely used as they have a maximum proportion of 12% of the papers analyzed.\n</p>\n\n<p>\n  Based on the figure \"Number and Normalized number of statistical methods of inferential statistics used for data analysis\", we see that 57 statistical tests are reported in the 570 papers analyzed. A closer look at the names of the statistical tests extracted from the papers shows that there seems to be a large number of different spellings for partly the same test, such as the Mann-Whitney-U-test with 6 different spellings. Unfortunately, most papers do not provide a reference with which it could be determined more precisely whether all the different spellings really always refer to the same test. Overall, the maximum proportion of the most frequently used statistical tests (Wilcoxon signed rank test and Shapiro-Wilk test) is 2.9%. Thus, the application of statistical methods of inferential statistics seems to be, on the one hand, rather low and, on the other hand, very diverse.\n</p>\n\n<p>\n  The results indicate that the envisioned use of statistical methods is not yet mature, as the overall and individual proportion of statistical tests is rather low and researchers already struggle with the consistent use of uniform names for the statistical tests applied.\n</p>",
+      "requiredDataForAnalysis": "We must retrieve all papers that use our ORKG template and report on the use of the statistical methods: descriptive statistics and inferential statistics. We consider each of these two types of statistics separately, as our template allows for a correspondingly more fine-grained analysis.",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, the <strong>\"current\" state of practice (2007)</strong> shows that <strong>statistical methods are used mechanically, and with little knowledge about limitations and assumptions</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision that <strong>the use of statistical methods is mature</strong>. This predicted change leads to the corresponding competency question.\n</p>",
+      "question": "How often are which statistical methods used?",
+      "dataAnalysis": "For this data analysis, we consider the statistical methods of descriptive statistics used for data analysis. We identify the statistical methods of descriptive statistics used for data analysis. A paper can involve more than one statistical methods of descriptive statistics used for data analysis so that the number of statistical methodsof descriptive statistics used for data analysis can be larger than the number of papers using empricial methods for data analysis. We normalize the number of statistical methods of descriptive statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis."
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 7,
+    "uid": "query_7_1",
+    "chartSettings": {
+      "className": "fullWidth",
+      "colors": [
+        "#5975a4",
+        "#cc8963",
+        "#5f9e6e",
+        "#c44e52",
+        "#8172b3",
+        "#937860",
+        "#da8bc3",
+        "#8c8c8c",
+        "#ccb974",
+        "#64b5cd",
+        "#4c72b0"
+      ],
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "heading": "Number of statistical methods of descriptive statistics used for data analysis",
+      "yAxis": [
+        {
+          "label": "Number of statistical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "count",
+          "label": "count"
+        },
+        {
+          "dataKey": "percent",
+          "label": "percent"
+        },
+        {
+          "dataKey": "mean",
+          "label": "mean"
+        },
+        {
+          "dataKey": "median",
+          "label": "median"
+        },
+        {
+          "dataKey": "mode",
+          "label": "mode"
+        },
+        {
+          "dataKey": "minimum",
+          "label": "minimum"
+        },
+        {
+          "dataKey": "maximum",
+          "label": "maximum"
+        },
+        {
+          "dataKey": "range",
+          "label": "range"
+        },
+        {
+          "dataKey": "variance",
+          "label": "variance"
+        },
+        {
+          "dataKey": "standard_deviation",
+          "label": "standard_deviation"
+        },
+        {
+          "dataKey": "boxplot",
+          "label": "boxplot"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider the statistical methods of descriptive statistics used for data analysis. We identify the statistical methods of descriptive statistics used for data analysis. A paper can involve more than one statistical methods of descriptive statistics used for data analysis so that the number of statistical methodsof descriptive statistics used for data analysis can be larger than the number of papers using empricial methods for data analysis. We normalize the number of statistical methods of descriptive statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis.",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of statistical methods of descriptive statistics used for data analysis per year grouped by statistical method\", we observe that ten out of twelve statistical methods of descriptive statistics are used for data analysis. These ten methods are <em>count</em> (390 times), <em>percent</em> (266 times), <em>mean</em> (194 times), <em>range</em> (110 times), <em>minimum</em> (56 times), <em>standard deviation</em> (53 times), <em>median</em> (49 times), <em>maximum</em> (49 times), <em>boxplot</em> (43 times), <em>variance</em> (7 times), and <em>mode</em> (3 times). While the statistical methods of descriptive statistics <em>count</em>, <em>percent</em>, and <em>mean</em> are most frequently used compared to the other statistical methods of descriptive statistics, we observe that each method itself is more or less constantly used over time.\n</p>\n\n<p>\n  Based on the table \"Number and Normalized number of statistical methods of inferential statistics used for data analysis\", we see that the use of statistical tests of inferential statistics is very diverse due to the large number of 57 statistical tests (different based on their reported names).\n</p>\n\n<p>\n  Overall, there is no clear trend that a mature use of statistical methods has emerged over time, especially not for the <strong>target state (2020 - 2025)</strong> so far.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, the <strong>\"current\" state of practice (2007)</strong> shows that <strong>statistical methods are used mechanically, and with little knowledge about limitations and assumptions</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision that <strong>the use of statistical methods is mature</strong>. This predicted change leads to the corresponding competency question.\n</p>",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report on the use of the statistical methods: descriptive statistics and inferential statistics. We consider each of these two types of statistics separately, as our template allows for a correspondingly more fine-grained analysis.",
+      "question": "How has the use of statistical methods evolved over time?"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 8,
+    "uid": "query_8",
+    "chartSettings": {
+      "className": "fullWidth",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "heading": "Number of papers reporting threats to validity per year",
+      "yAxis": [
+        {
+          "label": "Number of papers reporting threats to validity"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "questionExplanation": "<p>\n  According to \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a>, \n  the <strong>\"current\" state of practice (2007)</strong> shows that researchers \n  <strong>lack knowledge about limitations and assumptions of statistical tests, power analysis and effect size estimation as well as do not well define populations</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> envision that \n  <strong>all these aspects are sufficiently addressed</strong>. \n  All mentioned aspects relate to threats to validity of an empirical study, and this predicted change leads to the corresponding competency question.\n</p>",
+      "question": "How has the reporting of threats to validity evolved over time?",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of papers reporting threats to validity per year\", an increasing proportion of papers reporting threats to validity can be observed over time. \n  While before 2010 the average proportion of papers reporting threats to validity is 17.5%, the average proportion for the period 2010 - 2019 is 72%. \n  For the <strong>target state (2020 - 2025)</strong>, the average proportion of papers reporting threats to validity is 91.3%. \n  Based on these data, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\" target=\"_blank\">Sjøberg et al. (2007)</a> \n  that researchers sufficiently address threats to validity as envisioned for the <strong>target state (2020 - 2025)</strong>.\n</p>",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report on threats to validity.",
+      "dataAnalysis": "For this data analysis, we select all papers that report threats to validity. For more detailed insights, we normalize the number of all papers reporting threats to validity based on the number of all unique papers per year, as the total number of papers per year varies."
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 9,
+    "uid": "query_9",
+    "chartSettings": {
+      "layout": "horizontal",
+      "className": "fullWidth fixText",
+      "heading": "Number of threats to validity reported in papers",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "label": "Number of threats to validity reported"
+        }
+      ],
+      "yAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "method",
+          "label": "Threats to validity reported"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      },
+      "margin": {
+        "left": 150
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we select all papers that report threats to validity. For more detailed insights, we normalize the number of all papers reporting threats to validity based on the number of all unique papers per year, as the total number of papers per year varies.",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of threats to validity reported in papers\", we observe that mainly ten different types of validity are reported in all 570 papers analyzed. \n  <em>External</em> (60.4% proportion), <em>internal</em> (56.1% proportion), and <em>construct</em> (47.9% proportion) validity are reported most frequently. \n  All other types of validity have a proportion below 20%. It is striking that <em>conclusion</em> validity has only a proportion of 18.2%. \n  Even if we consider the type <em>reliability</em> as a synonym of <em>conclusion</em> validity and add the proportions together, we still get a proportion of only 28.9%. \n  In this regard, the reporting of threats to validity seems to be unbalanced as frequently researchers do not address the conclusion validity of their findings. \n  In addition, we found that 33.6% of the papers analyzed that report validity threats simply mention threats to validity without further classification of the types of validity addressed. \n  This lack of classification makes it difficult for the reader to easily assess whether the validity of the findings has been extensively discussed.\n</p>\n\n<p>\n  Overall, the results show that researchers mainly deal with the <em>external</em>, <em>internal</em>, and <em>construct</em> validity of their findings. \n  Although a positive development towards a sufficient addressing of threats to validity as envisioned in the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> can be seen, a better consideration of the <em>conclusion</em> validity is necessary \n  for a comprehensive consideration of threats to validity. Furthermore, while it is good that researchers report more and more threats to validity, \n  a classification of the threats to validity reported is particularly helpful for the reader to determine whether the validity of the results has been extensively discussed.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, \n  the <strong>\"current\" state of practice (2007)</strong> shows that researchers \n  <strong>lack knowledge about limitations and assumptions of statistical tests, power analysis and effect size estimation as well as do not well define populations</strong>.\n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>all these aspects are sufficiently addressed</strong>.\n  All mentioned aspects relate to threats to validity of an empirical study, and this predicted change leads to the corresponding competency question.\n</p>",
+      "question": "What types of threats to validity do the authors report?",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report on threats to validity."
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 10,
+    "uid": "query_10",
+    "chartSettings": {
+      "className": "fullWidth",
+      "colors": [
+        "#5975a4",
+        "#cc8963",
+        "#5f9e6e",
+        "#c44e52",
+        "#8172b3",
+        "#937860",
+        "#da8bc3",
+        "#8c8c8c",
+        "#ccb974",
+        "#64b5cd",
+        "#4c72b0"
+      ],
+      "heading": "Normalized number of case studies and action research used for data collection per year",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "yAxis": [
+        {
+          "label": "Proportions of empirical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "case study",
+          "label": "case study"
+        },
+        {
+          "dataKey": "experiment",
+          "label": "Experiment"
+        },
+        {
+          "dataKey": "survey",
+          "label": "Survey"
+        },
+        {
+          "dataKey": "interview",
+          "label": "Interview"
+        },
+        {
+          "dataKey": "secondary research",
+          "label": "Secondary research"
+        },
+        {
+          "dataKey": "action research",
+          "label": "action research"
+        },
+        {
+          "dataKey": "others",
+          "label": "Other"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of case studies and action research used for data collection per year\", we observe the following trends for case studies and action research used as empirical methods for data collection.\n</p>\n\n<ol>\n  <li>\n    The proportion of <em>case studies</em> decreases over time. We assume this change is a result of a clear definition of the term. \n    According to <a href=\"https://doi.org/10.1016/j.infsof.2021.106514\">Wohlin</a>, the term case study is often misused in software engineering research. \n    Based on the manual curation of the 570 papers, we can confirm this finding. Prior to 2013, we found many papers that use the term case study \n    (with an average proportion of 53.2% of all analyzed papers with a data collection), although at best they report an experiment or a larger use case \n    in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE \n    as researchers appear to be more aware of how a case study is defined.\n  </li>\n  <li>\n    The proportion of <em>action research</em> is constantly low over the entire analyzed timeframe (2000–2022). In all years analyzed, \n    the proportion of action research is at most 10% of the respective papers, with an overall average proportion of only 2%. \n    Furthermore, as of 2018, there is no publication using action research.\n  </li>\n</ol>\n\n<p>\n  For the <strong>target state (2020–2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that researchers carry out more case studies and action research. \n  Regarding <em>case study</em>, we observe a decrease over time, and <em>action research</em> is rarely used overall. \n  For these reasons, the envisioned use of case studies and action research is not yet achieved. \n  While action research is fundamentally used very little over the entire analyzed timeframe (2000–2022), we even observe a decrease in the use of case studies. \n  Although the latter does not fundamentally help achieve the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, we believe this change nonetheless represents a positive development \n  in empirical research in RE, as researchers appear to be more aware of how a case study is defined.\n</p>",
+      "question": "How have the proportions of case studies and action research in the empirical methods used evolved over time?",
+      "dataAnalysis": "For this data analysis, we consider all papers that report on the use of the empirical methods: case study and action research. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. We normalize the number of empirical methods (case study and action research) used based on the number of all unique papers with data collection per year.",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and report on the use of the empirical methods: case studies and action research.",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, \n  one may question the <strong>industrial relevance of most of the studies</strong> in the \n  <strong>\"current\" state of practice (2007)</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that researchers carry out \n  <strong>more case studies and action research</strong>. \n  This predicted change leads to the corresponding competency question.\n</p>"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 11,
+    "uid": "query_11",
+    "chartSettings": {
+      "className": "fullWidth",
+      "heading": "Number of papers that provide at least one URL to data per year",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "yAxis": [
+        {
+          "label": "Number of papers with data"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider all papers that provide at least one url for the availiability of the materials used, raw data collected, and study results. A paper can involve more than one url for the data. For this reason, we determine the number of papers that provide at least one url and we normalize the number of papers with at least one url based on the number of all unique papers with data collection per year.",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and provide at least one url for the availiability of the materials used, raw data collected, and study results.",
+      "question": "How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of papers that provide at least one URL to data per year\", an increasing proportion of papers that provide at least one URL to data can be observed over time. \n  While before 2010 the average proportion of papers that provide at least one URL to data is 25.4%, the average proportion for the period 2010–2019 is 49.8%. \n  For the <strong>target state (2020–2025)</strong>, the average proportion of papers that provide at least one URL to data is 71.3%. \n  Based on these data, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> that the envisioned increase in \n  <strong>more research studies</strong> providing results, materials, and raw data that enable efficient cumulative research can be achieved.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that <strong>few studies</strong> provide results, materials, and raw data \n  that enable efficient cumulative research. For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>more research studies</strong> are designed with the goal of enabling efficient use of their results by other researchers. \n  This predicted change leads to the corresponding competency question.\n</p>"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 12,
+    "uid": "query_12",
+    "chartSettings": {
+      "className": "fullWidth",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "heading": "Number of papers with highlighted research question(s) and highlighted answers per year",
+      "yAxis": [
+        {
+          "label": "Numbers of papers"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and have information about the research questions and answer.\n",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that <strong>results are hidden</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that researchers \n  <strong>focus more on communicating important results</strong>, such as the research question and its answer. \n  This predicted change leads to the corresponding competency question.\n</p>",
+      "dataInterpretation": "<p>\n  In the figure \"Normalized number of papers highlighting/hiding research question(s) and answers per year grouped by highlighting/hiding combination\", \n  we see the development trend for all four combinations of highlighted/hidden research question(s) and answers pairs:\n</p>\n\n<ol>\n  <li>\n    The proportion of papers with highlighted research question(s) and highlighted answers is overall rather low, with an average proportion of only 7.7%. \n    For 2022, however, we observe a fivefold increase in the proportion of papers highlighting their research question(s) and answers. \n    Although the overall average proportion is low, the development is positive as researchers focus more on communicating (highlighting) their results.\n  </li>\n  <li>\n    The proportion of papers with highlighted research question(s) and answers hidden in the running text is overall high, with an average proportion of 25.7%. \n    We observe a constant increase of this proportion of papers over the years, with its current maximum of 61% in 2021, which can be partly interpreted positively. \n    While researchers highlight their research question(s) as one important element of their paper, they hide the associated answer in the running text. \n    As a consequence, the reader has to find the answer to the research question in the paper himself, which makes it difficult to get a quick and easy overview of the paper with its central results.\n  </li>\n  <li>\n    The proportion of papers with research question(s) hidden in the running text and highlighted answers is very low, with only 4% in 2011, \n    which corresponds to one paper. Based on our manual curation, we can report that this paper is a special case, as the authors failed to formulate \n    their research questions as questions and instead offer only a bullet point list of aspects to be investigated.\n  </li>\n  <li>\n    The proportion of papers with research question(s) and answers hidden in the running text is overall low, with an average proportion of 10%. \n    While the proportion increases slightly until 2018, we observe that from 2019 to 2022 the proportion is at a maximum of 6%. \n    In particular, for the <strong>target state (2020 - 2025)</strong>, the average percentage is only 5%, which means that a small number of papers hide \n    their research question(s) and answers in the running text and thus, conversely, more researchers make an effort to visibly communicate their important findings.\n  </li>\n</ol>\n\n<p>\n  In the figure \"Normalized number of papers without research question(s) and highlighted/hidden answers per year grouped by highlighted/hidden answer\", \n  we see the development trend of papers without a research question and highlighted or hidden answers:\n</p>\n\n<ol>\n  <li>\n    The proportion of papers without a research question and a highlighted answer is always 0%, \n    which means that researchers who do not pose a research question also do not highlight any results as an answer to the problem under study.\n  </li>\n  <li>\n    The proportion of papers without a research question and a hidden answer is decreasing over the years, but has an average proportion of 56.4%. \n    However, from 2018 until 2022 the proportion is again decreasing, with its current smallest value of 12% in 2022.\n  </li>\n</ol>\n\n<p>\n  Based on these results, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> as researchers focus more on communicating (highlighting) \n  the important results of their research, as envisioned.\n</p>",
+      "dataAnalysis": "For this data analysis, we consider all papers that report at least one research question (either highlighted or hidden). We also assume that all papers provide an answer (highlighted or hidden) in some way as they are published research paper. A paper can involve more than one research question so that the number of research questions can be larger than the number of papers. We normalize the number of papers with hightlighted/hidden research question(s) and anwers based on the number of all unique papers per year.",
+      "question": "How has the reporting of research questions and answers evolved over time?"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 13,
+    "uid": "query_13",
+    "chartSettings": {
+      "layout": "horizontal",
+      "className": "fullWidth fixText2",
+      "heading": "Number of empirical methods used for secondary research",
+      "barLabel": "value",
+      "yAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "method",
+          "label": "Empirical method used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "xAxis": [
+        {
+          "label": "Number of empirical method used"
+        }
+      ],
+      "margin": {
+        "left": 190
+      },
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider all papers that that use our ORKG template and secondardy research as the empirical method for data collection. From these papers, we extract the empirical methods used for secondary research. We normalize the number of papers using empirical mehtods for secondary research based on the number of all papers that use secondary research for data collection.",
+      "question": "What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that (literature) <strong>reviews</strong>, so-called secondary research, are mainly \n  <strong>narrative and biased</strong>, and researchers have <strong>little appreciation of the value of systematic (literature) reviews</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>scientific methods are used to undertake integrative and interpretive (literature) reviews</strong>. \n  This predicted change leads to the corresponding competency question.\n</p>",
+      "requiredDataForAnalysis": "We must retrieve all papers that use our ORKG template and secondardy research as the empirical method for data collection.",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of empirical methods used for secondary research\", we observe that mainly three empirical methods are used for secondary research. \n  These three methods are <em>archive analysis</em> (59% proportion), <em>literature review</em> (14% proportion), and <em>systematic literature reviews</em> (14% proportion). \n  In addition, we found seven other methods based on the extracted names whose proportion is below 3%. \n  <em>Archive analysis</em> is the most frequently used method for secondary research. \n  This method includes all types of analyses based on archived data, such as data from issue trackers, app stores, forums, or Twitter. \n  The next two most commonly used methods are literature review and systematic literature reviews, which are probably the best-known methods of secondary research.\n</p>\n\n<p>\n  Overall, the results show researchers use a <strong>larger set of research methods and techniques</strong>. \n  In particular, there are essentially six different methods used for data collection and three different methods used for data analysis. \n  However, the proportion of <em>action research</em> for data collection and especially <em>inferential statistics</em> for data analysis is very low.\n</p>"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 14,
+    "uid": "query_14",
+    "chartSettings": {
+      "colors": [
+        "#5975a4",
+        "#dd8452",
+        "#55a868",
+        "#c44e52",
+        "#8172b3",
+        "#937860",
+        "#da8bc3",
+        "#8c8c8c",
+        "#ccb974",
+        "#64b5cd"
+      ],
+      "className": "fullWidth",
+      "heading": "Normalized number of empirical methods used for secondary research per year",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "yAxis": [
+        {
+          "label": "Proportions of empirical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalized_archive_analysis",
+          "label": "Archive Analysis"
+        },
+        {
+          "dataKey": "normalized_systematic_literature_review",
+          "label": "Systematic Literature Review"
+        },
+        {
+          "dataKey": "normalized_literature_review",
+          "label": "Literature Review"
+        },
+        {
+          "dataKey": "normalized_systematic_literature_map",
+          "label": "Systematic Literature Map"
+        },
+        {
+          "dataKey": "normalized_systematic_review",
+          "label": "Systematic Review"
+        },
+        {
+          "dataKey": "normalized_tertiary_literature_review",
+          "label": "Tertiary literature review"
+        },
+        {
+          "dataKey": "normalized_document_analysis",
+          "label": "Document analysis"
+        },
+        {
+          "dataKey": "normalized_document_inspection",
+          "label": "Document Inspection"
+        },
+        {
+          "dataKey": "normalized_literature_study",
+          "label": "Literature Study"
+        },
+        {
+          "dataKey": "normalized_literature_survey",
+          "label": "Literature Survey"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider all papers that that use our ORKG template and secondardy research as the empirical method for data collection. From these papers, we extract the empirical methods used for secondary research. We normalize the number of papers using empirical mehtods for secondary research based on the number of all papers that use secondary research for data collection.",
+      "question": "How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?",
+      "requiredDataForAnalysis": "We must retrieve all papers with their publication year that use our ORKG template and secondardy research as the empirical method for data collection.",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of empirical methods used for secondary research per year grouped by method\", \n  we observe that mainly three empirical methods are used for secondary research. \n  These three methods are <em>archive analysis</em> (59% proportion), <em>literature review</em> (14% proportion), and \n  <em>systematic literature reviews</em> (14% proportion). In addition, we found seven other methods based on the extracted names whose proportion is below 3%. \n  In addition to the frequent use of <em>archive analysis</em> over the years, it can be observed that from 2008 onwards researchers perform literature reviews \n  and systematic literature reviews with increasing frequency. In particular, for the <strong>target state (2020 - 2025)</strong>, \n  the average proportion of papers with systematic literature reviews is 45.5%.\n</p>\n\n<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that (literature) <strong>reviews</strong>, so-called secondary research, are mainly \n  <strong>narrative and biased</strong>, and researchers have <strong>little appreciation of the value of systematic (literature) reviews</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>scientific methods are used to undertake integrative and interpretive (literature) reviews</strong>. \n  This predicted change leads to the corresponding competency question.\n</p>\n\n<p>\n  Based on these results, we observe a positive development towards the vision of \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> that a greater appreciation of the value of systematic (literature) reviews \n  as envisioned for the <strong>target state (2020 - 2025)</strong> can be achieved.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that (literature) <strong>reviews</strong>, so-called secondary research, are mainly \n  <strong>narrative and biased</strong>, and researchers have <strong>little appreciation of the value of systematic (literature) reviews</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>scientific methods are used to undertake integrative and interpretive (literature) reviews</strong>. \n  This predicted change leads to the corresponding competency question.\n</p>"
+    }
+  },
+  {
+    "title": "Number of papers per year",
+    "id": 15,
+    "uid": "query_15_1",
+    "chartSettings": {
+      "className": "fullWidth",
+      "barLabel": "value",
+      "xAxis": [
+        {
+          "scaleType": "band",
+          "dataKey": "year",
+          "tickPlacement": "middle",
+          "label": "Year"
+        }
+      ],
+      "heading": "Number of papers using X empirical methods for data collection and data analysis",
+      "yAxis": [
+        {
+          "label": "Proportions of empirical methods used"
+        }
+      ],
+      "series": [
+        {
+          "dataKey": "normalizedRatio"
+        }
+      ],
+      "height": 400,
+      "sx": {
+        "& .MuiChartsAxis-directionY .MuiChartsAxis-label": {
+          "transform": "translateX(-10px)"
+        }
+      }
+    },
+    "dataAnalysisInformation": {
+      "dataAnalysis": "For this data analysis, we consider all papers that that use our ORKG template and secondardy research as the empirical method for data collection. From these papers, we extract the empirical methods used for secondary research. We normalize the number of papers using empirical mehtods for secondary research based on the number of all papers that use secondary research for data collection.",
+      "requiredDataForAnalysis": "<p>\n  We must retrieve all papers that use our ORKG template and report on the use of empirical methods. \n  According to <a href=\"https://doi.org/10.1002/9781118901731.iecrm0083\">Dan (2017)</a>, empirical methods include data collection and data analysis. \n  An empirical method can therefore be a method for data collection and data analysis. \n  For this reason, we identify the number of empirical methods used for data collection and data analysis respectively. \n  Based on the individual paper, we can determine the sum of all empirical methods per publication.\n</p>",
+      "questionExplanation": "<p>\n  According to <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>, the \n  <strong>\"current\" state of practice (2007)</strong> shows that there is <strong>limited</strong> advice on how to \n  <strong>combine data from diverse study types</strong>. \n  For the <strong>target state (2020 - 2025)</strong>, \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a> envision that \n  <strong>methods are available</strong> for synthesizing evidence from <strong>variety of perspectives and approaches</strong>. \n  This predicted change leads to the corresponding competency question.\n</p>",
+      "dataInterpretation": "<p>\n  Based on the figure \"Normalized number of papers using X empirical methods for data collection and data analysis\", \n  we observe that papers use one to twelve empirical methods for data collection and analysis. \n  Most papers use three (31.3% proportion) to four (21.6% proportion) empirical methods. \n  The use of three or more methods in one paper requires the need for methods to synthesize evidence from \n  <strong>variety of perspectives and approaches</strong> as envisioned by \n  <a href=\"https://doi.org/10.1109/FOSE.2007.30\">Sjøberg et al. (2007)</a>. \n  Based on our data, we cannot say whether such methods for synthesizing evidence are already available for the \n  <strong>target state (2020 - 2025)</strong> as envisioned. \n  However, our results imply, based on the increased number of methods used per paper, that there is such a need for methods to synthesize evidence.\n</p>",
+      "question": "How many different research methods are used per publication?"
+    }
+  }
+]

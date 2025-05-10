@@ -9,7 +9,7 @@ import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const Question = ({ query }: { query: Query }) => {
+const Question = ({ query }: { query: Query; accordion: boolean }) => {
   const [normalized, setNormalized] = useState(true);
   const [questionData, setQuestionData] = useState<Record<string, unknown>[]>(
     []

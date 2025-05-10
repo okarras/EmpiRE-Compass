@@ -18,11 +18,12 @@ import fetchSPARQLData from '../helpers/fetch_query';
 import STATISTICS_SPARQL_QUERIES from '../api/STATISTICS_SPARQL_QUERIES';
 import StatCard from '../components/StatCard';
 import FeedIcon from '@mui/icons-material/Feed';
-import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+// import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import FlagIcon from '@mui/icons-material/Flag';
 import StorageIcon from '@mui/icons-material/Storage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
+import CRUDStatistics from '../firestore/CRUDStatistics';
 
 interface VenueData {
   venue: string;
@@ -32,27 +33,27 @@ interface VenueData {
 interface StatisticsData {
   paperCount: number;
   tripleCount: number;
-  resourceCount: number;
-  literalCount: number;
-  propertyCount: number;
+  resources: number;
+  literals: number;
+  predicates: number;
   perVenueData: Array<VenueData>;
   venueCount: number;
-  distinctResourceCount: number;
-  distinctLiteralCount: number;
-  distinctPropertyCount: number;
+  distinctResources: number;
+  distinctLiterals: number;
+  distinctPredicates: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
   paperCount: 0,
   tripleCount: 0,
-  resourceCount: 0,
-  literalCount: 0,
-  propertyCount: 0,
+  resources: 0,
+  literals: 0,
+  predicates: 0,
   perVenueData: [],
   venueCount: 0,
-  distinctResourceCount: 0,
-  distinctLiteralCount: 0,
-  distinctPropertyCount: 0,
+  distinctResources: 0,
+  distinctLiterals: 0,
+  distinctPredicates: 0,
 };
 
 export default function Statistics() {
@@ -60,6 +61,9 @@ export default function Statistics() {
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
 
   useEffect(() => {
+    CRUDStatistics.getStatistics().then((statistics) => {
+      console.log(statistics);
+    });
     const fetchData = async () => {
       try {
         const results = await Promise.all(
@@ -68,36 +72,17 @@ export default function Statistics() {
           )
         );
 
-        const [
-          paperData,
-          tripleData,
-          resourcesData,
-          literalsData,
-          propertiesData,
-          perVenueData,
-          venuesData,
-        ] = results;
+        const [paperData, perVenueData, venuesData] = results;
 
         setStatistics({
+          ...statistics,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
-          tripleCount: Number(tripleData[0]?.tripleCount ?? 0),
-          resourceCount: Number(resourcesData[0]?.resourceCount ?? 0),
-          literalCount: Number(literalsData[0]?.literalCount ?? 0),
-          propertyCount: Number(propertiesData[0]?.propertyCount ?? 0),
+
           perVenueData: perVenueData.map((row: VenueData) => ({
             venue: row.venue,
             paperCount: Number(row.paperCount ?? 0),
           })),
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
-          distinctResourceCount: Number(
-            resourcesData[0]?.distinctResourceCount ?? 0
-          ),
-          distinctLiteralCount: Number(
-            literalsData[0]?.distinctLiteralCount ?? 0
-          ),
-          distinctPropertyCount: Number(
-            propertiesData[0]?.distinctPropertyCount ?? 0
-          ),
         });
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
@@ -106,17 +91,27 @@ export default function Statistics() {
       }
     };
 
-    fetchData();
+    fetchData().then(() => {
+      CRUDStatistics.getStatistics().then((statisticsValues) => {
+        Object.keys(statisticsValues[0]).forEach((key) => {
+          setStatistics((prev) => ({
+            ...prev,
+            [key]: statisticsValues[0][key],
+          }));
+        });
+      });
+    });
   }, []);
+
+  console.log(statistics);
 
   if (loading) return <StatisticsPageLoadingSkeleton />;
 
   const {
     paperCount,
-    tripleCount,
-    resourceCount,
-    literalCount,
-    propertyCount,
+    resources,
+    literals,
+    predicates,
     venueCount,
     perVenueData: papersPerVenue,
   } = statistics;
@@ -128,35 +123,35 @@ export default function Statistics() {
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={tripleCount} label="Triples">
+          {/* <StatCard value={tripleCount} label="Triples">
             <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
+          </StatCard> */}
           <StatCard value={venueCount} label="Venues">
             <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={resourceCount} label="Resources">
+          <StatCard value={resources} label="Resources">
             <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={literalCount} label="Literals">
+          <StatCard value={literals} label="Literals">
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={propertyCount} label="Properties">
+          <StatCard value={predicates} label="Properties">
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
-            value={statistics.distinctResourceCount}
+            value={statistics.distinctResources}
             label="Distinct Resources"
           >
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
-            value={statistics.distinctLiteralCount}
+            value={statistics.distinctLiterals}
             label="Distinct Literals"
           >
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
-            value={statistics.distinctPropertyCount}
+            value={statistics.distinctPredicates}
             label="Distinct Properties"
           >
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />

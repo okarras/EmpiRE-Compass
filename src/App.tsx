@@ -4,6 +4,7 @@ import Statistics from './pages/Statistics.tsx';
 import NotFound from './pages/NotFound.tsx';
 import ErrorFallback from './pages/ErrorFallback.tsx';
 import Layout from './pages/Layout.tsx';
+import QuestionPage from './pages/QuestionPage.tsx';
 
 function App() {
   return (
@@ -19,6 +20,11 @@ function App() {
             <Route
               path="/statistics"
               element={<Statistics />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/questions/:id"
+              element={<QuestionPage />}
               errorElement={<ErrorFallback />}
             />
           </Route>
