@@ -1,65 +1,147 @@
-import { AppBar, IconButton, Toolbar, Typography } from '@mui/material';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
+  Breadcrumbs,
+  Link,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useState } from 'react';
-import MenuDrawer from './MenuDrawer';
-import { useNavigate } from 'react-router-dom';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { queries } from '../constants/queries_chart_info';
 
-const Header = () => {
-  const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const handleDrawerClose = () => {
-    setOpen(false);
+interface HeaderProps {
+  handleDrawerOpen: () => void;
+}
+
+const Header = ({ handleDrawerOpen }: HeaderProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const location = useLocation();
+
+  const getBreadcrumbs = () => {
+    const paths = location.pathname.split('/').filter(Boolean);
+    const breadcrumbs = [
+      { path: '/', label: 'Home' },
+    ];
+
+    if (paths.length > 0) {
+      paths.forEach((path, index) => {
+        const fullPath = '/' + paths.slice(0, index + 1).join('/');
+        let label = path.charAt(0).toUpperCase() + path.slice(1);
+
+        if (path === 'questions' && paths[index + 1]) {
+          const questionId = parseInt(paths[index + 1]);
+          const question = queries.find(q => q.id === questionId);
+          if (question) {
+            label = `Question ${questionId}`;
+          }
+        }
+
+        breadcrumbs.push({ path: fullPath, label });
+      });
+    }
+
+    return breadcrumbs;
   };
 
   return (
-    <AppBar
-      position="static"
+    <AppBar 
+      position="sticky" 
+      elevation={0}
       sx={{
-        backgroundColor: '#e86161',
-        padding: { xs: '8px', sm: '12px', md: '16px' },
-        width: '88%',
-        margin: '0 auto', // Center the AppBar
-        boxShadow: 'none', // Remove shadow for a cleaner look
-        borderRadius: '8px', // Rounded corners
+        backgroundColor: 'white',
+        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+        color: 'text.primary',
       }}
     >
-      <Toolbar
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          width: '100%',
-          paddingX: { xs: 2, sm: 3 }, // Horizontal padding for responsiveness
-        }}
-        id="back-to-top-anchor"
-      >
-        {/* Menu Icon */}
-        <IconButton
-          size="large"
-          edge="start"
-          color="inherit"
-          aria-label="menu"
-          onClick={() => setOpen(!open)}
-          sx={{ mr: 1 }} // Adds spacing between the icon and text
-        >
-          <MenuIcon />
-        </IconButton>
-        {/* Dashboard Title */}
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{
-            fontWeight: 'bold',
-            fontSize: { xs: '16px', sm: '20px', md: '24px' },
-            whiteSpace: 'nowrap', // Prevents text wrapping
-            cursor: 'pointer', // Changes cursor to pointer
-          }}
-          onClick={() => {
-            navigate('/'); // Navigate to the home page on title click
-          }}
-        >
-          EmpiRE-Compass Dashboard
-        </Typography>
-        <MenuDrawer open={open} handleDrawerClose={handleDrawerClose} />
+      <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            sx={{
+              mr: 2,
+              '&:hover': {
+                backgroundColor: 'rgba(232, 97, 97, 0.08)',
+              },
+            }}
+          >
+            <MenuIcon sx={{ color: '#e86161' }} />
+          </IconButton>
+
+          <Typography
+            variant="h6"
+            component={RouterLink}
+            to="/"
+            sx={{
+              textDecoration: 'none',
+              color: '#e86161',
+              fontWeight: 700,
+              fontSize: { xs: '1.1rem', sm: '1.3rem' },
+              mr: 3,
+              display: 'flex',
+              alignItems: 'center',
+              '&:hover': {
+                opacity: 0.9,
+              },
+            }}
+          >
+            EmpiRE-Compass
+          </Typography>
+        </Box>
+
+        {!isMobile && (
+          <Breadcrumbs 
+            separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.secondary' }} />}
+            aria-label="breadcrumb"
+            sx={{
+              '& .MuiBreadcrumbs-li': {
+                display: 'flex',
+                alignItems: 'center',
+              },
+            }}
+          >
+            {getBreadcrumbs().map((breadcrumb, index) => {
+              const isLast = index === getBreadcrumbs().length - 1;
+              return isLast ? (
+                <Typography
+                  key={breadcrumb.path}
+                  color="text.primary"
+                  sx={{ 
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {breadcrumb.label}
+                </Typography>
+              ) : (
+                <Link
+                  key={breadcrumb.path}
+                  component={RouterLink}
+                  to={breadcrumb.path}
+                  color="text.secondary"
+                  sx={{
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    '&:hover': {
+                      color: '#e86161',
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  {breadcrumb.label}
+                </Link>
+              );
+            })}
+          </Breadcrumbs>
+        )}
       </Toolbar>
     </AppBar>
   );

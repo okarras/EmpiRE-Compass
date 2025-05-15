@@ -2,19 +2,13 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   Button,
-  Box,
-  Divider,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import QuestionInformation from './QuestionInformation';
-import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
-import CustomBarChart from './CustomCharts/CustomBarChart';
-import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
+import Question from './Question';
 
 interface Props {
   questionData: Record<string, unknown>[];
@@ -26,10 +20,7 @@ interface Props {
 
 const QuestionDialog = (props: Props) => {
   const { questionData, query, chartData, normalized, setNormalized } = props;
-  console.log('chartData', chartData);
   const [open, setOpen] = useState(false);
-  const detailedChartData: { dataKey: string; label: string }[] =
-    query.chartSettings.series;
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -93,72 +84,13 @@ const QuestionDialog = (props: Props) => {
           <h2>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h2>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            <QuestionInformation
-              information={query.dataAnalysisInformation.questionExplanation}
-              label="Explanation of the Competency Question"
-            />
-            <QuestionInformation
-              information={
-                query.dataAnalysisInformation.requiredDataForAnalysis
-              }
-              label="Required Data for Analysis"
-            />
-            <QuestionInformation
-              information={query.dataAnalysisInformation.dataAnalysis}
-              label="Data Analysis"
-            />
-            <QuestionInformation
-              information={query.dataAnalysisInformation.dataInterpretation}
-              label="Data Interpretation"
-            />
-          </DialogContentText>
-          {detailedChartData.length > 1 ? (
-            <Box>
-              {detailedChartData.map((chart, index) => (
-                <>
-                  <CustomBarChart
-                    key={`${query.uid}-barchart-${index}`}
-                    question_id={query.uid}
-                    dataset={chartData}
-                    chartSetting={{
-                      ...query.chartSettings,
-                      series: [chart],
-                      heading: 'number of ' + chart.label + 's used',
-                      colors: [
-                        query.chartSettings.colors?.[index] ?? '#e86161',
-                      ],
-                      yAxis: [
-                        {
-                          label: chart.label,
-                          dataKey: chart.dataKey,
-                        },
-                      ],
-                    }}
-                    normalized={true}
-                    loading={false}
-                  />
-                  <Divider />
-                </>
-              ))}
-            </Box>
-          ) : (
-            <></>
-          )}
-          <ChartParamsSelector
+          <Question
+            chartData={chartData}
+            query={query}
+            questionData={questionData}
             normalized={normalized}
             setNormalized={setNormalized}
-            query={query}
           />
-          <CustomBarChart
-            key={`${query.uid}-barchart`}
-            question_id={query.uid}
-            dataset={query.dataProcessingFunction(questionData) ?? []} // Cast the dynamic value to unknown[] to match the expected type
-            chartSetting={query.chartSettings}
-            normalized={normalized}
-            loading={false}
-          />
-          <MuiDataGrid questionData={questionData} />
         </DialogContent>
         <DialogActions>
           <Button

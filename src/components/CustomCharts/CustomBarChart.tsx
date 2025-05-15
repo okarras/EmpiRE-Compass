@@ -6,12 +6,11 @@ interface CustomBarChartInterface {
   chartSetting: any;
   question_id: string;
   normalized: boolean;
-  loading: boolean
+  loading: boolean;
 }
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
   const { dataset, chartSetting, question_id, loading, normalized } = props;
-  console.log('CustomBarChart', normalized, chartSetting, dataset);
 
   return (
     <div

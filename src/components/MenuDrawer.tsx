@@ -9,10 +9,14 @@ import {
   ListItemText,
   Tooltip,
   Typography,
+  ListItemIcon,
 } from '@mui/material';
 import { queries } from '../constants/queries_chart_info';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useEffect } from 'react';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
+import HomeIcon from '@mui/icons-material/Home';
 
 const drawerWidth = 280;
 
@@ -26,15 +30,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const location = useLocation();
 
   const handleListItemClick = (id: number) => {
-    if (location.pathname !== '/') {
-      navigate('/');
-    }
-    const element = document.getElementById(`question-${id}`);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    navigate(`/questions/${id}`);
     handleDrawerClose();
   };
+
+  const isCurrentPath = (path: string) => location.pathname === path;
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,8 +59,10 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: '#fafafa',
-          borderRight: '1px solid #e0e0e0',
+          backgroundColor: '#ffffff',
+          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '4px 0 8px rgba(0, 0, 0, 0.05)',
+          transition: 'transform 0.3s ease-in-out',
         },
       }}
     >
@@ -68,56 +70,172 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
-          p: 1,
+          justifyContent: 'space-between',
+          p: 2,
+          backgroundColor: '#e86161',
+          color: 'white',
         }}
       >
-        <IconButton onClick={handleDrawerClose}>
+        <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1.1rem' }}>
+          Navigation
+        </Typography>
+        <IconButton onClick={handleDrawerClose} sx={{ color: 'white' }}>
           <ChevronLeftIcon />
         </IconButton>
       </Box>
-      <Divider />
-      <List>
+
+      <List sx={{ p: 2 }}>
+        {/* Home Link */}
+        <ListItem
+          onClick={() => {
+            navigate('/');
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(232, 97, 97, 0.05)',
+            },
+          }}
+        >
+          <ListItemIcon>
+            <HomeIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/') ? 600 : 500,
+                }}
+              >
+                Home
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* Statistics Link */}
         <ListItem
           onClick={() => {
             navigate('/statistics');
             handleDrawerClose();
           }}
           sx={{
-            px: 3,
-            py: 1.5,
-            cursor: 'pointer',
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/statistics') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
             '&:hover': {
-              backgroundColor: '#f5f5f5',
+              backgroundColor: 'rgba(232, 97, 97, 0.05)',
             },
           }}
         >
-          <Typography variant="subtitle1" sx={{ color: '#c0392b', fontWeight: 600 }}>
-            📊 Statistics
-          </Typography>
+          <ListItemIcon>
+            <BarChartIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/statistics') ? 600 : 500,
+                }}
+              >
+                Statistics
+              </Typography>
+            }
+          />
         </ListItem>
-        <Divider sx={{ my: 1 }} />
+
+        {/* All Questions Link */}
+        <ListItem
+          onClick={() => {
+            navigate('/allquestions');
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/allquestions') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(232, 97, 97, 0.05)',
+            },
+          }}
+        >
+          <ListItemIcon>
+            <QuestionAnswerIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
+                }}
+              >
+                All Questions
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Questions List */}
+        <Typography
+          variant="overline"
+          sx={{
+            color: 'text.secondary',
+            fontWeight: 600,
+            pl: 2,
+            display: 'block',
+            mb: 1,
+          }}
+        >
+          Research Questions
+        </Typography>
+        
         {queries.map((query) => (
-          <Tooltip title={query.dataAnalysisInformation.question} placement="right" arrow key={query.id}>
+          <Tooltip
+            title={query.dataAnalysisInformation.question}
+            placement="right"
+            arrow
+            key={query.id}
+          >
             <ListItem
               onClick={() => handleListItemClick(query.id)}
               sx={{
-                px: 3,
-                py: 1.5,
-                cursor: 'pointer',
-                borderLeft: '4px solid transparent',
+                mb: 0.5,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(`/questions/${query.id}`) 
+                  ? 'rgba(232, 97, 97, 0.08)' 
+                  : 'transparent',
+                transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  backgroundColor: '#f9f9f9',
-                  borderLeft: '4px solid #e86161',
+                  backgroundColor: 'rgba(232, 97, 97, 0.05)',
+                  transform: 'translateX(4px)',
                 },
               }}
             >
               <ListItemText
                 primary={
                   <Typography
-                    noWrap
                     variant="body2"
-                    sx={{ color: '#444', fontSize: 14 }}
+                    sx={{
+                      color: 'text.primary',
+                      fontWeight: isCurrentPath(`/questions/${query.id}`) ? 600 : 400,
+                      fontSize: '0.9rem',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
                   >
                     {`${query.id}. ${query.dataAnalysisInformation.question}`}
                   </Typography>
