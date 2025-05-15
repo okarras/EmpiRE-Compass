@@ -34,7 +34,7 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
     }
   }, [query, expanded]);
 
-  const handleAccordionChange = (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded(isExpanded);
   };
 
