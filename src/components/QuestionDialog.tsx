@@ -14,6 +14,7 @@ import QuestionInformation from './QuestionInformation';
 import MuiDataGrid from './CustomGrid';
 import { Query } from '../constants/queries_chart_info';
 import CustomBarChart from './CustomCharts/CustomBarChart';
+import CustomPieChart from './CustomCharts/CustomPieChart';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 
 interface Props {
@@ -156,6 +157,23 @@ const QuestionDialog = (props: Props) => {
             dataset={query.dataProcessingFunction(questionData) ?? []} // Cast the dynamic value to unknown[] to match the expected type
             chartSetting={query.chartSettings}
             normalized={normalized}
+            loading={false}
+          />
+          <CustomPieChart
+            key={`${query.uid}-piechart`}
+            question_id={query.uid}
+            dataset={chartData.map((item) => ({
+              id: item.year,
+              value: item.count,
+            }))}
+            chartSetting={{
+              innerRadius: 40,
+              outerRadius: 100,
+              paddingAngle: 2,
+              cornerRadius: 2,
+              colors: query.chartSettings.colors,
+              className: 'custom-pie-chart',
+            }}
             loading={false}
           />
           <MuiDataGrid questionData={questionData} />
