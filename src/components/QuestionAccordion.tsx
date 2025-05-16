@@ -45,26 +45,36 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
       sx={{
         width: '90%',
         backgroundColor: '#FFFFFF',
-        borderRadius: '10px !important',
-        padding: '10px 20px',
+        borderRadius: '12px !important',
+        padding: '16px 24px',
         flexDirection: 'column',
         boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
         transition: 'all 0.3s ease',
-        border: '1px solid rgba(0, 0, 0, 0.05)',
-        mb: 2,
+        border: '1px solid rgba(0, 0, 0, 0.08)',
+        mb: 3,
         '&:before': {
           display: 'none',
         },
         '&:hover': {
-          boxShadow: '0px 6px 25px rgba(0, 0, 0, 0.08)',
+          boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.1)',
+          transform: 'translateY(-2px)',
         },
         '&.Mui-expanded': {
           margin: '16px 0',
+          boxShadow: '0px 12px 35px rgba(0, 0, 0, 0.12)',
         },
       }}
     >
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
+        expandIcon={
+          <ExpandMoreIcon 
+            sx={{ 
+              transition: 'transform 0.3s ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              color: '#e86161'
+            }} 
+          />
+        }
         aria-controls="panel1-content"
         id="panel1-header"
         sx={{
@@ -73,19 +83,40 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            gap: 2,
           },
-          padding: '0px',
+          padding: '8px 0',
+          minHeight: '64px',
           '&:hover': {
-            transform: 'scale(1.02)',
+            '& .MuiTypography-root': {
+              color: '#e86161',
+            },
+          },
+          '&.Mui-expanded': {
+            minHeight: '64px',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+            marginBottom: 2,
           },
         }}
       >
-        <Typography variant="h6">{`${query.id}- ${query.dataAnalysisInformation.question}`}</Typography>
+        <Typography 
+          variant="h6" 
+          sx={{
+            transition: 'color 0.3s ease',
+            fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+            fontWeight: 600,
+            color: expanded ? '#e86161' : 'text.primary',
+            flex: 1,
+          }}
+        >
+          {`${query.id}. ${query.dataAnalysisInformation.question}`}
+        </Typography>
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             alignItems: 'center',
+            minWidth: 'fit-content',
           }}
         >
           <QuestionDialog
@@ -98,37 +129,41 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
         </Box>
       </AccordionSummary>
 
-      <QuestionInformation
-        information={query.dataAnalysisInformation.requiredDataForAnalysis}
-        label="Required Data for Analysis"
-      />
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          width: '100%',
-        }}
-      >
-        <ChartParamsSelector
-          normalized={normalized}
-          setNormalized={setNormalized}
-          query={query}
+      <Box sx={{ py: 2 }}>
+        <QuestionInformation
+          information={query.dataAnalysisInformation.requiredDataForAnalysis}
+          label="Required Data for Analysis"
         />
-        <CustomBarChart
-          key={`${query.uid}-barchart`}
-          question_id={query.uid}
-          dataset={query.dataProcessingFunction([...questionData]) ?? []} // Create a new array to avoid mutation
-          chartSetting={query.chartSettings}
-          normalized={normalized}
-          loading={loading}
-        />
-      </div>
 
-      <QuestionInformation
-        information={query.dataAnalysisInformation.dataInterpretation}
-        label="Data Interpretation"
-      />
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+            width: '100%',
+            gap: 3,
+            my: 3,
+          }}
+        >
+          <ChartParamsSelector
+            normalized={normalized}
+            setNormalized={setNormalized}
+            query={query}
+          />
+          <CustomBarChart
+            key={`${query.uid}-barchart`}
+            question_id={query.uid}
+            dataset={query.dataProcessingFunction([...questionData]) ?? []}
+            chartSetting={query.chartSettings}
+            normalized={normalized}
+            loading={loading}
+          />
+        </Box>
+
+        <QuestionInformation
+          information={query.dataAnalysisInformation.dataInterpretation}
+          label="Data Interpretation"
+        />
+      </Box>
     </Accordion>
   );
 };

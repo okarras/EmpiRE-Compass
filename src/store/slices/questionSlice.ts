@@ -6,6 +6,19 @@ import CRUDQuestions from '../../firestore/CRUDQuestions';
 import fetchSPARQLData from '../../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../../api/SPARQL_QUERIES';
 
+export interface FirebaseQuestion {
+  id: number;
+  title: string;
+  uid: string;
+  dataAnalysisInformation: {
+    question: string;
+    dataAnalysis: string;
+    requiredDataForAnalysis: string;
+    questionExplanation: string;
+    dataInterpretation: string;
+  };
+}
+  
 interface QuestionState {
   questions: Query[];
   firebaseQuestions: Record<string, unknown>;
@@ -61,7 +74,7 @@ const mergeQuestionsData = (firebaseQuestions: any[]) => {
 };
 
 // Async thunk for fetching questions from Firebase
-export const fetchQuestions = createAsyncThunk(
+export const fetchQuestionsFromFirebase = createAsyncThunk(
   'questions/fetchQuestions',
   async () => {
     const firebaseQuestions = await CRUDQuestions.getQuestions();
@@ -109,11 +122,11 @@ const questionSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Handle fetchQuestions
-      .addCase(fetchQuestions.pending, (state) => {
+      .addCase(fetchQuestionsFromFirebase.pending, (state) => {
         state.loading.questions = true;
         state.error.questions = null;
       })
-      .addCase(fetchQuestions.fulfilled, (state, action) => {
+      .addCase(fetchQuestionsFromFirebase.fulfilled, (state, action) => {
         state.loading.questions = false;
         // Store raw Firebase data
         state.firebaseQuestions = action.payload.reduce(
@@ -126,7 +139,7 @@ const questionSlice = createSlice({
         // Merge with local queries
         state.questions = mergeQuestionsData(action.payload);
       })
-      .addCase(fetchQuestions.rejected, (state, action) => {
+      .addCase(fetchQuestionsFromFirebase.rejected, (state, action) => {
         state.loading.questions = false;
         state.error.questions =
           action.error.message || 'Failed to fetch questions';

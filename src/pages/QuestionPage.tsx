@@ -8,12 +8,16 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useParams } from 'react-router';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 import { queries } from '../constants/queries_chart_info';
 import theme from '../utils/theme';
 import { useEffect, useState } from 'react';
 import Question from '../components/Question';
 import fetchSPARQLData from '../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
+import { mergeQueryWithFirebase } from '../helpers/query';
+import { FirebaseQuestion } from '../store/slices/questionSlice';
 
 const LoadingSkeleton = () => (
   <Box sx={{ width: '100%', mt: 4 }}>
@@ -46,11 +50,20 @@ const ErrorState = ({ message }: { message: string }) => (
 
 const QuestionPage = () => {
   const params = useParams();
-  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>([]);
+  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [normalized, setNormalized] = useState(true);
   const id = params.id;
+  const firebaseQuestions = useSelector<
+    RootState,
+    Record<string, FirebaseQuestion>
+  >(
+    (state) =>
+      state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
+  );
 
   const targetQuery = queries.find((query) => query.id == Number(id));
 
@@ -80,21 +93,26 @@ const QuestionPage = () => {
     return <ErrorState message="Question not found" />;
   }
 
+  const finalQuery = mergeQueryWithFirebase(
+    targetQuery,
+    firebaseQuestions[targetQuery.uid] as unknown as Record<string, unknown>
+  );
+
   return (
     <ThemeProvider theme={theme}>
-      <Container 
+      <Container
         maxWidth="lg"
         sx={{
-          mt: { xs: 4, sm: 6, md: 8 }, 
+          mt: { xs: 4, sm: 6, md: 8 },
           mb: { xs: 4, sm: 6, md: 8 },
           minHeight: 'calc(100vh - 200px)',
-          position: 'relative'
+          position: 'relative',
         }}
       >
         <Box sx={{ position: 'relative' }}>
-          <Typography 
-            variant="h3" 
-            sx={{ 
+          <Typography
+            variant="h3"
+            sx={{
               color: '#e86161',
               fontWeight: 700,
               mb: 4,
@@ -109,8 +127,8 @@ const QuestionPage = () => {
                 width: '60px',
                 height: '4px',
                 backgroundColor: '#e86161',
-                borderRadius: '2px'
-              }
+                borderRadius: '2px',
+              },
             }}
           >
             {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
@@ -125,22 +143,22 @@ const QuestionPage = () => {
               sx={{
                 opacity: loading ? 0 : 1,
                 transition: 'opacity 0.3s ease-in-out',
-                position: 'relative'
+                position: 'relative',
               }}
             >
               <Question
-                query={targetQuery}
+                query={finalQuery}
                 questionData={questionData}
                 normalized={normalized}
                 setNormalized={setNormalized}
-                chartData={targetQuery.dataProcessingFunction(questionData)}
+                chartData={finalQuery.dataProcessingFunction(questionData)}
               />
             </Box>
           )}
 
           {loading && (
             <Box
-              sx={{ 
+              sx={{
                 position: 'absolute',
                 top: '50%',
                 left: '50%',
@@ -152,7 +170,9 @@ const QuestionPage = () => {
               }}
             >
               <CircularProgress sx={{ color: '#e86161' }} />
-              <Typography color="text.secondary">Loading question data...</Typography>
+              <Typography color="text.secondary">
+                Loading question data...
+              </Typography>
             </Box>
           )}
         </Box>
