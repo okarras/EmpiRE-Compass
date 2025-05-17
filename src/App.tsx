@@ -1,5 +1,5 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material';
+import { ThemeProvider as MuiThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { Provider } from 'react-redux';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
@@ -9,6 +9,7 @@ import Router from './Router';
 import { store } from './store';
 import { fetchQuestionsFromFirebase } from './store/slices/questionSlice';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import './styles/global.css';
 
 // Create a wrapper component to use Redux hooks and theme
 const AppContent = () => {
@@ -25,9 +26,12 @@ const AppContent = () => {
 
   return (
     <MuiThemeProvider theme={theme}>
-      <BrowserRouter>
-        <Router />
-      </BrowserRouter>
+      <CssBaseline />
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <BrowserRouter>
+          <Router />
+        </BrowserRouter>
+      </div>
     </MuiThemeProvider>
   );
 };

@@ -69,8 +69,22 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        'html, body': {
+          margin: 0,
+          padding: 0,
+          minHeight: '100vh',
+          width: '100%',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+        },
         body: {
-          transition: 'all 0.3s linear',
+          backgroundColor: mode === 'light' ? '#f5f5f5' : '#0a1929',
+          transition: 'background-color 0.3s ease',
+        },
+        '#root': {
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
         },
       },
     },
@@ -100,7 +114,7 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
     },
     MuiButton: {
       styleOverrides: {
-        root: ({ theme }) => ({
+        root: {
           textTransform: 'none',
           borderRadius: '8px',
           transition: 'all 0.2s ease',
@@ -108,7 +122,7 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
             transform: 'translateY(-1px)',
             boxShadow: mode === 'dark' ? '0 4px 12px rgba(255, 123, 123, 0.3)' : 'none',
           },
-        }),
+        },
       },
     },
     MuiIconButton: {
@@ -155,6 +169,16 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
         },
         arrow: {
           color: mode === 'dark' ? '#1e364d' : 'rgba(0, 0, 0, 0.8)',
+        },
+      },
+    },
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          '@media (min-width: 600px)': {
+            paddingLeft: '24px',
+            paddingRight: '24px',
+          },
         },
       },
     },

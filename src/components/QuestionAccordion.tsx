@@ -44,37 +44,74 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
       onChange={handleAccordionChange}
       sx={{
         width: '100%',
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        borderRadius: '8px !important',
-        border: '1px solid rgba(0, 0, 0, 0.1)',
-        boxShadow: 'none',
+        backgroundColor: 'background.paper',
+        borderRadius: (theme) => `${theme.shape.borderRadius}px !important`,
+        border: '1px solid',
+        borderColor: 'divider',
+        boxShadow: (theme) => theme.palette.mode === 'dark' 
+          ? '0 2px 8px rgba(0, 0, 0, 0.3)'
+          : '0 1px 4px rgba(0, 0, 0, 0.05)',
+        transition: (theme) => theme.transitions.create(
+          ['box-shadow', 'border-color', 'background-color'],
+          { duration: theme.transitions.duration.shorter }
+        ),
         '&:before': {
           display: 'none',
         },
         '&.Mui-expanded': {
-          margin: '0',
+          margin: '16px 0',
+          '&:first-of-type': {
+            marginTop: 0,
+          },
+          '&:last-of-type': {
+            marginBottom: 0,
+          },
+          boxShadow: (theme) => theme.palette.mode === 'dark'
+            ? '0 4px 12px rgba(0, 0, 0, 0.4)'
+            : '0 2px 8px rgba(0, 0, 0, 0.1)',
+        },
+        '&:hover': {
+          borderColor: 'primary.main',
+          backgroundColor: (theme) => theme.palette.mode === 'dark'
+            ? 'action.hover'
+            : 'background.paper',
         },
       }}
     >
       <AccordionSummary
-        expandIcon={<ExpandMoreIcon />}
+        expandIcon={
+          <ExpandMoreIcon 
+            sx={{ 
+              transition: 'transform 0.3s ease',
+              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              color: expanded ? 'primary.main' : 'text.secondary',
+            }} 
+          />
+        }
         sx={{
           padding: { xs: 2, sm: 3 },
+          minHeight: 64,
           '& .MuiAccordionSummary-content': {
             margin: '0',
             gap: 2,
             alignItems: 'center',
+          },
+          '&.Mui-expanded': {
+            minHeight: 64,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
           },
         }}
       >
         <Typography 
           variant="h6" 
           sx={{
-            transition: 'color 0.3s ease',
+            transition: (theme) => theme.transitions.create('color'),
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             fontWeight: 600,
-            color: expanded ? '#e86161' : 'text.primary',
+            color: expanded ? 'primary.main' : 'text.primary',
             flex: 1,
+            lineHeight: 1.4,
           }}
         >
           {`${query.id}. ${query.dataAnalysisInformation.question}`}
@@ -97,7 +134,12 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
         </Box>
       </AccordionSummary>
 
-      <Box sx={{ py: 2 }}>
+      <Box 
+        sx={{ 
+          p: { xs: 2, sm: 3 },
+          pt: { xs: 2, sm: 2 },
+        }}
+      >
         <QuestionInformation
           information={query.dataAnalysisInformation.requiredDataForAnalysis}
           label="Required Data for Analysis"

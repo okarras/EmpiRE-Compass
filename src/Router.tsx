@@ -9,32 +9,36 @@ import QuestionDashboardPage from './pages/QuestionDashboardPage';
 
 const Router = () => {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route
-          path="/"
-          element={<Home />}
-          errorElement={<ErrorFallback />}
-        />
-        <Route
-          path="/statistics"
-          element={<Statistics />}
-          errorElement={<ErrorFallback />}
-        />
-        <Route
-          path="/questions/:id"
-          element={<QuestionPage />}
-          errorElement={<ErrorFallback />}
-        />
-        <Route
-          path="allquestions"
-          element={<QuestionDashboardPage />}
-          errorElement={<ErrorFallback />}
-        />
-      </Route>
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route
+              path="/"
+              element={<Home />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/statistics"
+              element={<Statistics />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/questions/:id"
+              element={<QuestionPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="allquestions"
+              element={<QuestionDashboardPage />}
+              errorElement={<ErrorFallback />}
+            />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+    </>
   );
 };
 
-export default Router; 
+export default Router;
