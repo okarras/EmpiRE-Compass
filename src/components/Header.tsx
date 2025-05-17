@@ -6,22 +6,27 @@ import {
   Box,
   Breadcrumbs,
   Link,
-  useTheme,
+  useTheme as useMuiTheme,
   useMediaQuery,
+  Tooltip,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
 
 const Header = ({ handleDrawerOpen }: HeaderProps) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const location = useLocation();
+  const { mode, toggleColorMode } = useTheme();
 
   const getBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
@@ -54,8 +59,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       position="sticky" 
       elevation={0}
       sx={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+        backgroundColor: 'background.paper',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
         color: 'text.primary',
       }}
     >
@@ -97,51 +103,72 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           </Typography>
         </Box>
 
-        {!isMobile && (
-          <Breadcrumbs 
-            separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.secondary' }} />}
-            aria-label="breadcrumb"
-            sx={{
-              '& .MuiBreadcrumbs-li': {
-                display: 'flex',
-                alignItems: 'center',
-              },
-            }}
-          >
-            {getBreadcrumbs().map((breadcrumb, index) => {
-              const isLast = index === getBreadcrumbs().length - 1;
-              return isLast ? (
-                <Typography
-                  key={breadcrumb.path}
-                  color="text.primary"
-                  sx={{ 
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                  }}
-                >
-                  {breadcrumb.label}
-                </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {!isMobile && (
+            <Breadcrumbs 
+              separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.secondary' }} />}
+              aria-label="breadcrumb"
+              sx={{
+                '& .MuiBreadcrumbs-li': {
+                  display: 'flex',
+                  alignItems: 'center',
+                },
+              }}
+            >
+              {getBreadcrumbs().map((breadcrumb, index) => {
+                const isLast = index === getBreadcrumbs().length - 1;
+                return isLast ? (
+                  <Typography
+                    key={breadcrumb.path}
+                    color="text.primary"
+                    sx={{ 
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {breadcrumb.label}
+                  </Typography>
+                ) : (
+                  <Link
+                    key={breadcrumb.path}
+                    component={RouterLink}
+                    to={breadcrumb.path}
+                    color="text.secondary"
+                    sx={{
+                      textDecoration: 'none',
+                      fontSize: '0.875rem',
+                      '&:hover': {
+                        color: '#e86161',
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    {breadcrumb.label}
+                  </Link>
+                );
+              })}
+            </Breadcrumbs>
+          )}
+
+          <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+            <IconButton
+              onClick={toggleColorMode}
+              color="inherit"
+              sx={{
+                ml: 2,
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              {mode === 'light' ? (
+                <DarkModeIcon sx={{ color: 'text.primary' }} />
               ) : (
-                <Link
-                  key={breadcrumb.path}
-                  component={RouterLink}
-                  to={breadcrumb.path}
-                  color="text.secondary"
-                  sx={{
-                    textDecoration: 'none',
-                    fontSize: '0.875rem',
-                    '&:hover': {
-                      color: '#e86161',
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  {breadcrumb.label}
-                </Link>
-              );
-            })}
-          </Breadcrumbs>
-        )}
+                <LightModeIcon sx={{ color: 'text.primary' }} />
+              )}
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Toolbar>
     </AppBar>
   );

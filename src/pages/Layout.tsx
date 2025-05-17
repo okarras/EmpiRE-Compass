@@ -24,7 +24,7 @@ const Layout = () => {
         flexDirection: 'column',
         width: '100%',
         minHeight: '100vh',
-        backgroundColor: '#F8F8F8',
+        backgroundColor: 'background.default',
       }}
     >
       <Header handleDrawerOpen={handleDrawerOpen} />

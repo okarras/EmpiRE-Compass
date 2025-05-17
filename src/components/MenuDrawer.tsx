@@ -59,9 +59,10 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         '& .MuiDrawer-paper': {
           width: drawerWidth,
           boxSizing: 'border-box',
-          backgroundColor: '#ffffff',
-          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
-          boxShadow: '4px 0 8px rgba(0, 0, 0, 0.05)',
+          backgroundColor: 'background.paper',
+          borderRight: '1px solid',
+          borderColor: 'divider',
+          boxShadow: 4,
           transition: 'transform 0.3s ease-in-out',
         },
       }}

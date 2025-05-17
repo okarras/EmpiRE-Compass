@@ -151,7 +151,9 @@ const QuestionPage = () => {
                 questionData={questionData}
                 normalized={normalized}
                 setNormalized={setNormalized}
-                chartData={finalQuery.dataProcessingFunction(questionData)}
+                chartData={finalQuery.dataProcessingFunction(
+                  questionData ?? []
+                )}
               />
             </Box>
           )}

@@ -2,7 +2,7 @@ import { AccordionSummary, Box, Typography, Accordion } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
-import CustomBarChart from './CustomCharts/CustomBarChart';
+import ChartWrapper from './CustomCharts/ChartWrapper';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
@@ -43,59 +43,27 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
       expanded={expanded}
       onChange={handleAccordionChange}
       sx={{
-        width: '90%',
-        backgroundColor: '#FFFFFF',
-        borderRadius: '12px !important',
-        padding: '16px 24px',
-        flexDirection: 'column',
-        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)',
-        transition: 'all 0.3s ease',
-        border: '1px solid rgba(0, 0, 0, 0.08)',
-        mb: 3,
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderRadius: '8px !important',
+        border: '1px solid rgba(0, 0, 0, 0.1)',
+        boxShadow: 'none',
         '&:before': {
           display: 'none',
         },
-        '&:hover': {
-          boxShadow: '0px 8px 30px rgba(0, 0, 0, 0.1)',
-          transform: 'translateY(-2px)',
-        },
         '&.Mui-expanded': {
-          margin: '16px 0',
-          boxShadow: '0px 12px 35px rgba(0, 0, 0, 0.12)',
+          margin: '0',
         },
       }}
     >
       <AccordionSummary
-        expandIcon={
-          <ExpandMoreIcon 
-            sx={{ 
-              transition: 'transform 0.3s ease',
-              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              color: '#e86161'
-            }} 
-          />
-        }
-        aria-controls="panel1-content"
-        id="panel1-header"
+        expandIcon={<ExpandMoreIcon />}
         sx={{
+          padding: { xs: 2, sm: 3 },
           '& .MuiAccordionSummary-content': {
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            margin: '0',
             gap: 2,
-          },
-          padding: '8px 0',
-          minHeight: '64px',
-          '&:hover': {
-            '& .MuiTypography-root': {
-              color: '#e86161',
-            },
-          },
-          '&.Mui-expanded': {
-            minHeight: '64px',
-            borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
-            marginBottom: 2,
+            alignItems: 'center',
           },
         }}
       >
@@ -149,13 +117,15 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
             setNormalized={setNormalized}
             query={query}
           />
-          <CustomBarChart
-            key={`${query.uid}-barchart`}
+          <ChartWrapper
+            key={`${query.uid}-chart`}
             question_id={query.uid}
             dataset={query.dataProcessingFunction([...questionData]) ?? []}
             chartSetting={query.chartSettings}
             normalized={normalized}
             loading={loading}
+            defaultChartType={query.chartType ?? 'bar'}
+            availableCharts={['bar', 'pie']}
           />
         </Box>
 

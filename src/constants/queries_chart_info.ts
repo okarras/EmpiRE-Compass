@@ -49,7 +49,7 @@ export interface Query {
   id: number;
   uid: string;
   chartSettings: ChartSetting;
-  chartType?: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
+  chartType?: 'bar' | 'pie';
   //TODO: fix types
   dataProcessingFunction: (data: any, query_id?: string) => any[];
   dataAnalysisInformation: {

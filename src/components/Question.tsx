@@ -2,7 +2,7 @@ import React from 'react';
 import { Query } from '../constants/queries_chart_info';
 import { DialogContentText, Box, Divider, Paper, Typography } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
-import CustomBarChart from './CustomCharts/CustomBarChart';
+import ChartWrapper from './CustomCharts/ChartWrapper';
 import MuiDataGrid from './CustomGrid';
 import QuestionInformation from './QuestionInformation';
 
@@ -88,8 +88,8 @@ const Question = (props: Props) => {
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             {detailedChartData.map((chart, index) => (
-              <React.Fragment key={`${query.uid}-barchart-${index}`}>
-                <CustomBarChart
+              <React.Fragment key={`${query.uid}-chart-${index}`}>
+                <ChartWrapper
                   question_id={query.uid}
                   dataset={chartData ?? []}
                   chartSetting={{
@@ -106,6 +106,8 @@ const Question = (props: Props) => {
                   }}
                   normalized={true}
                   loading={false}
+                  defaultChartType={query.chartType ?? 'bar'}
+                  availableCharts={['bar', 'pie']}
                 />
                 {index < detailedChartData.length - 1 && (
                   <Divider sx={{ my: 3 }} />
@@ -134,13 +136,15 @@ const Question = (props: Props) => {
             query={query}
           />
         </Box>
-        <CustomBarChart
-          key={`${query.uid}-barchart`}
+        <ChartWrapper
+          key={`${query.uid}-chart`}
           question_id={query.uid}
           dataset={chartData ?? []}
           chartSetting={query.chartSettings}
           normalized={normalized}
           loading={false}
+          defaultChartType={query.chartType ?? 'bar'}
+          availableCharts={['bar', 'pie']}
         />
       </Paper>
 

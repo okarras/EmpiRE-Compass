@@ -2,9 +2,7 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-export const sortDataByYear = (
-  rawData: { year: number }[],
-) => {
+export const sortDataByYear = (rawData: { year: number }[]) => {
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
 
@@ -139,6 +137,7 @@ export const processYearlyMethodData = (
   const methodCounts: Record<number, Record<string, number>> = {};
   rawData.forEach(({ year, dc_method_name }) => {
     if (!methodCounts[year]) methodCounts[year] = {};
+    if (!dc_method_name) return;
     const methodKey = dc_method_name.replace(/\s+/g, '_');
     methodCounts[year][methodKey] = (methodCounts[year][methodKey] || 0) + 1;
   });
