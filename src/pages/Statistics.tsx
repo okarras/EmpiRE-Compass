@@ -24,6 +24,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
 import CRUDStatistics from '../firestore/CRUDStatistics';
+import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 
 interface VenueData {
   venue: string;
@@ -120,6 +121,16 @@ export default function Statistics() {
     <ThemeProvider theme={theme}>
       <Container sx={{ mt: 8, height: '100vh' }}>
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
+          <CustomGaugeChart label="Papers" value={paperCount} />
+          <CustomGaugeChart label="Venues" value={venueCount} />
+          <CustomGaugeChart label="Resources" value={resources} />
+          <CustomGaugeChart label="Literals" value={literals} />
+          <CustomGaugeChart label="Properties" value={predicates} />
+          <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
+          <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
+          <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
+        </Stack>
+        <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>          
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
