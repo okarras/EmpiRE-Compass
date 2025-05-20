@@ -16,6 +16,7 @@ import MuiDataGrid from './CustomGrid';
 import QuestionInformation from './QuestionInformation';
 import fetchSPARQLData from '../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
+import AIAssistant from './AI/AIAssistant';
 
 interface QuestionProps {
   query: Query;
@@ -138,47 +139,52 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       <Box sx={{ mt: 2 }}>
         {/* Information Section - only show in first tab or if no uid_2 */}
         {(!query.uid_2 || queryId === query.uid) && (
-          <Paper
-            elevation={0}
-            sx={{
-              p: { xs: 2, sm: 3, md: 4 },
-              mb: 4,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              borderRadius: 2,
-              border: '1px solid rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <DialogContentText>
-              <Box sx={{ mb: 4 }}>
-                <QuestionInformation
-                  information={
-                    query.dataAnalysisInformation.questionExplanation
-                  }
-                  label="Explanation of the Competency Question"
-                />
-              </Box>
-              <Box sx={{ mb: 4 }}>
-                <QuestionInformation
-                  information={
-                    query.dataAnalysisInformation.requiredDataForAnalysis
-                  }
-                  label="Required Data for Analysis"
-                />
-              </Box>
-              <Box sx={{ mb: 4 }}>
-                <QuestionInformation
-                  information={query.dataAnalysisInformation.dataAnalysis}
-                  label="Data Analysis"
-                />
-              </Box>
-              <Box sx={{ mb: 4 }}>
-                <QuestionInformation
-                  information={query.dataAnalysisInformation.dataInterpretation}
-                  label="Data Interpretation"
-                />
-              </Box>
-            </DialogContentText>
-          </Paper>
+          <>
+            <AIAssistant query={query} questionData={questionData} />
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 2, sm: 3, md: 4 },
+                mb: 4,
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: 2,
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+              }}
+            >
+              <DialogContentText>
+                <Box sx={{ mb: 4 }}>
+                  <QuestionInformation
+                    information={
+                      query.dataAnalysisInformation.questionExplanation
+                    }
+                    label="Explanation of the Competency Question"
+                  />
+                </Box>
+                <Box sx={{ mb: 4 }}>
+                  <QuestionInformation
+                    information={
+                      query.dataAnalysisInformation.requiredDataForAnalysis
+                    }
+                    label="Required Data for Analysis"
+                  />
+                </Box>
+                <Box sx={{ mb: 4 }}>
+                  <QuestionInformation
+                    information={query.dataAnalysisInformation.dataAnalysis}
+                    label="Data Analysis"
+                  />
+                </Box>
+                <Box sx={{ mb: 4 }}>
+                  <QuestionInformation
+                    information={
+                      query.dataAnalysisInformation.dataInterpretation
+                    }
+                    label="Data Interpretation"
+                  />
+                </Box>
+              </DialogContentText>
+            </Paper>
+          </>
         )}
 
         {/* Charts Section */}
