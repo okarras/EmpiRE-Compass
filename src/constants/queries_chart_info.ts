@@ -48,6 +48,7 @@ export interface Query {
   title: string;
   id: number;
   uid: string;
+  uid_2?: string;
   chartSettings: ChartSetting;
   chartType?: 'bar' | 'pie';
   //TODO: fix types
@@ -115,6 +116,7 @@ export const queries: Query[] = [
     title: 'Number of empirical methods used for data analysis per year',
     id: 2,
     uid: 'query_2_1',
+    uid_2: 'query_2_2',
     chartSettings: {
       heading: 'Number of empirical methods used for data analysis per year',
       className: 'fullWidth',

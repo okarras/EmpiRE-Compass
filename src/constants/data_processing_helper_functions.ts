@@ -162,6 +162,7 @@ interface CountMethodsRawDataInterface {
 export const countMethodDistribution = (
   rawData: CountMethodsRawDataInterface[] = []
 ): Record<string, unknown>[] => {
+  console.log('rawData', rawData);
   const aggregatedData: Record<string, Record<string, number>> = {};
   rawData.forEach(({ dc_method_type_label, year }) => {
     if (!aggregatedData[year]) aggregatedData[year] = {};
@@ -172,5 +173,6 @@ export const countMethodDistribution = (
     year,
     ...methods,
   }));
+  console.log('chartData', chartData);
   return chartData;
 };

@@ -42,6 +42,7 @@ const ChartWrapper = ({
   availableCharts = ['bar', 'pie'],
 }: ChartWrapperProps) => {
   const [chartType, setChartType] = useState<'bar' | 'pie'>(defaultChartType);
+  console.log('dataset', dataset);
 
   const transformDataForPieChart = (
     data: DataItem[],

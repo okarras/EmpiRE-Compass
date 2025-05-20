@@ -11,15 +11,17 @@ import { Query } from '../constants/queries_chart_info';
 import Question from './Question';
 
 interface Props {
-  questionData: Record<string, unknown>[];
   query: Query;
-  chartData: Record<string, unknown>[];
-  normalized: boolean;
-  setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
+  data1: Record<string, unknown>[];
+  data2: Record<string, unknown>[];
+  normalized1: boolean;
+  setNormalized1: React.Dispatch<React.SetStateAction<boolean>>;
+  normalized2: boolean;
+  setNormalized2: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const QuestionDialog = (props: Props) => {
-  const { questionData, query, chartData, normalized, setNormalized } = props;
+  const { query } = props;
   const [open, setOpen] = useState(false);
 
   const handleClickOpen = () => {
@@ -84,13 +86,7 @@ const QuestionDialog = (props: Props) => {
           <h2>{`${query.id}- ${query.dataAnalysisInformation.question}`}</h2>
         </DialogTitle>
         <DialogContent>
-          <Question
-            chartData={chartData}
-            query={query}
-            questionData={questionData}
-            normalized={normalized}
-            setNormalized={setNormalized}
-          />
+          <Question query={query} />
         </DialogContent>
         <DialogActions>
           <Button
