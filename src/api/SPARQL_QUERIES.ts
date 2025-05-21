@@ -319,7 +319,7 @@ export const SPARQL_QUERIES = {
 `,
 
   query_9: `
-    SELECT ?paper, ?year, ?external, ?internal, ?construct, ?conclusion, ?reliability, ?generalizability, ?content, ?descriptive, ?theoretical, ?repeatability, ?mentioned
+    SELECT ?paper, ?year, ?External, ?Internal, ?Construct, ?Conclusion, ?Reliability, ?Generalizability, ?Content, ?Descriptive, ?Theoretical, ?Repeatability, ?Mentioned
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                             orkgp:P29 ?year.
@@ -328,17 +328,17 @@ export const SPARQL_QUERIES = {
                     ?serie rdfs:label ?venue_name.
 
                     OPTIONAL{?contribution orkgp:P39099 ?threats.
-                            OPTIONAL{?threats orkgp:P55034 ?external.}
-                            OPTIONAL{?threats orkgp:P55035 ?internal.}
-                            OPTIONAL{?threats orkgp:P55037 ?construct.}
-                            OPTIONAL{?threats orkgp:P55036 ?conclusion.}
-                            OPTIONAL{?threats orkgp:P59109 ?reliability.}
-                            OPTIONAL{?threats orkgp:P60006 ?generalizability.}
-                            OPTIONAL{?threats orkgp:P68005 ?content.}
-                            OPTIONAL{?threats orkgp:P97000 ?descriptive.}
-                            OPTIONAL{?threats orkgp:P97001 ?theoretical.}
-                            OPTIONAL{?threats orkgp:P97002 ?repeatability.}
-                            OPTIONAL{?threats orkgp:P145000 ?mentioned}
+                            OPTIONAL{?threats orkgp:P55034 ?External.}
+                            OPTIONAL{?threats orkgp:P55035 ?Internal.}
+                            OPTIONAL{?threats orkgp:P55037 ?Construct.}
+                            OPTIONAL{?threats orkgp:P55036 ?Conclusion.}
+                            OPTIONAL{?threats orkgp:P59109 ?Reliability.}
+                            OPTIONAL{?threats orkgp:P60006 ?Generalizability.}
+                            OPTIONAL{?threats orkgp:P68005 ?Content.}
+                            OPTIONAL{?threats orkgp:P97000 ?Descriptive.}
+                            OPTIONAL{?threats orkgp:P97001 ?Theoretical.}
+                            OPTIONAL{?threats orkgp:P97002 ?Repeatability.}
+                            OPTIONAL{?threats orkgp:P145000 ?Mentioned}
                     }
                     
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)

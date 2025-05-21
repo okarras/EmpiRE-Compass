@@ -701,4 +701,78 @@ export const queries: Query[] = [
       question: 'How many different research methods are used per publication?',
     },
   },
+  {
+  title: 'Number of papers using X empirical methods per year',
+  id: 16,
+  uid: 'query_16_1',
+  chartSettings: {
+    className: 'fullWidth',
+    colors: [
+      '#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8172b3', '#937860',
+      '#da8bc3', '#8c8c8c', '#ccb974', '#64b5cd', '#4c72b0'
+    ],
+    xAxis: xAxisSettings(),
+    heading: 'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
+    yAxis: [
+      { label: 'Number of papers' }
+    ],
+    series: [
+      { dataKey: '1.0', label: '1 methods' },
+      { dataKey: '2.0', label: '2 methods' },
+      { dataKey: '3.0', label: '3 methods' },
+      { dataKey: '4.0', label: '4 methods' },
+      { dataKey: '5.0', label: '5 methods' },
+      { dataKey: '6.0', label: '6 methods' },
+      { dataKey: '7.0', label: '7 methods' },
+      { dataKey: '8.0', label: '8 methods' },
+      { dataKey: '9.0', label: '9 methods' },
+      { dataKey: '10.0', label: '10 methods' },
+      { dataKey: '12.0', label: '12 methods' }
+    ],
+    height: chartHeight,
+    sx: chartStyles
+  },
+  dataProcessingFunction: (rawData: any[]): any[] => {
+    if (!rawData.length) return [];
+
+    const dataByYear: Record<number, Record<string, number>> = {};
+    const totalByYear: Record<number, number> = {};
+
+    rawData.forEach((item) => {
+      const year = item.year;
+        const toNumber = (v: any) => typeof v === 'number' ? v : parseInt(v || '0');
+
+        const methodCount =
+          toNumber(item.number_of_dc_methods) +
+          toNumber(item.number_of_inf_methods) +
+          toNumber(item.number_of_sim_methods) +
+          toNumber(item.number_of_oth_methods) +
+          toNumber(item.number_of_other_methods);
+
+      if (!dataByYear[year]) {
+        dataByYear[year] = {};
+        totalByYear[year] = 0;
+      }
+
+      const key = methodCount.toFixed(1);
+      dataByYear[year][key] = (dataByYear[year][key] || 0) + 1;
+      totalByYear[year]++;
+    });
+
+    return Object.entries(dataByYear).map(([yearStr, counts]) => {
+      const year = parseInt(yearStr);
+      const result: any = { year };
+
+      Object.entries(counts).forEach(([methodKey, count]) => {
+        result[methodKey] = count;
+        result[`normalized ${methodKey}`] = parseFloat((count / totalByYear[year]).toFixed(2));
+      });
+
+      return result;
+    }).sort((a, b) => a.year - b.year);
+  },
+  dataAnalysisInformation: {
+    question: 'How has the number of research methods used per publication evolved over time?'
+  }
+},
 ];
