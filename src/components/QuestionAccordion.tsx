@@ -38,6 +38,8 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
     setExpanded(isExpanded);
   };
 
+  const chartProcessedData = query.dataProcessingFunction(questionData) ?? [];
+
   return (
     <Accordion
       expanded={expanded}
@@ -127,7 +129,7 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
           <QuestionDialog
             questionData={questionData}
             query={query}
-            chartData={query.dataProcessingFunction(questionData) ?? []}
+            chartData={chartProcessedData}
             normalized={normalized}
             setNormalized={setNormalized}
           />
@@ -162,7 +164,7 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
           <ChartWrapper
             key={`${query.uid}-chart`}
             question_id={query.uid}
-            dataset={query.dataProcessingFunction([...questionData]) ?? []}
+            dataset={chartProcessedData}
             chartSetting={query.chartSettings}
             normalized={normalized}
             loading={loading}
