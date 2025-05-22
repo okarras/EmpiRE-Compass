@@ -12,12 +12,10 @@ import Question from './Question';
 
 interface Props {
   query: Query;
-  data1: Record<string, unknown>[];
-  data2: Record<string, unknown>[];
-  normalized1: boolean;
-  setNormalized1: React.Dispatch<React.SetStateAction<boolean>>;
-  normalized2: boolean;
-  setNormalized2: React.Dispatch<React.SetStateAction<boolean>>;
+  questionData: Record<string, unknown>[];
+  chartData: Record<string, unknown>[];
+  normalized: boolean;
+  setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const QuestionDialog = (props: Props) => {

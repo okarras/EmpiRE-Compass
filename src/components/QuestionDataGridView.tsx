@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-} from '@mui/material';
+import { Paper, Typography } from '@mui/material';
 import MuiDataGrid from './CustomGrid';
 
 interface QuestionDataGridViewProps {
@@ -39,4 +35,4 @@ const QuestionDataGridView: React.FC<QuestionDataGridViewProps> = ({
   );
 };
 
-export default QuestionDataGridView; 
+export default QuestionDataGridView;
