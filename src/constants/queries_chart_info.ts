@@ -3,6 +3,7 @@
 import { axisClasses } from '@mui/x-charts';
 import {
   aggregateMethodUsage,
+  countDataAnalysisStatisticsMethods,
   countMethodDistribution,
   processYearlyMethodData,
   RawDataItem,
@@ -115,12 +116,13 @@ export const queries: Query[] = [
   },
   //Query 2
   {
-    title: 'Number of empirical methods used for data collection per year',
+    title:
+      'Number of empirical methods used for data collection & data analysis per year',
     id: 2,
     uid: 'query_2_1',
     uid_2: 'query_2_2',
     chartSettings2: {
-      heading: 'Number of empirical methods used for data collection per year',
+      heading: 'Number of empirical methods used for data analysis per year',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -140,15 +142,13 @@ export const queries: Query[] = [
       series: [
         { dataKey: 'descriptive', label: 'descriptive statistics' },
         { dataKey: 'inferential', label: 'inferential statistics' },
-        { dataKey: 'machine learning', label: 'machine learning statistics' },
+        { dataKey: 'machine_learning', label: 'machine learning statistics' },
         { dataKey: 'others', label: 'Other' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction2: (data: any) => {
-      return data;
-    },
+    dataProcessingFunction2: countDataAnalysisStatisticsMethods,
     chartSettings: {
       heading: 'Number of empirical methods used for data collection per year',
       className: 'fullWidth',
@@ -232,6 +232,35 @@ export const queries: Query[] = [
     title: 'Number of empirical methods used for data analysis',
     id: 4,
     uid: 'query_4_1',
+    uid_2: 'query_4_2',
+    chartSettings2: {
+      heading: 'Number of empirical methods used for data analysis',
+      className: 'fullWidth',
+      xAxis: xAxisSettings(),
+      colors: [
+        '#4c72b0',
+        '#dd8452',
+        '#55a868',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+      ],
+      yAxis: [
+        {
+          label: 'Number of empirical methods used',
+        },
+      ],
+      series: [
+        { dataKey: 'descriptive', label: 'descriptive statistics' },
+        { dataKey: 'inferential', label: 'inferential statistics' },
+        { dataKey: 'machine_learning', label: 'machine learning statistics' },
+        { dataKey: 'others', label: 'Other' },
+      ],
+      height: chartHeight,
+      sx: chartStyles,
+    },
+    dataProcessingFunction2: countDataAnalysisStatisticsMethods,
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
@@ -324,6 +353,7 @@ export const queries: Query[] = [
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
     uid: 'query_6_1',
+    uid_2: 'query_6_2',
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',

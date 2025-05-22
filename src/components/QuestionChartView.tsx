@@ -1,11 +1,6 @@
 import React from 'react';
-import { Query } from '../constants/queries_chart_info';
-import {
-  Box,
-  Paper,
-  Typography,
-  Divider,
-} from '@mui/material';
+import { ChartSetting, Query } from '../constants/queries_chart_info';
+import { Box, Paper, Typography, Divider } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
 
@@ -24,14 +19,24 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   setNormalized,
   queryId,
 }) => {
-  const detailedChartData: { dataKey: string; label: string }[] =
-    query.chartSettings.series;
-  
-  if(query.uid_2 === queryId) {
-    console.log('questionData', questionData);
-    console.log('chartSettings', query.chartSettings);
-    console.log('detailedChartData', query.dataProcessingFunction(questionData ?? []));
+  const isSecondSubQuery = query.uid_2 === queryId;
+  const hasSecondSubQueryChart = !!query.chartSettings2;
+  console.log(queryId, isSecondSubQuery, hasSecondSubQueryChart);
+  if (isSecondSubQuery && !hasSecondSubQueryChart) {
+    return null;
   }
+
+  const detailedChartData = isSecondSubQuery
+    ? (query.chartSettings2?.series ?? [])
+    : query.chartSettings.series;
+
+  const processedChartDataset = isSecondSubQuery
+    ? (query.dataProcessingFunction2?.(questionData ?? []) ?? [])
+    : query.dataProcessingFunction(questionData ?? []);
+
+  const chartSettings = isSecondSubQuery
+    ? ((query.chartSettings2 ?? []) as ChartSetting)
+    : query.chartSettings;
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -59,35 +64,37 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
             Detailed Charts
           </Typography>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {detailedChartData.map((chart, index) => (
-              <React.Fragment key={`${queryId}-chart-${index}`}>
-                <ChartWrapper
-                  question_id={queryId}
-                  dataset={query.dataProcessingFunction(questionData ?? [])}
-                  chartSetting={{
-                    ...query.chartSettings,
-                    series: [chart],
-                    heading: 'Number of ' + chart.label + 's used',
-                    colors: [
-                      query.chartSettings.colors?.[index] ?? '#e86161',
-                    ],
-                    yAxis: [
-                      {
-                        label: chart.label,
-                        dataKey: chart.dataKey,
-                      },
-                    ],
-                  }}
-                  normalized={true}
-                  loading={false}
-                  defaultChartType={query.chartType ?? 'bar'}
-                  availableCharts={['bar', 'pie']}
-                />
-                {index < detailedChartData.length - 1 && (
-                  <Divider sx={{ my: 3 }} />
-                )}
-              </React.Fragment>
-            ))}
+            {detailedChartData.map(
+              (chart: { label: string; dataKey: unknown }, index: number) => (
+                <React.Fragment key={`${queryId}-chart-${index}`}>
+                  <ChartWrapper
+                    question_id={queryId}
+                    dataset={processedChartDataset}
+                    chartSetting={{
+                      ...chartSettings,
+                      series: [chart],
+                      heading: 'Number of ' + chart.label + 's used',
+                      colors: [
+                        query.chartSettings.colors?.[index] ?? '#e86161',
+                      ],
+                      yAxis: [
+                        {
+                          label: chart.label,
+                          dataKey: chart.dataKey,
+                        },
+                      ],
+                    }}
+                    normalized={true}
+                    loading={false}
+                    defaultChartType={query.chartType ?? 'bar'}
+                    availableCharts={['bar', 'pie']}
+                  />
+                  {index < detailedChartData.length - 1 && (
+                    <Divider sx={{ my: 3 }} />
+                  )}
+                </React.Fragment>
+              )
+            )}
           </Box>
         </Paper>
       )}
@@ -113,8 +120,8 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
         <ChartWrapper
           key={`${queryId}-chart`}
           question_id={queryId}
-          dataset={query.dataProcessingFunction(questionData ?? [])}
-          chartSetting={query.chartSettings}
+          dataset={processedChartDataset}
+          chartSetting={chartSettings}
           normalized={normalized}
           loading={false}
           defaultChartType={query.chartType ?? 'bar'}
@@ -125,4 +132,4 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   );
 };
 
-export default QuestionChartView; 
+export default QuestionChartView;
