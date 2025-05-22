@@ -21,7 +21,6 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 }) => {
   const isSecondSubQuery = query.uid_2 === queryId;
   const hasSecondSubQueryChart = !!query.chartSettings2;
-  console.log(queryId, isSecondSubQuery, hasSecondSubQueryChart);
   if (isSecondSubQuery && !hasSecondSubQueryChart) {
     return null;
   }

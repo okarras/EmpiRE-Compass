@@ -23,18 +23,23 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   const [tab, setTab] = useState(0);
 
   // State for primary data (uid)
-  const [dataCollection, setDataCollection] = useState<Record<string, unknown>[]>([]);
+  const [dataCollection, setDataCollection] = useState<
+    Record<string, unknown>[]
+  >([]);
   const [loading1, setLoading1] = useState(true);
   const [error1, setError1] = useState<string | null>(null);
   const [normalized1, setNormalized1] = useState(true);
 
   // State for secondary data (uid_2 if exists)
-  const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>([]);
+  const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>(
+    []
+  );
   const [loading2, setLoading2] = useState(false);
   const [error2, setError2] = useState<string | null>(null);
 
   // Fetch primary data (uid)
   useEffect(() => {
+    setTab(0);
     const fetchData = async () => {
       try {
         setLoading1(true);
@@ -84,9 +89,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       }}
     >
       <CircularProgress sx={{ color: '#e86161', mb: 2 }} />
-      <Typography color="text.secondary">
-        Loading question data...
-      </Typography>
+      <Typography color="text.secondary">Loading question data...</Typography>
     </Box>
   );
 

@@ -8,12 +8,41 @@ interface UseAIAssistantProps {
   questionData: Record<string, unknown>[];
 }
 
+// Cache interface
+interface CacheEntry {
+  analysis: string;
+  timestamp: number;
+}
+
+// Cache storage key
+const CACHE_STORAGE_KEY = 'ai_assistant_initial_analysis_cache';
+
+// Cache management functions
+const getCache = (): Record<string, CacheEntry> => {
+  try {
+    const cachedData = localStorage.getItem(CACHE_STORAGE_KEY);
+    return cachedData ? JSON.parse(cachedData) : {};
+  } catch (error) {
+    console.error('Error reading from cache:', error);
+    return {};
+  }
+};
+
+const setCache = (cache: Record<string, CacheEntry>) => {
+  try {
+    localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(cache));
+  } catch (error) {
+    console.error('Error writing to cache:', error);
+  }
+};
+
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [prompt, setPrompt] = useState('');
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialAnalysis, setInitialAnalysis] = useState<string | null>(null);
+  const [isFromCache, setIsFromCache] = useState(false);
 
   const openai = createOpenAI({
     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -44,6 +73,18 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     const performInitialAnalysis = async () => {
       try {
         setLoading(true);
+
+        // Check cache for initial analysis
+        const cacheKey = `query_${query.id}`;
+        const responseCache = getCache();
+
+        if (responseCache[cacheKey]) {
+          setInitialAnalysis(responseCache[cacheKey].analysis);
+          setIsFromCache(true);
+          setLoading(false);
+          return;
+        }
+
         const { text } = await generateText({
           model: openai('gpt-4.1-nano'),
           prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
@@ -68,7 +109,19 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 Context:
 ${generateSystemContext()}`,
         });
+
+        // Store in cache
+        const updatedCache = {
+          ...responseCache,
+          [cacheKey]: {
+            analysis: text,
+            timestamp: Date.now(),
+          },
+        };
+        setCache(updatedCache);
+
         setInitialAnalysis(text);
+        setIsFromCache(false);
       } catch (err) {
         setError('Failed to generate initial analysis');
         console.error('Initial Analysis Error:', err);
@@ -88,6 +141,11 @@ ${generateSystemContext()}`,
     setLoading(true);
     setError(null);
 
+    // Check if user wants detailed explanation
+    const wantsDetailed = prompt.toLowerCase().includes('detailed') || 
+                         prompt.toLowerCase().includes('explain') ||
+                         prompt.toLowerCase().includes('elaborate');
+
     try {
       const { text } = await generateText({
         model: openai('gpt-4o-mini'),
@@ -98,9 +156,20 @@ ${initialAnalysis}
 
 User Question: ${prompt}
 
-Please provide a detailed answer in HTML format, using appropriate HTML tags (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <code>, <pre>, <blockquote>, etc.) to structure your response.`,
+Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
+Important instructions:
+1. Keep your response under 300 words and maximum 2 paragraphs
+2. Base your answer ONLY on the data and analysis provided above
+3. Do not make assumptions or include information not present in the data
+4. Focus on the most relevant findings from the data
+5. Use clear and direct language
+6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
+7. Do not include any markdown code blocks or backticks in your response`,
       });
-      setResponse(text);
+
+      // Clean up the response if it contains markdown code blocks
+      const cleanedText = text.replace(/```html\s*|\s*```/g, '').trim();
+      setResponse(cleanedText);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('AI Generation Error:', err);
@@ -117,6 +186,7 @@ Please provide a detailed answer in HTML format, using appropriate HTML tags (<h
     error,
     initialAnalysis,
     handleGenerate,
+    isFromCache,
   };
 };
 

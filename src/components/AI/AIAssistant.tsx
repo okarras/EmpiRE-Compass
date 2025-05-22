@@ -4,7 +4,10 @@ import {
   Paper,
   TextField,
   Typography,
+  Box,
+  Tooltip,
 } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import InitialAnalysis from './InitialAnalysis';
@@ -24,6 +27,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     error,
     initialAnalysis,
     handleGenerate,
+    isFromCache,
   } = useAIAssistant({ query, questionData });
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -57,6 +61,48 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
 
       <InitialAnalysis content={initialAnalysis} />
 
+      {isFromCache && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            mb: 2,
+            p: 1.5,
+            backgroundColor: 'rgba(232, 97, 97, 0.04)',
+            borderRadius: 1,
+            border: '1px solid rgba(232, 97, 97, 0.1)',
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontStyle: 'italic',
+              flex: 1,
+            }}
+          >
+            Showing cached analysis
+          </Typography>
+          <Button
+            variant="outlined"
+            onClick={() => handleGenerate()}
+            startIcon={<RefreshIcon />}
+            size="small"
+            sx={{
+              borderColor: '#e86161',
+              color: '#e86161',
+              '&:hover': {
+                borderColor: '#d45151',
+                backgroundColor: 'rgba(232, 97, 97, 0.08)',
+              },
+            }}
+          >
+            Refresh Analysis
+          </Button>
+        </Box>
+      )}
+
       <TextField
         fullWidth
         multiline
@@ -69,24 +115,46 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
         sx={{ mb: 2 }}
       />
 
-      <Button
-        variant="contained"
-        onClick={handleGenerate}
-        disabled={loading || !prompt.trim()}
-        sx={{
-          backgroundColor: '#e86161',
-          '&:hover': {
-            backgroundColor: '#d45151',
-          },
-          mb: 2,
-        }}
-      >
-        {loading ? (
-          <CircularProgress size={24} sx={{ color: 'white' }} />
-        ) : (
-          'Ask Question'
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+        <Button
+          variant="contained"
+          onClick={() => handleGenerate()}
+          disabled={loading || !prompt.trim()}
+          sx={{
+            backgroundColor: '#e86161',
+            '&:hover': {
+              backgroundColor: '#d45151',
+            },
+          }}
+        >
+          {loading ? (
+            <CircularProgress size={24} sx={{ color: 'white' }} />
+          ) : (
+            'Ask Question'
+          )}
+        </Button>
+
+        {response && (
+          <Tooltip title="Refresh response">
+            <Button
+              variant="outlined"
+              onClick={() => handleGenerate()}
+              disabled={loading}
+              startIcon={<RefreshIcon />}
+              sx={{
+                borderColor: '#e86161',
+                color: '#e86161',
+                '&:hover': {
+                  borderColor: '#d45151',
+                  backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                },
+              }}
+            >
+              Refresh
+            </Button>
+          </Tooltip>
         )}
-      </Button>
+      </Box>
 
       {error && (
         <Paper
@@ -108,4 +176,4 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
   );
 };
 
-export default AIAssistant; 
+export default AIAssistant;

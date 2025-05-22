@@ -386,6 +386,7 @@ export const queries: Query[] = [
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
     uid: 'query_7_1',
+    uid_2: 'query_7_2',
     chartSettings: {
       className: 'fullWidth',
       colors: [
@@ -746,6 +747,7 @@ export const queries: Query[] = [
     title: 'Number of papers per year',
     id: 15,
     uid: 'query_15_1',
+    uid_2: 'query_15_2',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
