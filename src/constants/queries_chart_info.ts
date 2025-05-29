@@ -34,6 +34,7 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
 
 export interface ChartSetting {
   heading?: string;
+  seriesHeadingTemplate?: string;
   className?: string;
   colors?: string[];
   xAxis?: any;
@@ -123,6 +124,7 @@ export const queries: Query[] = [
     uid_2: 'query_2_2',
     chartSettings2: {
       heading: 'Number of empirical methods used for data analysis per year',
+      seriesHeadingTemplate: 'Number of {label} used for data analysis',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -151,6 +153,7 @@ export const queries: Query[] = [
     dataProcessingFunction2: countDataAnalysisStatisticsMethods,
     chartSettings: {
       heading: 'Number of empirical methods used for data collection per year',
+      seriesHeadingTemplate: 'Number of {label} used for data collection',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -233,8 +236,11 @@ export const queries: Query[] = [
     id: 4,
     uid: 'query_4_1',
     uid_2: 'query_4_2',
+    //TODO: this chart is Horizontal
     chartSettings2: {
       heading: 'Number of empirical methods used for data analysis',
+      seriesHeadingTemplate:
+        'Number of {label} used for data analysis',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -325,6 +331,8 @@ export const queries: Query[] = [
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
       heading:
         'Normalized number of empirical methods used for data collection per year',
+      seriesHeadingTemplate:
+        'Number of {label} used for data collection per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -387,6 +395,7 @@ export const queries: Query[] = [
     id: 7,
     uid: 'query_7_1',
     uid_2: 'query_7_2',
+    // TODO: this chart should be for data analysis
     chartSettings: {
       className: 'fullWidth',
       colors: [
@@ -768,4 +777,80 @@ export const queries: Query[] = [
       question: 'How many different research methods are used per publication?',
     },
   },
+  // Query 16
+  {
+  title: 'Number of papers using X empirical methods per year',
+  id: 16,
+  uid: 'query_16_1',
+  chartSettings: {
+    className: 'fullWidth',
+    colors: [
+      '#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8172b3', '#937860',
+      '#da8bc3', '#8c8c8c', '#ccb974', '#64b5cd', '#4c72b0'
+    ],
+    xAxis: xAxisSettings(),
+    heading: 'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
+    seriesHeadingTemplate: 'Number of papers using {label} per year',
+    yAxis: [
+      { label: 'Number of papers' }
+    ],
+    series: [
+      { dataKey: '1.0', label: '1 empirical methods' },
+      { dataKey: '2.0', label: '2 empirical methods' },
+      { dataKey: '3.0', label: '3 empirical methods' },
+      { dataKey: '4.0', label: '4 empirical methods' },
+      { dataKey: '5.0', label: '5 empirical methods' },
+      { dataKey: '6.0', label: '6 empirical methods' },
+      { dataKey: '7.0', label: '7 empirical methods' },
+      { dataKey: '8.0', label: '8 empirical methods' },
+      { dataKey: '9.0', label: '9 empirical methods' },
+      { dataKey: '10.0', label: '10 empirical methods' },
+      { dataKey: '12.0', label: '12 empirical methods' }
+    ],
+    height: chartHeight,
+    sx: chartStyles
+  },
+  dataProcessingFunction: (rawData: any[]): any[] => {
+    if (!rawData.length) return [];
+
+    const dataByYear: Record<number, Record<string, number>> = {};
+    const totalByYear: Record<number, number> = {};
+
+    rawData.forEach((item) => {
+      const year = item.year;
+        const toNumber = (v: any) => typeof v === 'number' ? v : parseInt(v || '0');
+
+        const methodCount =
+          toNumber(item.number_of_dc_methods) +
+          toNumber(item.number_of_inf_methods) +
+          toNumber(item.number_of_sim_methods) +
+          toNumber(item.number_of_oth_methods) +
+          toNumber(item.number_of_other_methods);
+
+      if (!dataByYear[year]) {
+        dataByYear[year] = {};
+        totalByYear[year] = 0;
+      }
+
+      const key = methodCount.toFixed(1);
+      dataByYear[year][key] = (dataByYear[year][key] || 0) + 1;
+      totalByYear[year]++;
+    });
+
+    return Object.entries(dataByYear).map(([yearStr, counts]) => {
+      const year = parseInt(yearStr);
+      const result: any = { year };
+
+      Object.entries(counts).forEach(([methodKey, count]) => {
+        result[methodKey] = count;
+        result[`normalized ${methodKey}`] = parseFloat((count / totalByYear[year]).toFixed(2));
+      });
+
+      return result;
+    }).sort((a, b) => a.year - b.year);
+  },
+  dataAnalysisInformation: {
+    question: 'How has the number of research methods used per publication evolved over time?'
+  }
+},
 ];

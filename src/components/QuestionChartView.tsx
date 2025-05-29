@@ -20,6 +20,9 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   queryId,
 }) => {
   const isSecondSubQuery = query.uid_2 === queryId;
+  const chartSettingsKey = isSecondSubQuery
+    ? 'chartSettings2'
+    : 'chartSettings';
   const hasSecondSubQueryChart = !!query.chartSettings2;
   if (isSecondSubQuery && !hasSecondSubQueryChart) {
     return null;
@@ -36,6 +39,16 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   const chartSettings = isSecondSubQuery
     ? ((query.chartSettings2 ?? []) as ChartSetting)
     : query.chartSettings;
+
+  const createHeading = (chart: { label: string }) => {
+    if(query[chartSettingsKey]?.seriesHeadingTemplate) {
+      return query[chartSettingsKey].seriesHeadingTemplate.replace(
+        '{label}',
+        chart.label
+      );
+    }
+    return 'Number of ' + chart.label + 's used';
+  };
 
   return (
     <Box sx={{ mt: 2 }}>
@@ -72,7 +85,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                     chartSetting={{
                       ...chartSettings,
                       series: [chart],
-                      heading: 'Number of ' + chart.label + 's used',
+                      heading: createHeading(chart),
                       colors: [
                         query.chartSettings.colors?.[index] ?? '#e86161',
                       ],
