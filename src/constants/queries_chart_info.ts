@@ -34,6 +34,7 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
 
 export interface ChartSetting {
   heading?: string;
+  seriesHeadingTemplate?: string;
   className?: string;
   colors?: string[];
   xAxis?: any;
@@ -123,6 +124,7 @@ export const queries: Query[] = [
     uid_2: 'query_2_2',
     chartSettings2: {
       heading: 'Number of empirical methods used for data analysis per year',
+      seriesHeadingTemplate: 'Number of {label} used for data analysis',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -151,6 +153,7 @@ export const queries: Query[] = [
     dataProcessingFunction2: countDataAnalysisStatisticsMethods,
     chartSettings: {
       heading: 'Number of empirical methods used for data collection per year',
+      seriesHeadingTemplate: 'Number of {label} used for data collection',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -233,8 +236,11 @@ export const queries: Query[] = [
     id: 4,
     uid: 'query_4_1',
     uid_2: 'query_4_2',
+    //TODO: this chart is Horizontal
     chartSettings2: {
       heading: 'Number of empirical methods used for data analysis',
+      seriesHeadingTemplate:
+        'Number of {label} used for data analysis',
       className: 'fullWidth',
       xAxis: xAxisSettings(),
       colors: [
@@ -325,6 +331,8 @@ export const queries: Query[] = [
       colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
       heading:
         'Normalized number of empirical methods used for data collection per year',
+      seriesHeadingTemplate:
+        'Number of {label} used for data collection per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -387,6 +395,7 @@ export const queries: Query[] = [
     id: 7,
     uid: 'query_7_1',
     uid_2: 'query_7_2',
+    // TODO: this chart should be for data analysis
     chartSettings: {
       className: 'fullWidth',
       colors: [
@@ -768,6 +777,7 @@ export const queries: Query[] = [
       question: 'How many different research methods are used per publication?',
     },
   },
+  // Query 16
   {
   title: 'Number of papers using X empirical methods per year',
   id: 16,
@@ -780,6 +790,7 @@ export const queries: Query[] = [
     ],
     xAxis: xAxisSettings(),
     heading: 'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
+    seriesHeadingTemplate: 'Number of papers using {label} per year',
     yAxis: [
       { label: 'Number of papers' }
     ],
