@@ -95,7 +95,7 @@ const Question = (props: Props) => {
                   chartSetting={{
                     ...query.chartSettings,
                     series: [chart],
-                    heading: 'Number of ' + chart.label + 's used',
+                    heading: 'Number of papers using ' + chart.label + ' per year',
                     colors: [query.chartSettings.colors?.[index] ?? '#e86161'],
                     yAxis: [
                       {

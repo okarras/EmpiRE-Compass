@@ -717,17 +717,17 @@ export const queries: Query[] = [
       { label: 'Number of papers' }
     ],
     series: [
-      { dataKey: '1.0', label: '1 methods' },
-      { dataKey: '2.0', label: '2 methods' },
-      { dataKey: '3.0', label: '3 methods' },
-      { dataKey: '4.0', label: '4 methods' },
-      { dataKey: '5.0', label: '5 methods' },
-      { dataKey: '6.0', label: '6 methods' },
-      { dataKey: '7.0', label: '7 methods' },
-      { dataKey: '8.0', label: '8 methods' },
-      { dataKey: '9.0', label: '9 methods' },
-      { dataKey: '10.0', label: '10 methods' },
-      { dataKey: '12.0', label: '12 methods' }
+      { dataKey: '1.0', label: '1 empirical methods' },
+      { dataKey: '2.0', label: '2 empirical methods' },
+      { dataKey: '3.0', label: '3 empirical methods' },
+      { dataKey: '4.0', label: '4 empirical methods' },
+      { dataKey: '5.0', label: '5 empirical methods' },
+      { dataKey: '6.0', label: '6 empirical methods' },
+      { dataKey: '7.0', label: '7 empirical methods' },
+      { dataKey: '8.0', label: '8 empirical methods' },
+      { dataKey: '9.0', label: '9 empirical methods' },
+      { dataKey: '10.0', label: '10 empirical methods' },
+      { dataKey: '12.0', label: '12 empirical methods' }
     ],
     height: chartHeight,
     sx: chartStyles
