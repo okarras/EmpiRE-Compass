@@ -86,7 +86,7 @@ export const queries: Query[] = [
     title: 'Number of papers with an empirical study per year',
     id: 1,
     uid: 'query_1',
-    chartType: 'pie',
+    chartType: 'bar',
     chartSettings: {
       className: 'fullWidth',
       xAxis: xAxisSettings(),
