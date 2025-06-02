@@ -94,7 +94,7 @@ export const queries: Query[] = [
       barLabel: 'value',
       yAxis: [
         {
-          label: 'Number of papers without an empirical study',
+          label: 'Number of papers with an empirical study',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -115,7 +115,7 @@ export const queries: Query[] = [
         'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
-  //Query 2
+  //Query 2 TODO
   {
     title:
       'Number of empirical methods used for data collection & data analysis per year',
@@ -230,7 +230,7 @@ export const queries: Query[] = [
         'Based on the figure "Normalized number of papers without an empirical study per year", an decreasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers without an empirical study is 30.5%, the average proportion for the period 2010 - 2019 is 14.8%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 5.7%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the small number of papers without an empiricial study envisioned for the target state (2020 - 2025) can be achieved. Regarding the aspect that the papers should provide a good reason for not including a proper evaluation, further analysis is needed as we have not yet examined how papers without empiricial studies justify why they do not provide proper evaluations.',
     },
   },
-  //Query 4
+  //Query 4 TODO
   {
     title: 'Number of empirical methods used for data analysis',
     id: 4,
