@@ -53,14 +53,19 @@ export const SPARQL_QUERIES = {
 `,
 
   query_2_2: `
-    SELECT DISTINCT ?paper ?year ?da_label ?descriptive ?inferential ?machine_learning ?method
+    SELECT DISTINCT ?paper ?year ?da_label 
+                (SAMPLE(?descriptive) AS ?descriptive)
+                (SAMPLE(?inferential) AS ?inferential)
+                (SAMPLE(?machine_learning) AS ?machine_learning)
+                (SAMPLE(?method) AS ?method)
         WHERE {
         ?paper orkgp:P31 ?contribution;
                 orkgp:P29 ?year.
+                
         ?contribution a orkgc:C27001;
                         orkgp:P135046 ?serie;
                         orkgp:P15124 ?data_analysis.
-        
+                        
         ?data_analysis rdfs:label ?da_label.
         
         OPTIONAL { ?data_analysis orkgp:P56048/rdfs:label ?descriptive. }
@@ -73,6 +78,7 @@ export const SPARQL_QUERIES = {
         FILTER(?da_label != "no analysis"^^xsd:string)
         FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
         }
+        GROUP BY ?paper ?year ?da_label
 `,
 
   query_3: `
@@ -124,27 +130,34 @@ export const SPARQL_QUERIES = {
 `,
 
   query_4_2: `
-    SELECT ?paper, ?year, ?da_label, ?descriptive, ?inferential, ?machine_learning, ?method
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                        orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
-                    
-                    OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
-                            ?data_analysis rdfs:label ?da_label.
-                            
-                            OPTIONAL{?data_analysis orkgp:P56048/rdfs:label ?descriptive.}
-                            OPTIONAL{?data_analysis orkgp:P56043/rdfs:label ?inferential.}
-                            OPTIONAL{?data_analysis orkgp:P57016/rdfs:label ?machine_learning.}
-                            OPTIONAL{?data_analysis orkgp:P1005/rdfs:label ?method}
-                    }
-                    
-                    FILTER(?da_label != "no analysis"^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
+        SELECT ?paper ?year ?da_label 
+        (SAMPLE(?descriptive) AS ?descriptive)
+        (SAMPLE(?inferential) AS ?inferential)
+        (SAMPLE(?machine_learning) AS ?machine_learning)
+        (SAMPLE(?method) AS ?method)
+        WHERE {
+        ?paper orkgp:P31 ?contribution;
+                orkgp:P29 ?year.
+        
+        ?contribution a orkgc:C27001;
+                        orkgp:P135046 ?serie.
+
+        ?serie rdfs:label ?venue_name.
+
+        OPTIONAL {
+                ?contribution orkgp:P15124 ?data_analysis.
+                ?data_analysis rdfs:label ?da_label.
+
+                OPTIONAL { ?data_analysis orkgp:P56048/rdfs:label ?descriptive. }
+                OPTIONAL { ?data_analysis orkgp:P56043/rdfs:label ?inferential. }
+                OPTIONAL { ?data_analysis orkgp:P57016/rdfs:label ?machine_learning. }
+                OPTIONAL { ?data_analysis orkgp:P1005/rdfs:label ?method. }
+        }
+
+        FILTER(?da_label != "no analysis"^^xsd:string)
+        FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
+        GROUP BY ?paper ?year ?da_label
 `,
 
   query_5: `
