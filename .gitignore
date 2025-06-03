@@ -24,3 +24,5 @@ dev-dist/
 *.sln
 *.sw?
 .env
+*storybook.log
+storybook-static
