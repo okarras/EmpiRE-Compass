@@ -22,8 +22,8 @@ const StatsChartTypeSelector = ({ chartType, setChartType }: StatsChartTypeSelec
         <ToggleButton value="gauge" aria-label="Gauge Charts"
           sx={{
             '&.Mui-selected': {
-              backgroundColor: '#e86161 !important',
-              color: 'white !important',
+              backgroundColor: '#e86161',
+              color: 'white',
             },
           }}>
           <DonutLargeIcon />
@@ -31,8 +31,8 @@ const StatsChartTypeSelector = ({ chartType, setChartType }: StatsChartTypeSelec
         <ToggleButton value="card" aria-label="Stat Cards"
           sx={{
             '&.Mui-selected': {
-              backgroundColor: '#e86161 !important',
-              color: 'white !important',
+              backgroundColor: '#e86161',
+              color: 'white',
             },
           }}>
           <ViewModuleIcon />
