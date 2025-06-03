@@ -9,9 +9,11 @@ import QuestionInformation from './QuestionInformation';
 import QuestionDialog from './QuestionDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const QuestionAccordion = ({ query }: { query: Query}) => {
+const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
-  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>([]);
+  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
 
@@ -34,7 +36,10 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
     }
   }, [query, expanded]);
 
-  const handleAccordionChange = (_event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleAccordionChange = (
+    _event: React.SyntheticEvent,
+    isExpanded: boolean
+  ) => {
     setExpanded(isExpanded);
   };
 
@@ -48,13 +53,15 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
         borderRadius: (theme) => `${theme.shape.borderRadius}px !important`,
         border: '1px solid',
         borderColor: 'divider',
-        boxShadow: (theme) => theme.palette.mode === 'dark' 
-          ? '0 2px 8px rgba(0, 0, 0, 0.3)'
-          : '0 1px 4px rgba(0, 0, 0, 0.05)',
-        transition: (theme) => theme.transitions.create(
-          ['box-shadow', 'border-color', 'background-color'],
-          { duration: theme.transitions.duration.shorter }
-        ),
+        boxShadow: (theme) =>
+          theme.palette.mode === 'dark'
+            ? '0 2px 8px rgba(0, 0, 0, 0.3)'
+            : '0 1px 4px rgba(0, 0, 0, 0.05)',
+        transition: (theme) =>
+          theme.transitions.create(
+            ['box-shadow', 'border-color', 'background-color'],
+            { duration: theme.transitions.duration.shorter }
+          ),
         '&:before': {
           display: 'none',
         },
@@ -66,26 +73,26 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
           '&:last-of-type': {
             marginBottom: 0,
           },
-          boxShadow: (theme) => theme.palette.mode === 'dark'
-            ? '0 4px 12px rgba(0, 0, 0, 0.4)'
-            : '0 2px 8px rgba(0, 0, 0, 0.1)',
+          boxShadow: (theme) =>
+            theme.palette.mode === 'dark'
+              ? '0 4px 12px rgba(0, 0, 0, 0.4)'
+              : '0 2px 8px rgba(0, 0, 0, 0.1)',
         },
         '&:hover': {
           borderColor: 'primary.main',
-          backgroundColor: (theme) => theme.palette.mode === 'dark'
-            ? 'action.hover'
-            : 'background.paper',
+          backgroundColor: (theme) =>
+            theme.palette.mode === 'dark' ? 'action.hover' : 'background.paper',
         },
       }}
     >
       <AccordionSummary
         expandIcon={
-          <ExpandMoreIcon 
-            sx={{ 
+          <ExpandMoreIcon
+            sx={{
               transition: 'transform 0.3s ease',
               transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
               color: expanded ? 'primary.main' : 'text.secondary',
-            }} 
+            }}
           />
         }
         sx={{
@@ -103,8 +110,8 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
           },
         }}
       >
-        <Typography 
-          variant="h6" 
+        <Typography
+          variant="h6"
           sx={{
             transition: (theme) => theme.transitions.create('color'),
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
@@ -134,8 +141,8 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
         </Box>
       </AccordionSummary>
 
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           p: { xs: 2, sm: 3 },
           pt: { xs: 2, sm: 2 },
         }}
@@ -147,11 +154,10 @@ const QuestionAccordion = ({ query }: { query: Query}) => {
 
         <Box
           sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-            width: '100%',
-            gap: 3,
-            my: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            mt: 2,
           }}
         >
           <ChartParamsSelector

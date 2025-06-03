@@ -41,7 +41,6 @@ const CustomPieChart = (props: CustomPieChartInterface) => {
 
   // Calculate total for percentage calculation
   const total = dataset.reduce((sum, item) => sum + item.value, 0);
-  console.log('total:', total, dataset);
 
   // Calculate chart dimensions
   const chartHeight = chartSetting.height - 60 || 340;
