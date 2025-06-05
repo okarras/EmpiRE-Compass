@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChartSetting, Query } from '../constants/queries_chart_info';
-import { Box, Paper, Typography, Divider } from '@mui/material';
+import { Box, Typography, Divider } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
 
@@ -41,7 +41,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
     : query.chartSettings;
 
   const createHeading = (chart: { label: string }) => {
-    if(query[chartSettingsKey]?.seriesHeadingTemplate) {
+    if (query[chartSettingsKey]?.seriesHeadingTemplate) {
       return query[chartSettingsKey].seriesHeadingTemplate.replace(
         '{label}',
         chart.label
@@ -54,16 +54,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
     <Box sx={{ mt: 2 }}>
       {/* Charts Section */}
       {detailedChartData.length > 1 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
+        <>
           <Typography
             variant="h5"
             sx={{
@@ -108,20 +99,11 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
               )
             )}
           </Box>
-        </Paper>
+        </>
       )}
 
       {/* Main Chart Section */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          mb: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 2,
-          border: '1px solid rgba(0, 0, 0, 0.1)',
-        }}
-      >
+      <>
         <Box sx={{ mb: 3 }}>
           <ChartParamsSelector
             normalized={normalized}
@@ -139,7 +121,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           defaultChartType={query.chartType ?? 'bar'}
           availableCharts={['bar', 'pie']}
         />
-      </Paper>
+      </>
     </Box>
   );
 };

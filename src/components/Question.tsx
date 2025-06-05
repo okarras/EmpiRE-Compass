@@ -13,6 +13,7 @@ import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
+import AIAssistant from './AI/AIAssistant';
 
 interface QuestionProps {
   query: Query;
@@ -125,9 +126,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Question Information - Always visible */}
-      <QuestionInformationView query={query} questionData={dataCollection} />
 
       {/* Tabs for different views */}
+      <AIAssistant query={query} questionData={dataCollection} />
+      
       {query.uid_2 && (
         <Tabs
           value={tab}
@@ -141,17 +143,29 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         </Tabs>
       )}
 
-      {/* Data Collection View */}
-      <Box hidden={tab !== 0}>
-        <QuestionChartView
-          query={query}
-          questionData={dataCollection}
-          normalized={normalized1}
-          setNormalized={setNormalized1}
-          queryId={query.uid}
-        />
-        <QuestionDataGridView questionData={dataCollection} />
-      </Box>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 3, md: 4 },
+          mb: 4,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 2,
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <QuestionInformationView query={query} />
+        {/* Data Collection View */}
+        <Box hidden={tab !== 0}>
+          <QuestionChartView
+            query={query}
+            questionData={dataCollection}
+            normalized={normalized1}
+            setNormalized={setNormalized1}
+            queryId={query.uid}
+          />
+        </Box>
+      </Paper>
+      <QuestionDataGridView questionData={dataCollection} />
 
       {/* Data Analysis View */}
       {query.uid_2 && (

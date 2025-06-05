@@ -104,7 +104,7 @@ const Partners = () => {
           </Box>
         </StatCard>
         <StatCard
-          label="KG Empire"
+          label="KG-Empire"
           link="https://github.com/okarras/EmpiRE-Analysis"
         >
           <Box
