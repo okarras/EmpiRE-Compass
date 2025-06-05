@@ -4,6 +4,7 @@ import {
   Typography,
   Box,
   Paper,
+  IconButton,
 } from '@mui/material';
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
@@ -13,6 +14,7 @@ import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
+import CodeIcon from '@mui/icons-material/Code';
 
 const ErrorState = ({ message }: { message: string }) => (
   <Paper
@@ -69,31 +71,55 @@ const QuestionPage = () => {
         }}
       >
         <Box sx={{ position: 'relative' }}>
-          <Typography
-            variant="h3"
+          <Box
             sx={{
-              color: '#e86161',
-              fontWeight: 700,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              flexWrap: 'wrap',
               mb: 4,
-              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
-              lineHeight: 1.3,
-              position: 'relative',
-              display: 'inline-block',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: -8,
-                left: 0,
-                right: 0,
-                width: '100%',
-                height: '4px',
-                backgroundColor: '#e86161',
-                borderRadius: '2px',
-              },
             }}
           >
-            {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
-          </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                color: '#e86161',
+                fontWeight: 700,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+                lineHeight: 1.3,
+                position: 'relative',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -8,
+                  left: 0,
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: '#e86161',
+                  borderRadius: '2px',
+                },
+              }}
+            >
+              {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
+            </Typography>
+
+            <IconButton
+              href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
+              target="_blank"
+              sx={{
+                color: '#e86161',
+                mt: { xs: 2, sm: 0 },
+                '&:hover': {
+                  color: '#b33a3a',
+                },
+              }}
+            >
+              <CodeIcon sx={{ mr: 1 }} />
+              <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                Open in Binder
+              </Typography>
+            </IconButton>
+          </Box>
 
           <Question query={finalQuery} />
         </Box>

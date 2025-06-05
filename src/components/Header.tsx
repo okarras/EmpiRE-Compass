@@ -14,6 +14,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import GitHubIcon from '@mui/icons-material/GitHub';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,9 +31,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const getBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [
-      { path: '/', label: 'Home' },
-    ];
+    const breadcrumbs = [{ path: '/', label: 'Home' }];
 
     if (paths.length > 0) {
       paths.forEach((path, index) => {
@@ -41,7 +40,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
         if (path === 'questions' && paths[index + 1]) {
           const questionId = parseInt(paths[index + 1]);
-          const question = queries.find(q => q.id === questionId);
+          const question = queries.find((q) => q.id === questionId);
           if (question) {
             label = `Question ${questionId}`;
           }
@@ -53,10 +52,13 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
     return breadcrumbs;
   };
-
+  const redirectToGitHub = () => {
+    window.open('https://github.com/okarras/empire-Compass/', '_blank');
+  };
+  
   return (
-    <AppBar 
-      position="sticky" 
+    <AppBar
+      position="sticky"
       elevation={0}
       sx={{
         backgroundColor: 'background.paper',
@@ -105,8 +107,13 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {!isMobile && (
-            <Breadcrumbs 
-              separator={<NavigateNextIcon fontSize="small" sx={{ color: 'text.secondary' }} />}
+            <Breadcrumbs
+              separator={
+                <NavigateNextIcon
+                  fontSize="small"
+                  sx={{ color: 'text.secondary' }}
+                />
+              }
               aria-label="breadcrumb"
               sx={{
                 '& .MuiBreadcrumbs-li': {
@@ -121,7 +128,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
                   <Typography
                     key={breadcrumb.path}
                     color="text.primary"
-                    sx={{ 
+                    sx={{
                       fontSize: '0.875rem',
                       fontWeight: 600,
                     }}
@@ -150,7 +157,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             </Breadcrumbs>
           )}
 
-          <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+          <Tooltip
+            title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+          >
             <IconButton
               onClick={toggleColorMode}
               color="inherit"
@@ -166,6 +175,21 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               ) : (
                 <LightModeIcon sx={{ color: 'text.primary' }} />
               )}
+            </IconButton>
+          </Tooltip>
+          <Tooltip
+            title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+          >
+            <IconButton
+              onClick={redirectToGitHub}
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              <GitHubIcon sx={{ color: 'text.primary' }} />
             </IconButton>
           </Tooltip>
         </Box>

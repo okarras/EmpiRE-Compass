@@ -1,4 +1,10 @@
-import { AccordionSummary, Box, Typography, Accordion } from '@mui/material';
+import {
+  AccordionSummary,
+  Box,
+  Typography,
+  Accordion,
+  Button,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
@@ -6,8 +12,9 @@ import ChartWrapper from './CustomCharts/ChartWrapper';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
-import QuestionDialog from './QuestionDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import { useNavigate } from 'react-router';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -16,6 +23,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   );
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +49,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
     isExpanded: boolean
   ) => {
     setExpanded(isExpanded);
+  };
+
+  const openQuestionPage = () => {
+    navigate(`/questions/${query.id}`);
   };
 
   return (
@@ -131,13 +143,28 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             minWidth: 'fit-content',
           }}
         >
-          <QuestionDialog
-            questionData={questionData}
-            query={query}
-            chartData={query.dataProcessingFunction(questionData) ?? []}
-            normalized={normalized}
-            setNormalized={setNormalized}
-          />
+          <Button
+            startIcon={<BarChartIcon />}
+            variant="outlined"
+            onClick={openQuestionPage}
+            sx={{
+              color: '#e86161',
+              borderColor: '#e86161',
+              marginLeft: '10px',
+              minWidth: '15vw',
+              '&:hover': {
+                backgroundColor: '#e86161',
+                color: 'white',
+                borderColor: '#e86161',
+              },
+              '&.MuiButton-outlined': {
+                borderColor: '#e86161',
+              },
+            }}
+            size="small"
+          >
+            Question Information
+          </Button>
         </Box>
       </AccordionSummary>
 
@@ -150,6 +177,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         <QuestionInformation
           information={query.dataAnalysisInformation.requiredDataForAnalysis}
           label="Required Data for Analysis"
+        />
+        <QuestionInformation
+          information={query.dataAnalysisInformation.dataInterpretation}
+          label="Data Interpretation"
         />
 
         <Box
@@ -176,11 +207,6 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             availableCharts={['bar', 'pie']}
           />
         </Box>
-
-        <QuestionInformation
-          information={query.dataAnalysisInformation.dataInterpretation}
-          label="Data Interpretation"
-        />
       </Box>
     </Accordion>
   );

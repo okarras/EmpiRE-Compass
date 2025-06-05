@@ -307,31 +307,42 @@ export const SPARQL_QUERIES = {
 `,
 
   query_8: `
-    SELECT ?paper, ?year, ?external, ?internal, ?construct, ?conclusion, ?reliability, ?generalizability, ?content, ?descriptive, ?theoretical, ?repeatability, ?mentioned
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                            orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                    orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
+        SELECT ?paper ?year 
+        (SAMPLE(?external) AS ?external)
+        (SAMPLE(?internal) AS ?internal)
+        (SAMPLE(?construct) AS ?construct)
+        (SAMPLE(?conclusion) AS ?conclusion)
+        (SAMPLE(?reliability) AS ?reliability)
+        (SAMPLE(?generalizability) AS ?generalizability)
+        (SAMPLE(?content) AS ?content)
+        (SAMPLE(?descriptive) AS ?descriptive)
+        (SAMPLE(?theoretical) AS ?theoretical)
+        (SAMPLE(?repeatability) AS ?repeatability)
+        (SAMPLE(?mentioned) AS ?mentioned)
+        WHERE {
+        ?paper orkgp:P31 ?contribution;
+                orkgp:P29 ?year.
+        ?contribution a orkgc:C27001;
+                        orkgp:P135046 ?serie.
+        ?serie rdfs:label ?venue_name.
 
-                    OPTIONAL{?contribution orkgp:P39099 ?threats.
-                            OPTIONAL{?threats orkgp:P55034 ?external.}
-                            OPTIONAL{?threats orkgp:P55035 ?internal.}
-                            OPTIONAL{?threats orkgp:P55037 ?construct.}
-                            OPTIONAL{?threats orkgp:P55036 ?conclusion.}
-                            OPTIONAL{?threats orkgp:P59109 ?reliability.}
-                            OPTIONAL{?threats orkgp:P60006 ?generalizability.}
-                            OPTIONAL{?threats orkgp:P68005 ?content.}
-                            OPTIONAL{?threats orkgp:P97000 ?descriptive.}
-                            OPTIONAL{?threats orkgp:P97001 ?theoretical.}
-                            OPTIONAL{?threats orkgp:P97002 ?repeatability.}
-                            OPTIONAL{?threats orkgp:P145000 ?mentioned}
-                    }
-                            
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
+        OPTIONAL {
+        ?contribution orkgp:P39099 ?threats.
+        OPTIONAL { ?threats orkgp:P55034 ?external. }
+        OPTIONAL { ?threats orkgp:P55035 ?internal. }
+        OPTIONAL { ?threats orkgp:P55037 ?construct. }
+        OPTIONAL { ?threats orkgp:P55036 ?conclusion. }
+        OPTIONAL { ?threats orkgp:P59109 ?reliability. }
+        OPTIONAL { ?threats orkgp:P60006 ?generalizability. }
+        OPTIONAL { ?threats orkgp:P68005 ?content. }
+        OPTIONAL { ?threats orkgp:P97000 ?descriptive. }
+        OPTIONAL { ?threats orkgp:P97001 ?theoretical. }
+        OPTIONAL { ?threats orkgp:P97002 ?repeatability. }
+        OPTIONAL { ?threats orkgp:P145000 ?mentioned. }
+        }
+        FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
+        GROUP BY ?paper ?year
 `,
 
   query_9: `
