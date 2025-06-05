@@ -178,7 +178,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             </IconButton>
           </Tooltip>
           <Tooltip
-            title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+            title={`Check out the source code on GitHub`}
           >
             <IconButton
               onClick={redirectToGitHub}
