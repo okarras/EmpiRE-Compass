@@ -26,11 +26,11 @@ const Home = () => {
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
-            py: { xs: 4, sm: 6, md: 8 },
-            px: { xs: 2, sm: 3, md: 4 }
+            py: { xs: 1, sm: 2, md: 3 },
+            px: { xs: 1, sm: 1, md: 2 }
           }}
         >
-          <Stack spacing={4} sx={{ flex: 1 }}>
+          <Stack spacing={2} sx={{ flex: 1 }}>
             <Header />
             <Divider sx={{ my: { xs: 3, sm: 4, md: 5 } }} />
             <Stack spacing={4}>

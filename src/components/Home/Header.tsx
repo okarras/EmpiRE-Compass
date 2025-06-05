@@ -18,7 +18,6 @@ const Header = () => {
           fontWeight: 800,
           fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
           letterSpacing: '-0.02em',
-          mb: 3,
         }}
       >
         EmpiRE-Compass
@@ -27,7 +26,6 @@ const Header = () => {
         variant="h5" 
         color="text.secondary" 
         sx={{ 
-          mb: 3,
           fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
           lineHeight: 1.5,
           maxWidth: '800px',
