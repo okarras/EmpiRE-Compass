@@ -101,12 +101,11 @@ const CustomPieChart = (props: CustomPieChartInterface) => {
             highlightScope: { faded: 'global', highlighted: 'item' },
             faded: { innerRadius: 0.6, additionalRadius: -30, color: 'gray' },
             valueFormatter: (item) => {
-              const percentage = (item.value / total) * 100;
-              return `${item.label}: ${percentage.toFixed(1)}% (${item.value})`;
+              return `${item.value}`;
             },
             arcLabel: (item) => {
               const percentage = (item.value / total) * 100;
-              return percentage > 5 ? `${percentage.toFixed(1)}%` : '';
+              return percentage > 5 ? `${item.value}` : '';
             },
             arcLabelMinAngle: 20,
           },
