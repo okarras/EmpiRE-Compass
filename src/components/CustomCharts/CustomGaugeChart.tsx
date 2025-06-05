@@ -1,13 +1,18 @@
-// CustomGaugeChart.tsx
-import { Gauge } from '@mui/x-charts/Gauge';
+import {
+  Gauge,
+} from '@mui/x-charts/Gauge';
 import { Box, Typography } from '@mui/material';
 
 interface CustomGaugeChartProps {
   label: string;
   value: number;
+  maxValue?: number;
+  // showNeedle?: boolean;
 }
 
-const CustomGaugeChart = ({ label, value }: CustomGaugeChartProps) => {
+const CustomGaugeChart = ({ label, value, maxValue }: CustomGaugeChartProps) => {
+  const effectiveMax = maxValue ?? value;
+
   return (
     <Box
       sx={{
@@ -30,11 +35,14 @@ const CustomGaugeChart = ({ label, value }: CustomGaugeChartProps) => {
         {label}
       </Typography>
       <Gauge
-        value={value}
+        value={(value / effectiveMax) * 100}
         startAngle={-110}
         endAngle={110}
-        text={`${value}`}
+        text={({ value, valueMax }) =>
+          value === valueMax ? `${value}` : `${value} / ${valueMax}`
+        }
         sx={{ width: '100%' }}
+        // showNeedle={showNeedle}
       />
     </Box>
   );

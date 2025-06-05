@@ -43,6 +43,7 @@ interface StatisticsData {
   distinctResources: number;
   distinctLiterals: number;
   distinctPredicates: number;
+  answeredCQs: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -56,6 +57,7 @@ const DEFAULT_STATS: StatisticsData = {
   distinctResources: 0,
   distinctLiterals: 0,
   distinctPredicates: 0,
+  answeredCQs: 0,
 };
 
 export default function Statistics() {
@@ -129,6 +131,7 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
             <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
+            <CustomGaugeChart label="Answered CQs" value={16} maxValue={100} showNeedle />
           </Stack>
         ) : (
           <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
@@ -154,6 +157,9 @@ export default function Statistics() {
               <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
             </StatCard>
             <StatCard value={statistics.distinctPredicates} label="Distinct Properties">
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={16} label="Answered CQs">
               <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
             </StatCard>
           </Stack>
