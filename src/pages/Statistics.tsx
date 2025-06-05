@@ -71,8 +71,9 @@ export default function Statistics() {
             fetchSPARQLData(query)
           )
         );
+        console.log('SPARQL statistics data:', results);
 
-        const [paperData, perVenueData, venuesData] = results;
+        const [paperData,,,,, perVenueData, venuesData] = results;
 
         setStatistics({
           ...statistics,
