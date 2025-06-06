@@ -56,7 +56,11 @@ export interface Query {
   chartType?: 'bar' | 'pie';
   //TODO: fix types
   dataProcessingFunction2?: (data: any) => any[];
-  dataProcessingFunction: (data: any, query_id?: string) => any[];
+  dataProcessingFunction: (
+    data: any,
+    query_id?: string,
+    options?: Record<string, unknown>
+  ) => any[];
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
@@ -216,7 +220,8 @@ export const queries: Query[] = [
       sx: chartStyles,
     },
 
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData) =>
+      sortDataByYear(rawData, '3', { reversed: true }),
     dataAnalysisInformation: {
       question:
         'How has the proportion of papers that do not have an empirical study evolved over time?',

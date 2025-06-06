@@ -2,43 +2,57 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-export const sortDataByYear = (rawData: { year: number }[]) => {
+export const sortDataByYear = (
+  rawData: { year: number; dc_label: string; da_label: string }[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  query_id: string = '',
+  options: { reversed?: boolean } = {}
+) => {
+  const { reversed = false } = options;
+  console.log('Sorting data by year:', rawData);
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
+  let filteredData = rawData;
+  if (reversed) {
+    filteredData = rawData.filter(
+      (item) =>
+        item.dc_label === 'no collection' || item.da_label === 'no analysis'
+    );
+  } else {
+    filteredData = rawData.filter(
+      (item) =>
+        item.dc_label !== 'no collection' && item.da_label !== 'no analysis'
+    );
+  }
 
   // Get the unique years from the data
   const years = [...new Set(rawData.map((item) => item.year))];
 
   // Get the number of items for each year
   const itemsPerYear = years.map((year) => {
-    const count = rawData.filter((item) => item.year === year).length;
+    const count = filteredData.filter((item) => item.year === year).length;
+    const rawCount = rawData.filter((item) => item.year === year).length;
     return {
       count,
+      rawCount,
       year,
       ...rawData.find((item) => item.year === year), // Other properties
     };
   });
 
   // Find min and max counts
-  const counts = itemsPerYear.map((item) => item.count);
-  const minCount = Math.min(...counts);
-  const maxCount = Math.max(...counts);
 
   // Normalize the counts
   return itemsPerYear.map((item) => ({
     ...item,
-    normalizedRatio:
-      maxCount !== minCount
-        ? Number(
-            (((item.count - minCount) / (maxCount - minCount)) * 100).toFixed(2)
-          )
-        : 0, // Avoid division by zero
+    normalizedRatio: Number(((item.count / item.rawCount) * 100).toFixed(2)),
   }));
 };
 
 export interface SortDataByCountReturnInterface {
   method: string;
-  count: number;
+  count: number; // target count after filtering
+  rawCount?: number; // original count before filtering
   normalizedRatio: number;
 }
 
@@ -183,9 +197,7 @@ type StatisticItem = {
   others: number;
 };
 
-export const countDataAnalysisStatisticsMethods = (
-  data: StatisticItem[]
-) => {
+export const countDataAnalysisStatisticsMethods = (data: StatisticItem[]) => {
   const processedData: StatisticItem[] = [];
   // get unique year values
   const uniqueYears = [...new Set(data.map((item) => item.year))];

@@ -4,7 +4,6 @@ import {
   Typography,
   Box,
   Paper,
-  IconButton,
 } from '@mui/material';
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
@@ -14,7 +13,6 @@ import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
-import CodeIcon from '@mui/icons-material/Code';
 
 const ErrorState = ({ message }: { message: string }) => (
   <Paper
@@ -102,23 +100,6 @@ const QuestionPage = () => {
             >
               {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
             </Typography>
-
-            <IconButton
-              href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
-              target="_blank"
-              sx={{
-                color: '#e86161',
-                mt: { xs: 2, sm: 0 },
-                '&:hover': {
-                  color: '#b33a3a',
-                },
-              }}
-            >
-              <CodeIcon sx={{ mr: 1 }} />
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                Open in Binder
-              </Typography>
-            </IconButton>
           </Box>
 
           <Question query={finalQuery} />

@@ -11,23 +11,24 @@ export const PREFIXES = `
 
 export const SPARQL_QUERIES = {
   query_1: `
-    SELECT DISTINCT ?paper ?year ?dc_label ?da_label
-        WHERE {
-        ?paper orkgp:P31 ?contribution;
-                orkgp:P29 ?year.
-        ?contribution a orkgc:C27001;
-                        orkgp:P135046 ?serie;
-                        orkgp:P56008 ?data_collection;
-                        orkgp:P15124 ?data_analysis.
+     SELECT ?paper, ?year, ?dc_label, ?da_label
+            WHERE {
+                    ?paper orkgp:P31 ?contribution;
+                        orkgp:P29 ?year.
+                    ?contribution a orkgc:C27001;
+                                orkgp:P135046 ?serie.
+                    ?serie rdfs:label ?venue_name.
 
-        ?data_collection rdfs:label ?dc_label.
-        ?data_analysis rdfs:label ?da_label.
-        ?serie rdfs:label ?venue_name.
-
-        FILTER(?dc_label != "no collection"^^xsd:string)
-        FILTER(?da_label != "no analysis"^^xsd:string)
-        FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-        }
+                    OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+                            ?data_collection rdfs:label ?dc_label.
+                            }
+                    OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                            ?data_analysis rdfs:label ?da_label.
+                            }
+                            
+                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+            }
 `,
 
   query_2_1: `
@@ -82,29 +83,24 @@ export const SPARQL_QUERIES = {
 `,
 
   query_3: `
-    SELECT DISTINCT ?paper ?year ?dc_label ?da_label
-        WHERE {
-        ?paper orkgp:P31 ?contribution;
-                orkgp:P29 ?year.
-        ?contribution a orkgc:C27001;
-                        orkgp:P135046 ?serie.
-        ?serie rdfs:label ?venue_name.
-
-        OPTIONAL {
-                ?contribution orkgp:P56008 ?data_collection.
-                ?data_collection rdfs:label ?dc_label.
-        }
-        OPTIONAL {
-                ?contribution orkgp:P15124 ?data_analysis.
-                ?data_analysis rdfs:label ?da_label.
-        }
-
-        FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-        FILTER(
-                ?dc_label = "no collection"^^xsd:string || 
-                ?da_label = "no analysis"^^xsd:string
-        )
-        }
+        SELECT ?paper, ?year, ?dc_label, ?da_label
+                WHERE {
+                        ?paper orkgp:P31 ?contribution;
+                        orkgp:P29 ?year.
+                        ?contribution a orkgc:C27001;
+                                orkgp:P135046 ?serie.
+                        ?serie rdfs:label ?venue_name.
+                        
+                        OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+                                ?data_collection rdfs:label ?dc_label.
+                        }
+                        OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                                ?data_analysis rdfs:label ?da_label.
+                        }
+                        
+                        #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                        FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)    
+                }
 `,
 
   query_4_1: `
