@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChartSetting, Query } from '../constants/queries_chart_info';
-import { Box, Typography, Divider } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
 
@@ -66,7 +66,21 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           >
             Detailed Charts
           </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 4,
+              overflowX: 'auto',
+              pb: 2,
+              scrollSnapType: 'x mandatory',
+              '& > *': {
+                minWidth: { xs: '90vw', sm: 400, md: 500 },
+                maxWidth: 600,
+                scrollSnapAlign: 'start',
+              },
+            }}
+          >
             {detailedChartData.map(
               (chart: { label: string; dataKey: unknown }, index: number) => (
                 <React.Fragment key={`${queryId}-chart-${index}`}>
@@ -92,9 +106,6 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                     defaultChartType={query.chartType ?? 'bar'}
                     availableCharts={['bar', 'pie']}
                   />
-                  {index < detailedChartData.length - 1 && (
-                    <Divider sx={{ my: 3 }} />
-                  )}
                 </React.Fragment>
               )
             )}

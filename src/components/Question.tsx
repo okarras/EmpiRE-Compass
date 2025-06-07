@@ -7,13 +7,14 @@ import {
   Tabs,
   Tab,
   CircularProgress,
+  Divider,
 } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
-import AIAssistant from './AI/AIAssistant';
+import { useAIAssistantContext } from '../context/AIAssistantContext';
 
 interface QuestionProps {
   query: Query;
@@ -22,6 +23,7 @@ interface QuestionProps {
 const Question: React.FC<QuestionProps> = ({ query }) => {
   // Tabs state
   const [tab, setTab] = useState(0);
+  const { setContext } = useAIAssistantContext();
 
   // State for primary data (uid)
   const [dataCollection, setDataCollection] = useState<
@@ -37,6 +39,13 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   );
   const [loading2, setLoading2] = useState(false);
   const [error2, setError2] = useState<string | null>(null);
+
+  // Update AI Assistant context when data changes
+  useEffect(() => {
+    if (!loading1 && !error1) {
+      setContext(query, dataCollection);
+    }
+  }, [query, dataCollection, loading1, error1, setContext]);
 
   // Fetch primary data (uid)
   useEffect(() => {
@@ -125,11 +134,6 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Question Information - Always visible */}
-
-      {/* Tabs for different views */}
-      <AIAssistant query={query} questionData={dataCollection} />
-      
       {query.uid_2 && (
         <Tabs
           value={tab}
@@ -155,6 +159,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       >
         <QuestionInformationView query={query} />
         {/* Data Collection View */}
+        <Divider sx={{ my: 3 }} />
         <Box hidden={tab !== 0}>
           <QuestionChartView
             query={query}
@@ -163,31 +168,33 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
             setNormalized={setNormalized1}
             queryId={query.uid}
           />
+          <Divider sx={{ my: 3 }} />
+          <QuestionDataGridView questionData={dataCollection} />
         </Box>
-      </Paper>
-      <QuestionDataGridView questionData={dataCollection} />
 
-      {/* Data Analysis View */}
-      {query.uid_2 && (
-        <Box hidden={tab !== 1}>
-          {loading2 ? (
-            renderLoadingState()
-          ) : error2 ? (
-            renderErrorState(error2)
-          ) : (
-            <>
-              <QuestionChartView
-                query={query}
-                questionData={dataAnalysis}
-                normalized={normalized1}
-                setNormalized={setNormalized1}
-                queryId={query.uid_2}
-              />
-              <QuestionDataGridView questionData={dataAnalysis} />
-            </>
-          )}
-        </Box>
-      )}
+        {/* Data Analysis View */}
+        {query.uid_2 && (
+          <Box hidden={tab !== 1}>
+            {loading2 ? (
+              renderLoadingState()
+            ) : error2 ? (
+              renderErrorState(error2)
+            ) : (
+              <>
+                <QuestionChartView
+                  query={query}
+                  questionData={dataAnalysis}
+                  normalized={normalized1}
+                  setNormalized={setNormalized1}
+                  queryId={query.uid_2}
+                />
+                <Divider sx={{ my: 3 }} />
+                <QuestionDataGridView questionData={dataAnalysis} />
+              </>
+            )}
+          </Box>
+        )}
+      </Paper>
     </Box>
   );
 };

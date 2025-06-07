@@ -5,7 +5,7 @@ export interface RawDataItem {
 export const sortDataByYear = (
   rawData: { year: number; dc_label: string; da_label: string }[],
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  query_id: string = '',
+  _query_id: string = '',
   options: { reversed?: boolean } = {}
 ) => {
   const { reversed = false } = options;
