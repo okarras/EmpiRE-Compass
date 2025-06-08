@@ -7,10 +7,19 @@ interface CustomBarChartInterface {
   question_id: string;
   normalized: boolean;
   loading: boolean;
+  isSubChart?: boolean;
 }
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
-  const { dataset, chartSetting, question_id, loading, normalized } = props;
+  const {
+    dataset,
+    chartSetting,
+    question_id,
+    loading,
+    normalized,
+    isSubChart = false,
+  } = props;
+  const hasMultipleSubCharts = chartSetting.series.length > 1;
 
   return (
     <div
@@ -31,7 +40,10 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         {...chartSetting} // Spread existing settings first
         series={chartSetting.series.map((s: Record<string, unknown>) => ({
           ...s,
-          dataKey: normalized ? s.dataKey : 'count', // Override dataKey based on normalized
+          dataKey:
+            normalized || hasMultipleSubCharts || isSubChart
+              ? s.dataKey
+              : 'count', // Override dataKey based on normalized
         }))}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}

@@ -119,7 +119,7 @@ export const queries: Query[] = [
         'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
-  //Query 2 TODO
+  //Query 2
   {
     title:
       'Number of empirical methods used for data collection & data analysis per year',
@@ -274,16 +274,13 @@ export const queries: Query[] = [
       };
 
       rawData.forEach((item) => {
-        let hasKnownKey = false;
-        keys_to_count.forEach((key) => {
-          if (item[key]) {
+        Object.keys(item).forEach((key) => {
+          if (keys_to_count.includes(key)) {
             labelCounts[key]++;
-            hasKnownKey = true;
+          } else if (!static_keys.includes(key)) {
+            labelCounts['others']++;
           }
         });
-        if (!hasKnownKey && !static_keys.includes(item.da_label)) {
-          labelCounts['others']++;
-        }
       });
 
       const chartData = Object.keys(labelCounts).map((label) => ({

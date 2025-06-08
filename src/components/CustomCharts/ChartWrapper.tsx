@@ -14,6 +14,7 @@ interface ChartWrapperProps {
   loading: boolean;
   defaultChartType?: 'bar' | 'pie';
   availableCharts?: ('bar' | 'pie')[];
+  isSubChart?: boolean;
 }
 
 interface DataItem {
@@ -40,6 +41,7 @@ const ChartWrapper = ({
   loading = false,
   defaultChartType = 'bar',
   availableCharts = ['bar', 'pie'],
+  isSubChart = false,
 }: ChartWrapperProps) => {
   const [chartType, setChartType] = useState<'bar' | 'pie'>(defaultChartType);
 
@@ -102,6 +104,7 @@ const ChartWrapper = ({
           question_id={question_id}
           normalized={normalized}
           loading={loading}
+          isSubChart={isSubChart}
         />
       ) : (
         <CustomPieChart

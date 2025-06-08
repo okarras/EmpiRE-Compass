@@ -65,6 +65,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         setLoading1(false);
       }
     };
+    setNormalized(true);
     fetchData();
   }, [query.uid]);
 
@@ -163,10 +164,13 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         <Box hidden={tab !== 0}>
           <QuestionChartView
             query={query}
-            questionData={dataCollection}
             normalized={normalized}
             setNormalized={setNormalized}
             queryId={query.uid}
+            chartSettings={query.chartSettings}
+            processedChartDataset={
+              query.dataProcessingFunction?.(dataCollection ?? []) ?? []
+            }
           />
           <Divider sx={{ my: 3 }} />
           <QuestionDataGridView questionData={dataCollection} />
@@ -181,13 +185,18 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                <QuestionChartView
-                  query={query}
-                  questionData={dataAnalysis}
-                  normalized={normalized}
-                  setNormalized={setNormalized}
-                  queryId={query.uid_2}
-                />
+                {query.chartSettings2 ? (
+                  <QuestionChartView
+                    query={query}
+                    normalized={normalized}
+                    setNormalized={setNormalized}
+                    queryId={query.uid_2}
+                    chartSettings={query.chartSettings2}
+                    processedChartDataset={
+                      query.dataProcessingFunction2?.(dataAnalysis ?? []) ?? []
+                    }
+                  />
+                ) : null}
                 <Divider sx={{ my: 3 }} />
                 <QuestionDataGridView questionData={dataAnalysis} />
               </>

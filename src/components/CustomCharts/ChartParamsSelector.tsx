@@ -17,17 +17,8 @@ function ChartParamsSelector({
   setNormalized,
   query,
 }: ChartParamsSelectorProps) {
-  const checkNormalizedOption = (query: Query): boolean => {
-    if (query?.chartSettings.series?.[0]?.dataKey === 'normalizedRatio') {
-      return true;
-    }
-    return false;
-  };
-
-  const normalizedOption = checkNormalizedOption(query);
-
   const handleChange = (
-    event: React.MouseEvent<HTMLElement>,
+    _event: React.MouseEvent<HTMLElement>,
     newValue: boolean | null
   ) => {
     if (newValue !== null) {
@@ -43,25 +34,23 @@ function ChartParamsSelector({
     >
       <FormControl component="fieldset">
         <FormLabel component="legend">Chart Options</FormLabel>
-        {normalizedOption ? (
-          <ToggleButtonGroup
-            value={normalized}
-            exclusive
-            onChange={handleChange}
-            aria-label="normalization toggle"
-            size="small"
-            sx={{ mt: 1 }}
-          >
-            <ToggleButton value={true} aria-label="normalized">
-              Relative
-            </ToggleButton>
-            <ToggleButton value={false} aria-label="raw">
-              Absolute
-            </ToggleButton>
-          </ToggleButtonGroup>
-        ) : (
-          <></>
-        )}
+
+        <ToggleButtonGroup
+          value={normalized}
+          exclusive
+          onChange={handleChange}
+          aria-label="normalization toggle"
+          size="small"
+          sx={{ mt: 1 }}
+          key={query.uid}
+        >
+          <ToggleButton value={true} aria-label="normalized">
+            Relative
+          </ToggleButton>
+          <ToggleButton value={false} aria-label="raw">
+            Absolute
+          </ToggleButton>
+        </ToggleButtonGroup>
       </FormControl>
     </Stack>
   );

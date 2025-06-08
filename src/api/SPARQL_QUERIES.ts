@@ -33,24 +33,24 @@ export const SPARQL_QUERIES = {
 
   query_2_1: `
     SELECT ?paper, ?year, ?dc_method_type_label
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                        orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                       orkgp:P29 ?year.
+                ?contribution a orkgc:C27001;
+                              orkgp:P135046 ?serie.
+                ?serie rdfs:label ?venue_name.
 
-                    OPTIONAL{?contribution orkgp:P56008 ?data_collection.
-                            ?data_collection orkgp:P1005 ?dc_method;
-                                            rdfs:label ?dc_label.
-                            ?dc_method orkgp:P94003 ?dc_method_type.
-                            ?dc_method_type rdfs:label ?dc_method_type_label.
-                    }
+                OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+                         ?data_collection orkgp:P1005 ?dc_method;
+                                          rdfs:label ?dc_label.
+                         ?dc_method orkgp:P94003 ?dc_method_type.
+                         ?dc_method_type rdfs:label ?dc_method_type_label.
+                }
 
-                    FILTER(?dc_label != "no collection"^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
+                FILTER(?dc_label != "no collection"^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
 `,
 
   query_2_2: `

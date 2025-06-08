@@ -6,43 +6,32 @@ import ChartWrapper from './CustomCharts/ChartWrapper';
 
 interface QuestionChartViewProps {
   query: Query;
-  questionData: Record<string, unknown>[];
   normalized: boolean;
   setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
   queryId: string;
+  chartSettings: ChartSetting;
+  processedChartDataset: Record<string, unknown>[];
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   query,
-  questionData,
   normalized,
   setNormalized,
   queryId,
+  chartSettings,
+  processedChartDataset,
 }) => {
-  const isSecondSubQuery = query.uid_2 === queryId;
-  const chartSettingsKey = isSecondSubQuery
-    ? 'chartSettings2'
-    : 'chartSettings';
-  const hasSecondSubQueryChart = !!query.chartSettings2;
-  if (isSecondSubQuery && !hasSecondSubQueryChart) {
-    return null;
+  let series = chartSettings.series;
+  if (chartSettings.series.length > 1 && normalized) {
+    // add normalized to each series key string
+    series = series.map((chart: { dataKey: string }) => ({
+      ...chart,
+      dataKey: 'normalized_' + chart.dataKey,
+    }));
   }
-
-  const detailedChartData = isSecondSubQuery
-    ? (query.chartSettings2?.series ?? [])
-    : query.chartSettings.series;
-
-  const processedChartDataset = isSecondSubQuery
-    ? (query.dataProcessingFunction2?.(questionData ?? []) ?? [])
-    : query.dataProcessingFunction(questionData ?? []);
-
-  const chartSettings = isSecondSubQuery
-    ? ((query.chartSettings2 ?? []) as ChartSetting)
-    : query.chartSettings;
-
   const createHeading = (chart: { label: string }) => {
-    if (query[chartSettingsKey]?.seriesHeadingTemplate) {
-      return query[chartSettingsKey].seriesHeadingTemplate.replace(
+    if (chartSettings?.seriesHeadingTemplate) {
+      return chartSettings.seriesHeadingTemplate.replace(
         '{label}',
         chart.label
       );
@@ -53,7 +42,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   return (
     <Box sx={{ mt: 2 }}>
       {/* Charts Section */}
-      {detailedChartData.length > 1 && (
+      {series.length > 1 && (
         <>
           <Typography
             variant="h5"
@@ -81,7 +70,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
               },
             }}
           >
-            {detailedChartData.map(
+            {series.map(
               (chart: { label: string; dataKey: unknown }, index: number) => (
                 <React.Fragment key={`${queryId}-chart-${index}`}>
                   <ChartWrapper
@@ -105,6 +94,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                     loading={false}
                     defaultChartType={query.chartType ?? 'bar'}
                     availableCharts={['bar', 'pie']}
+                    isSubChart={true}
                   />
                 </React.Fragment>
               )
