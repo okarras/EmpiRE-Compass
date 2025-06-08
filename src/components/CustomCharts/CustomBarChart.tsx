@@ -21,7 +21,11 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       }}
       id={`chart-${question_id}`}
     >
-      <h4 style={{ textAlign: 'center' }}> {chartSetting.heading} </h4>
+      <h4 style={{ textAlign: 'center' }}>
+        {normalized
+          ? 'Normalized ' + chartSetting.heading.toLowerCase()
+          : chartSetting.heading}
+      </h4>
       <BarChart
         dataset={dataset}
         {...chartSetting} // Spread existing settings first

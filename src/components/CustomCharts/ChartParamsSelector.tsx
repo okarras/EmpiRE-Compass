@@ -2,9 +2,8 @@ import * as React from 'react';
 import Stack from '@mui/material/Stack';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import { Query } from '../../constants/queries_chart_info';
 
 type ChartParamsSelectorProps = {
@@ -27,9 +26,13 @@ function ChartParamsSelector({
 
   const normalizedOption = checkNormalizedOption(query);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = event.target;
-    if (name === 'normalized') setNormalized(checked);
+  const handleChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newValue: boolean | null
+  ) => {
+    if (newValue !== null) {
+      setNormalized(newValue);
+    }
   };
 
   return (
@@ -40,22 +43,25 @@ function ChartParamsSelector({
     >
       <FormControl component="fieldset">
         <FormLabel component="legend">Chart Options</FormLabel>
-        <FormGroup>
-          {normalizedOption ? (
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={normalized}
-                  onChange={handleChange}
-                  name="normalized"
-                />
-              }
-              label="Normalized"
-            />
-          ) : (
-            <></>
-          )}
-        </FormGroup>
+        {normalizedOption ? (
+          <ToggleButtonGroup
+            value={normalized}
+            exclusive
+            onChange={handleChange}
+            aria-label="normalization toggle"
+            size="small"
+            sx={{ mt: 1 }}
+          >
+            <ToggleButton value={true} aria-label="normalized">
+              Relative
+            </ToggleButton>
+            <ToggleButton value={false} aria-label="raw">
+              Absolute
+            </ToggleButton>
+          </ToggleButtonGroup>
+        ) : (
+          <></>
+        )}
       </FormControl>
     </Stack>
   );

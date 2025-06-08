@@ -176,17 +176,51 @@ interface CountMethodsRawDataInterface {
 export const countMethodDistribution = (
   rawData: CountMethodsRawDataInterface[] = []
 ): Record<string, unknown>[] => {
+  // anything that is not in the dataKeys is considered "others"
+  const dataKeys = [
+    'case study',
+    'experiment',
+    'survey',
+    'interview',
+    'secondary research',
+    'action research',
+  ];
   const aggregatedData: Record<string, Record<string, number>> = {};
   rawData.forEach(({ dc_method_type_label, year }) => {
     if (!aggregatedData[year]) aggregatedData[year] = {};
-    aggregatedData[year][dc_method_type_label] =
-      (aggregatedData[year][dc_method_type_label] || 0) + 1;
+    if (dataKeys.includes(dc_method_type_label)) {
+      aggregatedData[year][dc_method_type_label] =
+        (aggregatedData[year][dc_method_type_label] || 0) + 1;
+    } else {
+      aggregatedData[year]['others'] =
+        (aggregatedData[year]['others'] || 0) + 1;
+    }
   });
-  const chartData = Object.entries(aggregatedData).map(([year, methods]) => ({
-    year,
-    ...methods,
-  }));
-  return chartData;
+
+  const aggregatedDataNormalized = Object.entries(aggregatedData).map(
+    ([year, methods]) => {
+      // formula: method / number of all papers in the year
+      const totalPapers = Object.values(methods).reduce(
+        (acc, curr) => acc + curr,
+        0
+      );
+      const normalizedMethods = Object.entries(methods).map(
+        ([method, count]) => {
+          return {
+            [`normalized_${method}`]: count / totalPapers,
+          };
+        }
+      );
+      const mergedNormalizedMethods = Object.assign({}, ...normalizedMethods);
+      return {
+        year,
+        ...mergedNormalizedMethods,
+        ...methods,
+      };
+    }
+  );
+
+  return aggregatedDataNormalized;
 };
 
 type StatisticItem = {

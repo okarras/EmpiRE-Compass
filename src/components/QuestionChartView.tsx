@@ -101,7 +101,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                         },
                       ],
                     }}
-                    normalized={true}
+                    normalized={normalized}
                     loading={false}
                     defaultChartType={query.chartType ?? 'bar'}
                     availableCharts={['bar', 'pie']}

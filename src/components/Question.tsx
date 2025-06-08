@@ -31,7 +31,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   >([]);
   const [loading1, setLoading1] = useState(true);
   const [error1, setError1] = useState<string | null>(null);
-  const [normalized1, setNormalized1] = useState(true);
+  const [normalized, setNormalized] = useState(true);
 
   // State for secondary data (uid_2 if exists)
   const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>(
@@ -164,8 +164,8 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           <QuestionChartView
             query={query}
             questionData={dataCollection}
-            normalized={normalized1}
-            setNormalized={setNormalized1}
+            normalized={normalized}
+            setNormalized={setNormalized}
             queryId={query.uid}
           />
           <Divider sx={{ my: 3 }} />
@@ -184,8 +184,8 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                 <QuestionChartView
                   query={query}
                   questionData={dataAnalysis}
-                  normalized={normalized1}
-                  setNormalized={setNormalized1}
+                  normalized={normalized}
+                  setNormalized={setNormalized}
                   queryId={query.uid_2}
                 />
                 <Divider sx={{ my: 3 }} />
