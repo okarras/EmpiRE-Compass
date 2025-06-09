@@ -139,7 +139,7 @@ export const aggregateMethodUsage = (
   });
 
   return Object.entries(processedData).map(([method, count]) => ({
-    method,
+    method: `${method}`,
     count,
     normalizedRatio:
       grandTotal > 0 ? Number((count / totalPapersWithThreats).toFixed(3)) : 0, // Avoid division by zero
@@ -203,9 +203,13 @@ interface CountMethodsRawDataInterface {
 export const countMethodDistribution = (
   rawData: CountMethodsRawDataInterface[] = []
 ): Record<string, unknown>[] => {
-  //drop duplicates
-  const uniqueRawData = [...new Set(rawData)];
-  // anything that is not in the dataKeys is considered "others"
+  // 1) Deduplicate by paper
+  const paperMap = new Map<string, CountMethodsRawDataInterface>();
+  rawData.forEach((item) => paperMap.set(item.paper as string, item));
+  //TODO: fix this
+  const uniquePapers = rawData;
+
+  // 2) Define which labels go into "others"
   const dataKeys = [
     'case study',
     'experiment',
@@ -214,43 +218,44 @@ export const countMethodDistribution = (
     'secondary research',
     'action research',
   ];
+
+  // 3) Aggregate counts per year × method
   const aggregatedData: Record<string, Record<string, number>> = {};
-  uniqueRawData.forEach(({ dc_method_type_label, year }) => {
-    if (!aggregatedData[year]) aggregatedData[year] = {};
-    if (dataKeys.includes(dc_method_type_label)) {
-      aggregatedData[year][dc_method_type_label] =
-        (aggregatedData[year][dc_method_type_label] || 0) + 1;
-    } else {
-      aggregatedData[year]['others'] =
-        (aggregatedData[year]['others'] || 0) + 1;
-    }
+  uniquePapers.forEach(({ dc_method_type_label, year }) => {
+    aggregatedData[year] = aggregatedData[year] || {};
+    const key = dataKeys.includes(dc_method_type_label)
+      ? dc_method_type_label
+      : 'others';
+    aggregatedData[year][key] = (aggregatedData[year][key] || 0) + 1;
   });
 
-  const aggregatedDataNormalized = Object.entries(aggregatedData).map(
-    ([year, methods]) => {
-      // total papers that have a dc_method_type_label key
-      const totalPapersThatHaveDcMethodTypeLabel = uniqueRawData.filter(
-        (item) => item.dc_method_type_label
-      ).length;
-
-      const normalizedMethods = Object.entries(methods).map(
-        ([method, count]) => {
-          return {
-            [`normalized_${method}`]:
-              (count * 100) / totalPapersThatHaveDcMethodTypeLabel,
-          };
-        }
+  // 4) For each year, compute per-year total and per-method ratios
+  const result = Object.entries(aggregatedData)
+    .sort(([a], [b]) => parseInt(a) - parseInt(b))
+    .map(([year, methods]) => {
+      // per-year total = sum of all method counts for that year
+      const totalPapersThisYear = Object.values(methods).reduce(
+        (sum, c) => sum + c,
+        0
       );
-      const mergedNormalizedMethods = Object.assign({}, ...normalizedMethods);
+
+      // for each method, compute normalized = count / totalThisYear
+      const normalizedFields = Object.fromEntries(
+        Object.entries(methods).map(([method, count]) => [
+          `normalized_${method}`,
+          totalPapersThisYear > 0
+            ? Number((count / totalPapersThisYear).toFixed(2))
+            : 0,
+        ])
+      );
       return {
         year,
-        ...mergedNormalizedMethods,
         ...methods,
+        ...normalizedFields,
       };
-    }
-  );
-
-  return aggregatedDataNormalized;
+    });
+  console.log('result', result);
+  return result;
 };
 
 type StatisticItem = {

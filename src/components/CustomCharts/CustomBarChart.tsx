@@ -37,13 +37,13 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       </h4>
       <BarChart
         dataset={dataset}
-        {...chartSetting} // Spread existing settings first
+        {...chartSetting}
         series={chartSetting.series.map((s: Record<string, unknown>) => ({
           ...s,
           dataKey:
             normalized || hasMultipleSubCharts || isSubChart
               ? s.dataKey
-              : 'count', // Override dataKey based on normalized
+              : 'count',
         }))}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
@@ -51,4 +51,6 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     </div>
   );
 };
+
 export default CustomBarChart;
+

@@ -45,6 +45,7 @@ export interface ChartSetting {
   barLabel?: string;
   layout?: string;
   margin?: Record<string, unknown>;
+  noHeadingInSeries?: boolean;
 }
 export interface Query {
   title: string;
@@ -627,7 +628,7 @@ export const queries: Query[] = [
       question: 'What types of threats to validity do the authors report?',
     },
   },
-  //Query 10
+  //Query 10 TODO: check if this is correct
   {
     title: 'Number of papers per year',
     id: 10,
@@ -657,12 +658,7 @@ export const queries: Query[] = [
       ],
       series: [
         { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
         { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
       ],
       height: chartHeight,
       sx: chartStyles,
@@ -696,33 +692,191 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // 1) Deduplicate by paper URI (keep last entry)
+      const paperMap = new Map<string, any>();
+      rawData.forEach((item) => paperMap.set(item.paper, item));
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 2) Count total unique papers per year
+      const allPapersPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year }) => {
+        allPapersPerYear[year] = (allPapersPerYear[year] || 0) + 1;
+      });
+
+      // 3) Count papers that provide at least one URL per year
+      //    (assuming `url` is non‐empty when a paper has data)
+      const papersWithDataPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year, url }) => {
+        if (url) {
+          papersWithDataPerYear[year] = (papersWithDataPerYear[year] || 0) + 1;
+        }
+      });
+
+      // 4) Build final array with normalized ratio = dataPapers / totalPapers
+      const result = Object.keys(allPapersPerYear)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .map((yearStr) => {
+          const total = allPapersPerYear[yearStr];
+          const withData = papersWithDataPerYear[yearStr] || 0;
+          return {
+            year: parseInt(yearStr, 10),
+            count: withData, // number of papers with a URL
+            normalizedRatio:
+              total > 0 ? Number((withData / total).toFixed(2)) : 0,
+          };
+        });
+
+      return result;
+    },
+
     dataAnalysisInformation: {
       question:
         'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?',
     },
   },
-  //Query 12 TODO: this query should be checked
+  //Query 12
   {
     title: 'Number of papers per year',
     id: 12,
     uid: 'query_12',
     chartSettings: {
-      className: 'fullWidth',
-      barLabel: 'value',
+      className: 'fullWidth fixText',
       xAxis: xAxisSettings(),
+      colors: [
+        '#4c72b0',
+        '#dd8452',
+        '#55a868',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+      ],
       heading:
         'Number of papers with highlighted research question(s) and highlighted answers per year',
+      noHeadingInSeries: true,
       yAxis: [
         {
           label: 'Numbers of papers',
         },
       ],
-      series: [{ dataKey: 'normalizedRatio' }],
+      series: [
+        {
+          dataKey: 'noRQHighlighted',
+          label:
+            'Number of papers without highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'noRQHidden',
+          label:
+            'Number of papers without research question and hidden answers per year',
+        },
+        {
+          dataKey: 'hqha',
+          label:
+            'Number of papers with highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hqhaHidden',
+          label:
+            'Number of papers with highlighted research question(s) and hidden answers per year',
+        },
+        {
+          dataKey: 'hidqha',
+          label:
+            'Number of papers with hidden research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hidqhid',
+          label:
+            'Number of papers with hidden research question(s) and hidden answers per year',
+        },
+      ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // 0) Clean & normalize incoming strings
+      const cleaned = rawData.map((item) => ({
+        paper: item.paper,
+        year: item.year, // keep as string so it shows up as "1993", etc.
+        question: item.question,
+        highlighted_q: item.highlighted_q === '1',
+        highlighted_a: item.highlighted_a === '1',
+      }));
+
+      // 1) Dedupe by paper URI
+      const paperMap = new Map<string, any>();
+      cleaned.forEach((item) => paperMap.set(item.paper, item));
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 2) Build per‐year totals for normalization
+      const papersPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year }) => {
+        papersPerYear[year] = (papersPerYear[year] || 0) + 1;
+      });
+
+      // 3) Partition
+      const noRQ = uniquePapers.filter(
+        (item) => item.question === 'No question'
+      );
+      const hasRQ = uniquePapers.filter(
+        (item) => item.question !== 'No question'
+      );
+
+      // 4) Helper to count per year given qFlag (or null to ignore) & aFlag
+      const countComb = (
+        arr: any[],
+        qFlag: boolean | null,
+        aFlag: boolean
+      ): Record<string, number> =>
+        arr
+          .filter((item) =>
+            qFlag === null
+              ? item.highlighted_a === aFlag
+              : item.highlighted_q === qFlag && item.highlighted_a === aFlag
+          )
+          .reduce<Record<string, number>>((acc, { year }) => {
+            acc[year] = (acc[year] || 0) + 1;
+            return acc;
+          }, {});
+
+      const cnt_noRQ_HA = countComb(noRQ, null, true);
+      const cnt_noRQ_HI = countComb(noRQ, null, false);
+      const cnt_HQ_HA = countComb(hasRQ, true, true);
+      const cnt_HQ_HI = countComb(hasRQ, true, false);
+      const cnt_HiQ_HA = countComb(hasRQ, false, true);
+      const cnt_HiQ_HI = countComb(hasRQ, false, false);
+
+      // 5) Build output array
+      const result = Object.keys(papersPerYear)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .map((year) => {
+          const total = papersPerYear[year] || 0;
+          const c1 = cnt_noRQ_HA[year] || 0;
+          const c2 = cnt_noRQ_HI[year] || 0;
+          const c3 = cnt_HQ_HA[year] || 0;
+          const c4 = cnt_HQ_HI[year] || 0;
+          const c5 = cnt_HiQ_HA[year] || 0;
+          const c6 = cnt_HiQ_HI[year] || 0;
+          return {
+            year,
+            noRQHighlighted: c1,
+            normalized_noRQHighlighted: total ? +(c1 / total).toFixed(2) : 0,
+            noRQHidden: c2,
+            normalized_noRQHidden: total ? +(c2 / total).toFixed(2) : 0,
+            hqha: c3,
+            normalized_hqha: total ? +(c3 / total).toFixed(2) : 0,
+            hqhaHidden: c4,
+            normalized_hqhaHidden: total ? +(c4 / total).toFixed(2) : 0,
+            hidqha: c5,
+            normalized_hidqha: total ? +(c5 / total).toFixed(2) : 0,
+            hidqhid: c6,
+            normalized_hidqhid: total ? +(c6 / total).toFixed(2) : 0,
+          };
+        });
+      return result;
+    },
     dataAnalysisInformation: {
       question:
         'How has the reporting of research questions and answers evolved over time?',

@@ -79,11 +79,13 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                     chartSetting={{
                       ...chartSettings,
                       series: [chart],
-                      heading: createHeading(chart),
+                      heading: chartSettings.noHeadingInSeries
+                        ? ""
+                        : createHeading(chart),
                       colors: [chartSettings.colors?.[index] ?? '#e86161'],
                       yAxis: [
                         {
-                          label: chart.label,
+                          label: chartSettings.yAxis?.[0]?.label,
                           dataKey: chart.dataKey,
                         },
                       ],
