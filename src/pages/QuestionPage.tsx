@@ -52,10 +52,11 @@ const QuestionPage = () => {
     return <ErrorState message="Question not found" />;
   }
 
-  const finalQuery = mergeQueryWithFirebase(
-    targetQuery,
-    firebaseQuestions[targetQuery.uid] as unknown as Record<string, unknown>
-  );
+  const firebaseTargetQuery = Object.values(firebaseQuestions).find(
+    (q) => q.id === targetQuery.id
+  ) as unknown as Record<string, unknown>;
+
+  const finalQuery = mergeQueryWithFirebase(targetQuery, firebaseTargetQuery);
 
   return (
     <ThemeProvider theme={theme}>

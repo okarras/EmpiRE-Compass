@@ -8,8 +8,8 @@ export const sortDataByYear = (
   _query_id: string = '',
   options: { reversed?: boolean } = {}
 ) => {
+  console.log('rawData', rawData);
   const { reversed = false } = options;
-  console.log('Sorting data by year:', rawData);
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
   let filteredData = rawData;
@@ -62,6 +62,8 @@ export const sortDataByCount = (
   if (!rawData.length) return [];
 
   const processedData: Record<string, number> = {};
+  // number of all papers with da_label key
+  const totalPapersWithDaLabel = rawData.filter((item) => item.da_label).length;
 
   rawData.forEach((dataValue) => {
     Object.keys(dataValue).forEach((key) => {
@@ -76,7 +78,7 @@ export const sortDataByCount = (
   ).map(([method, count]) => ({
     method,
     count,
-    normalizedRatio: Number(((count * 100) / rawData.length).toFixed(2)),
+    normalizedRatio: Number((count / totalPapersWithDaLabel).toFixed(2)),
   }));
 
   return result.sort((a, b) => b.count - a.count);
@@ -92,6 +94,31 @@ export const aggregateMethodUsage = (
   rawData: RawDataItem[] = []
 ): AggregateMethodUsageReturnInterface[] => {
   if (!rawData.length) return [];
+  // 1) Define your threat fields
+  const booleanFields = [
+    'External',
+    'Internal',
+    'Construct',
+    'Conclusion',
+    'Reliability',
+    'Generalizability',
+    'Content',
+    'Descriptive',
+    'Theoretical',
+    'Repeatability',
+    'Mentioned',
+  ];
+
+  // 2) Deduplicate by paper URI (keep last entry)
+  const paperMap = new Map<string, RawDataItem>();
+  rawData.forEach((item) => paperMap.set(item.paper as string, item));
+  const uniquePapers = Array.from(paperMap.values());
+
+  // 3) Filter to papers having at least one threat = '1'
+  const papersWithThreats = uniquePapers.filter((item) =>
+    booleanFields.some((field) => item[field] === '1')
+  );
+  const totalPapersWithThreats = papersWithThreats.length;
 
   const processedData: Record<string, number> = {};
   let grandTotal = 0;
@@ -115,7 +142,7 @@ export const aggregateMethodUsage = (
     method,
     count,
     normalizedRatio:
-      grandTotal > 0 ? Number((count / grandTotal).toFixed(3)) : 0, // Avoid division by zero
+      grandTotal > 0 ? Number((count / totalPapersWithThreats).toFixed(3)) : 0, // Avoid division by zero
   }));
 };
 
@@ -176,6 +203,8 @@ interface CountMethodsRawDataInterface {
 export const countMethodDistribution = (
   rawData: CountMethodsRawDataInterface[] = []
 ): Record<string, unknown>[] => {
+  //drop duplicates
+  const uniqueRawData = [...new Set(rawData)];
   // anything that is not in the dataKeys is considered "others"
   const dataKeys = [
     'case study',
@@ -186,7 +215,7 @@ export const countMethodDistribution = (
     'action research',
   ];
   const aggregatedData: Record<string, Record<string, number>> = {};
-  rawData.forEach(({ dc_method_type_label, year }) => {
+  uniqueRawData.forEach(({ dc_method_type_label, year }) => {
     if (!aggregatedData[year]) aggregatedData[year] = {};
     if (dataKeys.includes(dc_method_type_label)) {
       aggregatedData[year][dc_method_type_label] =
@@ -199,15 +228,16 @@ export const countMethodDistribution = (
 
   const aggregatedDataNormalized = Object.entries(aggregatedData).map(
     ([year, methods]) => {
-      // formula: method / number of all papers in the year
-      const totalPapers = Object.values(methods).reduce(
-        (acc, curr) => acc + curr,
-        0
-      );
+      // total papers that have a dc_method_type_label key
+      const totalPapersThatHaveDcMethodTypeLabel = uniqueRawData.filter(
+        (item) => item.dc_method_type_label
+      ).length;
+
       const normalizedMethods = Object.entries(methods).map(
         ([method, count]) => {
           return {
-            [`normalized_${method}`]: count / totalPapers,
+            [`normalized_${method}`]:
+              (count * 100) / totalPapersThatHaveDcMethodTypeLabel,
           };
         }
       );

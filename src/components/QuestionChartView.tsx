@@ -64,7 +64,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
               pb: 2,
               scrollSnapType: 'x mandatory',
               '& > *': {
-                minWidth: { xs: '90vw', sm: 400, md: 500 },
+                minWidth: { xs: '90vw', sm: 600, md: 1050 },
                 maxWidth: 600,
                 scrollSnapAlign: 'start',
               },
@@ -80,9 +80,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                       ...chartSettings,
                       series: [chart],
                       heading: createHeading(chart),
-                      colors: [
-                        query.chartSettings.colors?.[index] ?? '#e86161',
-                      ],
+                      colors: [chartSettings.colors?.[index] ?? '#e86161'],
                       yAxis: [
                         {
                           label: chart.label,

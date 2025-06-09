@@ -52,11 +52,11 @@ export interface Query {
   uid: string;
   uid_2?: string;
   chartSettings2?: ChartSetting;
-  chartSettings: ChartSetting;
+  chartSettings?: ChartSetting;
   chartType?: 'bar' | 'pie';
   //TODO: fix types
   dataProcessingFunction2?: (data: any) => any[];
-  dataProcessingFunction: (
+  dataProcessingFunction?: (
     data: any,
     query_id?: string,
     options?: Record<string, unknown>
@@ -175,13 +175,16 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
+        { dataKey: 'case study', label: 'Number of case studies' },
+        { dataKey: 'experiment', label: 'Number of experiments' },
+        { dataKey: 'survey', label: 'Number of surveys' },
+        { dataKey: 'interview', label: 'Number of interviews' },
+        {
+          dataKey: 'secondary research',
+          label: 'Number of secondary research',
+        },
+        { dataKey: 'action research', label: 'Number of action research' },
+        { dataKey: 'others', label: 'Number of other' },
       ],
       height: chartHeight,
       sx: chartStyles,
@@ -243,6 +246,7 @@ export const queries: Query[] = [
     uid_2: 'query_4_2',
     chartSettings2: {
       layout: 'horizontal',
+      barLabel: 'value',
       heading: 'Number of empirical methods used for data analysis',
       seriesHeadingTemplate: 'Number of {label} used for data analysis',
       className: 'fullWidth fixText',
@@ -252,6 +256,7 @@ export const queries: Query[] = [
         {
           scaleType: 'band',
           dataKey: 'methodType',
+          label: 'Empirical Method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -296,14 +301,14 @@ export const queries: Query[] = [
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
-      heading: 'Number of empirical methods used for data analysis',
+      heading: 'Number of empirical methods used for data collection',
       barLabel: 'value',
-      xAxis: [{ label: 'Number of Statistical Method used' }],
+      xAxis: [{ label: 'Number of empirical method used' }],
       yAxis: [
         {
           scaleType: 'band',
           dataKey: 'methodType',
-          label: 'Statistical Method used',
+          label: 'Empirical Method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -386,9 +391,9 @@ export const queries: Query[] = [
     title:
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
-    uid: 'query_6_1',
-    uid_2: 'query_6_2',
-    chartSettings: {
+    uid: 'query_6_2',
+    uid_2: 'query_6_1',
+    chartSettings2: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
       heading:
@@ -402,27 +407,26 @@ export const queries: Query[] = [
           label: 'Statistical Method used',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       margin: {
         left: 150,
       },
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByCount,
+    dataProcessingFunction2: sortDataByCount,
     dataAnalysisInformation: {
       question: 'How often are which statistical methods used?',
     },
   },
-  //Query 7.1
+  //Query 7
   {
     title:
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
-    uid: 'query_7_1',
-    uid_2: 'query_7_2',
-    // TODO: this chart should be for data analysis
-    chartSettings: {
+    uid: 'query_7_2',
+    uid_2: 'query_7_1',
+    chartSettings2: {
       className: 'fullWidth',
       colors: [
         '#5975a4',
@@ -439,7 +443,7 @@ export const queries: Query[] = [
       ],
       xAxis: xAxisSettings(),
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'Number of statistical method used for data analysis per year grouped by statistical method',
       yAxis: [
         {
           label: 'Number of statistical methods used',
@@ -461,7 +465,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: StatisticalData[]): any[] => {
+    dataProcessingFunction2: (rawData: StatisticalData[]): any[] => {
       if (!rawData.length) return [];
       // Extract unique years
       const years = [...new Set(rawData.map((item) => item.year))];
@@ -473,6 +477,9 @@ export const queries: Query[] = [
 
       const processedData = years.map((year) => {
         const filteredData = rawData.filter((item) => item.year === year);
+        const totalPapersWithDaLabel = filteredData.filter(
+          (item) => item.da_label
+        ).length;
         const result: { year: number; [key: string]: number } = { year };
 
         methodKeys.forEach((method) => {
@@ -484,6 +491,8 @@ export const queries: Query[] = [
               sum + (item[method]?.replace(/[^1]/g, '').length || 0), // Counting occurrences of '1'
             0
           );
+          result[`normalized_${method}`] =
+            result[method] / totalPapersWithDaLabel;
         });
 
         return result;
@@ -515,7 +524,73 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // List of boolean‐threat fields
+      const booleanFields = [
+        'external',
+        'internal',
+        'construct',
+        'conclusion',
+        'reliability',
+        'generalizability',
+        'content',
+        'descriptive',
+        'theoretical',
+        'repeatability',
+        'mentioned',
+      ];
+
+      // 1) Normalize those "0"/"1" strings into real booleans
+      const cleanedData = rawData.map((item) => {
+        const newItem: any = { ...item, year: parseInt(item.year, 10) };
+        booleanFields.forEach((field) => {
+          newItem[field] = item[field] === '1'; // true if "1", false otherwise
+        });
+        return newItem;
+      });
+
+      // 2) Deduplicate by paper URI (keep last occurrence)
+      const paperMap = new Map<string, (typeof cleanedData)[0]>();
+      cleanedData.forEach((item) => {
+        paperMap.set(item.paper, item);
+      });
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 3) Count total papers per year
+      const totalPapersPerYear: Record<number, number> = {};
+      uniquePapers.forEach((item) => {
+        totalPapersPerYear[item.year] =
+          (totalPapersPerYear[item.year] || 0) + 1;
+      });
+
+      // 4) Filter for papers with at least one threat flagged
+      const papersWithThreats = uniquePapers.filter((item) =>
+        booleanFields.some((field) => item[field] === true)
+      );
+
+      // 5) Count threat-reporting papers per year
+      const threatPapersPerYear: Record<number, number> = {};
+      papersWithThreats.forEach((item) => {
+        threatPapersPerYear[item.year] =
+          (threatPapersPerYear[item.year] || 0) + 1;
+      });
+
+      // 6) Build final array with normalization
+      const result = Object.keys(totalPapersPerYear).map((yearStr) => {
+        const year = parseInt(yearStr, 10);
+        const total = totalPapersPerYear[year] || 0;
+        const withThreats = threatPapersPerYear[year] || 0;
+        return {
+          year,
+          numberOfAllPapers: total,
+          count: withThreats,
+          normalizedRatio: total ? Number((withThreats / total).toFixed(2)) : 0,
+        };
+      });
+
+      // Sort by year ascending
+      return result.sort((a, b) => a.year - b.year);
+    },
     dataAnalysisInformation: {
       question:
         'How has the reporting of threats to validity evolved over time?',
@@ -733,36 +808,36 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'normalized_archive_analysis', label: 'Archive Analysis' },
+        { dataKey: 'archive_analysis', label: 'Archive Analysis' },
         {
-          dataKey: 'normalized_systematic_literature_review',
+          dataKey: 'systematic_literature_review',
           label: 'Systematic Literature Review',
         },
         {
-          dataKey: 'normalized_literature_review',
+          dataKey: 'literature_review',
           label: 'Literature Review',
         },
         {
-          dataKey: 'normalized_systematic_literature_map',
+          dataKey: 'systematic_literature_map',
           label: 'Systematic Literature Map',
         },
         {
-          dataKey: 'normalized_systematic_review',
+          dataKey: 'systematic_review',
           label: 'Systematic Review',
         },
         {
-          dataKey: 'normalized_tertiary_literature_review',
+          dataKey: 'tertiary_literature_review',
           label: 'Tertiary literature review',
         },
         {
-          dataKey: 'normalized_document_analysis',
+          dataKey: 'document_analysis',
           label: 'Document analysis',
         },
         {
-          dataKey: 'normalized_document_inspection',
+          dataKey: 'document_inspection',
           label: 'Document Inspection',
         },
-        { dataKey: 'normalized_literature_study', label: 'Literature Study' },
+        { dataKey: 'literature_study', label: 'Literature Study' },
         {
           dataKey: 'normalized_literature_survey',
           label: 'Literature Survey',
@@ -782,7 +857,6 @@ export const queries: Query[] = [
     title: 'Number of papers per year',
     id: 15,
     uid: 'query_15_1',
-    uid_2: 'query_15_2',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
@@ -879,7 +953,7 @@ export const queries: Query[] = [
 
           Object.entries(counts).forEach(([methodKey, count]) => {
             result[methodKey] = count;
-            result[`normalized ${methodKey}`] = parseFloat(
+            result[`normalized_${methodKey}`] = parseFloat(
               (count / totalByYear[year]).toFixed(2)
             );
           });

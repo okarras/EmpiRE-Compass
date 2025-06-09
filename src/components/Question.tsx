@@ -162,17 +162,19 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         {/* Data Collection View */}
         <Divider sx={{ my: 3 }} />
         <Box hidden={tab !== 0}>
-          <QuestionChartView
-            query={query}
-            normalized={normalized}
-            setNormalized={setNormalized}
-            queryId={query.uid}
-            chartSettings={query.chartSettings}
-            processedChartDataset={
-              query.dataProcessingFunction?.(dataCollection ?? []) ?? []
-            }
-          />
-          <Divider sx={{ my: 3 }} />
+          {query.chartSettings && (
+            <QuestionChartView
+              query={query}
+              normalized={normalized}
+              setNormalized={setNormalized}
+              queryId={query.uid}
+              chartSettings={query.chartSettings}
+              processedChartDataset={
+                query.dataProcessingFunction?.(dataCollection ?? []) ?? []
+              }
+            />
+          )}
+          {/* <Divider sx={{ my: 3 }} /> */}
           <QuestionDataGridView questionData={dataCollection} />
         </Box>
 
