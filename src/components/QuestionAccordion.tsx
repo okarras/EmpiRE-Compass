@@ -191,22 +191,24 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             mt: 2,
           }}
         >
-          <ChartParamsSelector
-            normalized={normalized}
-            setNormalized={setNormalized}
-            query={query}
-          />
           {query.chartSettings && query.dataProcessingFunction && (
-            <ChartWrapper
-              key={`${query.uid}-chart`}
-              question_id={query.uid}
-              dataset={query.dataProcessingFunction([...questionData]) ?? []}
-              chartSetting={query.chartSettings}
-              normalized={normalized}
-              loading={loading}
-              defaultChartType={query.chartType ?? 'bar'}
-              availableCharts={['bar', 'pie']}
-            />
+            <>
+              <ChartParamsSelector
+                normalized={normalized}
+                setNormalized={setNormalized}
+                query={query}
+              />
+              <ChartWrapper
+                key={`${query.uid}-chart`}
+                question_id={query.uid}
+                dataset={query.dataProcessingFunction([...questionData]) ?? []}
+                chartSetting={query.chartSettings}
+                normalized={normalized}
+                loading={loading}
+                defaultChartType={query.chartType ?? 'bar'}
+                availableCharts={['bar', 'pie']}
+              />
+            </>
           )}
         </Box>
       </Box>
