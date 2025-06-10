@@ -71,24 +71,63 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
-    if (!query?.uid_2) return;
-    const fetchData = async () => {
-      try {
-        setLoading2(true);
-        setError2(null);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
-        setDataAnalysis(data);
-      } catch (err) {
-        setError2('Failed to load secondary data');
-        console.error('Error fetching secondary data:', err);
-      } finally {
-        setLoading2(false);
+    if (query?.uid_2) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
+      fetchData();
+    } else if (query?.uid_2_merge) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2_merge]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
+      fetchData();
+    }
+  }, [query, query?.uid_2, query?.uid_2_merge]);
+
+  const getProcessedChartData = () => {
+    if (query.uid_2_merge) {
+      return (
+        query.dataProcessingFunction2?.(dataCollection ?? [], dataAnalysis) ??
+        []
+      );
+    }
+    return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
+  };
+
+  const getDataInterpretation = (tabName: string) => {
+    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+      if (tabName === 'dataCollection') {
+        return query.dataAnalysisInformation.dataInterpretation[0];
+      } else if (tabName === 'dataAnalysis') {
+        return query.dataAnalysisInformation.dataInterpretation[1];
       }
-    };
-    fetchData();
-  }, [query, query?.uid_2]);
+    }
+    return query.dataAnalysisInformation.dataInterpretation;
+  };
 
   const renderLoadingState = () => (
     <Box
@@ -160,21 +199,22 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       >
         <QuestionInformationView query={query} />
         {/* Data Collection View */}
-        <Divider sx={{ my: 3 }} />
+        {/* <Divider sx={{ my: 3 }} /> */}
         <Box hidden={tab !== 0}>
           {query.chartSettings && (
-            <QuestionChartView
-              query={query}
-              normalized={normalized}
-              setNormalized={setNormalized}
-              queryId={query.uid}
-              chartSettings={query.chartSettings}
-              processedChartDataset={
-                query.dataProcessingFunction?.(dataCollection ?? []) ?? []
-              }
-            />
+            <>
+              <QuestionChartView
+                query={query}
+                normalized={normalized}
+                setNormalized={setNormalized}
+                queryId={query.uid}
+                chartSettings={query.chartSettings}
+                processedChartDataset={getProcessedChartData()}
+                dataInterpretation={getDataInterpretation('dataCollection')}
+              />
+              <Divider sx={{ my: 3 }} />
+            </>
           )}
-          {/* <Divider sx={{ my: 3 }} /> */}
           <QuestionDataGridView questionData={dataCollection} />
         </Box>
 
@@ -197,6 +237,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                     processedChartDataset={
                       query.dataProcessingFunction2?.(dataAnalysis ?? []) ?? []
                     }
+                    dataInterpretation={getDataInterpretation('dataAnalysis')}
                   />
                 ) : null}
                 <Divider sx={{ my: 3 }} />

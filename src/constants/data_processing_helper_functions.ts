@@ -8,7 +8,6 @@ export const sortDataByYear = (
   _query_id: string = '',
   options: { reversed?: boolean } = {}
 ) => {
-  console.log('rawData', rawData);
   const { reversed = false } = options;
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
@@ -254,47 +253,94 @@ export const countMethodDistribution = (
         ...normalizedFields,
       };
     });
-  console.log('result', result);
   return result;
 };
 
 type StatisticItem = {
-  year: number;
-  descriptive: number;
-  inferential: number;
-  machine_learning: number;
-  others: number;
+  paper: string;
+  year: string;
+  da_label?: string;
+  descriptive?: string;
+  inferential?: string;
+  machine_learning?: string;
+  method?: string;
 };
 
-export const countDataAnalysisStatisticsMethods = (data: StatisticItem[]) => {
-  const processedData: StatisticItem[] = [];
-  // get unique year values
-  const uniqueYears = [...new Set(data.map((item) => item.year))];
+export const countDataAnalysisStatisticsMethods = (
+  rawData: StatisticItem[]
+) => {
+  const processedData: {
+    year: number;
+    descriptive: number;
+    normalized_descriptive: number;
+    inferential: number;
+    normalized_inferential: number;
+    machine_learning: number;
+    normalized_machine_learning: number;
+    method: number;
+    normalized_method: number;
+    others: number;
+    normalized_others: number;
+  }[] = [];
+
+  // Step 1: deduplicate by paper URI
+  const paperMap = new Map<string, StatisticItem>();
+  rawData.forEach((item) => paperMap.set(item.paper, item));
+  const uniqueData = Array.from(paperMap.values());
+
+  // Step 2: get unique years
+  const uniqueYears = [...new Set(uniqueData.map((item) => item.year))];
 
   for (const year of uniqueYears) {
-    const yearData = data.filter((item: StatisticItem) => item.year === year);
-    // count the number of descriptive, inferential, machine learning and others
-    const descriptiveCount = yearData.filter(
-      (item: StatisticItem) => item.descriptive
-    ).length;
-    const inferentialCount = yearData.filter(
-      (item: StatisticItem) => item.inferential
-    ).length;
-    const machineLearningCount = yearData.filter(
-      (item: StatisticItem) => item.machine_learning
-    ).length;
-    const othersCount = yearData.filter(
-      (item: StatisticItem) => item.others
-    ).length;
-    // add the counts to the data
+    const yearData = uniqueData.filter((item) => item.year === year);
+    const total = yearData.length;
+
+    // Step 3: count each type
+    let descriptive = 0,
+      inferential = 0,
+      machineLearning = 0,
+      method = 0,
+      others = 0;
+
+    yearData.forEach((item) => {
+      const daLabels = item.da_label?.toLowerCase();
+
+      if (daLabels === 'descriptive') descriptive++;
+      if (daLabels === 'inferential') inferential++;
+      if (daLabels === 'machine learning') machineLearning++;
+      if (daLabels === 'method') method++;
+
+      // Count standard categories
+      if (item.descriptive) descriptive++;
+      if (item.inferential) inferential++;
+      if (item.machine_learning) machineLearning++;
+      if (item.method) method++;
+
+      // Count 'others' as anything in da_label not in the four standard ones
+      const label = item.da_label?.toLowerCase();
+      const isOther =
+        label &&
+        !['descriptive', 'inferential', 'machine learning', 'method'].includes(
+          label
+        );
+      if (isOther) others++;
+    });
+
     processedData.push({
-      year,
-      descriptive: descriptiveCount,
-      inferential: inferentialCount,
-      machine_learning: machineLearningCount,
-      others: othersCount,
+      year: Number(year),
+      descriptive,
+      normalized_descriptive: +(descriptive / total).toFixed(2),
+      inferential,
+      normalized_inferential: +(inferential / total).toFixed(2),
+      machine_learning: machineLearning,
+      normalized_machine_learning: +(machineLearning / total).toFixed(2),
+      method,
+      normalized_method: +(method / total).toFixed(2),
+      others,
+      normalized_others: +(others / total).toFixed(2),
     });
   }
-  processedData.sort((a, b) => a.year - b.year);
-  return processedData;
+
+  // Sort by year ascending (convert year to number if needed)
+  return processedData.sort((a, b) => a.year - b.year);
 };

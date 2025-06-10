@@ -31,9 +31,8 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       id={`chart-${question_id}`}
     >
       <h4 style={{ textAlign: 'center' }}>
-        {normalized
-          ? 'Normalized ' + chartSetting.heading.toLowerCase()
-          : chartSetting.heading}
+        {normalized ? 'Relative ' : 'Absolute '}
+        {chartSetting.heading}
       </h4>
       <BarChart
         dataset={dataset}
@@ -53,4 +52,3 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
 };
 
 export default CustomBarChart;
-

@@ -46,17 +46,21 @@ export interface ChartSetting {
   layout?: string;
   margin?: Record<string, unknown>;
   noHeadingInSeries?: boolean;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
 }
 export interface Query {
   title: string;
   id: number;
-  uid: string;
-  uid_2?: string;
+  uid: string; // data collection
+  uid_2?: string; // data analysis
+  uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
   chartType?: 'bar' | 'pie';
   //TODO: fix types
-  dataProcessingFunction2?: (data: any) => any[];
+  dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (
     data: any,
     query_id?: string,
@@ -740,6 +744,7 @@ export const queries: Query[] = [
     title: 'Number of papers per year',
     id: 12,
     uid: 'query_12',
+
     chartSettings: {
       className: 'fullWidth fixText',
       xAxis: xAxisSettings(),
@@ -794,6 +799,15 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 150,
+        bottom: 40,
+      },
     },
     dataProcessingFunction: (rawData: any[]) => {
       // 0) Clean & normalize incoming strings
@@ -1011,6 +1025,7 @@ export const queries: Query[] = [
     title: 'Number of papers per year',
     id: 15,
     uid: 'query_15_1',
+    uid_2_merge: 'query_15_2',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
@@ -1026,7 +1041,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction2: sortDataByYear,
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },
@@ -1036,6 +1051,7 @@ export const queries: Query[] = [
     title: 'Number of papers using X empirical methods per year',
     id: 16,
     uid: 'query_16_1',
+    uid_2_merge: 'query_16_2',
     chartSettings: {
       className: 'fullWidth',
       colors: [
@@ -1072,7 +1088,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: any[]): any[] => {
+    dataProcessingFunction2: (rawData: any[]): any[] => {
       if (!rawData.length) return [];
 
       const dataByYear: Record<number, Record<string, number>> = {};

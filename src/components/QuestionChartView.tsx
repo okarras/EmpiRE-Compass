@@ -1,8 +1,11 @@
 import React from 'react';
-import { ChartSetting, Query } from '../constants/queries_chart_info';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
+import { PREFIXES, SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
+import CodeIcon from '@mui/icons-material/Code';
+import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+import { Query, ChartSetting } from '../constants/queries_chart_info';
 
 interface QuestionChartViewProps {
   query: Query;
@@ -11,6 +14,7 @@ interface QuestionChartViewProps {
   queryId: string;
   chartSettings: ChartSetting;
   processedChartDataset: Record<string, unknown>[];
+  dataInterpretation: string;
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
@@ -20,6 +24,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   queryId,
   chartSettings,
   processedChartDataset,
+  dataInterpretation,
 }) => {
   let series = chartSettings.series;
   if (chartSettings.series.length > 1 && normalized) {
@@ -41,6 +46,39 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 
   return (
     <Box sx={{ mt: 2 }}>
+      <Typography
+        variant="h6"
+        sx={{
+          color: '#e86161',
+          fontWeight: 600,
+          mb: 2,
+          fontSize: { xs: '1.1rem', sm: '1.2rem' },
+        }}
+      >
+        Data Interpretation
+      </Typography>
+
+      {/* Main Chart Section */}
+      <>
+        <Box sx={{ mb: 3 }}>
+          <ChartParamsSelector
+            normalized={normalized}
+            setNormalized={setNormalized}
+            query={query}
+          />
+        </Box>
+        <ChartWrapper
+          key={`${queryId}-chart`}
+          question_id={queryId}
+          dataset={processedChartDataset}
+          chartSetting={chartSettings}
+          normalized={normalized}
+          loading={false}
+          defaultChartType={query.chartType ?? 'bar'}
+          availableCharts={['bar', 'pie']}
+        />
+      </>
+
       {/* Charts Section */}
       {series.length > 1 && (
         <>
@@ -80,7 +118,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                       ...chartSettings,
                       series: [chart],
                       heading: chartSettings.noHeadingInSeries
-                        ? ""
+                        ? ''
                         : createHeading(chart),
                       colors: [chartSettings.colors?.[index] ?? '#e86161'],
                       yAxis: [
@@ -102,27 +140,71 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           </Box>
         </>
       )}
+      <Box
+        component="div"
+        sx={{
+          '& p': {
+            fontSize: { xs: '0.95rem', sm: '1rem' },
+            lineHeight: 1.7,
+            color: 'text.primary',
+            mt: 4,
+            mb: 4,
+          },
+          '& a': {
+            color: '#e86161',
+            textDecoration: 'none',
+            fontWeight: 500,
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          },
+          '& strong': {
+            color: 'text.primary',
+            fontWeight: 600,
+          },
+        }}
+        dangerouslySetInnerHTML={{
+          __html: dataInterpretation,
+        }}
+      />
 
-      {/* Main Chart Section */}
-      <>
-        <Box sx={{ mb: 3 }}>
-          <ChartParamsSelector
-            normalized={normalized}
-            setNormalized={setNormalized}
-            query={query}
-          />
-        </Box>
-        <ChartWrapper
-          key={`${queryId}-chart`}
-          question_id={queryId}
-          dataset={processedChartDataset}
-          chartSetting={chartSettings}
-          normalized={normalized}
-          loading={false}
-          defaultChartType={query.chartType ?? 'bar'}
-          availableCharts={['bar', 'pie']}
-        />
-      </>
+      <Box>
+        <Button
+          href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
+          target="_blank"
+          sx={{
+            color: '#e86161',
+            mt: { xs: 2, sm: 0 },
+            '&:hover': {
+              color: '#b33a3a',
+            },
+          }}
+          variant="outlined"
+        >
+          <CodeIcon sx={{ mr: 1 }} />
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            Check and edit the code in Binder
+          </Typography>
+        </Button>
+        <Button
+          href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + SPARQL_QUERIES[query.uid as keyof typeof SPARQL_QUERIES])}`}
+          target="_blank"
+          sx={{
+            color: '#e86161',
+            mt: { xs: 2, sm: 0 },
+            ml: 2,
+            '&:hover': {
+              color: '#b33a3a',
+            },
+          }}
+          variant="outlined"
+        >
+          <LiveHelpIcon sx={{ mr: 1 }} />
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            SPARQL Query
+          </Typography>
+        </Button>
+      </Box>
     </Box>
   );
 };
