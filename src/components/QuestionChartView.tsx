@@ -104,7 +104,16 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           >
             Detailed Charts
           </Typography>
-          <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 400,
+            }}
+          >
             <IconButton
               onClick={handlePreviousChart}
               sx={{
@@ -121,7 +130,13 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
             >
               <ArrowBackIosNewIcon />
             </IconButton>
-            <Box sx={{ width: { xs: '90vw', sm: 900, md: 1300 }, maxWidth: 800, mx: 'auto' }}>
+            <Box
+              sx={{
+                width: { xs: '90vw', sm: 900, md: 1300 },
+                maxWidth: 800,
+                mx: 'auto',
+              }}
+            >
               <ChartWrapper
                 question_id={queryId}
                 dataset={processedChartDataset}
@@ -131,7 +146,9 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                   heading: chartSettings.noHeadingInSeries
                     ? ''
                     : createHeading(series[currentChartIndex]),
-                  colors: [chartSettings.colors?.[currentChartIndex] ?? '#e86161'],
+                  colors: [
+                    chartSettings.colors?.[currentChartIndex] ?? '#e86161',
+                  ],
                   yAxis: [
                     {
                       label: chartSettings.yAxis?.[0]?.label,
@@ -145,6 +162,18 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                 availableCharts={['bar', 'pie']}
                 isSubChart={true}
               />
+              {/* show the current chart index and total charts */}
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: '0.8rem',
+                  color: 'text.secondary',
+                  mt: 2,
+                  textAlign: 'center',
+                }}
+              >
+                {currentChartIndex + 1} of {series.length}
+              </Typography>
             </Box>
             <IconButton
               onClick={handleNextChart}
