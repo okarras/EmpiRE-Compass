@@ -77,7 +77,9 @@ export const sortDataByCount = (
   ).map(([method, count]) => ({
     method,
     count,
-    normalizedRatio: Number((count / totalPapersWithDaLabel).toFixed(2)),
+    normalizedRatio: Number(
+      ((count * 100) / totalPapersWithDaLabel).toFixed(2)
+    ),
   }));
 
   return result.sort((a, b) => b.count - a.count);
@@ -141,7 +143,9 @@ export const aggregateMethodUsage = (
     method: `${method}`,
     count,
     normalizedRatio:
-      grandTotal > 0 ? Number((count / totalPapersWithThreats).toFixed(3)) : 0, // Avoid division by zero
+      grandTotal > 0
+        ? Number(((count * 100) / totalPapersWithThreats).toFixed(3))
+        : 0, // Avoid division by zero
   }));
 };
 
@@ -187,7 +191,7 @@ export const processYearlyMethodData = (
     Object.entries(methods).forEach(([method, count]) => {
       normalizedRatio[method] = count;
       normalizedRatio[`normalized_${method}`] = parseFloat(
-        (count / papersPerYear[Number(year)]).toFixed(2)
+        ((count * 100) / papersPerYear[Number(year)]).toFixed(2)
       );
     });
     return { year: Number(year), ...normalizedRatio };
@@ -243,7 +247,7 @@ export const countMethodDistribution = (
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
           totalPapersThisYear > 0
-            ? Number((count / totalPapersThisYear).toFixed(2))
+            ? Number(((count * 100) / totalPapersThisYear).toFixed(2))
             : 0,
         ])
       );
@@ -329,15 +333,17 @@ export const countDataAnalysisStatisticsMethods = (
     processedData.push({
       year: Number(year),
       descriptive,
-      normalized_descriptive: +(descriptive / total).toFixed(2),
+      normalized_descriptive: +((descriptive * 100) / total).toFixed(2),
       inferential,
-      normalized_inferential: +(inferential / total).toFixed(2),
+      normalized_inferential: +((inferential * 100) / total).toFixed(2),
       machine_learning: machineLearning,
-      normalized_machine_learning: +(machineLearning / total).toFixed(2),
+      normalized_machine_learning: +((machineLearning * 100) / total).toFixed(
+        2
+      ),
       method,
-      normalized_method: +(method / total).toFixed(2),
+      normalized_method: +((method * 100) / total).toFixed(2),
       others,
-      normalized_others: +(others / total).toFixed(2),
+      normalized_others: +((others * 100) / total).toFixed(2),
     });
   }
 

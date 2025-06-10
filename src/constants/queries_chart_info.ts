@@ -297,7 +297,7 @@ export const queries: Query[] = [
         methodType: label,
         count: labelCounts[label],
         normalizedRatio: Number(
-          (labelCounts[label] / rawData.length).toFixed(2)
+          ((labelCounts[label] * 100) / rawData.length).toFixed(2)
         ),
       }));
 
@@ -339,7 +339,7 @@ export const queries: Query[] = [
         methodType: label,
         count: labelCounts[label],
         normalizedRatio: Number(
-          (labelCounts[label] / rawData.length).toFixed(2)
+          ((labelCounts[label] * 100) / rawData.length).toFixed(2)
         ),
       }));
       return chartData;
@@ -497,7 +497,7 @@ export const queries: Query[] = [
             0
           );
           result[`normalized_${method}`] =
-            result[method] / totalPapersWithDaLabel;
+            (result[method] * 100) / totalPapersWithDaLabel;
         });
 
         return result;
@@ -589,7 +589,9 @@ export const queries: Query[] = [
           year,
           numberOfAllPapers: total,
           count: withThreats,
-          normalizedRatio: total ? Number((withThreats / total).toFixed(2)) : 0,
+          normalizedRatio: total
+            ? Number(((withThreats * 100) / total).toFixed(2))
+            : 0,
         };
       });
 
@@ -727,7 +729,7 @@ export const queries: Query[] = [
             year: parseInt(yearStr, 10),
             count: withData, // number of papers with a URL
             normalizedRatio:
-              total > 0 ? Number((withData / total).toFixed(2)) : 0,
+              total > 0 ? Number(((withData * 100) / total).toFixed(2)) : 0,
           };
         });
 
@@ -876,17 +878,19 @@ export const queries: Query[] = [
           return {
             year,
             noRQHighlighted: c1,
-            normalized_noRQHighlighted: total ? +(c1 / total).toFixed(2) : 0,
+            normalized_noRQHighlighted: total
+              ? +((c1 * 100) / total).toFixed(2)
+              : 0,
             noRQHidden: c2,
-            normalized_noRQHidden: total ? +(c2 / total).toFixed(2) : 0,
+            normalized_noRQHidden: total ? +((c2 * 100) / total).toFixed(2) : 0,
             hqha: c3,
-            normalized_hqha: total ? +(c3 / total).toFixed(2) : 0,
+            normalized_hqha: total ? +((c3 * 100) / total).toFixed(2) : 0,
             hqhaHidden: c4,
-            normalized_hqhaHidden: total ? +(c4 / total).toFixed(2) : 0,
+            normalized_hqhaHidden: total ? +((c4 * 100) / total).toFixed(2) : 0,
             hidqha: c5,
-            normalized_hidqha: total ? +(c5 / total).toFixed(2) : 0,
+            normalized_hidqha: total ? +((c5 * 100) / total).toFixed(2) : 0,
             hidqhid: c6,
-            normalized_hidqhid: total ? +(c6 / total).toFixed(2) : 0,
+            normalized_hidqhid: total ? +((c6 * 100) / total).toFixed(2) : 0,
           };
         });
       return result;
@@ -938,7 +942,7 @@ export const queries: Query[] = [
       ).map(([method, count]) => ({
         method,
         count,
-        normalizedRatio: Number((count / rawData.length).toFixed(2)),
+        normalizedRatio: Number(((count * 100) / rawData.length).toFixed(2)),
       }));
 
       return result.sort((a, b) => b.count - a.count);
