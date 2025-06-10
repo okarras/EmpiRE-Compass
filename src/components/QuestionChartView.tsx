@@ -1,10 +1,12 @@
-import React from 'react';
-import { Box, Button, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Button, Typography, IconButton } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
 import { PREFIXES, SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import CodeIcon from '@mui/icons-material/Code';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Query, ChartSetting } from '../constants/queries_chart_info';
 
 interface QuestionChartViewProps {
@@ -26,6 +28,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   processedChartDataset,
   dataInterpretation,
 }) => {
+  const [currentChartIndex, setCurrentChartIndex] = useState(0);
   let series = chartSettings.series;
   if (chartSettings.series.length > 1 && normalized) {
     // add normalized to each series key string
@@ -42,6 +45,14 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       );
     }
     return 'Number of ' + chart.label + 's used';
+  };
+
+  const handlePreviousChart = () => {
+    setCurrentChartIndex((prev) => (prev > 0 ? prev - 1 : series.length - 1));
+  };
+
+  const handleNextChart = () => {
+    setCurrentChartIndex((prev) => (prev < series.length - 1 ? prev + 1 : 0));
   };
 
   return (
@@ -93,50 +104,64 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           >
             Detailed Charts
           </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 4,
-              overflowX: 'auto',
-              pb: 2,
-              scrollSnapType: 'x mandatory',
-              '& > *': {
-                minWidth: { xs: '90vw', sm: 600, md: 1050 },
-                maxWidth: 600,
-                scrollSnapAlign: 'start',
-              },
-            }}
-          >
-            {series.map(
-              (chart: { label: string; dataKey: unknown }, index: number) => (
-                <React.Fragment key={`${queryId}-chart-${index}`}>
-                  <ChartWrapper
-                    question_id={queryId}
-                    dataset={processedChartDataset}
-                    chartSetting={{
-                      ...chartSettings,
-                      series: [chart],
-                      heading: chartSettings.noHeadingInSeries
-                        ? ''
-                        : createHeading(chart),
-                      colors: [chartSettings.colors?.[index] ?? '#e86161'],
-                      yAxis: [
-                        {
-                          label: chartSettings.yAxis?.[0]?.label,
-                          dataKey: chart.dataKey,
-                        },
-                      ],
-                    }}
-                    normalized={normalized}
-                    loading={false}
-                    defaultChartType={query.chartType ?? 'bar'}
-                    availableCharts={['bar', 'pie']}
-                    isSubChart={true}
-                  />
-                </React.Fragment>
-              )
-            )}
+          <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+            <IconButton
+              onClick={handlePreviousChart}
+              sx={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                bgcolor: 'white',
+                boxShadow: 1,
+                '&:hover': { bgcolor: 'grey.100' },
+                zIndex: 1,
+              }}
+              aria-label="Previous chart"
+            >
+              <ArrowBackIosNewIcon />
+            </IconButton>
+            <Box sx={{ width: { xs: '90vw', sm: 900, md: 1300 }, maxWidth: 800, mx: 'auto' }}>
+              <ChartWrapper
+                question_id={queryId}
+                dataset={processedChartDataset}
+                chartSetting={{
+                  ...chartSettings,
+                  series: [series[currentChartIndex]],
+                  heading: chartSettings.noHeadingInSeries
+                    ? ''
+                    : createHeading(series[currentChartIndex]),
+                  colors: [chartSettings.colors?.[currentChartIndex] ?? '#e86161'],
+                  yAxis: [
+                    {
+                      label: chartSettings.yAxis?.[0]?.label,
+                      dataKey: series[currentChartIndex].dataKey,
+                    },
+                  ],
+                }}
+                normalized={normalized}
+                loading={false}
+                defaultChartType={query.chartType ?? 'bar'}
+                availableCharts={['bar', 'pie']}
+                isSubChart={true}
+              />
+            </Box>
+            <IconButton
+              onClick={handleNextChart}
+              sx={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                bgcolor: 'white',
+                boxShadow: 1,
+                '&:hover': { bgcolor: 'grey.100' },
+                zIndex: 1,
+              }}
+              aria-label="Next chart"
+            >
+              <ArrowForwardIosIcon />
+            </IconButton>
           </Box>
         </>
       )}
