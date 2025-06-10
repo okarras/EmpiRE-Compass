@@ -971,8 +971,17 @@ export const queries: Query[] = [
         '#64b5cd',
       ],
       className: 'fullWidth',
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
       heading:
-        'Normalized number of empirical methods used for secondary research per year',
+        'number of empirical methods used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -1024,7 +1033,7 @@ export const queries: Query[] = [
         'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?',
     },
   },
-  // Query 15 TODO: check if this is correct
+  // Query 15
   {
     title: 'Number of papers per year',
     id: 15,
@@ -1033,7 +1042,7 @@ export const queries: Query[] = [
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
-      xAxis: xAxisSettings(),
+      xAxis: xAxisSettings('numberOfMethodsUsed'),
       heading:
         'Number of papers using X empirical methods for data collection and data analysis',
       yAxis: [
@@ -1045,7 +1054,52 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction2: sortDataByYear,
+    dataProcessingFunction2: (rawData: any[], rawData2: any[]) => {
+      //merge rawData and rawData2 based on paper and year in each object
+      const mergedData = rawData.map((item) => {
+        const item2 = rawData2.find(
+          (item2) => item2.paper === item.paper && item2.year === item.year
+        );
+        return {
+          ...item,
+          ...item2,
+        };
+      });
+
+      // count each papers keys other than paper and year {Number of empirical methods used, Number of Papers using X empirical methods}
+      const countedData = mergedData.map((item) => {
+        const keys = Object.keys(item).filter(
+          (key) => key !== 'paper' && key !== 'year'
+        );
+        let numberOfMethodsUsed = 0;
+        keys.forEach((key) => {
+          numberOfMethodsUsed += Number(item[key]);
+        });
+        return {
+          ...item,
+          numberOfMethodsUsed,
+        };
+      });
+
+      //sort data by count
+      countedData.sort((a, b) => b.count - a.count);
+
+      //count the number of papers in each count {numberOfMethodsUsed: number of papers, count: number of papers, normalizedRatio: number of papers / total number of papers}
+      const result = countedData.reduce((acc, item) => {
+        acc[item.numberOfMethodsUsed] =
+          (acc[item.numberOfMethodsUsed] || 0) + 1;
+        return acc;
+      }, {});
+
+      const arrayResult = Object.entries(result).map(([key, value]) => ({
+        numberOfMethodsUsed: key,
+        count: value,
+        normalizedRatio:
+          Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      }));
+
+      return arrayResult;
+    },
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },
@@ -1071,6 +1125,15 @@ export const queries: Query[] = [
         '#64b5cd',
         '#4c72b0',
       ],
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
       xAxis: xAxisSettings(),
       heading:
         'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
@@ -1092,13 +1155,31 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction2: (rawData: any[]): any[] => {
-      if (!rawData.length) return [];
+    dataProcessingFunction2: (rawData: any[], rawData2: any[]): any[] => {
+      if (!rawData.length || !rawData2.length) return [];
+
+      //merge rawData and rawData2 based on paper and year in each object
+      const mergedData = rawData.map((item) => {
+        const item2 = rawData2.find(
+          (item2) => item2.paper === item.paper && item2.year === item.year
+        );
+        return {
+          ...item,
+          ...item2,
+        };
+      });
+
+      //Deduplicate mergedData based on paper and year
+      const deduplicatedData = mergedData.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.paper === item.paper && t.year === item.year)
+      );
 
       const dataByYear: Record<number, Record<string, number>> = {};
       const totalByYear: Record<number, number> = {};
 
-      rawData.forEach((item) => {
+      deduplicatedData.forEach((item) => {
         const year = item.year;
         const toNumber = (v: any) =>
           typeof v === 'number' ? v : parseInt(v || '0');
