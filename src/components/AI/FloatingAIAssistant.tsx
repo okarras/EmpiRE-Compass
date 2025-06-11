@@ -13,7 +13,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import MinimizeIcon from '@mui/icons-material/Minimize';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
@@ -27,7 +26,7 @@ const Transition = React.forwardRef(function Transition(
   props: any,
   ref: React.Ref<unknown>
 ) {
-  return <Slide direction="up" ref={ref} {...props} />;
+  return <Slide direction="left" ref={ref} {...props} />;
 });
 
 const ProjectOverview = () => (
@@ -92,8 +91,7 @@ const FloatingAIAssistant: React.FC = () => {
     useAIAssistantContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(isMobile);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -105,44 +103,35 @@ const FloatingAIAssistant: React.FC = () => {
     if (location.pathname === '/') {
       setContext(null, null); // overview mode
     }
-    // Optionally, clear context for other non-question pages
-    // else if (!location.pathname.startsWith('/questions')) {
-    //   setContext(null, null);
-    // }
-    // For question pages, context is set by the Question component
   }, [location.pathname, setContext]);
 
-  // Set initial position when dialog opens
+  // Set initial position when dialog opens or expands
   useEffect(() => {
-    if (isOpen && !isDragging) {
+    if (isOpen) {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const dialogWidth = isExpanded ? 800 : 400;
-      const dialogHeight = isExpanded ? 600 : 400;
 
-      // Position in bottom-right corner with some padding
-      setPosition({
-        x: viewportWidth - dialogWidth - 24,
-        y: viewportHeight - dialogHeight - 24,
-      });
+      if (isExpanded) {
+        // When expanded, position at (0,0) to take full viewport
+        setPosition({ x: 0, y: 0 });
+      } else {
+        // When not expanded, position in bottom-right corner
+        setPosition({
+          x: viewportWidth - 400 - 24,
+          y: viewportHeight - 400 - 24,
+        });
+      }
     }
   }, [isOpen, isExpanded]);
-
-  const handleMinimize = () => {
-    setIsMinimized(true);
-  };
-
-  const handleMaximize = () => {
-    setIsMinimized(false);
-  };
 
   const handleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isExpanded) return; // Disable dragging when expanded
     if (e.target instanceof HTMLElement && e.target.closest('.dialog-header')) {
-      e.preventDefault(); // Prevent text selection while dragging
+      e.preventDefault();
       setIsDragging(true);
       dragStartPos.current = {
         x: e.clientX - position.x,
@@ -152,22 +141,20 @@ const FloatingAIAssistant: React.FC = () => {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging) {
-      const dialogWidth = isExpanded ? 800 : 400;
-      const dialogHeight = isExpanded ? 600 : 400;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+    if (!isDragging || isExpanded) return;
 
-      // Calculate new position
-      let newX = e.clientX - dragStartPos.current.x;
-      let newY = e.clientY - dragStartPos.current.y;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-      // Constrain to viewport bounds (allow all the way to the edge)
-      newX = Math.max(0, Math.min(newX, viewportWidth - dialogWidth));
-      newY = Math.max(0, Math.min(newY, viewportHeight - dialogHeight));
+    // Calculate new position
+    let newX = e.clientX - dragStartPos.current.x;
+    let newY = e.clientY - dragStartPos.current.y;
 
-      setPosition({ x: newX, y: newY });
-    }
+    // Constrain to viewport bounds
+    newX = Math.max(0, Math.min(newX, viewportWidth - 400));
+    newY = Math.max(0, Math.min(newY, viewportHeight - 400));
+
+    setPosition({ x: newX, y: newY });
   };
 
   const handleMouseUp = () => {
@@ -222,21 +209,25 @@ const FloatingAIAssistant: React.FC = () => {
           ref: dialogRef,
           sx: {
             position: 'fixed',
-            left: position.x,
-            top: position.y,
-            width: isExpanded ? 800 : 400,
-            height: isExpanded ? 600 : 400,
+            left: isExpanded ? position.x : position.x - 180,
+            top: isExpanded ? position.y : position.y - 350,
+            right: isExpanded ? 0 : 0,
+            width: isExpanded ? '100vw' : 600,
+            height: isExpanded ? '100vh' : 800,
             maxHeight: isMobile ? '80vh' : 'none',
             margin: 0,
-            borderRadius: '16px',
+            borderRadius: isExpanded ? 0 : '16px',
             overflow: 'hidden',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-            transition: isDragging ? 'none' : 'all 0.3s ease',
-            transform: isMinimized
-              ? 'translateY(calc(100% - 60px))'
-              : 'translateY(0)',
+            transition: 'all 0.3s ease',
             cursor: isDragging ? 'grabbing' : 'default',
             zIndex: 1200,
+            resize: isExpanded ? 'none' : 'both',
+            minWidth: isExpanded ? '100vw' : 300,
+            minHeight: isExpanded ? '100vh' : 300,
+            '& .MuiDialog-paper': {
+              margin: 0,
+            },
           },
         }}
       >
@@ -262,10 +253,10 @@ const FloatingAIAssistant: React.FC = () => {
               borderColor: 'divider',
               backgroundColor: '#e86161',
               color: 'white',
-              cursor: 'grab',
+              cursor: isExpanded ? 'default' : 'grab',
               userSelect: 'none',
               '&:active': {
-                cursor: 'grabbing',
+                cursor: isExpanded ? 'default' : 'grabbing',
               },
             }}
           >
@@ -276,24 +267,17 @@ const FloatingAIAssistant: React.FC = () => {
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Tooltip title={isExpanded ? 'Shrink' : 'Expand'}>
-                <IconButton
-                  onClick={handleExpand}
-                  size="small"
-                  sx={{ color: 'white' }}
-                >
-                  {isExpanded ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={isMinimized ? 'Maximize' : 'Minimize'}>
-                <IconButton
-                  onClick={isMinimized ? handleMaximize : handleMinimize}
-                  size="small"
-                  sx={{ color: 'white' }}
-                >
-                  <MinimizeIcon />
-                </IconButton>
-              </Tooltip>
+              {!isMobile && (
+                <Tooltip title={isExpanded ? 'Shrink' : 'Expand'}>
+                  <IconButton
+                    onClick={handleExpand}
+                    size="small"
+                    sx={{ color: 'white' }}
+                  >
+                    {isExpanded ? <CloseFullscreenIcon /> : <OpenInFullIcon />}
+                  </IconButton>
+                </Tooltip>
+              )}
               <Tooltip title="Close">
                 <IconButton
                   onClick={toggleAssistant}

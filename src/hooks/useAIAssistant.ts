@@ -8,6 +8,12 @@ interface UseAIAssistantProps {
   questionData: Record<string, unknown>[];
 }
 
+interface Message {
+  content: string;
+  isUser: boolean;
+  isStreaming?: boolean;
+}
+
 // Cache interface
 interface CacheEntry {
   analysis: string;
@@ -40,7 +46,7 @@ const setCache = (cache: Record<string, CacheEntry>) => {
 
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [prompt, setPrompt] = useState('');
-  const [response, setResponse] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialAnalysis, setInitialAnalysis] = useState<string | null>(null);
@@ -48,7 +54,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [lastCachedAnalysis, setLastCachedAnalysis] = useState<string | null>(
     null
   );
-  const [refreshingInitialAnalysis, setRefreshingInitialAnalysis] = useState(false);
+  const [refreshingInitialAnalysis, setRefreshingInitialAnalysis] =
+    useState(false);
+  const [streamingText, setStreamingText] = useState('');
 
   const openai = createOpenAI({
     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
@@ -73,6 +81,14 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       5. Please maintain an academic and analytical tone in your responses.
       6. Format your response using HTML tags (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <code>, <pre>, <blockquote>, etc.).
       `;
+  };
+
+  const streamResponse = async (text: string) => {
+    const words = text.split(/(\s+)/);
+    for (const word of words) {
+      setStreamingText((prev) => prev + word);
+      await new Promise((resolve) => setTimeout(resolve, 30)); // Adjust speed as needed
+    }
   };
 
   useEffect(() => {
@@ -163,6 +179,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
     setLoading(true);
     setError(null);
+    setStreamingText('');
+
+    // Add user message
+    setMessages((prev) => [...prev, { content: prompt, isUser: true }]);
 
     // Check if user wants detailed explanation
     const wantsDetailed =
@@ -177,7 +197,16 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         User Question: ${prompt}
         Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
         Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
-        Data: ${JSON.stringify(questionData, null, 2)}
+        Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
+        ${
+          query.dataProcessingFunction2
+            ? `Data Analysis Data: ${JSON.stringify(
+                query.dataProcessingFunction2?.(questionData),
+                null,
+                2
+              )}`
+            : ''
+        }
 
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
         Important instructions:
@@ -193,12 +222,33 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
       // Clean up the response if it contains markdown code blocks
       const cleanedText = text.replace(/```html\s*|\s*```/g, '').trim();
-      setResponse(cleanedText);
+
+      // Add AI message with streaming flag
+      setMessages((prev) => [
+        ...prev,
+        { content: '', isUser: false, isStreaming: true },
+      ]);
+
+      // Stream the response
+      await streamResponse(cleanedText);
+
+      // Update the last message with the complete response
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1] = {
+          content: cleanedText,
+          isUser: false,
+        };
+        return newMessages;
+      });
+
+      setPrompt('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('AI Generation Error:', err);
     } finally {
       setLoading(false);
+      setStreamingText('');
     }
   };
 
@@ -263,7 +313,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   return {
     prompt,
     setPrompt,
-    response,
+    messages,
     loading,
     error,
     initialAnalysis,
@@ -274,6 +324,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     refreshInitialAnalysis,
     canUndoInitialAnalysis,
     refreshingInitialAnalysis,
+    streamingText,
   };
 };
 
