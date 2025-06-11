@@ -11,12 +11,12 @@ import {
   Typography,
   ListItemIcon,
 } from '@mui/material';
-import { queries } from '../constants/queries_chart_info';
 import { useNavigate, useLocation } from 'react-router';
 import { useEffect } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
+import { queries } from '../constants/queries_chart_info';
 
 const drawerWidth = 280;
 
@@ -95,7 +95,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           sx={{
             mb: 1,
             borderRadius: 2,
-            backgroundColor: isCurrentPath('/') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
+            backgroundColor: isCurrentPath('/')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
             '&:hover': {
               backgroundColor: 'rgba(232, 97, 97, 0.05)',
             },
@@ -128,7 +130,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           sx={{
             mb: 1,
             borderRadius: 2,
-            backgroundColor: isCurrentPath('/statistics') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
+            backgroundColor: isCurrentPath('/statistics')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
             '&:hover': {
               backgroundColor: 'rgba(232, 97, 97, 0.05)',
             },
@@ -161,7 +165,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           sx={{
             mb: 1,
             borderRadius: 2,
-            backgroundColor: isCurrentPath('/allquestions') ? 'rgba(232, 97, 97, 0.08)' : 'transparent',
+            backgroundColor: isCurrentPath('/allquestions')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
             '&:hover': {
               backgroundColor: 'rgba(232, 97, 97, 0.05)',
             },
@@ -200,7 +206,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         >
           Research Questions
         </Typography>
-        
+
         {queries.map((query) => (
           <Tooltip
             title={query.dataAnalysisInformation.question}
@@ -213,8 +219,8 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
-                backgroundColor: isCurrentPath(`/questions/${query.id}`) 
-                  ? 'rgba(232, 97, 97, 0.08)' 
+                backgroundColor: isCurrentPath(`/questions/${query.id}`)
+                  ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
@@ -229,7 +235,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     variant="body2"
                     sx={{
                       color: 'text.primary',
-                      fontWeight: isCurrentPath(`/questions/${query.id}`) ? 600 : 400,
+                      fontWeight: isCurrentPath(`/questions/${query.id}`)
+                        ? 600
+                        : 400,
                       fontSize: '0.9rem',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',

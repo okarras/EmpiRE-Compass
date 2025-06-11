@@ -1,5 +1,11 @@
 import { db } from '../firebase.ts';
-import { collection, getDocs, doc, setDoc, DocumentData } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  doc,
+  setDoc,
+  DocumentData,
+} from 'firebase/firestore';
 import { queries } from '../constants/queries_chart_info.js';
 
 const addQuestion = async () => {
@@ -10,7 +16,6 @@ const addQuestion = async () => {
       const { dataProcessingFunction, chartSettings, ...rest } = query;
       const docRef = doc(queriesCollection, query.uid); // Specify the UID as the document ID
       await setDoc(docRef, rest);
-      console.log(`Document with UID ${query.uid} added successfully!`);
     }
   } catch (e) {
     console.error('Error adding document: ', e);

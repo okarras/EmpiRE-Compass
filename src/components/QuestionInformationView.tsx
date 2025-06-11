@@ -1,35 +1,18 @@
 import React from 'react';
-import { Query } from '../constants/queries_chart_info';
-import {
-  Box,
-  Paper,
-  DialogContentText,
-} from '@mui/material';
+import { Box, DialogContentText } from '@mui/material';
 import QuestionInformation from './QuestionInformation';
-import AIAssistant from './AI/AIAssistant';
+import { Query } from '../constants/queries_chart_info';
 
 interface QuestionInformationViewProps {
   query: Query;
-  questionData: Record<string, unknown>[];
 }
 
 const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   query,
-  questionData,
 }) => {
   return (
     <>
-      <AIAssistant query={query} questionData={questionData} />
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          mb: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 2,
-          border: '1px solid rgba(0, 0, 0, 0.1)',
-        }}
-      >
+      <>
         <DialogContentText>
           <Box sx={{ mb: 4 }}>
             <QuestionInformation
@@ -39,7 +22,9 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
           </Box>
           <Box sx={{ mb: 4 }}>
             <QuestionInformation
-              information={query.dataAnalysisInformation.requiredDataForAnalysis}
+              information={
+                query.dataAnalysisInformation.requiredDataForAnalysis
+              }
               label="Required Data for Analysis"
             />
           </Box>
@@ -49,16 +34,16 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
               label="Data Analysis"
             />
           </Box>
-          <Box sx={{ mb: 4 }}>
+          {/* <Box sx={{ mb: 4 }}>
             <QuestionInformation
               information={query.dataAnalysisInformation.dataInterpretation}
               label="Data Interpretation"
             />
-          </Box>
+          </Box> */}
         </DialogContentText>
-      </Paper>
+      </>
     </>
   );
 };
 
-export default QuestionInformationView; 
+export default QuestionInformationView;

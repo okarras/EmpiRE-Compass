@@ -2,43 +2,56 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-export const sortDataByYear = (rawData: { year: number }[]) => {
+export const sortDataByYear = (
+  rawData: { year: number; dc_label: string; da_label: string }[],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _query_id: string = '',
+  options: { reversed?: boolean } = {}
+) => {
+  const { reversed = false } = options;
   // Sort the data by year
   rawData.sort((a, b) => a.year - b.year);
+  let filteredData = rawData;
+  if (reversed) {
+    filteredData = rawData.filter(
+      (item) =>
+        item.dc_label === 'no collection' || item.da_label === 'no analysis'
+    );
+  } else {
+    filteredData = rawData.filter(
+      (item) =>
+        item.dc_label !== 'no collection' && item.da_label !== 'no analysis'
+    );
+  }
 
   // Get the unique years from the data
   const years = [...new Set(rawData.map((item) => item.year))];
 
   // Get the number of items for each year
   const itemsPerYear = years.map((year) => {
-    const count = rawData.filter((item) => item.year === year).length;
+    const count = filteredData.filter((item) => item.year === year).length;
+    const rawCount = rawData.filter((item) => item.year === year).length;
     return {
       count,
+      rawCount,
       year,
       ...rawData.find((item) => item.year === year), // Other properties
     };
   });
 
   // Find min and max counts
-  const counts = itemsPerYear.map((item) => item.count);
-  const minCount = Math.min(...counts);
-  const maxCount = Math.max(...counts);
 
   // Normalize the counts
   return itemsPerYear.map((item) => ({
     ...item,
-    normalizedRatio:
-      maxCount !== minCount
-        ? Number(
-            (((item.count - minCount) / (maxCount - minCount)) * 100).toFixed(2)
-          )
-        : 0, // Avoid division by zero
+    normalizedRatio: Number(((item.count / item.rawCount) * 100).toFixed(2)),
   }));
 };
 
 export interface SortDataByCountReturnInterface {
   method: string;
-  count: number;
+  count: number; // target count after filtering
+  rawCount?: number; // original count before filtering
   normalizedRatio: number;
 }
 
@@ -48,6 +61,8 @@ export const sortDataByCount = (
   if (!rawData.length) return [];
 
   const processedData: Record<string, number> = {};
+  // number of all papers with da_label key
+  const totalPapersWithDaLabel = rawData.filter((item) => item.da_label).length;
 
   rawData.forEach((dataValue) => {
     Object.keys(dataValue).forEach((key) => {
@@ -62,7 +77,9 @@ export const sortDataByCount = (
   ).map(([method, count]) => ({
     method,
     count,
-    normalizedRatio: Number(((count * 100) / rawData.length).toFixed(2)),
+    normalizedRatio: Number(
+      ((count * 100) / totalPapersWithDaLabel).toFixed(2)
+    ),
   }));
 
   return result.sort((a, b) => b.count - a.count);
@@ -78,6 +95,31 @@ export const aggregateMethodUsage = (
   rawData: RawDataItem[] = []
 ): AggregateMethodUsageReturnInterface[] => {
   if (!rawData.length) return [];
+  // 1) Define your threat fields
+  const booleanFields = [
+    'External',
+    'Internal',
+    'Construct',
+    'Conclusion',
+    'Reliability',
+    'Generalizability',
+    'Content',
+    'Descriptive',
+    'Theoretical',
+    'Repeatability',
+    'Mentioned',
+  ];
+
+  // 2) Deduplicate by paper URI (keep last entry)
+  const paperMap = new Map<string, RawDataItem>();
+  rawData.forEach((item) => paperMap.set(item.paper as string, item));
+  const uniquePapers = Array.from(paperMap.values());
+
+  // 3) Filter to papers having at least one threat = '1'
+  const papersWithThreats = uniquePapers.filter((item) =>
+    booleanFields.some((field) => item[field] === '1')
+  );
+  const totalPapersWithThreats = papersWithThreats.length;
 
   const processedData: Record<string, number> = {};
   let grandTotal = 0;
@@ -98,10 +140,12 @@ export const aggregateMethodUsage = (
   });
 
   return Object.entries(processedData).map(([method, count]) => ({
-    method,
+    method: `${method}`,
     count,
     normalizedRatio:
-      grandTotal > 0 ? Number((count / grandTotal).toFixed(3)) : 0, // Avoid division by zero
+      grandTotal > 0
+        ? Number(((count * 100) / totalPapersWithThreats).toFixed(3))
+        : 0, // Avoid division by zero
   }));
 };
 
@@ -147,7 +191,7 @@ export const processYearlyMethodData = (
     Object.entries(methods).forEach(([method, count]) => {
       normalizedRatio[method] = count;
       normalizedRatio[`normalized_${method}`] = parseFloat(
-        (count / papersPerYear[Number(year)]).toFixed(2)
+        ((count * 100) / papersPerYear[Number(year)]).toFixed(2)
       );
     });
     return { year: Number(year), ...normalizedRatio };
@@ -162,58 +206,147 @@ interface CountMethodsRawDataInterface {
 export const countMethodDistribution = (
   rawData: CountMethodsRawDataInterface[] = []
 ): Record<string, unknown>[] => {
+  // 1) Deduplicate by paper
+  const paperMap = new Map<string, CountMethodsRawDataInterface>();
+  rawData.forEach((item) => paperMap.set(item.paper as string, item));
+  //TODO: fix this
+  const uniquePapers = rawData;
+
+  // 2) Define which labels go into "others"
+  const dataKeys = [
+    'case study',
+    'experiment',
+    'survey',
+    'interview',
+    'secondary research',
+    'action research',
+  ];
+
+  // 3) Aggregate counts per year × method
   const aggregatedData: Record<string, Record<string, number>> = {};
-  rawData.forEach(({ dc_method_type_label, year }) => {
-    if (!aggregatedData[year]) aggregatedData[year] = {};
-    aggregatedData[year][dc_method_type_label] =
-      (aggregatedData[year][dc_method_type_label] || 0) + 1;
+  uniquePapers.forEach(({ dc_method_type_label, year }) => {
+    aggregatedData[year] = aggregatedData[year] || {};
+    const key = dataKeys.includes(dc_method_type_label)
+      ? dc_method_type_label
+      : 'others';
+    aggregatedData[year][key] = (aggregatedData[year][key] || 0) + 1;
   });
-  const chartData = Object.entries(aggregatedData).map(([year, methods]) => ({
-    year,
-    ...methods,
-  }));
-  return chartData;
+
+  // 4) For each year, compute per-year total and per-method ratios
+  const result = Object.entries(aggregatedData)
+    .sort(([a], [b]) => parseInt(a) - parseInt(b))
+    .map(([year, methods]) => {
+      // per-year total = sum of all method counts for that year
+      const totalPapersThisYear = Object.values(methods).reduce(
+        (sum, c) => sum + c,
+        0
+      );
+
+      // for each method, compute normalized = count / totalThisYear
+      const normalizedFields = Object.fromEntries(
+        Object.entries(methods).map(([method, count]) => [
+          `normalized_${method}`,
+          totalPapersThisYear > 0
+            ? Number(((count * 100) / totalPapersThisYear).toFixed(2))
+            : 0,
+        ])
+      );
+      return {
+        year,
+        ...methods,
+        ...normalizedFields,
+      };
+    });
+  return result;
 };
 
 type StatisticItem = {
-  year: number;
-  descriptive: number;
-  inferential: number;
-  machine_learning: number;
-  others: number;
+  paper: string;
+  year: string;
+  da_label?: string;
+  descriptive?: string;
+  inferential?: string;
+  machine_learning?: string;
+  method?: string;
 };
 
 export const countDataAnalysisStatisticsMethods = (
-  data: StatisticItem[]
+  rawData: StatisticItem[]
 ) => {
-  const processedData: StatisticItem[] = [];
-  // get unique year values
-  const uniqueYears = [...new Set(data.map((item) => item.year))];
+  const processedData: {
+    year: number;
+    descriptive: number;
+    normalized_descriptive: number;
+    inferential: number;
+    normalized_inferential: number;
+    machine_learning: number;
+    normalized_machine_learning: number;
+    method: number;
+    normalized_method: number;
+    others: number;
+    normalized_others: number;
+  }[] = [];
+
+  // Step 1: deduplicate by paper URI
+  const paperMap = new Map<string, StatisticItem>();
+  rawData.forEach((item) => paperMap.set(item.paper, item));
+  const uniqueData = Array.from(paperMap.values());
+
+  // Step 2: get unique years
+  const uniqueYears = [...new Set(uniqueData.map((item) => item.year))];
 
   for (const year of uniqueYears) {
-    const yearData = data.filter((item: StatisticItem) => item.year === year);
-    // count the number of descriptive, inferential, machine learning and others
-    const descriptiveCount = yearData.filter(
-      (item: StatisticItem) => item.descriptive
-    ).length;
-    const inferentialCount = yearData.filter(
-      (item: StatisticItem) => item.inferential
-    ).length;
-    const machineLearningCount = yearData.filter(
-      (item: StatisticItem) => item.machine_learning
-    ).length;
-    const othersCount = yearData.filter(
-      (item: StatisticItem) => item.others
-    ).length;
-    // add the counts to the data
+    const yearData = uniqueData.filter((item) => item.year === year);
+    const total = yearData.length;
+
+    // Step 3: count each type
+    let descriptive = 0,
+      inferential = 0,
+      machineLearning = 0,
+      method = 0,
+      others = 0;
+
+    yearData.forEach((item) => {
+      const daLabels = item.da_label?.toLowerCase();
+
+      if (daLabels === 'descriptive') descriptive++;
+      if (daLabels === 'inferential') inferential++;
+      if (daLabels === 'machine learning') machineLearning++;
+      if (daLabels === 'method') method++;
+
+      // Count standard categories
+      if (item.descriptive) descriptive++;
+      if (item.inferential) inferential++;
+      if (item.machine_learning) machineLearning++;
+      if (item.method) method++;
+
+      // Count 'others' as anything in da_label not in the four standard ones
+      const label = item.da_label?.toLowerCase();
+      const isOther =
+        label &&
+        !['descriptive', 'inferential', 'machine learning', 'method'].includes(
+          label
+        );
+      if (isOther) others++;
+    });
+
     processedData.push({
-      year,
-      descriptive: descriptiveCount,
-      inferential: inferentialCount,
-      machine_learning: machineLearningCount,
-      others: othersCount,
+      year: Number(year),
+      descriptive,
+      normalized_descriptive: +((descriptive * 100) / total).toFixed(2),
+      inferential,
+      normalized_inferential: +((inferential * 100) / total).toFixed(2),
+      machine_learning: machineLearning,
+      normalized_machine_learning: +((machineLearning * 100) / total).toFixed(
+        2
+      ),
+      method,
+      normalized_method: +((method * 100) / total).toFixed(2),
+      others,
+      normalized_others: +((others * 100) / total).toFixed(2),
     });
   }
-  processedData.sort((a, b) => a.year - b.year);
-  return processedData;
+
+  // Sort by year ascending (convert year to number if needed)
+  return processedData.sort((a, b) => a.year - b.year);
 };

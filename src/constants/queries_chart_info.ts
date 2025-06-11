@@ -45,18 +45,27 @@ export interface ChartSetting {
   barLabel?: string;
   layout?: string;
   margin?: Record<string, unknown>;
+  noHeadingInSeries?: boolean;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
 }
 export interface Query {
   title: string;
   id: number;
-  uid: string;
-  uid_2?: string;
+  uid: string; // data collection
+  uid_2?: string; // data analysis
+  uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
-  chartSettings: ChartSetting;
+  chartSettings?: ChartSetting;
   chartType?: 'bar' | 'pie';
   //TODO: fix types
-  dataProcessingFunction2?: (data: any) => any[];
-  dataProcessingFunction: (data: any, query_id?: string) => any[];
+  dataProcessingFunction2?: (data: any, data2?: any) => any[];
+  dataProcessingFunction?: (
+    data: any,
+    query_id?: string,
+    options?: Record<string, unknown>
+  ) => any[];
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
@@ -115,7 +124,7 @@ export const queries: Query[] = [
         'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
-  //Query 2 TODO
+  //Query 2
   {
     title:
       'Number of empirical methods used for data collection & data analysis per year',
@@ -171,13 +180,16 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
+        { dataKey: 'case study', label: 'Number of case studies' },
+        { dataKey: 'experiment', label: 'Number of experiments' },
+        { dataKey: 'survey', label: 'Number of surveys' },
+        { dataKey: 'interview', label: 'Number of interviews' },
+        {
+          dataKey: 'secondary research',
+          label: 'Number of secondary research',
+        },
+        { dataKey: 'action research', label: 'Number of action research' },
+        { dataKey: 'others', label: 'Number of other' },
       ],
       height: chartHeight,
       sx: chartStyles,
@@ -216,7 +228,8 @@ export const queries: Query[] = [
       sx: chartStyles,
     },
 
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData) =>
+      sortDataByYear(rawData, '3', { reversed: true }),
     dataAnalysisInformation: {
       question:
         'How has the proportion of papers that do not have an empirical study evolved over time?',
@@ -230,54 +243,77 @@ export const queries: Query[] = [
         'Based on the figure "Normalized number of papers without an empirical study per year", an decreasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers without an empirical study is 30.5%, the average proportion for the period 2010 - 2019 is 14.8%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 5.7%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the small number of papers without an empiricial study envisioned for the target state (2020 - 2025) can be achieved. Regarding the aspect that the papers should provide a good reason for not including a proper evaluation, further analysis is needed as we have not yet examined how papers without empiricial studies justify why they do not provide proper evaluations.',
     },
   },
-  //Query 4 TODO
+  //Query 4
   {
     title: 'Number of empirical methods used for data analysis',
     id: 4,
     uid: 'query_4_1',
     uid_2: 'query_4_2',
-    //TODO: this chart is Horizontal
     chartSettings2: {
-      heading: 'Number of empirical methods used for data analysis',
-      seriesHeadingTemplate:
-        'Number of {label} used for data analysis',
-      className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      colors: [
-        '#4c72b0',
-        '#dd8452',
-        '#55a868',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-      ],
-      yAxis: [
-        {
-          label: 'Number of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'descriptive', label: 'descriptive statistics' },
-        { dataKey: 'inferential', label: 'inferential statistics' },
-        { dataKey: 'machine_learning', label: 'machine learning statistics' },
-        { dataKey: 'others', label: 'Other' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-    },
-    dataProcessingFunction2: countDataAnalysisStatisticsMethods,
-    chartSettings: {
       layout: 'horizontal',
-      className: 'fullWidth fixText',
-      heading: 'Number of empirical methods used for data analysis',
       barLabel: 'value',
-      xAxis: [{ label: 'Number of Statistical Method used' }],
+      heading: 'Number of empirical methods used for data analysis',
+      seriesHeadingTemplate: 'Number of {label} used for data analysis',
+      className: 'fullWidth fixText',
+      xAxis: [{ label: 'Number of empirical method used' }],
+      colors: ['#e86161'],
       yAxis: [
         {
           scaleType: 'band',
           dataKey: 'methodType',
-          label: 'Statistical Method used',
+          label: 'Empirical Method used',
+        },
+      ],
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction2: (rawData: any[]): any[] => {
+      const keys_to_count = ['descriptive', 'inferential', 'machine_learning'];
+      const static_keys = ['da_label', 'paper', 'year'];
+
+      // Initialize count object
+      const labelCounts: { [key: string]: number } = {
+        descriptive: 0,
+        inferential: 0,
+        machine_learning: 0,
+        others: 0,
+      };
+
+      rawData.forEach((item) => {
+        Object.keys(item).forEach((key) => {
+          if (keys_to_count.includes(key)) {
+            labelCounts[key]++;
+          } else if (!static_keys.includes(key)) {
+            labelCounts['others']++;
+          }
+        });
+      });
+
+      const chartData = Object.keys(labelCounts).map((label) => ({
+        methodType: label,
+        count: labelCounts[label],
+        normalizedRatio: Number(
+          ((labelCounts[label] * 100) / rawData.length).toFixed(2)
+        ),
+      }));
+
+      return chartData;
+    },
+    chartSettings: {
+      layout: 'horizontal',
+      className: 'fullWidth fixText',
+      heading: 'Number of empirical methods used for data collection',
+      barLabel: 'value',
+      xAxis: [{ label: 'Number of empirical method used' }],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'methodType',
+          label: 'Empirical Method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -303,7 +339,7 @@ export const queries: Query[] = [
         methodType: label,
         count: labelCounts[label],
         normalizedRatio: Number(
-          (labelCounts[label] / rawData.length).toFixed(2)
+          ((labelCounts[label] * 100) / rawData.length).toFixed(2)
         ),
       }));
       return chartData;
@@ -360,9 +396,9 @@ export const queries: Query[] = [
     title:
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
-    uid: 'query_6_1',
-    uid_2: 'query_6_2',
-    chartSettings: {
+    uid: 'query_6_2',
+    uid_2: 'query_6_1',
+    chartSettings2: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
       heading:
@@ -376,27 +412,26 @@ export const queries: Query[] = [
           label: 'Statistical Method used',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       margin: {
         left: 150,
       },
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByCount,
+    dataProcessingFunction2: sortDataByCount,
     dataAnalysisInformation: {
       question: 'How often are which statistical methods used?',
     },
   },
-  //Query 7.1
+  //Query 7
   {
     title:
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
-    uid: 'query_7_1',
-    uid_2: 'query_7_2',
-    // TODO: this chart should be for data analysis
-    chartSettings: {
+    uid: 'query_7_2',
+    uid_2: 'query_7_1',
+    chartSettings2: {
       className: 'fullWidth',
       colors: [
         '#5975a4',
@@ -413,7 +448,7 @@ export const queries: Query[] = [
       ],
       xAxis: xAxisSettings(),
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'Number of statistical method used for data analysis per year grouped by statistical method',
       yAxis: [
         {
           label: 'Number of statistical methods used',
@@ -435,7 +470,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: StatisticalData[]): any[] => {
+    dataProcessingFunction2: (rawData: StatisticalData[]): any[] => {
       if (!rawData.length) return [];
       // Extract unique years
       const years = [...new Set(rawData.map((item) => item.year))];
@@ -447,6 +482,9 @@ export const queries: Query[] = [
 
       const processedData = years.map((year) => {
         const filteredData = rawData.filter((item) => item.year === year);
+        const totalPapersWithDaLabel = filteredData.filter(
+          (item) => item.da_label
+        ).length;
         const result: { year: number; [key: string]: number } = { year };
 
         methodKeys.forEach((method) => {
@@ -458,6 +496,8 @@ export const queries: Query[] = [
               sum + (item[method]?.replace(/[^1]/g, '').length || 0), // Counting occurrences of '1'
             0
           );
+          result[`normalized_${method}`] =
+            (result[method] * 100) / totalPapersWithDaLabel;
         });
 
         return result;
@@ -489,7 +529,75 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // List of boolean‐threat fields
+      const booleanFields = [
+        'external',
+        'internal',
+        'construct',
+        'conclusion',
+        'reliability',
+        'generalizability',
+        'content',
+        'descriptive',
+        'theoretical',
+        'repeatability',
+        'mentioned',
+      ];
+
+      // 1) Normalize those "0"/"1" strings into real booleans
+      const cleanedData = rawData.map((item) => {
+        const newItem: any = { ...item, year: parseInt(item.year, 10) };
+        booleanFields.forEach((field) => {
+          newItem[field] = item[field] === '1'; // true if "1", false otherwise
+        });
+        return newItem;
+      });
+
+      // 2) Deduplicate by paper URI (keep last occurrence)
+      const paperMap = new Map<string, (typeof cleanedData)[0]>();
+      cleanedData.forEach((item) => {
+        paperMap.set(item.paper, item);
+      });
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 3) Count total papers per year
+      const totalPapersPerYear: Record<number, number> = {};
+      uniquePapers.forEach((item) => {
+        totalPapersPerYear[item.year] =
+          (totalPapersPerYear[item.year] || 0) + 1;
+      });
+
+      // 4) Filter for papers with at least one threat flagged
+      const papersWithThreats = uniquePapers.filter((item) =>
+        booleanFields.some((field) => item[field] === true)
+      );
+
+      // 5) Count threat-reporting papers per year
+      const threatPapersPerYear: Record<number, number> = {};
+      papersWithThreats.forEach((item) => {
+        threatPapersPerYear[item.year] =
+          (threatPapersPerYear[item.year] || 0) + 1;
+      });
+
+      // 6) Build final array with normalization
+      const result = Object.keys(totalPapersPerYear).map((yearStr) => {
+        const year = parseInt(yearStr, 10);
+        const total = totalPapersPerYear[year] || 0;
+        const withThreats = threatPapersPerYear[year] || 0;
+        return {
+          year,
+          numberOfAllPapers: total,
+          count: withThreats,
+          normalizedRatio: total
+            ? Number(((withThreats * 100) / total).toFixed(2))
+            : 0,
+        };
+      });
+
+      // Sort by year ascending
+      return result.sort((a, b) => a.year - b.year);
+    },
     dataAnalysisInformation: {
       question:
         'How has the reporting of threats to validity evolved over time?',
@@ -526,7 +634,7 @@ export const queries: Query[] = [
       question: 'What types of threats to validity do the authors report?',
     },
   },
-  //Query 10
+  //Query 10 TODO: check if this is correct
   {
     title: 'Number of papers per year',
     id: 10,
@@ -556,12 +664,7 @@ export const queries: Query[] = [
       ],
       series: [
         { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
         { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
       ],
       height: chartHeight,
       sx: chartStyles,
@@ -595,33 +698,203 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // 1) Deduplicate by paper URI (keep last entry)
+      const paperMap = new Map<string, any>();
+      rawData.forEach((item) => paperMap.set(item.paper, item));
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 2) Count total unique papers per year
+      const allPapersPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year }) => {
+        allPapersPerYear[year] = (allPapersPerYear[year] || 0) + 1;
+      });
+
+      // 3) Count papers that provide at least one URL per year
+      //    (assuming `url` is non‐empty when a paper has data)
+      const papersWithDataPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year, url }) => {
+        if (url) {
+          papersWithDataPerYear[year] = (papersWithDataPerYear[year] || 0) + 1;
+        }
+      });
+
+      // 4) Build final array with normalized ratio = dataPapers / totalPapers
+      const result = Object.keys(allPapersPerYear)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .map((yearStr) => {
+          const total = allPapersPerYear[yearStr];
+          const withData = papersWithDataPerYear[yearStr] || 0;
+          return {
+            year: parseInt(yearStr, 10),
+            count: withData, // number of papers with a URL
+            normalizedRatio:
+              total > 0 ? Number(((withData * 100) / total).toFixed(2)) : 0,
+          };
+        });
+
+      return result;
+    },
+
     dataAnalysisInformation: {
       question:
         'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?',
     },
   },
-  //Query 12 TODO: this query should be checked
+  //Query 12
   {
     title: 'Number of papers per year',
     id: 12,
     uid: 'query_12',
+
     chartSettings: {
-      className: 'fullWidth',
-      barLabel: 'value',
+      className: 'fullWidth fixText',
       xAxis: xAxisSettings(),
+      colors: [
+        '#4c72b0',
+        '#dd8452',
+        '#55a868',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+      ],
       heading:
         'Number of papers with highlighted research question(s) and highlighted answers per year',
+      noHeadingInSeries: true,
       yAxis: [
         {
           label: 'Numbers of papers',
         },
       ],
-      series: [{ dataKey: 'normalizedRatio' }],
+      series: [
+        {
+          dataKey: 'noRQHighlighted',
+          label:
+            'Number of papers without highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'noRQHidden',
+          label:
+            'Number of papers without research question and hidden answers per year',
+        },
+        {
+          dataKey: 'hqha',
+          label:
+            'Number of papers with highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hqhaHidden',
+          label:
+            'Number of papers with highlighted research question(s) and hidden answers per year',
+        },
+        {
+          dataKey: 'hidqha',
+          label:
+            'Number of papers with hidden research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hidqhid',
+          label:
+            'Number of papers with hidden research question(s) and hidden answers per year',
+        },
+      ],
       height: chartHeight,
       sx: chartStyles,
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 150,
+        bottom: 40,
+      },
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: (rawData: any[]) => {
+      // 0) Clean & normalize incoming strings
+      const cleaned = rawData.map((item) => ({
+        paper: item.paper,
+        year: item.year, // keep as string so it shows up as "1993", etc.
+        question: item.question,
+        highlighted_q: item.highlighted_q === '1',
+        highlighted_a: item.highlighted_a === '1',
+      }));
+
+      // 1) Dedupe by paper URI
+      const paperMap = new Map<string, any>();
+      cleaned.forEach((item) => paperMap.set(item.paper, item));
+      const uniquePapers = Array.from(paperMap.values());
+
+      // 2) Build per‐year totals for normalization
+      const papersPerYear: Record<string, number> = {};
+      uniquePapers.forEach(({ year }) => {
+        papersPerYear[year] = (papersPerYear[year] || 0) + 1;
+      });
+
+      // 3) Partition
+      const noRQ = uniquePapers.filter(
+        (item) => item.question === 'No question'
+      );
+      const hasRQ = uniquePapers.filter(
+        (item) => item.question !== 'No question'
+      );
+
+      // 4) Helper to count per year given qFlag (or null to ignore) & aFlag
+      const countComb = (
+        arr: any[],
+        qFlag: boolean | null,
+        aFlag: boolean
+      ): Record<string, number> =>
+        arr
+          .filter((item) =>
+            qFlag === null
+              ? item.highlighted_a === aFlag
+              : item.highlighted_q === qFlag && item.highlighted_a === aFlag
+          )
+          .reduce<Record<string, number>>((acc, { year }) => {
+            acc[year] = (acc[year] || 0) + 1;
+            return acc;
+          }, {});
+
+      const cnt_noRQ_HA = countComb(noRQ, null, true);
+      const cnt_noRQ_HI = countComb(noRQ, null, false);
+      const cnt_HQ_HA = countComb(hasRQ, true, true);
+      const cnt_HQ_HI = countComb(hasRQ, true, false);
+      const cnt_HiQ_HA = countComb(hasRQ, false, true);
+      const cnt_HiQ_HI = countComb(hasRQ, false, false);
+
+      // 5) Build output array
+      const result = Object.keys(papersPerYear)
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+        .map((year) => {
+          const total = papersPerYear[year] || 0;
+          const c1 = cnt_noRQ_HA[year] || 0;
+          const c2 = cnt_noRQ_HI[year] || 0;
+          const c3 = cnt_HQ_HA[year] || 0;
+          const c4 = cnt_HQ_HI[year] || 0;
+          const c5 = cnt_HiQ_HA[year] || 0;
+          const c6 = cnt_HiQ_HI[year] || 0;
+          return {
+            year,
+            noRQHighlighted: c1,
+            normalized_noRQHighlighted: total
+              ? +((c1 * 100) / total).toFixed(2)
+              : 0,
+            noRQHidden: c2,
+            normalized_noRQHidden: total ? +((c2 * 100) / total).toFixed(2) : 0,
+            hqha: c3,
+            normalized_hqha: total ? +((c3 * 100) / total).toFixed(2) : 0,
+            hqhaHidden: c4,
+            normalized_hqhaHidden: total ? +((c4 * 100) / total).toFixed(2) : 0,
+            hidqha: c5,
+            normalized_hidqha: total ? +((c5 * 100) / total).toFixed(2) : 0,
+            hidqhid: c6,
+            normalized_hidqhid: total ? +((c6 * 100) / total).toFixed(2) : 0,
+          };
+        });
+      return result;
+    },
     dataAnalysisInformation: {
       question:
         'How has the reporting of research questions and answers evolved over time?',
@@ -669,7 +942,7 @@ export const queries: Query[] = [
       ).map(([method, count]) => ({
         method,
         count,
-        normalizedRatio: Number((count / rawData.length).toFixed(2)),
+        normalizedRatio: Number(((count * 100) / rawData.length).toFixed(2)),
       }));
 
       return result.sort((a, b) => b.count - a.count);
@@ -698,8 +971,17 @@ export const queries: Query[] = [
         '#64b5cd',
       ],
       className: 'fullWidth',
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
       heading:
-        'Normalized number of empirical methods used for secondary research per year',
+        'number of empirical methods used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -707,36 +989,36 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'normalized_archive_analysis', label: 'Archive Analysis' },
+        { dataKey: 'archive_analysis', label: 'Archive Analysis' },
         {
-          dataKey: 'normalized_systematic_literature_review',
+          dataKey: 'systematic_literature_review',
           label: 'Systematic Literature Review',
         },
         {
-          dataKey: 'normalized_literature_review',
+          dataKey: 'literature_review',
           label: 'Literature Review',
         },
         {
-          dataKey: 'normalized_systematic_literature_map',
+          dataKey: 'systematic_literature_map',
           label: 'Systematic Literature Map',
         },
         {
-          dataKey: 'normalized_systematic_review',
+          dataKey: 'systematic_review',
           label: 'Systematic Review',
         },
         {
-          dataKey: 'normalized_tertiary_literature_review',
+          dataKey: 'tertiary_literature_review',
           label: 'Tertiary literature review',
         },
         {
-          dataKey: 'normalized_document_analysis',
+          dataKey: 'document_analysis',
           label: 'Document analysis',
         },
         {
-          dataKey: 'normalized_document_inspection',
+          dataKey: 'document_inspection',
           label: 'Document Inspection',
         },
-        { dataKey: 'normalized_literature_study', label: 'Literature Study' },
+        { dataKey: 'literature_study', label: 'Literature Study' },
         {
           dataKey: 'normalized_literature_survey',
           label: 'Literature Survey',
@@ -751,16 +1033,16 @@ export const queries: Query[] = [
         'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?',
     },
   },
-  // Query 15 TODO: check if this is correct
+  // Query 15
   {
     title: 'Number of papers per year',
     id: 15,
     uid: 'query_15_1',
-    uid_2: 'query_15_2',
+    uid_2_merge: 'query_15_2',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
-      xAxis: xAxisSettings(),
+      xAxis: xAxisSettings('numberOfMethodsUsed'),
       heading:
         'Number of papers using X empirical methods for data collection and data analysis',
       yAxis: [
@@ -772,53 +1054,135 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction2: (rawData: any[], rawData2: any[]) => {
+      //merge rawData and rawData2 based on paper and year in each object
+      const mergedData = rawData.map((item) => {
+        const item2 = rawData2.find(
+          (item2) => item2.paper === item.paper && item2.year === item.year
+        );
+        return {
+          ...item,
+          ...item2,
+        };
+      });
+
+      // count each papers keys other than paper and year {Number of empirical methods used, Number of Papers using X empirical methods}
+      const countedData = mergedData.map((item) => {
+        const keys = Object.keys(item).filter(
+          (key) => key !== 'paper' && key !== 'year'
+        );
+        let numberOfMethodsUsed = 0;
+        keys.forEach((key) => {
+          numberOfMethodsUsed += Number(item[key]);
+        });
+        return {
+          ...item,
+          numberOfMethodsUsed,
+        };
+      });
+
+      //sort data by count
+      countedData.sort((a, b) => b.count - a.count);
+
+      //count the number of papers in each count {numberOfMethodsUsed: number of papers, count: number of papers, normalizedRatio: number of papers / total number of papers}
+      const result = countedData.reduce((acc, item) => {
+        acc[item.numberOfMethodsUsed] =
+          (acc[item.numberOfMethodsUsed] || 0) + 1;
+        return acc;
+      }, {});
+
+      const arrayResult = Object.entries(result).map(([key, value]) => ({
+        numberOfMethodsUsed: key,
+        count: value,
+        normalizedRatio:
+          Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      }));
+
+      return arrayResult;
+    },
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },
   },
   // Query 16
   {
-  title: 'Number of papers using X empirical methods per year',
-  id: 16,
-  uid: 'query_16_1',
-  chartSettings: {
-    className: 'fullWidth',
-    colors: [
-      '#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8172b3', '#937860',
-      '#da8bc3', '#8c8c8c', '#ccb974', '#64b5cd', '#4c72b0'
-    ],
-    xAxis: xAxisSettings(),
-    heading: 'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
-    seriesHeadingTemplate: 'Number of papers using {label} per year',
-    yAxis: [
-      { label: 'Number of papers' }
-    ],
-    series: [
-      { dataKey: '1.0', label: '1 empirical methods' },
-      { dataKey: '2.0', label: '2 empirical methods' },
-      { dataKey: '3.0', label: '3 empirical methods' },
-      { dataKey: '4.0', label: '4 empirical methods' },
-      { dataKey: '5.0', label: '5 empirical methods' },
-      { dataKey: '6.0', label: '6 empirical methods' },
-      { dataKey: '7.0', label: '7 empirical methods' },
-      { dataKey: '8.0', label: '8 empirical methods' },
-      { dataKey: '9.0', label: '9 empirical methods' },
-      { dataKey: '10.0', label: '10 empirical methods' },
-      { dataKey: '12.0', label: '12 empirical methods' }
-    ],
-    height: chartHeight,
-    sx: chartStyles
-  },
-  dataProcessingFunction: (rawData: any[]): any[] => {
-    if (!rawData.length) return [];
+    title: 'Number of papers using X empirical methods per year',
+    id: 16,
+    uid: 'query_16_1',
+    uid_2_merge: 'query_16_2',
+    chartSettings: {
+      className: 'fullWidth',
+      colors: [
+        '#5975a4',
+        '#cc8963',
+        '#5f9e6e',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+        '#8c8c8c',
+        '#ccb974',
+        '#64b5cd',
+        '#4c72b0',
+      ],
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
+      xAxis: xAxisSettings(),
+      heading:
+        'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
+      seriesHeadingTemplate: 'Number of papers using {label} per year',
+      yAxis: [{ label: 'Number of papers' }],
+      series: [
+        { dataKey: '1.0', label: '1 empirical methods' },
+        { dataKey: '2.0', label: '2 empirical methods' },
+        { dataKey: '3.0', label: '3 empirical methods' },
+        { dataKey: '4.0', label: '4 empirical methods' },
+        { dataKey: '5.0', label: '5 empirical methods' },
+        { dataKey: '6.0', label: '6 empirical methods' },
+        { dataKey: '7.0', label: '7 empirical methods' },
+        { dataKey: '8.0', label: '8 empirical methods' },
+        { dataKey: '9.0', label: '9 empirical methods' },
+        { dataKey: '10.0', label: '10 empirical methods' },
+        { dataKey: '12.0', label: '12 empirical methods' },
+      ],
+      height: chartHeight,
+      sx: chartStyles,
+    },
+    dataProcessingFunction2: (rawData: any[], rawData2: any[]): any[] => {
+      if (!rawData.length || !rawData2.length) return [];
 
-    const dataByYear: Record<number, Record<string, number>> = {};
-    const totalByYear: Record<number, number> = {};
+      //merge rawData and rawData2 based on paper and year in each object
+      const mergedData = rawData.map((item) => {
+        const item2 = rawData2.find(
+          (item2) => item2.paper === item.paper && item2.year === item.year
+        );
+        return {
+          ...item,
+          ...item2,
+        };
+      });
 
-    rawData.forEach((item) => {
-      const year = item.year;
-        const toNumber = (v: any) => typeof v === 'number' ? v : parseInt(v || '0');
+      //Deduplicate mergedData based on paper and year
+      const deduplicatedData = mergedData.filter(
+        (item, index, self) =>
+          index ===
+          self.findIndex((t) => t.paper === item.paper && t.year === item.year)
+      );
+
+      const dataByYear: Record<number, Record<string, number>> = {};
+      const totalByYear: Record<number, number> = {};
+
+      deduplicatedData.forEach((item) => {
+        const year = item.year;
+        const toNumber = (v: any) =>
+          typeof v === 'number' ? v : parseInt(v || '0');
 
         const methodCount =
           toNumber(item.number_of_dc_methods) +
@@ -827,30 +1191,35 @@ export const queries: Query[] = [
           toNumber(item.number_of_oth_methods) +
           toNumber(item.number_of_other_methods);
 
-      if (!dataByYear[year]) {
-        dataByYear[year] = {};
-        totalByYear[year] = 0;
-      }
+        if (!dataByYear[year]) {
+          dataByYear[year] = {};
+          totalByYear[year] = 0;
+        }
 
-      const key = methodCount.toFixed(1);
-      dataByYear[year][key] = (dataByYear[year][key] || 0) + 1;
-      totalByYear[year]++;
-    });
-
-    return Object.entries(dataByYear).map(([yearStr, counts]) => {
-      const year = parseInt(yearStr);
-      const result: any = { year };
-
-      Object.entries(counts).forEach(([methodKey, count]) => {
-        result[methodKey] = count;
-        result[`normalized ${methodKey}`] = parseFloat((count / totalByYear[year]).toFixed(2));
+        const key = methodCount.toFixed(1);
+        dataByYear[year][key] = (dataByYear[year][key] || 0) + 1;
+        totalByYear[year]++;
       });
 
-      return result;
-    }).sort((a, b) => a.year - b.year);
+      return Object.entries(dataByYear)
+        .map(([yearStr, counts]) => {
+          const year = parseInt(yearStr);
+          const result: any = { year };
+
+          Object.entries(counts).forEach(([methodKey, count]) => {
+            result[methodKey] = count;
+            result[`normalized_${methodKey}`] = parseFloat(
+              (count / totalByYear[year]).toFixed(2)
+            );
+          });
+
+          return result;
+        })
+        .sort((a, b) => a.year - b.year);
+    },
+    dataAnalysisInformation: {
+      question:
+        'How has the number of research methods used per publication evolved over time?',
+    },
   },
-  dataAnalysisInformation: {
-    question: 'How has the number of research methods used per publication evolved over time?'
-  }
-},
 ];

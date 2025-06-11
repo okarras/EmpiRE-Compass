@@ -9,6 +9,8 @@ import Router from './Router';
 import { store } from './store';
 import { fetchQuestionsFromFirebase } from './store/slices/questionSlice';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { AIAssistantProvider } from './context/AIAssistantContext';
+import FloatingAIAssistant from './components/AI/FloatingAIAssistant';
 import './styles/global.css';
 
 // Create a wrapper component to use Redux hooks and theme
@@ -30,6 +32,7 @@ const AppContent = () => {
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <BrowserRouter>
           <Router />
+          <FloatingAIAssistant />
         </BrowserRouter>
       </div>
     </MuiThemeProvider>
@@ -40,7 +43,9 @@ function App() {
   return (
     <Provider store={store}>
       <ThemeProvider>
-        <AppContent />
+        <AIAssistantProvider>
+          <AppContent />
+        </AIAssistantProvider>
       </ThemeProvider>
     </Provider>
   );

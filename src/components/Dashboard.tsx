@@ -43,7 +43,7 @@ const Dashboard = () => {
             }}
             id={`question-${query.id}`}
           >
-            {queries.find((q) => q.uid === query.uid) ? (
+            {queries.find((q) => q.id === query.id) && (
               <QuestionAccordion
                 key={`question-${query.uid}`}
                 query={mergeQueryWithFirebase(
@@ -54,10 +54,6 @@ const Dashboard = () => {
                   >
                 )}
               />
-            ) : (
-              <div>
-                <h3>Question 16 Not found</h3>
-              </div>
             )}
           </div>
         </>
