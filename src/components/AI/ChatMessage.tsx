@@ -1,4 +1,4 @@
-import { Box, Avatar, Typography, Paper } from '@mui/material';
+import { Box, Avatar, Paper } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import HTMLRenderer from './HTMLRenderer';
