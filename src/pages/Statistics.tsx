@@ -132,7 +132,7 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
           </Stack>
-        ) : ( */}
+        ) : (
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
@@ -168,7 +168,7 @@ export default function Statistics() {
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
         </Stack>
-        {/* )} */}
+         )}
 
         <Divider sx={{ mt: 2 }} />
 
