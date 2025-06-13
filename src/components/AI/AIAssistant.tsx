@@ -8,16 +8,23 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import InitialAnalysis from './InitialAnalysis';
 import ChatMessage from './ChatMessage';
 import TextSkeleton from './TextSkeleton';
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 interface AIAssistantProps {
   query: Query;
@@ -42,10 +49,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     streamingText,
     showReasoning,
     setShowReasoning,
+    clearChatHistory,
+    exportChatHistory,
   } = useAIAssistant({ query, questionData });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(menuAnchorEl);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -62,10 +73,115 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     }
   };
 
+  const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleClearChat = () => {
+    handleMenuClose();
+    clearChatHistory();
+  };
+
+  const handleExportChat = () => {
+    handleMenuClose();
+    exportChatHistory();
+  };
+
   return (
-    <Box
-      sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}
-    >
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Sticky Header */}
+      <Paper
+        elevation={0}
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          backgroundColor: 'background.paper',
+          p: 2,
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Typography variant="h6" sx={{ color: 'text.primary' }}>
+            AI Assistant
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip
+              title={showReasoning ? 'Hide AI Reasoning' : 'Show AI Reasoning'}
+            >
+              <IconButton
+                onClick={() => setShowReasoning(!showReasoning)}
+                sx={{
+                  color: showReasoning ? '#e86161' : 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                  },
+                }}
+              >
+                <PsychologyIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Chat Options">
+              <IconButton
+                onClick={handleMenuClick}
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                  },
+                }}
+              >
+                <MoreVertIcon />
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={menuOpen}
+              onClose={handleMenuClose}
+              PaperProps={{
+                sx: {
+                  mt: 1,
+                  minWidth: 180,
+                },
+              }}
+            >
+              <MenuItem
+                onClick={handleExportChat}
+                disabled={messages.length === 0}
+              >
+                <ListItemIcon>
+                  <FileDownloadIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>Export Chat</ListItemText>
+              </MenuItem>
+              <MenuItem
+                onClick={handleClearChat}
+                disabled={messages.length === 0}
+              >
+                <ListItemIcon>
+                  <DeleteIcon fontSize="small" sx={{ color: '#e86161' }} />
+                </ListItemIcon>
+                <ListItemText sx={{ color: '#e86161' }}>
+                  Clear Chat
+                </ListItemText>
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Box>
+      </Paper>
+
+      {/* Scrollable Content */}
       <Box
         ref={chatContainerRef}
         sx={{
@@ -228,7 +344,15 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
       </Box>
 
       {/* Input Area */}
-      <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          backgroundColor: 'background.paper',
+        }}
+      >
         <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
           <TextField
             fullWidth
@@ -261,31 +385,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             alignItems: 'center',
             mt: 2,
           }}
         >
-          <Tooltip
-            title={showReasoning ? 'Hide AI Reasoning' : 'Show AI Reasoning'}
-          >
-            <IconButton
-              onClick={() => setShowReasoning(!showReasoning)}
-              sx={{
-                color: showReasoning ? '#e86161' : 'text.secondary',
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                },
-              }}
-            >
-              {showReasoning ? (
-                <PsychologyIcon />
-              ) : (
-                <PsychologyIcon sx={{ color: 'text.secondary' }} />
-              )}
-            </IconButton>
-          </Tooltip>
-
           <Button
             variant="contained"
             onClick={handleGenerate}
@@ -307,7 +411,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             {loading ? 'Generating...' : 'Ask Question'}
           </Button>
         </Box>
-      </Box>
+      </Paper>
     </Box>
   );
 };

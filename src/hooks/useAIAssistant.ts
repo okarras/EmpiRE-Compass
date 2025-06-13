@@ -18,17 +18,24 @@ interface Message {
   isUser: boolean;
   isStreaming?: boolean;
   reasoning?: string;
+  timestamp?: number;
 }
 
-// Cache interface
+// Cache interfaces
 interface CacheEntry {
   analysis: string;
   timestamp: number;
   reasoning?: string;
 }
 
-// Cache storage key
+interface ChatHistory {
+  messages: Message[];
+  lastUpdated: number;
+}
+
+// Cache storage keys
 const CACHE_STORAGE_KEY = 'ai_assistant_initial_analysis_cache';
+const CHAT_HISTORY_KEY = 'ai_assistant_chat_history';
 
 // Cache management functions
 const getCache = (): Record<string, CacheEntry> => {
@@ -51,6 +58,25 @@ const setCache = (cache: Record<string, CacheEntry>) => {
   }
 };
 
+// Chat history management functions
+const getChatHistory = (): Record<string, ChatHistory> => {
+  try {
+    const history = localStorage.getItem(CHAT_HISTORY_KEY);
+    return history ? (JSON.parse(history) as Record<string, ChatHistory>) : {};
+  } catch (error) {
+    console.error('Error reading chat history:', error);
+    return {};
+  }
+};
+
+const setChatHistory = (history: Record<string, ChatHistory>) => {
+  try {
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+  } catch (error) {
+    console.error('Error writing chat history:', error);
+  }
+};
+
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -68,7 +94,30 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [refreshingInitialAnalysis, setRefreshingInitialAnalysis] =
     useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [showReasoning, setShowReasoning] = useState(true);
+  const [showReasoning, setShowReasoning] = useState(false);
+
+  // Load chat history when query changes
+  useEffect(() => {
+    const chatHistory = getChatHistory();
+    const queryHistory = chatHistory[query.id];
+    if (queryHistory) {
+      setMessages(queryHistory.messages);
+    } else {
+      setMessages([]);
+    }
+  }, [query.id]);
+
+  // Save chat history when messages change
+  useEffect(() => {
+    if (messages.length > 0) {
+      const chatHistory = getChatHistory();
+      chatHistory[query.id] = {
+        messages,
+        lastUpdated: Date.now(),
+      };
+      setChatHistory(chatHistory);
+    }
+  }, [messages, query.id]);
 
   const groq = createGroq({
     apiKey: import.meta.env.VITE_GROQ_API_KEY,
@@ -357,6 +406,39 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   // Show Undo button if there is a lastCachedAnalysis and the current initialAnalysis is not from cache
   const canUndoInitialAnalysis = !!lastCachedAnalysis && !isFromCache;
 
+  // Chat management functions
+  const clearChatHistory = () => {
+    const chatHistory = getChatHistory();
+    delete chatHistory[query.id];
+    setChatHistory(chatHistory);
+    setMessages([]);
+  };
+
+  const exportChatHistory = () => {
+    const chatHistory = getChatHistory();
+    const queryHistory = chatHistory[query.id];
+    if (!queryHistory) return;
+
+    const exportData = {
+      queryId: query.id,
+      question: query.dataAnalysisInformation.question,
+      messages: queryHistory.messages,
+      lastUpdated: queryHistory.lastUpdated,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-history-${query.id}-${new Date().toISOString()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return {
     prompt,
     setPrompt,
@@ -376,6 +458,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     streamingText,
     showReasoning,
     setShowReasoning,
+    clearChatHistory,
+    exportChatHistory,
   };
 };
 
