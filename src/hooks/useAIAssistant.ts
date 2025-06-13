@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
-import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
+import {
+  generateText,
+  streamText,
+  wrapLanguageModel,
+  extractReasoningMiddleware,
+} from 'ai';
+import { createGroq } from '@ai-sdk/groq';
 import { Query } from '../constants/queries_chart_info';
 
 interface UseAIAssistantProps {
@@ -12,12 +17,14 @@ interface Message {
   content: string;
   isUser: boolean;
   isStreaming?: boolean;
+  reasoning?: string;
 }
 
 // Cache interface
 interface CacheEntry {
   analysis: string;
   timestamp: number;
+  reasoning?: string;
 }
 
 // Cache storage key
@@ -50,16 +57,27 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialAnalysis, setInitialAnalysis] = useState<string | null>(null);
+  const [initialReasoning, setInitialReasoning] = useState<string | null>(null);
   const [isFromCache, setIsFromCache] = useState(false);
   const [lastCachedAnalysis, setLastCachedAnalysis] = useState<string | null>(
+    null
+  );
+  const [lastCachedReasoning, setLastCachedReasoning] = useState<string | null>(
     null
   );
   const [refreshingInitialAnalysis, setRefreshingInitialAnalysis] =
     useState(false);
   const [streamingText, setStreamingText] = useState('');
+  const [showReasoning, setShowReasoning] = useState(true);
 
-  const openai = createOpenAI({
-    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  const groq = createGroq({
+    apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  });
+
+  // Create enhanced model with reasoning middleware
+  const enhancedModel = wrapLanguageModel({
+    model: groq.languageModel('deepseek-r1-distill-llama-70b'),
+    middleware: extractReasoningMiddleware({ tagName: 'think' }),
   });
 
   const generateSystemContext = () => {
@@ -70,8 +88,16 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
       Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
 
-      Available Data Points: ${questionData.length}
-      Data: ${JSON.stringify(questionData, null, 2)}
+       Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
+        ${
+          query.dataProcessingFunction2
+            ? `Data Analysis Data: ${JSON.stringify(
+                query.dataProcessingFunction2?.(questionData),
+                null,
+                2
+              )}`
+            : ''
+        }
 
       Your role is to:
       1. Understand and analyze the research question and its context
@@ -81,14 +107,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       5. Please maintain an academic and analytical tone in your responses.
       6. Format your response using HTML tags (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <code>, <pre>, <blockquote>, etc.).
       `;
-  };
-
-  const streamResponse = async (text: string) => {
-    const words = text.split(/(\s+)/);
-    for (const word of words) {
-      setStreamingText((prev) => prev + word);
-      await new Promise((resolve) => setTimeout(resolve, 30)); // Adjust speed as needed
-    }
   };
 
   useEffect(() => {
@@ -103,15 +121,17 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         const cacheEntry = responseCache[cacheKey] as CacheEntry | undefined;
         if (cacheEntry && typeof cacheEntry.analysis === 'string') {
           setInitialAnalysis(cacheEntry.analysis);
+          setInitialReasoning(cacheEntry.reasoning || null);
           setIsFromCache(true);
           setLastCachedAnalysis(cacheEntry.analysis);
+          setLastCachedReasoning(cacheEntry.reasoning || null);
           setLoading(false);
           return;
         }
 
-        const { text } = await generateText({
-          model: openai('gpt-4.1-nano'),
-          prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
+        const { reasoning, text } = await generateText({
+          model: enhancedModel,
+          prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
           <h1>Initial Analysis</h1>
 
           <h2>Question Overview</h2>
@@ -133,11 +153,21 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           ${generateSystemContext()}`,
         });
 
+        // process the text to remove markdown code blocks
+        //trim ```html and ```
+        const cleanedText = text
+          .replace(/```html\n/g, '')
+          .replace(/```\n/g, '')
+          .replace(/```html/g, '')
+          .replace(/```/g, '')
+          .trim();
+
         // Store in cache
         const updatedCache = {
           ...responseCache,
           [cacheKey]: {
-            analysis: text,
+            analysis: cleanedText,
+            reasoning: reasoning,
             timestamp: Date.now(),
           },
         };
@@ -149,9 +179,11 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           | undefined;
         if (prevCacheEntry && typeof prevCacheEntry.analysis === 'string') {
           setLastCachedAnalysis(prevCacheEntry.analysis);
+          setLastCachedReasoning(prevCacheEntry.reasoning || null);
         }
 
-        setInitialAnalysis(text);
+        setInitialAnalysis(cleanedText);
+        setInitialReasoning(reasoning ?? null);
         setIsFromCache(false);
       } catch (err) {
         setError('Failed to generate initial analysis');
@@ -170,6 +202,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const undoInitialAnalysis = () => {
     if (lastCachedAnalysis) {
       setInitialAnalysis(lastCachedAnalysis);
+      setInitialReasoning(lastCachedReasoning);
       setIsFromCache(true);
     }
   };
@@ -191,22 +224,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('elaborate');
 
     try {
-      const { text } = await generateText({
-        model: openai('gpt-4o-mini'),
+      const { reasoning, text } = await generateText({
+        model: enhancedModel,
         prompt: `${generateSystemContext()}
         User Question: ${prompt}
-        Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
-        Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
-        Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
-        ${
-          query.dataProcessingFunction2
-            ? `Data Analysis Data: ${JSON.stringify(
-                query.dataProcessingFunction2?.(questionData),
-                null,
-                2
-              )}`
-            : ''
-        }
 
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
         Important instructions:
@@ -221,16 +242,30 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       });
 
       // Clean up the response if it contains markdown code blocks
-      const cleanedText = text.replace(/```html\s*|\s*```/g, '').trim();
+      const cleanedText = text
+        .replace(/```html\n/g, '')
+        .replace(/```\n/g, '')
+        .replace(/```html/g, '')
+        .replace(/```/g, '')
+        .trim();
 
       // Add AI message with streaming flag
       setMessages((prev) => [
         ...prev,
-        { content: '', isUser: false, isStreaming: true },
+        { content: '', isUser: false, isStreaming: true, reasoning },
       ]);
 
       // Stream the response
-      await streamResponse(cleanedText);
+      const { textStream } = streamText({
+        model: enhancedModel,
+        prompt: cleanedText,
+      });
+
+      let streamedText = '';
+      for await (const textPart of textStream) {
+        streamedText += textPart;
+        setStreamingText(streamedText);
+      }
 
       // Update the last message with the complete response
       setMessages((prev) => {
@@ -238,6 +273,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         newMessages[newMessages.length - 1] = {
           content: cleanedText,
           isUser: false,
+          reasoning,
         };
         return newMessages;
       });
@@ -264,9 +300,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       const prevCacheEntry = responseCache[cacheKey] as CacheEntry | undefined;
       if (prevCacheEntry && typeof prevCacheEntry.analysis === 'string') {
         setLastCachedAnalysis(prevCacheEntry.analysis);
+        setLastCachedReasoning(prevCacheEntry.reasoning || null);
       }
-      const { text } = await generateText({
-        model: openai('gpt-4.1-nano'),
+      const { reasoning, text } = await generateText({
+        model: enhancedModel,
         prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
         <h1>Initial Analysis</h1>
 
@@ -288,16 +325,26 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         Context:
         ${generateSystemContext()}`,
       });
+      // process the text to remove markdown code blocks
+      const cleanedText = text
+        .replace(/```html\n/g, '')
+        .replace(/```\n/g, '')
+        .replace(/```html/g, '')
+        .replace(/```/g, '')
+        .trim();
+
       // Store in cache
       const updatedCache = {
         ...responseCache,
         [cacheKey]: {
-          analysis: text,
+          analysis: cleanedText,
+          reasoning,
           timestamp: Date.now(),
         },
       };
       setCache(updatedCache);
-      setInitialAnalysis(text);
+      setInitialAnalysis(cleanedText);
+      setInitialReasoning(reasoning ?? null);
       setIsFromCache(false);
     } catch (err) {
       setError('Failed to refresh initial analysis');
@@ -317,14 +364,18 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     loading,
     error,
     initialAnalysis,
+    initialReasoning,
     handleGenerate,
     isFromCache,
     undoInitialAnalysis,
     lastCachedAnalysis,
+    lastCachedReasoning,
     refreshInitialAnalysis,
     canUndoInitialAnalysis,
     refreshingInitialAnalysis,
     streamingText,
+    showReasoning,
+    setShowReasoning,
   };
 };
 

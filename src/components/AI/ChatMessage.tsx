@@ -6,9 +6,16 @@ import HTMLRenderer from './HTMLRenderer';
 interface ChatMessageProps {
   content: string;
   isUser: boolean;
+  reasoning?: string;
+  showReasoning?: boolean;
 }
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({
+  content,
+  isUser,
+  reasoning,
+  showReasoning = true,
+}) => {
   return (
     <Box
       sx={{
@@ -36,21 +43,39 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
         >
           {isUser ? <PersonIcon /> : <SmartToyIcon />}
         </Avatar>
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2,
-            backgroundColor: isUser ? 'primary.main' : 'background.paper',
-            color: isUser ? 'white' : 'text.primary',
-            borderRadius: 2,
-            border: isUser ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <HTMLRenderer content={content} />
-        </Paper>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {reasoning && !isUser && showReasoning && (
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                backgroundColor: 'rgba(232, 97, 97, 0.05)',
+                borderRadius: 2,
+                border: '1px solid rgba(232, 97, 97, 0.1)',
+                fontSize: '0.875rem',
+                color: 'text.secondary',
+                fontStyle: 'italic',
+              }}
+            >
+              <strong>Reasoning:</strong> {reasoning}
+            </Paper>
+          )}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2,
+              backgroundColor: isUser ? 'primary.main' : 'background.paper',
+              color: isUser ? 'white' : 'text.primary',
+              borderRadius: 2,
+              border: isUser ? 'none' : '1px solid rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <HTMLRenderer content={content} />
+          </Paper>
+        </Box>
       </Box>
     </Box>
   );
 };
 
-export default ChatMessage; 
+export default ChatMessage;

@@ -6,9 +6,12 @@ import {
   Typography,
   Box,
   Divider,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import InitialAnalysis from './InitialAnalysis';
@@ -29,6 +32,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     loading,
     error,
     initialAnalysis,
+    initialReasoning,
     handleGenerate,
     isFromCache,
     undoInitialAnalysis,
@@ -36,6 +40,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     canUndoInitialAnalysis,
     refreshingInitialAnalysis,
     streamingText,
+    showReasoning,
+    setShowReasoning,
   } = useAIAssistant({ query, questionData });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -57,12 +63,14 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}>
-      <Box 
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2, height: '100%' }}
+    >
+      <Box
         ref={chatContainerRef}
-        sx={{ 
-          flex: 1, 
-          overflow: 'auto', 
+        sx={{
+          flex: 1,
+          overflow: 'auto',
           p: 2,
           display: 'flex',
           flexDirection: 'column',
@@ -74,7 +82,11 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             <TextSkeleton lines={8} />
           </Box>
         ) : (
-          <InitialAnalysis content={initialAnalysis} />
+          <InitialAnalysis
+            content={initialAnalysis}
+            reasoning={initialReasoning}
+            showReasoning={showReasoning}
+          />
         )}
 
         {isFromCache && (
@@ -104,7 +116,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             <Button
               variant="outlined"
               onClick={refreshInitialAnalysis}
-              startIcon={refreshingInitialAnalysis ? <CircularProgress size={16} sx={{ color: '#e86161' }} /> : <RefreshIcon />}
+              startIcon={
+                refreshingInitialAnalysis ? (
+                  <CircularProgress size={16} sx={{ color: '#e86161' }} />
+                ) : (
+                  <RefreshIcon />
+                )
+              }
               size="small"
               sx={{
                 borderColor: '#e86161',
@@ -171,6 +189,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             key={index}
             content={message.content}
             isUser={message.isUser}
+            reasoning={message.reasoning}
+            showReasoning={showReasoning}
           />
         ))}
 
@@ -179,6 +199,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
           <ChatMessage
             content={streamingText}
             isUser={false}
+            showReasoning={showReasoning}
           />
         )}
 
@@ -237,12 +258,45 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
           />
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mt: 2,
+          }}
+        >
+          <Tooltip
+            title={showReasoning ? 'Hide AI Reasoning' : 'Show AI Reasoning'}
+          >
+            <IconButton
+              onClick={() => setShowReasoning(!showReasoning)}
+              sx={{
+                color: showReasoning ? '#e86161' : 'text.secondary',
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              {showReasoning ? (
+                <PsychologyIcon />
+              ) : (
+                <PsychologyIcon sx={{ color: 'text.secondary' }} />
+              )}
+            </IconButton>
+          </Tooltip>
+
           <Button
             variant="contained"
             onClick={handleGenerate}
             disabled={loading || !prompt.trim()}
-            endIcon={loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : <SendIcon />}
+            endIcon={
+              loading ? (
+                <CircularProgress size={20} sx={{ color: 'white' }} />
+              ) : (
+                <SendIcon />
+              )
+            }
             sx={{
               backgroundColor: '#e86161',
               '&:hover': {
