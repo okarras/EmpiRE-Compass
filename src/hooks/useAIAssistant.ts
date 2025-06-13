@@ -130,15 +130,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   });
 
   const generateSystemContext = () => {
-    return `You are analyzing a research question in Requirements Engineering. Please provide your response in HTML format.
-      Question: ${query.dataAnalysisInformation.question}
-      Question Explanation: ${query.dataAnalysisInformation.questionExplanation}
-      Required Data: ${query.dataAnalysisInformation.requiredDataForAnalysis}
-      Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
-      Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
-
-       Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
-        ${
+     /*
+       ${
           query.dataProcessingFunction2
             ? `Data Analysis Data: ${JSON.stringify(
                 query.dataProcessingFunction2?.(questionData),
@@ -147,7 +140,15 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
               )}`
             : ''
         }
+        */
+    return `You are analyzing a research question in Requirements Engineering. Please provide your response in HTML format.
+      Question: ${query.dataAnalysisInformation.question}
+      Question Explanation: ${query.dataAnalysisInformation.questionExplanation}
+      Required Data: ${query.dataAnalysisInformation.requiredDataForAnalysis}
+      Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
+      Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
 
+       Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
       Your role is to:
       1. Understand and analyze the research question and its context
       2. Interpret the available data and charts
