@@ -294,12 +294,14 @@ export const queries: Query[] = [
       });
 
       const chartData = Object.keys(labelCounts).map((label) => ({
-        methodType: label,
+        methodType: label.charAt(0).toUpperCase() + label.slice(1),
         count: labelCounts[label],
         normalizedRatio: Number(
           ((labelCounts[label] * 100) / rawData.length).toFixed(2)
         ),
       }));
+      //sort by count
+      chartData.sort((a, b) => b.count - a.count);
 
       return chartData;
     },
@@ -319,6 +321,7 @@ export const queries: Query[] = [
       series: [{ dataKey: 'normalizedRatio' }],
       margin: {
         left: 150,
+        right: 20,
       },
       height: chartHeight,
       sx: chartStyles,
@@ -336,12 +339,16 @@ export const queries: Query[] = [
         {}
       );
       const chartData = Object.keys(labelCounts).map((label) => ({
-        methodType: label,
+        methodType: label.charAt(0).toUpperCase() + label.slice(1),
         count: labelCounts[label],
         normalizedRatio: Number(
           ((labelCounts[label] * 100) / rawData.length).toFixed(2)
         ),
       }));
+
+      //sort by count
+      chartData.sort((a, b) => b.count - a.count);
+
       return chartData;
     },
     dataAnalysisInformation: {

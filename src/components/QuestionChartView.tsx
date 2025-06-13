@@ -82,7 +82,10 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           key={`${queryId}-chart`}
           question_id={queryId}
           dataset={processedChartDataset}
-          chartSetting={chartSettings}
+          chartSetting={{
+            ...chartSettings,
+            series: series,
+          }}
           normalized={normalized}
           loading={false}
           defaultChartType={query.chartType ?? 'bar'}
