@@ -6,9 +6,11 @@ import { Box, Typography } from '@mui/material';
 interface CustomGaugeChartProps {
   label: string;
   value: number;
+  maxValue?: number;
 }
 
-const CustomGaugeChart = ({ label, value }: CustomGaugeChartProps) => {
+const CustomGaugeChart = ({ label, value, maxValue }: CustomGaugeChartProps) => {
+  const gaugeMax = maxValue ?? value;
 
   return (
     <Box
@@ -33,6 +35,8 @@ const CustomGaugeChart = ({ label, value }: CustomGaugeChartProps) => {
       </Typography>
       <Gauge
         value={value}
+        valueMin={0}
+        valueMax={gaugeMax}
         startAngle={-110}
         endAngle={110}
         text={`${value}`}
