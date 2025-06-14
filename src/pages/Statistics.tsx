@@ -45,6 +45,7 @@ interface StatisticsData {
   distinctPredicates: number;
   answeredCQs: number;
   averageEmpiricalPerYear: number;
+  maxEmpiricalPerYear: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -60,6 +61,7 @@ const DEFAULT_STATS: StatisticsData = {
   distinctPredicates: 0,
   answeredCQs: 0,
   averageEmpiricalPerYear: 0,
+  maxEmpiricalPerYear: 0,
 };
 
 export default function Statistics() {
@@ -78,10 +80,12 @@ export default function Statistics() {
 
         const [paperData, , , , , perVenueData, venuesData, avgEmpiricalData] =
           results;
+
         const empiricalCounts = avgEmpiricalData.map((row: { paperCount: string; }) => Number(row.paperCount ?? 0));
         const average = empiricalCounts.length
           ? Number((empiricalCounts.reduce((a: number, b: number) => a + b, 0) / empiricalCounts.length).toFixed(2))
           : 0;
+        const maxEmpiricalPerYear = Math.max(...empiricalCounts);
 
 
         setStatistics({
@@ -96,6 +100,7 @@ export default function Statistics() {
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
 
           averageEmpiricalPerYear: average,
+          maxEmpiricalPerYear,
         });
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
@@ -142,7 +147,7 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
             <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
-            <CustomGaugeChart label="Avg. Empirical Papers per Year" value={statistics.averageEmpiricalPerYear} />
+            <CustomGaugeChart label="Avg. Empirical Papers per Year" value={statistics.averageEmpiricalPerYear} maxValue={statistics.maxEmpiricalPerYear} />
           </Stack>
         ) : (
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
