@@ -80,7 +80,7 @@ export default function Statistics() {
           results;
         const empiricalCounts = avgEmpiricalData.map((row: { paperCount: string; }) => Number(row.paperCount ?? 0));
         const average = empiricalCounts.length
-          ? empiricalCounts.reduce((a: number, b: number) => a + b, 0) / empiricalCounts.length
+          ? Number((empiricalCounts.reduce((a: number, b: number) => a + b, 0) / empiricalCounts.length).toFixed(2))
           : 0;
 
 
