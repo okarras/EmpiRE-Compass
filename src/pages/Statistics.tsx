@@ -44,6 +44,7 @@ interface StatisticsData {
   distinctLiterals: number;
   distinctPredicates: number;
   answeredCQs: number;
+  averageEmpiricalPerYear: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -58,6 +59,7 @@ const DEFAULT_STATS: StatisticsData = {
   distinctLiterals: 0,
   distinctPredicates: 0,
   answeredCQs: 0,
+  averageEmpiricalPerYear: 0,
 };
 
 export default function Statistics() {
@@ -74,7 +76,7 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, , , , , perVenueData, venuesData] = results;
+        const [paperData, , , , , perVenueData, venuesData, avgEmpiricalData] = results;
 
         setStatistics({
           ...statistics,
@@ -84,7 +86,10 @@ export default function Statistics() {
             venue: row.venue,
             paperCount: Number(row.paperCount ?? 0),
           })),
+
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
+
+          averageEmpiricalPerYear: Number(avgEmpiricalData[0]?.average ?? 0),
         });
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
@@ -131,6 +136,7 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
             <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
+            <CustomGaugeChart label="Avg. Empirical Papers per Year" value={statistics.averageEmpiricalPerYear} />
           </Stack>
         ) : (
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
