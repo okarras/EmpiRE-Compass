@@ -76,7 +76,13 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, , , , , perVenueData, venuesData, avgEmpiricalData] = results;
+        const [paperData, , , , , perVenueData, venuesData, avgEmpiricalData] =
+          results;
+        const empiricalCounts = avgEmpiricalData.map((row: { paperCount: string; }) => Number(row.paperCount ?? 0));
+        const average = empiricalCounts.length
+          ? empiricalCounts.reduce((a: number, b: number) => a + b, 0) / empiricalCounts.length
+          : 0;
+
 
         setStatistics({
           ...statistics,
@@ -89,7 +95,7 @@ export default function Statistics() {
 
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
 
-          averageEmpiricalPerYear: Number(avgEmpiricalData[0]?.average ?? 0),
+          averageEmpiricalPerYear: average,
         });
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
