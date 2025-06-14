@@ -6,12 +6,9 @@ import { Box, Typography } from '@mui/material';
 interface CustomGaugeChartProps {
   label: string;
   value: number;
-  maxValue?: number;
-  // showNeedle?: boolean;
 }
 
-const CustomGaugeChart = ({ label, value, maxValue }: CustomGaugeChartProps) => {
-  const effectiveMax = maxValue ?? value;
+const CustomGaugeChart = ({ label, value }: CustomGaugeChartProps) => {
 
   return (
     <Box
@@ -35,14 +32,11 @@ const CustomGaugeChart = ({ label, value, maxValue }: CustomGaugeChartProps) => 
         {label}
       </Typography>
       <Gauge
-        value={(value / effectiveMax) * 100}
+        value={value}
         startAngle={-110}
         endAngle={110}
-        text={({ value, valueMax }) =>
-          value === valueMax ? `${value}` : `${value} / ${valueMax}`
-        }
+        text={`${value}`}
         sx={{ width: '100%' }}
-        // showNeedle={showNeedle}
       />
     </Box>
   );

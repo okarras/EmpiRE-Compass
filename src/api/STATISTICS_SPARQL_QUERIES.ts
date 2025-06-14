@@ -74,6 +74,17 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
                   orkgp:P135046 ?serie .
     ?serie rdfs:label ?venue .
   }`,
+  EMPIRICAL_PAPERS_PER_YEAR_QUERY: `
+  SELECT ?year (COUNT(DISTINCT ?paper) AS ?paperCount)
+  WHERE {
+    ?paper orkgp:P31 ?contribution ;
+           orkgp:P29 ?year .
+    ?contribution a orkgc:C27001 ;
+                  orkgp:P56008 ?data_collection ;
+                  orkgp:P15124 ?data_analysis .
+  }
+  GROUP BY ?year
+  ORDER BY ?year`
 };
 
 export default STATISTICS_SPARQL_QUERIES;
