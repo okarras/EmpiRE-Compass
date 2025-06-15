@@ -291,28 +291,43 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
         ${wantsChart ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
         1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
-        2. The chart code should be complete and self-contained
-        3. Use proper indentation and formatting
-        4. Make the chart responsive and use appropriate colors
-        5. Include proper axis labels and title
-        6. Format the chart code like this example:
+        2. Choose the most appropriate chart type based on the data and what you want to show:
+           - Use 'line' for trends over time
+           - Use 'bar' for comparing quantities across categories
+           - Use 'pie' or 'doughnut' for showing proportions
+           - Use 'scatter' for showing relationships between variables
+           - Use 'radar' for comparing multiple variables
+        3. The chart code should be complete and self-contained
+        4. Use proper indentation and formatting
+        5. Make the chart responsive and use appropriate colors
+        6. Include proper axis labels and title
+        7. Format the chart code like this example:
         <div class="chart-code">
           <canvas id="myChart"></canvas>
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script>
+          //this is only an example, you can choose the most appropriate type and data and structure for the chart
             const ctx = document.getElementById('myChart').getContext('2d');
             new Chart(ctx, {
-              type: 'line',
+              type: //choose the most appropriate type
               data: {
-                labels: ['Label1', 'Label2'],
+                labels: ['Category 1', 'Category 2'],
                 datasets: [{
                   label: 'Dataset',
-                  data: [1, 2],
-                  borderColor: 'rgb(75, 192, 192)'
+                  data: [10, 20],
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
                 }]
               },
               options: {
-                responsive: true
+                responsive: true,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Chart Title'
+                  }
+                }
               }
             });
           </script>
@@ -327,7 +342,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
         7. Do not include any markdown code blocks or backticks in your response
         8. Answer based on the data and analysis provided above
-        ${wantsChart ? '9. Put all chart code inside a <div class="chart-code"> tag' : ''}`,
+        ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}`,
       });
 
       // Clean up the response if it contains markdown code blocks
