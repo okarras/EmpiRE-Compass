@@ -132,7 +132,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   });
 
   const generateSystemContext = () => {
-     /*
+    /*
        ${
           query.dataProcessingFunction2
             ? `Data Analysis Data: ${JSON.stringify(
@@ -276,7 +276,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('elaborate');
 
     // Check if user wants a chart
-    const wantsChart = 
+    const wantsChart =
       prompt.toLowerCase().includes('chart') ||
       prompt.toLowerCase().includes('graph') ||
       prompt.toLowerCase().includes('visualize') ||
@@ -289,7 +289,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         User Question: ${prompt}
 
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
-        ${wantsChart ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
+        ${
+          wantsChart
+            ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
         1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
         2. Choose the most appropriate chart type based on the data and what you want to show:
            - Use 'line' for trends over time
@@ -331,7 +333,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
               }
             });
           </script>
-        </div>` : ''}
+        </div>`
+            : ''
+        }
         
         Important instructions:
         1. Keep your response under 300 words and maximum 2 paragraphs
@@ -342,7 +346,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
         7. Do not include any markdown code blocks or backticks in your response
         8. Answer based on the data and analysis provided above
-        ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}`,
+        ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
+        ${wantsChart ? '10. The chart width should be 100%' : ''}
+        `,
       });
 
       // Clean up the response if it contains markdown code blocks
@@ -354,8 +360,14 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         .trim();
 
       // Extract chart HTML if present
-      const chartHtml = wantsChart ? cleanedText.match(/<div class="chart-code">([\s\S]*?)<\/div>/)?.[1] : undefined;
-      const textWithoutChart = wantsChart ? cleanedText.replace(/<div class="chart-code">[\s\S]*?<\/div>/, '').trim() : cleanedText;
+      const chartHtml = wantsChart
+        ? cleanedText.match(/<div class="chart-code">([\s\S]*?)<\/div>/)?.[1]
+        : undefined;
+      const textWithoutChart = wantsChart
+        ? cleanedText
+            .replace(/<div class="chart-code">[\s\S]*?<\/div>/, '')
+            .trim()
+        : cleanedText;
 
       // Escape HTML for the code block
       const escapedChartHtml = chartHtml
@@ -370,12 +382,14 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       // Add AI message with streaming flag
       setMessages((prev) => [
         ...prev,
-        { 
-          content: textWithoutChart + (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''), 
-          isUser: false, 
-          isStreaming: true, 
+        {
+          content:
+            textWithoutChart +
+            (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
+          isUser: false,
+          isStreaming: true,
           reasoning,
-          chartHtml 
+          chartHtml,
         },
       ]);
 
@@ -395,7 +409,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
-          content: textWithoutChart + (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
+          content:
+            textWithoutChart +
+            (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
           isUser: false,
           reasoning,
           chartHtml,

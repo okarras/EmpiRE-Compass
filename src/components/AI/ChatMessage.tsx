@@ -31,13 +31,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           if (chartRef.current) {
             // Create container for the chart
             chartRef.current.innerHTML = `
-              <div style="width: 100%; height: 400px; position: relative;">
+              <div style="width: 100%; height: 200px; position: relative;">
                 <canvas id="chart-${Date.now()}"></canvas>
               </div>
             `;
-            
+
             // Extract chart configuration from the provided HTML
-            const chartConfigMatch = chartHtml.match(/new Chart\(.*?,\s*({[\s\S]*?})\);/);
+            const chartConfigMatch = chartHtml.match(
+              /new Chart\(.*?,\s*({[\s\S]*?})\);/
+            );
             if (chartConfigMatch) {
               try {
                 const chartConfig = eval(`(${chartConfigMatch[1]})`);
@@ -58,13 +60,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       } else {
         // Create container for the chart
         chartRef.current.innerHTML = `
-          <div style="width: 100%; height: 200px; position: relative;">
+          <div style="width: 100%; height: 400px; position: relative;">
             <canvas id="chart-${Date.now()}"></canvas>
           </div>
         `;
-        
+
         // Extract chart configuration from the provided HTML
-        const chartConfigMatch = chartHtml.match(/new Chart\(.*?,\s*({[\s\S]*?})\);/);
+        const chartConfigMatch = chartHtml.match(
+          /new Chart\(.*?,\s*({[\s\S]*?})\);/
+        );
         if (chartConfigMatch) {
           try {
             const chartConfig = eval(`(${chartConfigMatch[1]})`);
@@ -102,7 +106,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           border: isUser ? 'none' : '1px solid',
           borderColor: 'divider',
           '& pre': {
-            backgroundColor: isUser ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+            backgroundColor: isUser
+              ? 'rgba(255, 255, 255, 0.1)'
+              : 'rgba(0, 0, 0, 0.05)',
             padding: '1rem',
             borderRadius: '4px',
             overflowX: 'auto',
@@ -119,7 +125,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         }}
       >
         <div dangerouslySetInnerHTML={{ __html: content }} />
-        
+
         {chartHtml && showChart && (
           <Box
             ref={chartRef}
