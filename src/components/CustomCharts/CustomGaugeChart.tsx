@@ -39,7 +39,7 @@ const CustomGaugeChart = ({ label, value, maxValue }: CustomGaugeChartProps) => 
         valueMax={gaugeMax}
         startAngle={-110}
         endAngle={110}
-        text={`${value}`}
+        text={maxValue ? `${value} / ${gaugeMax}` : `${value}`}
         sx={{ width: '100%' }}
       />
     </Box>
