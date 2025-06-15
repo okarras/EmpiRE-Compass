@@ -19,6 +19,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import InitialAnalysis from './InitialAnalysis';
@@ -49,6 +50,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     streamingText,
     showReasoning,
     setShowReasoning,
+    showChart,
+    setShowChart,
     clearChatHistory,
     exportChatHistory,
   } = useAIAssistant({ query, questionData });
@@ -130,6 +133,19 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
                 }}
               >
                 <PsychologyIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={showChart ? 'Hide Chart' : 'Show Chart'}>
+              <IconButton
+                onClick={() => setShowChart(!showChart)}
+                sx={{
+                  color: showChart ? '#e86161' : 'text.secondary',
+                  '&:hover': {
+                    backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                  },
+                }}
+              >
+                <BarChartIcon />
               </IconButton>
             </Tooltip>
             <Tooltip title="Chat Options">
@@ -307,6 +323,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             isUser={message.isUser}
             reasoning={message.reasoning}
             showReasoning={showReasoning}
+            chartHtml={message.chartHtml}
+            showChart={showChart}
           />
         ))}
 
@@ -316,6 +334,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             content={streamingText}
             isUser={false}
             showReasoning={showReasoning}
+            showChart={showChart}
           />
         )}
 

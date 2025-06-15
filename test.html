@@ -1,0 +1,76 @@
+<canvas id="myChart"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bubble',
+      data: {
+        labels: ['Year', 'Normalized Ratio', 'Count'],
+        datasets: [{
+          label: 'Reporting of Threats to Validity',
+          data: [
+            { x: 1993, y: 0, r: 0 },
+            { x: 1994, y: 0, r: 0 },
+            { x: 1995, y: 20, r: 4 },
+            { x: 1996, y: 3.7, r: 1 },
+            { x: 1997, y: 5, r: 1 },
+            { x: 1998, y: 0, r: 0 },
+            { x: 1999, y: 5.26, r: 1 },
+            { x: 2000, y: 0, r: 0 },
+            { x: 2001, y: 15.38, r: 4 },
+            { x: 2002, y: 12.5, r: 4 },
+            { x: 2003, y: 4, r: 1 },
+            { x: 2004, y: 14.81, r: 4 },
+            { x: 2005, y: 8.57, r: 3 },
+            { x: 2006, y: 23.81, r: 5 },
+            { x: 2007, y: 20.69, r: 6 },
+            { x: 2008, y: 34.78, r: 8 },
+            { x: 2009, y: 40, r: 10 },
+            { x: 2010, y: 55.56, r: 15 },
+            { x: 2011, y: 52.17, r: 12 },
+            { x: 2012, y: 53.85, r: 14 },
+            { x: 2013, y: 77.27, r: 17 },
+            { x: 2014, y: 64.52, r: 20 },
+            { x: 2015, y: 84.21, r: 16 },
+            { x: 2016, y: 86.36, r: 19 },
+            { x: 2017, y: 76.32, r: 29 },
+            { x: 2018, y: 83.33, r: 20 },
+            { x: 2019, y: 86.36, r: 19 },
+            { x: 2020, y: 95, r: 19 },
+            { x: 2021, y: 91.3, r: 21 },
+            { x: 2022, y: 87.5, r: 14 }
+          ],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          radius: (point) => Math.sqrt(point.r) * 2
+        }]
+      },
+      options: {
+        responsive: true,
+        title: {
+          display: true,
+          text: 'Reporting of Threats to Validity Over Time'
+        },
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'year'
+            },
+            title: {
+              display: true,
+              text: 'Year'
+            }
+          },
+          y: {
+            title: {
+              display: true,
+              text: 'Normalized Ratio (%)'
+            },
+            beginAtZero: true,
+            max: 100
+          }
+        }
+      }
+    });
+  </script>

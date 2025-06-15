@@ -18,6 +18,7 @@ interface Message {
   isUser: boolean;
   isStreaming?: boolean;
   reasoning?: string;
+  chartHtml?: string;
   timestamp?: number;
 }
 
@@ -95,6 +96,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [showReasoning, setShowReasoning] = useState(false);
+  const [showChart, setShowChart] = useState(false);
 
   // Load chat history when query changes
   useEffect(() => {
@@ -273,6 +275,13 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('explain') ||
       prompt.toLowerCase().includes('elaborate');
 
+    // Check if user wants a chart
+    const wantsChart = 
+      prompt.toLowerCase().includes('chart') ||
+      prompt.toLowerCase().includes('graph') ||
+      prompt.toLowerCase().includes('visualize') ||
+      prompt.toLowerCase().includes('plot');
+
     try {
       const { reasoning, text } = await generateText({
         model: enhancedModel,
@@ -280,6 +289,35 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         User Question: ${prompt}
 
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
+        ${wantsChart ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
+        1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
+        2. The chart code should be complete and self-contained
+        3. Use proper indentation and formatting
+        4. Make the chart responsive and use appropriate colors
+        5. Include proper axis labels and title
+        6. Format the chart code like this example:
+        <div class="chart-code">
+          <canvas id="myChart"></canvas>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ['Label1', 'Label2'],
+                datasets: [{
+                  label: 'Dataset',
+                  data: [1, 2],
+                  borderColor: 'rgb(75, 192, 192)'
+                }]
+              },
+              options: {
+                responsive: true
+              }
+            });
+          </script>
+        </div>` : ''}
+        
         Important instructions:
         1. Keep your response under 300 words and maximum 2 paragraphs
         2. Base your answer ONLY on the data and analysis provided above
@@ -288,7 +326,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         5. Use clear and direct language
         6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
         7. Do not include any markdown code blocks or backticks in your response
-        8. Answer based on the data and analysis provided above`,
+        8. Answer based on the data and analysis provided above
+        ${wantsChart ? '9. Put all chart code inside a <div class="chart-code"> tag' : ''}`,
       });
 
       // Clean up the response if it contains markdown code blocks
@@ -299,16 +338,36 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         .replace(/```/g, '')
         .trim();
 
+      // Extract chart HTML if present
+      const chartHtml = wantsChart ? cleanedText.match(/<div class="chart-code">([\s\S]*?)<\/div>/)?.[1] : undefined;
+      const textWithoutChart = wantsChart ? cleanedText.replace(/<div class="chart-code">[\s\S]*?<\/div>/, '').trim() : cleanedText;
+
+      // Escape HTML for the code block
+      const escapedChartHtml = chartHtml
+        ? chartHtml
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+        : '';
+
       // Add AI message with streaming flag
       setMessages((prev) => [
         ...prev,
-        { content: '', isUser: false, isStreaming: true, reasoning },
+        { 
+          content: textWithoutChart + (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''), 
+          isUser: false, 
+          isStreaming: true, 
+          reasoning,
+          chartHtml 
+        },
       ]);
 
       // Stream the response
       const { textStream } = streamText({
         model: enhancedModel,
-        prompt: cleanedText,
+        prompt: textWithoutChart,
       });
 
       let streamedText = '';
@@ -321,9 +380,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       setMessages((prev) => {
         const newMessages = [...prev];
         newMessages[newMessages.length - 1] = {
-          content: cleanedText,
+          content: textWithoutChart + (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
           isUser: false,
           reasoning,
+          chartHtml,
         };
         return newMessages;
       });
@@ -459,6 +519,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     streamingText,
     showReasoning,
     setShowReasoning,
+    showChart,
+    setShowChart,
     clearChatHistory,
     exportChatHistory,
   };
