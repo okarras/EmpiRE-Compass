@@ -283,7 +283,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('plot');
 
     try {
-      const { reasoning, text } = await generateText({
+      const response = await generateText({
         model: enhancedModel,
         prompt: `${generateSystemContext()}
         User Question: ${prompt}
@@ -308,7 +308,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           <canvas id="myChart"></canvas>
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script>
-          //this is only an example, you can choose the most appropriate type and data and structure for the chart
             const ctx = document.getElementById('myChart').getContext('2d');
             new Chart(ctx, {
               type: //choose the most appropriate type
@@ -349,10 +348,20 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
         ${wantsChart ? '10. The chart width should be 100%' : ''}
         `,
+        stream: true,
       });
 
+      const { text, reasoning } = response;
+
+      // Start streaming the response
+      let streamedText = '';
+      for await (const chunk of text) {
+        streamedText += chunk;
+        setStreamingText(streamedText);
+      }
+
       // Clean up the response if it contains markdown code blocks
-      const cleanedText = text
+      const cleanedText = streamedText
         .replace(/```html\n/g, '')
         .replace(/```\n/g, '')
         .replace(/```html/g, '')
@@ -379,7 +388,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
             .replace(/'/g, '&#039;')
         : '';
 
-      // Add AI message with streaming flag
+      // Clear streaming text and add the final message
+      setStreamingText('');
       setMessages((prev) => [
         ...prev,
         {
@@ -387,37 +397,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
             textWithoutChart +
             (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
           isUser: false,
-          isStreaming: true,
           reasoning,
           chartHtml,
         },
       ]);
-
-      // Stream the response
-      const { textStream } = streamText({
-        model: enhancedModel,
-        prompt: textWithoutChart,
-      });
-
-      let streamedText = '';
-      for await (const textPart of textStream) {
-        streamedText += textPart;
-        setStreamingText(streamedText);
-      }
-
-      // Update the last message with the complete response
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        newMessages[newMessages.length - 1] = {
-          content:
-            textWithoutChart +
-            (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
-          isUser: false,
-          reasoning,
-          chartHtml,
-        };
-        return newMessages;
-      });
 
       setPrompt('');
     } catch (err) {

@@ -330,12 +330,43 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
 
         {/* Streaming Message */}
         {streamingText && (
-          <ChatMessage
-            content={streamingText}
-            isUser={false}
-            showReasoning={showReasoning}
-            showChart={showChart}
-          />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                maxWidth: '80%',
+                backgroundColor: 'background.paper',
+                color: 'text.primary',
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: 'divider',
+                position: 'relative',
+              }}
+            >
+              <Box
+                sx={{
+                  '&::after': {
+                    content: '""',
+                    display: 'inline-block',
+                    width: '4px',
+                    height: '20px',
+                    backgroundColor: '#e86161',
+                    animation: 'blink 1s infinite',
+                    ml: 1,
+                    verticalAlign: 'text-bottom',
+                  },
+                  '@keyframes blink': {
+                    '0%': { opacity: 1 },
+                    '50%': { opacity: 0 },
+                    '100%': { opacity: 1 },
+                  },
+                }}
+              >
+                <div dangerouslySetInnerHTML={{ __html: streamingText }} />
+              </Box>
+            </Paper>
+          </Box>
         )}
 
         {loading && !streamingText && (

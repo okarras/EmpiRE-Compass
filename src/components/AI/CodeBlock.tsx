@@ -20,7 +20,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ content, isUser }) => {
     }
   };
 
-  const CopyButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  const CopyButton: React.FC<{ onClick: (e: React.MouseEvent) => void }> = ({ onClick }) => (
     <button
       className="code-block-button"
       title={isCopied ? 'Copied!' : 'Copy code'}
@@ -86,12 +86,7 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ content, isUser }) => {
         }}
       >
         <CopyButton
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          onClick={(e: {
-            preventDefault: () => void;
-            stopPropagation: () => void;
-          }) => {
+          onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             handleCopy(content);
