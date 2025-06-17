@@ -87,11 +87,18 @@ const ProjectOverview = () => (
 );
 
 const FloatingAIAssistant: React.FC = () => {
-  const { isOpen, toggleAssistant, currentQuery, currentData, setContext } =
-    useAIAssistantContext();
+  const {
+    isOpen,
+    toggleAssistant,
+    currentQuery,
+    currentData,
+    setContext,
+    isExpanded,
+    setIsExpanded,
+  } = useAIAssistantContext();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const [isExpanded, setIsExpanded] = useState(isMobile);
+  // const [isExpanded, setIsExpanded] = useState(isMobile);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);

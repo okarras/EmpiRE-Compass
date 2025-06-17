@@ -10,6 +10,8 @@ interface AIAssistantContextType {
     query: Query | null,
     data: Record<string, unknown>[] | null
   ) => void;
+  isExpanded: boolean;
+  setIsExpanded: (isExpanded: boolean) => void;
 }
 
 const AIAssistantContext = createContext<AIAssistantContextType | undefined>(
@@ -24,7 +26,7 @@ export const AIAssistantProvider: React.FC<{ children: ReactNode }> = ({
   const [currentData, setCurrentData] = useState<
     Record<string, unknown>[] | null
   >(null);
-
+  const [isExpanded, setIsExpanded] = useState(false);
   const toggleAssistant = () => {
     setIsOpen(!isOpen);
   };
@@ -45,6 +47,8 @@ export const AIAssistantProvider: React.FC<{ children: ReactNode }> = ({
         currentQuery,
         currentData,
         setContext,
+        isExpanded,
+        setIsExpanded,
       }}
     >
       {children}
