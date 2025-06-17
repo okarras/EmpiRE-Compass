@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   generateText,
-  streamText,
   wrapLanguageModel,
   extractReasoningMiddleware,
 } from 'ai';
@@ -348,7 +347,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
         ${wantsChart ? '10. The chart width should be 100%' : ''}
         `,
-        stream: true,
+        // stream: true,
       });
 
       const { text, reasoning } = response;
