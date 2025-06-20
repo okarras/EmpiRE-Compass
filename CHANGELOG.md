@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.0.0...v1.1.0) (2025-06-20)
+
+### Features
+
+- show version in header ([758ce8e](https://github.com/okarras/EmpiRE-Compass/commit/758ce8e6d6961a1cabcabf411e7d709686e0b96e))
+
 ## 1.0.0 (2025-06-20)
 
 ### Features
