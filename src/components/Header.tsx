@@ -55,7 +55,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const redirectToGitHub = () => {
     window.open('https://github.com/okarras/empire-Compass/', '_blank');
   };
-  
+
   return (
     <AppBar
       position="sticky"
@@ -177,9 +177,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               )}
             </IconButton>
           </Tooltip>
-          <Tooltip
-            title={`Check out the source code on GitHub`}
-          >
+          <Tooltip title={`Check out the source code on GitHub`}>
             <IconButton
               onClick={redirectToGitHub}
               color="inherit"
@@ -190,6 +188,18 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               }}
             >
               <GitHubIcon sx={{ color: 'text.primary' }} />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  textAlign: 'right',
+                  display: 'block',
+                  mt: 1,
+                  opacity: 0.7,
+                }}
+              >
+                v{import.meta.env.VITE_APP_VERSION}
+              </Typography>
             </IconButton>
           </Tooltip>
         </Box>
