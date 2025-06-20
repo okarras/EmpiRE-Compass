@@ -3,8 +3,6 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import packageJson from './package.json';
 
-const apiCacheDuration = 24 * 60 * 60; // 1 day in seconds
-
 export default defineConfig({
   plugins: [
     react(),
