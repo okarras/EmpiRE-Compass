@@ -116,7 +116,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         }
 
         // Handle code blocks
-        if (element.className === 'code-block-placeholder') {
+        if (element.className === 'code-block-placeholder' && showChart) {
           elements.push(
             <CodeBlock
               key={`code-${index}`}

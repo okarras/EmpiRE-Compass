@@ -95,7 +95,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [showReasoning, setShowReasoning] = useState(false);
-  const [showChart, setShowChart] = useState(false);
+  const [showChart, setShowChart] = useState(true);
 
   // Load chat history when query changes
   useEffect(() => {
