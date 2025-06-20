@@ -57,7 +57,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       );
       if (chartConfigMatch) {
         try {
-          const chartConfig = eval(`(${chartConfigMatch[1]})`);
+          // Replace the eval with a safer JSON parsing approach
+          const configString = chartConfigMatch[1]
+            .replace(/(\w+):/g, '"$1":') // Convert property names to quoted strings
+            .replace(/'/g, '"'); // Replace single quotes with double quotes
+
+          const chartConfig = JSON.parse(configString);
           const canvas = chartRef.current.querySelector('canvas');
           if (canvas) {
             const ctx = canvas.getContext('2d');
@@ -75,7 +80,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   const processContent = (html: string) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    
+
     // Process all pre blocks
     doc.querySelectorAll('pre').forEach((pre) => {
       const codeBlock = document.createElement('div');
@@ -84,7 +89,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       codeBlock.className = 'code-block-placeholder';
       pre.parentNode?.replaceChild(codeBlock, pre);
     });
-    
+
     return doc.body.innerHTML;
   };
 
@@ -97,7 +102,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     Array.from(contentDiv.childNodes).forEach((node, index) => {
       if (node.nodeType === Node.ELEMENT_NODE) {
         const element = node as Element;
-        
+
         // If there's accumulated text content, add it as a MessageContent component
         if (currentTextContent.trim()) {
           elements.push(

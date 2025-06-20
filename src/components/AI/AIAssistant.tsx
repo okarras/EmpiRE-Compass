@@ -22,10 +22,12 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
-import InitialAnalysis from './InitialAnalysis';
-import ChatMessage from './ChatMessage';
-import TextSkeleton from './TextSkeleton';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, lazy, Suspense } from 'react';
+
+// Lazy load components to reduce initial bundle size
+const InitialAnalysis = lazy(() => import('./InitialAnalysis'));
+const ChatMessage = lazy(() => import('./ChatMessage'));
+const TextSkeleton = lazy(() => import('./TextSkeleton'));
 
 interface AIAssistantProps {
   query: Query;
@@ -214,11 +216,13 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             <TextSkeleton lines={8} />
           </Box>
         ) : (
-          <InitialAnalysis
-            content={initialAnalysis}
-            reasoning={initialReasoning}
-            showReasoning={showReasoning}
-          />
+          <Suspense fallback={<div>Loading initial analysis...</div>}>
+            <InitialAnalysis
+              content={initialAnalysis}
+              reasoning={initialReasoning}
+              showReasoning={showReasoning}
+            />
+          </Suspense>
         )}
 
         {isFromCache && (
@@ -317,62 +321,67 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
 
         {/* Chat Messages */}
         {messages.map((message, index) => (
-          <ChatMessage
-            key={index}
-            content={message.content}
-            isUser={message.isUser}
-            reasoning={message.reasoning}
-            showReasoning={showReasoning}
-            chartHtml={message.chartHtml}
-            showChart={showChart}
-          />
+          <Suspense key={index} fallback={<div>Loading chat message...</div>}>
+            <ChatMessage
+              content={message.content}
+              isUser={message.isUser}
+              reasoning={message.reasoning}
+              showReasoning={showReasoning}
+              chartHtml={message.chartHtml}
+              showChart={showChart}
+            />
+          </Suspense>
         ))}
 
         {/* Streaming Message */}
         {streamingText && (
-          <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                maxWidth: '80%',
-                backgroundColor: 'background.paper',
-                color: 'text.primary',
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'divider',
-                position: 'relative',
-              }}
-            >
-              <Box
+          <Suspense fallback={<div>Loading streaming message...</div>}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2 }}>
+              <Paper
+                elevation={0}
                 sx={{
-                  '&::after': {
-                    content: '""',
-                    display: 'inline-block',
-                    width: '4px',
-                    height: '20px',
-                    backgroundColor: '#e86161',
-                    animation: 'blink 1s infinite',
-                    ml: 1,
-                    verticalAlign: 'text-bottom',
-                  },
-                  '@keyframes blink': {
-                    '0%': { opacity: 1 },
-                    '50%': { opacity: 0 },
-                    '100%': { opacity: 1 },
-                  },
+                  p: 2,
+                  maxWidth: '80%',
+                  backgroundColor: 'background.paper',
+                  color: 'text.primary',
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  position: 'relative',
                 }}
               >
-                <div dangerouslySetInnerHTML={{ __html: streamingText }} />
-              </Box>
-            </Paper>
-          </Box>
+                <Box
+                  sx={{
+                    '&::after': {
+                      content: '""',
+                      display: 'inline-block',
+                      width: '4px',
+                      height: '20px',
+                      backgroundColor: '#e86161',
+                      animation: 'blink 1s infinite',
+                      ml: 1,
+                      verticalAlign: 'text-bottom',
+                    },
+                    '@keyframes blink': {
+                      '0%': { opacity: 1 },
+                      '50%': { opacity: 0 },
+                      '100%': { opacity: 1 },
+                    },
+                  }}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: streamingText }} />
+                </Box>
+              </Paper>
+            </Box>
+          </Suspense>
         )}
 
         {loading && !streamingText && (
-          <Box sx={{ p: 2 }}>
-            <TextSkeleton lines={3} />
-          </Box>
+          <Suspense fallback={<div>Loading skeleton...</div>}>
+            <Box sx={{ p: 2 }}>
+              <TextSkeleton lines={3} />
+            </Box>
+          </Suspense>
         )}
 
         {error && (

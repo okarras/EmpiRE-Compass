@@ -30,9 +30,67 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB limit
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/orkg\.org\/.*$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxAgeSeconds: 24 * 60 * 60, // 1 day
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
+      },
     }),
   ],
   define: {
     'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version),
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries into separate chunks
+          'react-vendor': ['react', 'react-dom'],
+          'mui-vendor': [
+            '@mui/material',
+            '@mui/icons-material',
+            '@mui/x-charts',
+            '@mui/x-data-grid',
+          ],
+          'ai-vendor': [
+            'ai',
+            '@ai-sdk/groq',
+            '@ai-sdk/anthropic',
+            '@ai-sdk/openai',
+          ],
+          'utils-vendor': [
+            'react-router',
+            'react-router-dom',
+            '@reduxjs/toolkit',
+            'react-redux',
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Increase warning limit to 1MB
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/x-charts',
+      '@mui/x-data-grid',
+    ],
   },
 });

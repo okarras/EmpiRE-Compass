@@ -1,17 +1,25 @@
 import { BrowserRouter } from 'react-router-dom';
-import { ThemeProvider as MuiThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import {
+  ThemeProvider as MuiThemeProvider,
+  createTheme,
+  CssBaseline,
+} from '@mui/material';
 import { Provider } from 'react-redux';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from './store';
 import { getDesignTokens } from './utils/theme';
-import Router from './Router';
 import { store } from './store';
 import { fetchQuestionsFromFirebase } from './store/slices/questionSlice';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
-import FloatingAIAssistant from './components/AI/FloatingAIAssistant';
 import './styles/global.css';
+
+// Lazy load components to reduce initial bundle size
+const Router = lazy(() => import('./Router'));
+const FloatingAIAssistant = lazy(
+  () => import('./components/AI/FloatingAIAssistant')
+);
 
 // Create a wrapper component to use Redux hooks and theme
 const AppContent = () => {
@@ -29,10 +37,16 @@ const AppContent = () => {
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div
+        style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
+      >
         <BrowserRouter>
-          <Router />
-          <FloatingAIAssistant />
+          <Suspense fallback={<div>Loading...</div>}>
+            <Router />
+          </Suspense>
+          <Suspense fallback={<div>Loading...</div>}>
+            <FloatingAIAssistant />
+          </Suspense>
         </BrowserRouter>
       </div>
     </MuiThemeProvider>
