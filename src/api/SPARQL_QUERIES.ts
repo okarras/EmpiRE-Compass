@@ -179,8 +179,8 @@ export const SPARQL_QUERIES = {
 `,
 
   query_6_1: `
-    SELECT ?paper, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
-                ?range, ?variance, ?standard_deviation, ?boxplot
+    SELECT ?paper, ?da_label, ?Count, ?Percent, ?Mean, ?Median, ?Mode, ?Minimum, ?Maximum, 
+                ?Range, ?Variance, ?STD_deviation, ?Boxplot
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                             orkgp:P29 ?year.
@@ -193,20 +193,20 @@ export const SPARQL_QUERIES = {
                             
                             OPTIONAl{?data_analysis orkgp:P56048 ?descriptive_stats.
                                     OPTIONAL{?descriptive_stats orkgp:P56049 ?frequency.
-                                            OPTIONAL{?frequency orkgp:P55023 ?count.}
-                                            OPTIONAL{?frequency orkgp:P56050 ?percent.}}
+                                            OPTIONAL{?frequency orkgp:P55023 ?Count.}
+                                            OPTIONAL{?frequency orkgp:P56050 ?Percent.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57005 ?central_tendency.
-                                            OPTIONAL{?central_tendency orkgp:P47000 ?mean.}
-                                            OPTIONAL{?central_tendency orkgp:P57006 ?median.}
-                                            OPTIONAL{?central_tendency orkgp:P57007 ?mode.}
-                                            OPTIONAL{?central_tendency orkgp:P44107 ?minimum.}
-                                            OPTIONAL{?central_tendency orkgp:P44108 ?maximum.}}
+                                            OPTIONAL{?central_tendency orkgp:P47000 ?Mean.}
+                                            OPTIONAL{?central_tendency orkgp:P57006 ?Median.}
+                                            OPTIONAL{?central_tendency orkgp:P57007 ?Mode.}
+                                            OPTIONAL{?central_tendency orkgp:P44107 ?Minimum.}
+                                            OPTIONAL{?central_tendency orkgp:P44108 ?Maximum.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57008 ?variation.
-                                            OPTIONAL{?variation orkgp:P4013 ?range.}
-                                            OPTIONAL{?variation orkgp:P57009 ?variance.}
-                                            OPTIONAL{?variation orkgp:P44087 ?standard_deviation.}}
+                                            OPTIONAL{?variation orkgp:P4013 ?Range.}
+                                            OPTIONAL{?variation orkgp:P57009 ?Variance.}
+                                            OPTIONAL{?variation orkgp:P44087 ?STD_deviation.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57010 ?position.
-                                            OPTIONAL{?position orkgp:P59065 ?boxplot.}}
+                                            OPTIONAL{?position orkgp:P59065 ?Boxplot.}}
                             }
                     }
                     

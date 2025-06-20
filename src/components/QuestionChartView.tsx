@@ -44,7 +44,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
         chart.label
       );
     }
-    return 'Number of ' + chart.label + 's used';
+    return 'number of ' + chart.label + 's used';
   };
 
   const handlePreviousChart = () => {

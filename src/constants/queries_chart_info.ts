@@ -409,14 +409,14 @@ export const queries: Query[] = [
       layout: 'horizontal',
       className: 'fullWidth fixText',
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'number of statistical methods of descriptive statistics used for data analysis',
       barLabel: 'value',
       xAxis: [{ label: 'Number of Statistical Method used' }],
       yAxis: [
         {
           scaleType: 'band',
           dataKey: 'method',
-          label: 'Statistical Method used',
+          label: 'Statistical method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -434,7 +434,7 @@ export const queries: Query[] = [
   //Query 7
   {
     title:
-      'Number of statistical methods of descriptive statistics used for data analysis',
+      'number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
     uid: 'query_7_2',
     uid_2: 'query_7_1',
@@ -455,24 +455,24 @@ export const queries: Query[] = [
       ],
       xAxis: xAxisSettings(),
       heading:
-        'Number of statistical method used for data analysis per year grouped by statistical method',
+        'number of statistical method used for data analysis per year grouped by statistical method',
       yAxis: [
         {
-          label: 'Number of statistical methods used',
+          label: 'Proportion of statistical methods used',
         },
       ],
       series: [
-        { dataKey: 'count', label: 'count' },
-        { dataKey: 'percent', label: 'percent' },
-        { dataKey: 'mean', label: 'mean' },
-        { dataKey: 'median', label: 'median' },
-        { dataKey: 'mode', label: 'mode' },
-        { dataKey: 'minimum', label: 'minimum' },
-        { dataKey: 'maximum', label: 'maximum' },
-        { dataKey: 'range', label: 'range' },
-        { dataKey: 'variance', label: 'variance' },
-        { dataKey: 'standard_deviation', label: 'standard_deviation' },
-        { dataKey: 'boxplot', label: 'boxplot' },
+        { dataKey: 'count', label: 'Count' },
+        { dataKey: 'percent', label: 'Percent' },
+        { dataKey: 'mean', label: 'Mean' },
+        { dataKey: 'median', label: 'Median' },
+        { dataKey: 'mode', label: 'Mode' },
+        { dataKey: 'minimum', label: 'Minimum' },
+        { dataKey: 'maximum', label: 'Maximum' },
+        { dataKey: 'range', label: 'Range' },
+        { dataKey: 'variance', label: 'Variance' },
+        { dataKey: 'standard_deviation', label: 'Standard Deviation' },
+        { dataKey: 'boxplot', label: 'Boxplot' },
       ],
       height: chartHeight,
       sx: chartStyles,
