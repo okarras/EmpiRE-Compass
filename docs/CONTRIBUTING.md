@@ -31,11 +31,13 @@ Issues are a great way to keep track of tasks, enhancements, and bugs for our pr
 ### Branch Naming Convention
 
 All branch names should follow this format:
+
 ```
 <type>/<short-description>
 ```
 
 Where `type` can be:
+
 - `feature` - New feature or enhancement
 - `bugfix` - Bug fix
 - `hotfix` - Critical fix for production
@@ -58,6 +60,7 @@ We follow the [Conventional Commits](https://www.conventionalcommits.org/) speci
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -67,6 +70,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Example commit messages:
+
 ```
 feat(auth): add user authentication system
 fix(api): resolve data fetching timeout issue
@@ -76,21 +80,25 @@ docs: update API documentation
 ### Pull Request Process
 
 1. **Branch Creation**
+
    - Create a new branch from `main` using the naming convention above
    - Keep your branch focused on a single feature or fix
 
 2. **Development**
+
    - Write clean, documented, and tested code
    - Follow the project's code style and conventions
    - Keep commits atomic and follow commit message guidelines
 
 3. **Before Submitting**
+
    - Update the README.md with details of changes if needed
    - Ensure all tests pass
    - Update documentation as needed
    - Verify your changes locally
 
 4. **Submitting**
+
    - Create a Pull Request with a clear title and description
    - Link any related issues
    - Request review from maintainers
@@ -124,6 +132,7 @@ We pledge to make participation in our project a harassment-free experience for 
 ### Our Standards
 
 Examples of behavior that contributes to creating a positive environment include:
+
 - Using welcoming and inclusive language
 - Being respectful of differing viewpoints and experiences
 - Gracefully accepting constructive criticism
@@ -140,4 +149,4 @@ By contributing, you agree that your contributions will be licensed under the pr
 
 ## Questions?
 
-Don't hesitate to ask questions by creating an issue or contacting the maintainers directly. 
+Don't hesitate to ask questions by creating an issue or contacting the maintainers directly.
