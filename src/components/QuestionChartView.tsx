@@ -17,6 +17,7 @@ interface QuestionChartViewProps {
   chartSettings: ChartSetting;
   processedChartDataset: Record<string, unknown>[];
   dataInterpretation: string;
+  type: string;
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
@@ -27,6 +28,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   chartSettings,
   processedChartDataset,
   dataInterpretation,
+  type,
 }) => {
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
   let series = chartSettings.series;
@@ -44,7 +46,11 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
         chart.label
       );
     }
-    return 'number of ' + chart.label + 's used';
+    if (type === 'dataCollection') {
+      return 'number of ' + chart.label + 's used for data collection';
+    } else if (type === 'dataAnalysis') {
+      return 'number of ' + chart.label + 's used for data analysis';
+    }
   };
 
   const handlePreviousChart = () => {

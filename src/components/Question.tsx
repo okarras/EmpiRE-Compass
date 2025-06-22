@@ -211,6 +211,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                 chartSettings={query.chartSettings}
                 processedChartDataset={getProcessedChartData()}
                 dataInterpretation={getDataInterpretation('dataCollection')}
+                type="dataCollection"
               />
               <Divider sx={{ my: 3 }} />
             </>
@@ -238,6 +239,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                       query.dataProcessingFunction2?.(dataAnalysis ?? []) ?? []
                     }
                     dataInterpretation={getDataInterpretation('dataAnalysis')}
+                    type="dataAnalysis"
                   />
                 ) : null}
                 <Divider sx={{ my: 3 }} />
