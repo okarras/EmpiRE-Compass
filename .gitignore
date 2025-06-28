@@ -24,3 +24,5 @@ dev-dist/
 *.sln
 *.sw?
 .env
+
+research-test-data/

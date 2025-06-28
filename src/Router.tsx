@@ -6,6 +6,7 @@ import ErrorFallback from './pages/ErrorFallback';
 import Layout from './pages/Layout';
 import QuestionPage from './pages/QuestionPage';
 import QuestionDashboardPage from './pages/QuestionDashboardPage';
+import DynamicQuestionPage from './pages/DynamicQuestionPage';
 
 const Router = () => {
   return (
@@ -31,6 +32,11 @@ const Router = () => {
             <Route
               path="allquestions"
               element={<QuestionDashboardPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/dynamic-question"
+              element={<DynamicQuestionPage />}
               errorElement={<ErrorFallback />}
             />
           </Route>
