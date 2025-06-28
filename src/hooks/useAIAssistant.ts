@@ -6,6 +6,7 @@ import {
 } from 'ai';
 import { createGroq } from '@ai-sdk/groq';
 import { Query } from '../constants/queries_chart_info';
+import { useAIAssistantContext } from '../context/AIAssistantContext';
 
 interface UseAIAssistantProps {
   query: Query;
@@ -78,6 +79,7 @@ const setChatHistory = (history: Record<string, ChatHistory>) => {
 };
 
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
+  const { pendingPrompt, clearPendingPrompt } = useAIAssistantContext();
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -159,6 +161,74 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       6. Format your response using HTML tags (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <code>, <pre>, <blockquote>, etc.).
       `;
   };
+
+  // Process structured prompt function
+  const processStructuredPrompt = async (structuredPrompt: string) => {
+    if (!structuredPrompt.trim() || loading) return;
+
+    setLoading(true);
+    setError(null);
+    setStreamingText('');
+
+    // Add user message
+    setMessages((prev) => [
+      ...prev,
+      { content: structuredPrompt, isUser: true },
+    ]);
+
+    try {
+      const response = await generateText({
+        model: enhancedModel,
+        prompt: `${generateSystemContext()}
+        User Question: ${structuredPrompt}
+
+        Please provide a detailed and comprehensive answer to this structured question about the research data.
+        
+        Important instructions:
+        1. Base your answer ONLY on the data and analysis provided above
+        2. Do not make assumptions or include information not present in the data
+        3. Focus on the most relevant findings from the data
+        4. Use clear and direct language
+        5. Format your response using HTML tags (<p>, <ul>, <li>, <h3>, <h4>) to structure your response
+        6. Do not include any markdown code blocks or backticks in your response
+        7. Provide specific insights and detailed explanations
+        `,
+      });
+
+      const { text, reasoning } = response;
+
+      // Clean up the response if it contains markdown code blocks
+      const cleanedText = text
+        .replace(/```html\n/g, '')
+        .replace(/```\n/g, '')
+        .replace(/```html/g, '')
+        .replace(/```/g, '')
+        .trim();
+
+      // Add the final message
+      setMessages((prev) => [
+        ...prev,
+        {
+          content: cleanedText,
+          isUser: false,
+          reasoning,
+        },
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('AI Generation Error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle pending structured prompts
+  useEffect(() => {
+    if (pendingPrompt && !loading) {
+      clearPendingPrompt();
+      processStructuredPrompt(pendingPrompt);
+    }
+  }, [pendingPrompt, loading, clearPendingPrompt]);
 
   useEffect(() => {
     const performInitialAnalysis = async () => {

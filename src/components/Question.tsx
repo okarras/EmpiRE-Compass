@@ -14,6 +14,7 @@ import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
+import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 
 interface QuestionProps {
@@ -197,12 +198,24 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           border: '1px solid rgba(0, 0, 0, 0.1)',
         }}
       >
+        <SectionSelector
+          sectionType="information"
+          sectionTitle="Question Information"
+          query={query}
+        />
         <QuestionInformationView query={query} />
+
         {/* Data Collection View */}
-        {/* <Divider sx={{ my: 3 }} /> */}
         <Box hidden={tab !== 0}>
           {query.chartSettings && (
             <>
+              <Divider sx={{ my: 3 }} />
+              <SectionSelector
+                sectionType="chart"
+                sectionTitle="Chart Visualization"
+                query={query}
+                data={dataCollection}
+              />
               <QuestionChartView
                 query={query}
                 normalized={normalized}
@@ -216,6 +229,12 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               <Divider sx={{ my: 3 }} />
             </>
           )}
+          <SectionSelector
+            sectionType="data"
+            sectionTitle="Data Collection"
+            query={query}
+            data={dataCollection}
+          />
           <QuestionDataGridView questionData={dataCollection} />
         </Box>
 
@@ -228,21 +247,36 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                {query.chartSettings2 ? (
-                  <QuestionChartView
-                    query={query}
-                    normalized={normalized}
-                    setNormalized={setNormalized}
-                    queryId={query.uid_2}
-                    chartSettings={query.chartSettings2}
-                    processedChartDataset={
-                      query.dataProcessingFunction2?.(dataAnalysis ?? []) ?? []
-                    }
-                    dataInterpretation={getDataInterpretation('dataAnalysis')}
-                    type="dataAnalysis"
-                  />
-                ) : null}
-                <Divider sx={{ my: 3 }} />
+                {query.chartSettings2 && (
+                  <>
+                    <SectionSelector
+                      sectionType="chart"
+                      sectionTitle="Data Analysis Chart"
+                      query={query}
+                      data={dataAnalysis}
+                    />
+                    <QuestionChartView
+                      query={query}
+                      normalized={normalized}
+                      setNormalized={setNormalized}
+                      queryId={query.uid_2}
+                      chartSettings={query.chartSettings2}
+                      processedChartDataset={
+                        query.dataProcessingFunction2?.(dataAnalysis ?? []) ??
+                        []
+                      }
+                      dataInterpretation={getDataInterpretation('dataAnalysis')}
+                      type="dataAnalysis"
+                    />
+                    <Divider sx={{ my: 3 }} />
+                  </>
+                )}
+                <SectionSelector
+                  sectionType="data"
+                  sectionTitle="Data Analysis"
+                  query={query}
+                  data={dataAnalysis}
+                />
                 <QuestionDataGridView questionData={dataAnalysis} />
               </>
             )}

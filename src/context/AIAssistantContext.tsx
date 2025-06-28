@@ -12,6 +12,9 @@ interface AIAssistantContextType {
   ) => void;
   isExpanded: boolean;
   setIsExpanded: (isExpanded: boolean) => void;
+  sendStructuredPrompt: (prompt: string) => void;
+  pendingPrompt: string | null;
+  clearPendingPrompt: () => void;
 }
 
 const AIAssistantContext = createContext<AIAssistantContextType | undefined>(
@@ -27,6 +30,8 @@ export const AIAssistantProvider: React.FC<{ children: ReactNode }> = ({
     Record<string, unknown>[] | null
   >(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
+
   const toggleAssistant = () => {
     setIsOpen(!isOpen);
   };
@@ -39,6 +44,15 @@ export const AIAssistantProvider: React.FC<{ children: ReactNode }> = ({
     setCurrentData(data);
   };
 
+  const sendStructuredPrompt = (prompt: string) => {
+    setPendingPrompt(prompt);
+    setIsOpen(true);
+  };
+
+  const clearPendingPrompt = () => {
+    setPendingPrompt(null);
+  };
+
   return (
     <AIAssistantContext.Provider
       value={{
@@ -49,6 +63,9 @@ export const AIAssistantProvider: React.FC<{ children: ReactNode }> = ({
         setContext,
         isExpanded,
         setIsExpanded,
+        sendStructuredPrompt,
+        pendingPrompt,
+        clearPendingPrompt,
       }}
     >
       {children}
