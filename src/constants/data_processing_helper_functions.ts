@@ -797,18 +797,29 @@ export const Query16DataProcessingFunction = (
 
   const dataByYear: Record<number, Record<string, number>> = {};
   const totalByYear: Record<number, number> = {};
+  const all_of_different_keys_in_duplicated_data: string[] = [];
+
+  for (const item of deduplicatedData) {
+    const keys = Object.keys(item).filter(
+      (key) => key !== 'paper' && key !== 'year'
+    );
+    for (const key of keys) {
+      if (!all_of_different_keys_in_duplicated_data.includes(key)) {
+        all_of_different_keys_in_duplicated_data.push(key);
+      }
+    }
+  }
+  console.log(all_of_different_keys_in_duplicated_data);
 
   deduplicatedData.forEach((item) => {
     const year = item.year;
     const toNumber = (v: any) =>
       typeof v === 'number' ? v : parseInt(v || '0');
 
-    const methodCount =
-      toNumber(item.number_of_dc_methods) +
-      toNumber(item.number_of_inf_methods) +
-      toNumber(item.number_of_sim_methods) +
-      toNumber(item.number_of_oth_methods) +
-      toNumber(item.number_of_other_methods);
+    const methodCount = all_of_different_keys_in_duplicated_data.reduce(
+      (acc, key) => acc + toNumber(item[key]),
+      0
+    );
 
     if (!dataByYear[year]) {
       dataByYear[year] = {};
