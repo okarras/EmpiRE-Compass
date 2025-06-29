@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  Tooltip,
-  Chip,
-  Paper,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Tooltip, Chip, Paper, Typography } from '@mui/material';
 import {
   Psychology as AIIcon,
   BarChart as ChartIcon,
@@ -17,19 +9,18 @@ import {
   Assessment as AnalysisIcon,
 } from '@mui/icons-material';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
+import type { Query } from '../constants/queries_chart_info';
 
 interface SectionSelectorProps {
   sectionType: 'information' | 'chart' | 'data';
   sectionTitle: string;
-  query?: any;
+  query?: Query;
   data?: Record<string, unknown>[];
 }
 
 const SectionSelector: React.FC<SectionSelectorProps> = ({
   sectionType,
   sectionTitle,
-  query,
-  data,
 }) => {
   const { sendStructuredPrompt } = useAIAssistantContext();
 
