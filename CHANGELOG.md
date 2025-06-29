@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.1.0...v1.2.0) (2025-06-29)
+
+### Features
+
+- added sparql generator ([a911fc7](https://github.com/okarras/EmpiRE-Compass/commit/a911fc72fd905392556f4bf0bfc3c5d11d73d8f8))
+- ai assistant ux in question component ([806ccf7](https://github.com/okarras/EmpiRE-Compass/commit/806ccf73d7a80af86f925fd28e61ab5c45422e05))
+
+### Bug Fixes
+
+- fix chart generation UX ([015ba33](https://github.com/okarras/EmpiRE-Compass/commit/015ba332a6830556a0b52bc3c4b8e5197e048265))
+- fixed query 16 data ([3d7a01a](https://github.com/okarras/EmpiRE-Compass/commit/3d7a01a0cc190d911423b146c975eac860b2f8d4))
+- fixed Query 6 and 7 headers ([8149ab4](https://github.com/okarras/EmpiRE-Compass/commit/8149ab43a8511944680e0db13d0c83eddb3c6741))
+
 ## [1.1.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.0.0...v1.1.0) (2025-06-20)
 
 ### Features
