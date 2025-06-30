@@ -8,7 +8,7 @@ const meta: Meta<typeof QuestionDialog> = {
   tags: ['autodocs'],
 };
 
-export default meta; // ✅ Required default export
+export default meta; // Required default export
 
 type Story = StoryObj<typeof QuestionDialog>;
 
