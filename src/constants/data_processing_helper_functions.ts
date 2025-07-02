@@ -148,13 +148,6 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       others = 0;
 
     yearData.forEach((item) => {
-      const daLabels = item.da_label?.toLowerCase();
-
-      if (daLabels === 'descriptive') descriptive++;
-      if (daLabels === 'inferential') inferential++;
-      if (daLabels === 'machine learning') machineLearning++;
-      if (daLabels === 'method') method++;
-
       // Count standard categories
       if (item.descriptive) descriptive++;
       if (item.inferential) inferential++;
@@ -162,13 +155,18 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       if (item.method) method++;
 
       // Count 'others' as anything in da_label not in the four standard ones
-      const label = item.da_label?.toLowerCase();
-      const isOther =
-        label &&
-        !['descriptive', 'inferential', 'machine learning', 'method'].includes(
-          label
-        );
-      if (isOther) others++;
+      Object.keys(item).forEach((key) => {
+        if (
+          key !== 'paper' &&
+          key !== 'year' &&
+          key !== 'da_label' &&
+          key !== 'descriptive' &&
+          key !== 'inferential' &&
+          key !== 'machine_learning'
+        ) {
+          others++;
+        }
+      });
     });
 
     processedData.push({

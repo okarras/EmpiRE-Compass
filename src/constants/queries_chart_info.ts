@@ -58,6 +58,10 @@ export interface ChartSetting {
   barCategoryGap?: number;
   barGap?: number;
   barWidth?: number;
+  tabs?: {
+    tab1_name: string;
+    tab2_name: string;
+  };
 }
 export interface Query {
   title: string;
@@ -367,6 +371,10 @@ export const queries: Query[] = [
           label: 'Proportion of statistical methods used',
         },
       ],
+      tabs: {
+        tab1_name: 'Inferential Statistics',
+        tab2_name: 'Descriptive Statistics',
+      },
       series: [
         { dataKey: 'count', label: 'Count' },
         { dataKey: 'percent', label: 'Percent' },

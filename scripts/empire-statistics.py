@@ -172,7 +172,7 @@ def fetch_bundle(resource_id, reload_data=False):
 
 def process_all(papers, reload_data=False):
     results = []
-    results_file = "daily_results_incremental.csv"
+    results_file = "scripts/daily_results_incremental.csv"
 
     # Check for already processed papers
     processed_papers = set()
@@ -258,22 +258,23 @@ def main():
     )
     results = process_all(papers, reload_data=args.reload_data)
 
-    df = pd.DataFrame(
-        results,
-        columns=[
-            "paper",
-            "#Statements",
-            "#Resources",
-            "#DistResources",
-            "#Literals",
-            "#DistLiterals",
-            "#Predicates",
-            "#DistPredicates",
-        ],
-    )
-    out_csv = "daily_results.csv"
-    df.to_csv(out_csv, index=False)
-    print(f"[{datetime.utcnow().isoformat()}] Done. Wrote {out_csv}")
+    df = pd.read_csv("scripts/daily_results_incremental.csv")
+
+    # sum the number of statements, resources, distresources, literals, distliterals, predicates, distpredicates
+    total_statements = df["#Statements"].sum()
+    total_resources = df["#Resources"].sum()
+    total_distresources = df["#DistResources"].sum()
+    total_literals = df["#Literals"].sum()
+    total_distliterals = df["#DistLiterals"].sum()
+    total_predicates = df["#Predicates"].sum()
+    total_distpredicates = df["#DistPredicates"].sum()
+    print(f"Total statements: {total_statements}")
+    print(f"Total resources: {total_resources}")
+    print(f"Total distresources: {total_distresources}")
+    print(f"Total literals: {total_literals}")
+    print(f"Total distliterals: {total_distliterals}")
+    print(f"Total predicates: {total_predicates}")
+    print(f"Total distpredicates: {total_distpredicates}")
 
 
 if __name__ == "__main__":
