@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/okarras/EmpiRE-Compass/compare/v1.2.0...v1.2.1) (2025-07-02)
+
+### Bug Fixes
+
+- build problems ([56f1d49](https://github.com/okarras/EmpiRE-Compass/commit/56f1d4910f32a3a3f989a586e729f66ee0fd58b7))
+- fix tab labels in question 7 and others bar in question 2 ([2c8c040](https://github.com/okarras/EmpiRE-Compass/commit/2c8c04062642aaf3b71c894668e93bbc91d61ecf))
+
 ## [1.2.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.1.0...v1.2.0) (2025-06-29)
 
 ### Features
