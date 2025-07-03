@@ -3,6 +3,7 @@ import StatCard from '../StatCard';
 import tibLogo from '../../assets/TIB.png';
 import orkgLogo from '../../assets/ORKG.png';
 import orkgaskLogo from '../../assets/ORKGask.png';
+import KGEmpireLogo from '../../assets/KGEmpire.png';
 
 const Partners = () => {
   return (
@@ -102,9 +103,35 @@ const Partners = () => {
             />
           </Box>
         </StatCard>
+        <StatCard
+          label="KG-EmpiRE"
+          link="https://github.com/okarras/EmpiRE-Analysis"
+        >
+          <Box
+            sx={{
+              backgroundColor: 'white',
+              borderRadius: '50%',
+              p: 1.5,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+            }}
+          >
+            <img
+              src={KGEmpireLogo}
+              alt="KG Empire Logo"
+              style={{
+                width: '45px',
+                height: '45px',
+                objectFit: 'contain',
+              }}
+            />
+          </Box>
+        </StatCard>
       </Box>
     </Box>
   );
 };
 
-export default Partners; 
+export default Partners;

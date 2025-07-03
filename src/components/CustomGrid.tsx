@@ -60,6 +60,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
           pagination: { paginationModel: { pageSize: 15, page: 0 } },
         }}
         disableRowSelectionOnClick
+        showToolbar
         sx={{
           '& .MuiDataGrid-row:nth-of-type(odd)': {
             backgroundColor: '#f9f9f9', // light grey for odd rows

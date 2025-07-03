@@ -24,6 +24,8 @@ import StorageIcon from '@mui/icons-material/Storage';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
 import CRUDStatistics from '../firestore/CRUDStatistics';
+// import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
+// import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
 interface VenueData {
   venue: string;
@@ -59,6 +61,7 @@ const DEFAULT_STATS: StatisticsData = {
 export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
+  // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,7 +72,7 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, perVenueData, venuesData] = results;
+        const [paperData, , , , , perVenueData, venuesData] = results;
 
         setStatistics({
           ...statistics,
@@ -114,13 +117,27 @@ export default function Statistics() {
   return (
     <ThemeProvider theme={theme}>
       <Container sx={{ mt: 8, height: '100vh' }}>
+        {/* <StatsChartTypeSelector
+          chartType={chartType}
+          setChartType={setChartType}
+        /> */}
+
+        {/* {chartType === 'gauge' ? (
+          <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
+            <CustomGaugeChart label="Papers" value={paperCount} />
+            <CustomGaugeChart label="Venues" value={venueCount} />
+            <CustomGaugeChart label="Resources" value={resources} />
+            <CustomGaugeChart label="Literals" value={literals} />
+            <CustomGaugeChart label="Properties" value={predicates} />
+            <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
+            <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
+            <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
+          </Stack>
+        ) : ( */}
         <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          {/* <StatCard value={tripleCount} label="Triples">
-            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard> */}
           <StatCard value={venueCount} label="Venues">
             <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
@@ -152,6 +169,7 @@ export default function Statistics() {
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
         </Stack>
+        {/* )} */}
 
         <Divider sx={{ mt: 2 }} />
 

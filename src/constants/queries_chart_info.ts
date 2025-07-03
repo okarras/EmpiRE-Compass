@@ -2,14 +2,23 @@
 //TODO: fix types and some styles
 import { axisClasses } from '@mui/x-charts';
 import {
-  aggregateMethodUsage,
-  countDataAnalysisStatisticsMethods,
-  countMethodDistribution,
-  processYearlyMethodData,
-  RawDataItem,
-  sortDataByCount,
-  SortDataByCountReturnInterface,
-  sortDataByYear,
+  Query10DataProcessingFunction,
+  Query11DataProcessingFunction,
+  Query13DataProcessingFunction,
+  Query1DataProcessingFunction,
+  Query2DataProcessingFunctionForDataAnalysis,
+  Query2DataProcessingFunctionForDataCollection,
+  Query3DataProcessingFunction,
+  Query4DataProcessingFunctionForDataAnalysis,
+  Query4DataProcessingFunctionForDataCollection,
+  Query5DataProcessingFunction,
+  Query6DataProcessingFunctionForDataAnalysis,
+  Query7DataProcessingFunction,
+  Query8DataProcessingFunction,
+  Query9DataProcessingFunction,
+  Query12DataProcessingFunction,
+  Query14DataProcessingFunction,
+  Query16DataProcessingFunction,
 } from './data_processing_helper_functions';
 
 const chartStyles = {
@@ -45,18 +54,31 @@ export interface ChartSetting {
   barLabel?: string;
   layout?: string;
   margin?: Record<string, unknown>;
+  noHeadingInSeries?: boolean;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
+  tabs?: {
+    tab1_name: string;
+    tab2_name: string;
+  };
 }
 export interface Query {
   title: string;
   id: number;
-  uid: string;
-  uid_2?: string;
+  uid: string; // data collection
+  uid_2?: string; // data analysis
+  uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
-  chartSettings: ChartSetting;
+  chartSettings?: ChartSetting;
   chartType?: 'bar' | 'pie';
   //TODO: fix types
-  dataProcessingFunction2?: (data: any) => any[];
-  dataProcessingFunction: (data: any, query_id?: string) => any[];
+  dataProcessingFunction2?: (data: any, data2?: any) => any[];
+  dataProcessingFunction?: (
+    data: any,
+    query_id?: string,
+    options?: Record<string, unknown>
+  ) => any[];
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
@@ -65,20 +87,6 @@ export interface Query {
     requiredDataForAnalysis?: string;
   };
 }
-
-type StatisticalData = {
-  year: number;
-  da_label: string; // Type of data analysis
-  count: number;
-  mean: number;
-  median: number;
-  standard_deviation: number;
-  variance: number;
-  mode: number;
-  range: number;
-  maximum: number;
-  minimum: number;
-};
 
 export const queries: Query[] = [
   // Query 1
@@ -101,21 +109,14 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    // dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: Query1DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the proportion of empirical studies evolved over time?',
-      questionExplanation:
-        'According to Sjøberg et al. (2007), the "current" state of practice (2007) shows that there are relatively few empirical studies. For the target state (2020 - 2025), Sjøberg et al. (2007) envision a large number of studies. This predicted change from a few to a large number of empirical studies leads to the corresponding competency question.',
-      dataAnalysis:
-        'For this data analysis, we select all papers that have an empirical study according to our definition (data collection and data analysis). For this reason, we remove all papers that have "no collection" and/or "no analysis". In addition, a paper can involve more than one empirical method for data collection and data analysis so that we must exclude duplicate papers. In this way, we can determine the number of all unique papers. For more detailed insights, we normalize the number of all papers with an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.',
-      dataInterpretation:
-        'Based on the figure "Normalized number of papers with an empirical study per year", an increasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers with an empirical study is 69.5%, the average proportion for the period 2010 - 2019 is 85.2%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 94.3%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the large number of studies envisioned for the target state (2020 - 2025) can be achieved.',
-      requiredDataForAnalysis:
-        'We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.',
     },
   },
-  //Query 2 TODO
+  // Query 2
   {
     title:
       'Number of empirical methods used for data collection & data analysis per year',
@@ -150,7 +151,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction2: countDataAnalysisStatisticsMethods,
+    dataProcessingFunction2: Query2DataProcessingFunctionForDataAnalysis,
     chartSettings: {
       heading: 'Number of empirical methods used for data collection per year',
       seriesHeadingTemplate: 'Number of {label} used for data collection',
@@ -171,31 +172,26 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
+        { dataKey: 'case study', label: 'Number of case studies' },
+        { dataKey: 'experiment', label: 'Number of experiments' },
+        { dataKey: 'survey', label: 'Number of surveys' },
+        { dataKey: 'interview', label: 'Number of interviews' },
+        {
+          dataKey: 'secondary research',
+          label: 'Number of secondary research',
+        },
+        { dataKey: 'action research', label: 'Number of action research' },
+        { dataKey: 'others', label: 'Number of other' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: countMethodDistribution,
+    dataProcessingFunction: Query2DataProcessingFunctionForDataCollection,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used over time?',
-      questionExplanation:
-        'According to Sjøberg et al. (2007), the "current" state of practice (2007) shows a that there are relatively few empirical studies. For the target state (2020 - 2025), Sjøberg et al. (2007) envision a large number of studies [...] using different empirical methods. This predicted change from a few to a large number of empirical studies using different empirical methods leads to the corresponding competency question.',
-      requiredDataForAnalysis:
-        'We must retrieve all papers with their publication year that use our ORKG template and report on the use of empirical methods. According to Dan (2017), empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.',
-      dataAnalysis:
-        'For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year.',
-      //TODO
-      dataInterpretation: '',
     },
   },
-  //Query 3
+  // Query 3
   {
     title: 'Number of papers without an empirical study per year',
     id: 3,
@@ -216,21 +212,13 @@ export const queries: Query[] = [
       sx: chartStyles,
     },
 
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: Query3DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the proportion of papers that do not have an empirical study evolved over time?',
-      questionExplanation:
-        'For the target state (2020 - 2025), Sjøberg et al. (2007) envision that there should be good reason for not including a proper evaluation. This predicted state leads to the corresponding competency question.',
-      requiredDataForAnalysis:
-        'We must retrieve all papers with their publication year that use our ORKG template and do not report an empirical study. However, we need to define what we mean by an empirical study. According to Empirical Software Engineering Journal, "Empirical studies presented here usually involve the collection and analysis of data and experience...". For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (Necessity) and data collection as a sufficient condition to be an empirical study (Sufficiency). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study. Therefore, we must retrieve all papers that do not have data collection, data analysis, or both.',
-      dataAnalysis:
-        'For this data analysis, we select all papers that do not have an empirical study according to our definition (data collection and data analysis). For this reason, we only keep all papers that have "no collection" and/or "no analysis". For more detailed insights, we normalize the number of all papers without an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.',
-      dataInterpretation:
-        'Based on the figure "Normalized number of papers without an empirical study per year", an decreasing proportion of empirical studies can be observed over time. While before 2010 the average proportion of papers without an empirical study is 30.5%, the average proportion for the period 2010 - 2019 is 14.8%. For the target state (2020 - 2025), the average proportion of papers with an empirical study is 5.7%. Based on these data, we observe a positive development towards the vision of Sjøberg et al. (2007) that the small number of papers without an empiricial study envisioned for the target state (2020 - 2025) can be achieved. Regarding the aspect that the papers should provide a good reason for not including a proper evaluation, further analysis is needed as we have not yet examined how papers without empiricial studies justify why they do not provide proper evaluations.',
     },
   },
-  //Query 4
+  // Query 4
   {
     title: 'Number of empirical methods used for data analysis',
     id: 4,
@@ -238,6 +226,7 @@ export const queries: Query[] = [
     uid_2: 'query_4_2',
     chartSettings2: {
       layout: 'horizontal',
+      barLabel: 'value',
       heading: 'Number of empirical methods used for data analysis',
       seriesHeadingTemplate: 'Number of {label} used for data analysis',
       className: 'fullWidth fixText',
@@ -247,6 +236,7 @@ export const queries: Query[] = [
         {
           scaleType: 'band',
           dataKey: 'methodType',
+          label: 'Empirical Method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
@@ -256,95 +246,34 @@ export const queries: Query[] = [
         left: 150,
       },
     },
-    dataProcessingFunction2: (rawData: any[]): any[] => {
-      const keys_to_count = ['descriptive', 'inferential', 'machine_learning'];
-      const static_keys = ['da_label', 'paper', 'year'];
-
-      // Initialize count object
-      const labelCounts: { [key: string]: number } = {
-        descriptive: 0,
-        inferential: 0,
-        machine_learning: 0,
-        others: 0,
-      };
-
-      rawData.forEach((item) => {
-        let hasKnownKey = false;
-        keys_to_count.forEach((key) => {
-          if (item[key]) {
-            labelCounts[key]++;
-            hasKnownKey = true;
-          }
-        });
-        if (!hasKnownKey && !static_keys.includes(item.da_label)) {
-          labelCounts['others']++;
-        }
-      });
-
-      const chartData = Object.keys(labelCounts).map((label) => ({
-        methodType: label,
-        count: labelCounts[label],
-        normalizedRatio: Number(
-          (labelCounts[label] / rawData.length).toFixed(2)
-        ),
-      }));
-
-      return chartData;
-    },
+    dataProcessingFunction2: Query4DataProcessingFunctionForDataCollection,
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
-      heading: 'Number of empirical methods used for data analysis',
+      heading: 'Number of empirical methods used for data collection',
       barLabel: 'value',
-      xAxis: [{ label: 'Number of Statistical Method used' }],
+      xAxis: [{ label: 'Number of empirical method used' }],
       yAxis: [
         {
           scaleType: 'band',
           dataKey: 'methodType',
-          label: 'Statistical Method used',
+          label: 'Empirical Method used',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
       margin: {
         left: 150,
+        right: 20,
       },
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: any): any[] => {
-      const labelCounts = rawData.reduce(
-        (
-          acc: { [x: string]: any },
-          item: { dc_method_type_label: string | number }
-        ) => {
-          acc[item.dc_method_type_label] =
-            (acc[item.dc_method_type_label] || 0) + 1;
-          return acc;
-        },
-        {}
-      );
-      const chartData = Object.keys(labelCounts).map((label) => ({
-        methodType: label,
-        count: labelCounts[label],
-        normalizedRatio: Number(
-          (labelCounts[label] / rawData.length).toFixed(2)
-        ),
-      }));
-      return chartData;
-    },
+    dataProcessingFunction: Query4DataProcessingFunctionForDataAnalysis,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used?',
-      questionExplanation:
-        'For the target state (2020 - 2025), Sjøberg et al. (2007) envision that researchers are trained in using a large set of research methods and technqiues. This predicted state leads to the corresponding competency question.',
-      requiredDataForAnalysis:
-        'We must retrieve all papers that use our ORKG template and report on the use of empirical methods. According to Dan (2017), empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.',
-      dataAnalysis:
-        'For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers using empirical methods for data collection. We normalize the number of empirical methods used for data collection based on the number of all papers using at least one empirical methods for data collection.',
-      //TODO
-      dataInterpretation: '',
     },
   },
-  //Query 5
+  // Query 5
   {
     title:
       'Normalized number of empirical methods used for data collection per year',
@@ -373,54 +302,53 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: countMethodDistribution,
+    dataProcessingFunction: Query5DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?',
     },
   },
-  //Query 6
+  // Query 6
   {
     title:
       'Number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
-    uid: 'query_6_1',
-    uid_2: 'query_6_2',
-    chartSettings: {
+    uid: 'query_6_2',
+    uid_2: 'query_6_1',
+    chartSettings2: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'number of statistical methods of descriptive statistics used for data analysis',
       barLabel: 'value',
       xAxis: [{ label: 'Number of Statistical Method used' }],
       yAxis: [
         {
           scaleType: 'band',
           dataKey: 'method',
-          label: 'Statistical Method used',
+          label: 'Statistical method used',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       margin: {
         left: 150,
       },
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByCount,
+    dataProcessingFunction2: Query6DataProcessingFunctionForDataAnalysis,
     dataAnalysisInformation: {
       question: 'How often are which statistical methods used?',
     },
   },
-  //Query 7.1
+  // Query 7
   {
     title:
-      'Number of statistical methods of descriptive statistics used for data analysis',
+      'number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
-    uid: 'query_7_1',
-    uid_2: 'query_7_2',
-    // TODO: this chart should be for data analysis
-    chartSettings: {
+    uid: 'query_7_2',
+    uid_2: 'query_7_1',
+    chartSettings2: {
       className: 'fullWidth',
       colors: [
         '#5975a4',
@@ -437,65 +365,40 @@ export const queries: Query[] = [
       ],
       xAxis: xAxisSettings(),
       heading:
-        'Number of statistical methods of descriptive statistics used for data analysis',
+        'number of statistical method used for data analysis per year grouped by statistical method',
       yAxis: [
         {
-          label: 'Number of statistical methods used',
+          label: 'Proportion of statistical methods used',
         },
       ],
+      tabs: {
+        tab1_name: 'Inferential Statistics',
+        tab2_name: 'Descriptive Statistics',
+      },
       series: [
-        { dataKey: 'count', label: 'count' },
-        { dataKey: 'percent', label: 'percent' },
-        { dataKey: 'mean', label: 'mean' },
-        { dataKey: 'median', label: 'median' },
-        { dataKey: 'mode', label: 'mode' },
-        { dataKey: 'minimum', label: 'minimum' },
-        { dataKey: 'maximum', label: 'maximum' },
-        { dataKey: 'range', label: 'range' },
-        { dataKey: 'variance', label: 'variance' },
-        { dataKey: 'standard_deviation', label: 'standard_deviation' },
-        { dataKey: 'boxplot', label: 'boxplot' },
+        { dataKey: 'count', label: 'Count' },
+        { dataKey: 'percent', label: 'Percent' },
+        { dataKey: 'mean', label: 'Mean' },
+        { dataKey: 'median', label: 'Median' },
+        { dataKey: 'mode', label: 'Mode' },
+        { dataKey: 'minimum', label: 'Minimum' },
+        { dataKey: 'maximum', label: 'Maximum' },
+        { dataKey: 'range', label: 'Range' },
+        { dataKey: 'variance', label: 'Variance' },
+        { dataKey: 'standard_deviation', label: 'Standard Deviation' },
+        { dataKey: 'boxplot', label: 'Boxplot' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: StatisticalData[]): any[] => {
-      if (!rawData.length) return [];
-      // Extract unique years
-      const years = [...new Set(rawData.map((item) => item.year))];
-
-      // Identify all statistical method keys dynamically
-      const methodKeys = Object.keys(rawData[0]).filter(
-        (key) => key !== 'year' && key !== 'paper'
-      );
-
-      const processedData = years.map((year) => {
-        const filteredData = rawData.filter((item) => item.year === year);
-        const result: { year: number; [key: string]: number } = { year };
-
-        methodKeys.forEach((method) => {
-          // Convert encoded string into a numeric value (count of occurrences)
-          result[method] = filteredData.reduce(
-            (sum, item) =>
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              //@ts-ignore
-              sum + (item[method]?.replace(/[^1]/g, '').length || 0), // Counting occurrences of '1'
-            0
-          );
-        });
-
-        return result;
-      });
-
-      return processedData.sort((a, b) => a.year - b.year);
-    },
+    dataProcessingFunction2: Query7DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'How has the use of statistical methods evolved over time?',
     },
   },
-  //=>>Query 8
+  // Query 8
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 8,
     uid: 'query_8',
     chartSettings: {
@@ -503,23 +406,23 @@ export const queries: Query[] = [
       barLabel: 'value',
 
       xAxis: xAxisSettings(),
-      heading: 'Number of papers reporting threats to validity per year',
+      heading: 'number of papers reporting threats to validity per year',
       yAxis: [
         {
-          label: 'Number of papers reporting threats to validity',
+          label: 'Proportion of papers reporting threats to validity',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: Query8DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the reporting of threats to validity evolved over time?',
     },
   },
-  //Query 9
+  // Query 9
   {
     title: 'Number of papers per year',
     id: 9,
@@ -527,10 +430,10 @@ export const queries: Query[] = [
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
-      heading: 'Number of threats to validity reported in papers',
+      heading: 'number of threats to validity reported in papers',
 
       barLabel: 'value',
-      xAxis: [{ label: 'Number of threats to validity reported' }],
+      xAxis: [{ label: 'Proportion of threats to validity reported' }],
       yAxis: [
         {
           scaleType: 'band',
@@ -545,14 +448,14 @@ export const queries: Query[] = [
         left: 150,
       },
     },
-    dataProcessingFunction: aggregateMethodUsage,
+    dataProcessingFunction: Query9DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What types of threats to validity do the authors report?',
     },
   },
-  //Query 10
+  // Query 10
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 10,
     uid: 'query_10',
     chartSettings: {
@@ -571,7 +474,7 @@ export const queries: Query[] = [
         '#4c72b0',
       ],
       heading:
-        'Normalized number of case studies and action research used for data collection per year',
+        'normalized number of case studies and action research used for data collection per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -579,20 +482,13 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'experiment', label: 'Experiment' },
-        { dataKey: 'survey', label: 'Survey' },
-        { dataKey: 'interview', label: 'Interview' },
-        { dataKey: 'secondary research', label: 'Secondary research' },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'Other' },
+        { dataKey: 'case study', label: 'Case Study' },
+        { dataKey: 'action research', label: 'Action Research' },
       ],
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData) => {
-      return countMethodDistribution(rawData);
-    },
+    dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How have the proportions of case studies and action research in the empirical methods used evolved over time?',
@@ -600,14 +496,14 @@ export const queries: Query[] = [
   },
   //Query 11
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 11,
     uid: 'query_11',
     chartSettings: {
       className: 'fullWidth',
 
       heading:
-        'Number of papers that provide at least one URL to data per year',
+        'number of papers that provide at least one URL to data per year',
       barLabel: 'value',
       xAxis: xAxisSettings(),
       yAxis: [
@@ -619,33 +515,84 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: Query11DataProcessingFunction,
+
     dataAnalysisInformation: {
       question:
         'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?',
     },
   },
-  //Query 12 TODO: this query should be checked
+  //Query 12
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 12,
     uid: 'query_12',
+
     chartSettings: {
-      className: 'fullWidth',
-      barLabel: 'value',
+      className: 'fullWidth fixText',
       xAxis: xAxisSettings(),
+      colors: [
+        '#4c72b0',
+        '#dd8452',
+        '#55a868',
+        '#c44e52',
+        '#8172b3',
+        '#937860',
+        '#da8bc3',
+      ],
       heading:
-        'Number of papers with highlighted research question(s) and highlighted answers per year',
+        'number of papers with highlighted research question(s) and highlighted answers per year',
+      noHeadingInSeries: true,
       yAxis: [
         {
           label: 'Numbers of papers',
         },
       ],
-      series: [{ dataKey: 'normalizedRatio' }],
+      series: [
+        {
+          dataKey: 'noRQHighlighted',
+          label:
+            'Number of papers without highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'noRQHidden',
+          label:
+            'Number of papers without research question and hidden answers per year',
+        },
+        {
+          dataKey: 'hqha',
+          label:
+            'Number of papers with highlighted research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hqhaHidden',
+          label:
+            'Number of papers with highlighted research question(s) and hidden answers per year',
+        },
+        {
+          dataKey: 'hidqha',
+          label:
+            'Number of papers with hidden research question(s) and highlighted answers per year',
+        },
+        {
+          dataKey: 'hidqhid',
+          label:
+            'Number of papers with hidden research question(s) and hidden answers per year',
+        },
+      ],
       height: chartHeight,
       sx: chartStyles,
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 150,
+        bottom: 40,
+      },
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction: Query12DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the reporting of research questions and answers evolved over time?',
@@ -653,13 +600,13 @@ export const queries: Query[] = [
   },
   //Query 13
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 13,
     uid: 'query_13',
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText2',
-      heading: 'Number of empirical methods used for secondary research',
+      heading: 'number of empirical methods used for secondary research',
       barLabel: 'value',
       yAxis: [
         {
@@ -676,28 +623,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (
-      rawData: RawDataItem[] = []
-    ): SortDataByCountReturnInterface[] => {
-      if (!rawData.length) return [];
-
-      const methodCount: Record<string, number> = {};
-
-      rawData.forEach(({ dc_method_name }) => {
-        methodCount[dc_method_name as string] =
-          (methodCount[dc_method_name as string] || 0) + 1;
-      });
-
-      const result: SortDataByCountReturnInterface[] = Object.entries(
-        methodCount
-      ).map(([method, count]) => ({
-        method,
-        count,
-        normalizedRatio: Number((count / rawData.length).toFixed(2)),
-      }));
-
-      return result.sort((a, b) => b.count - a.count);
-    },
+    dataProcessingFunction: Query13DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?',
@@ -705,7 +631,7 @@ export const queries: Query[] = [
   },
   //Query 14
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 14,
     uid: 'query_14',
     chartSettings: {
@@ -722,8 +648,17 @@ export const queries: Query[] = [
         '#64b5cd',
       ],
       className: 'fullWidth',
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
       heading:
-        'Normalized number of empirical methods used for secondary research per year',
+        'number of empirical methods used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
@@ -731,36 +666,36 @@ export const queries: Query[] = [
         },
       ],
       series: [
-        { dataKey: 'normalized_archive_analysis', label: 'Archive Analysis' },
+        { dataKey: 'archive_analysis', label: 'Archive Analysis' },
         {
-          dataKey: 'normalized_systematic_literature_review',
+          dataKey: 'systematic_literature_review',
           label: 'Systematic Literature Review',
         },
         {
-          dataKey: 'normalized_literature_review',
+          dataKey: 'literature_review',
           label: 'Literature Review',
         },
         {
-          dataKey: 'normalized_systematic_literature_map',
+          dataKey: 'systematic_literature_map',
           label: 'Systematic Literature Map',
         },
         {
-          dataKey: 'normalized_systematic_review',
+          dataKey: 'systematic_review',
           label: 'Systematic Review',
         },
         {
-          dataKey: 'normalized_tertiary_literature_review',
+          dataKey: 'tertiary_literature_review',
           label: 'Tertiary literature review',
         },
         {
-          dataKey: 'normalized_document_analysis',
+          dataKey: 'document_analysis',
           label: 'Document analysis',
         },
         {
-          dataKey: 'normalized_document_inspection',
+          dataKey: 'document_inspection',
           label: 'Document Inspection',
         },
-        { dataKey: 'normalized_literature_study', label: 'Literature Study' },
+        { dataKey: 'literature_study', label: 'Literature Study' },
         {
           dataKey: 'normalized_literature_survey',
           label: 'Literature Survey',
@@ -769,24 +704,24 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: processYearlyMethodData,
+    dataProcessingFunction: Query14DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?',
     },
   },
-  // Query 15 TODO: check if this is correct
+  // Query 15
   {
-    title: 'Number of papers per year',
+    title: 'number of papers per year',
     id: 15,
     uid: 'query_15_1',
-    uid_2: 'query_15_2',
+    uid_2_merge: 'query_15_2',
     chartSettings: {
       className: 'fullWidth',
       barLabel: 'value',
-      xAxis: xAxisSettings(),
+      xAxis: xAxisSettings('numberOfMethodsUsed'),
       heading:
-        'Number of papers using X empirical methods for data collection and data analysis',
+        'number of papers using X empirical methods for data collection and data analysis',
       yAxis: [
         {
           label: 'Proportions of empirical methods used',
@@ -796,16 +731,62 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: sortDataByYear,
+    dataProcessingFunction2: (rawData: any[], rawData2: any[]) => {
+      //merge rawData and rawData2 based on paper and year in each object
+      const mergedData = rawData.map((item) => {
+        const item2 = rawData2.find(
+          (item2) => item2.paper === item.paper && item2.year === item.year
+        );
+        return {
+          ...item,
+          ...item2,
+        };
+      });
+
+      // count each papers keys other than paper and year {Number of empirical methods used, Number of Papers using X empirical methods}
+      const countedData = mergedData.map((item) => {
+        const keys = Object.keys(item).filter(
+          (key) => key !== 'paper' && key !== 'year'
+        );
+        let numberOfMethodsUsed = 0;
+        keys.forEach((key) => {
+          numberOfMethodsUsed += Number(item[key]);
+        });
+        return {
+          ...item,
+          numberOfMethodsUsed,
+        };
+      });
+
+      //sort data by count
+      countedData.sort((a, b) => b.count - a.count);
+
+      //count the number of papers in each count {numberOfMethodsUsed: number of papers, count: number of papers, normalizedRatio: number of papers / total number of papers}
+      const result = countedData.reduce((acc, item) => {
+        acc[item.numberOfMethodsUsed] =
+          (acc[item.numberOfMethodsUsed] || 0) + 1;
+        return acc;
+      }, {});
+
+      const arrayResult = Object.entries(result).map(([key, value]) => ({
+        numberOfMethodsUsed: key,
+        count: value,
+        normalizedRatio:
+          Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      }));
+
+      return arrayResult;
+    },
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },
   },
   // Query 16
   {
-    title: 'Number of papers using X empirical methods per year',
+    title: 'number of papers using X empirical methods per year',
     id: 16,
     uid: 'query_16_1',
+    uid_2_merge: 'query_16_2',
     chartSettings: {
       className: 'fullWidth',
       colors: [
@@ -821,10 +802,19 @@ export const queries: Query[] = [
         '#64b5cd',
         '#4c72b0',
       ],
+      barCategoryGap: 0.1,
+      barGap: 0.05,
+      barWidth: 12,
+      margin: {
+        left: 60,
+        right: 20,
+        top: 120,
+        bottom: 40,
+      },
       xAxis: xAxisSettings(),
       heading:
-        'Number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
-      seriesHeadingTemplate: 'Number of papers using {label} per year',
+        'number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
+      seriesHeadingTemplate: 'number of papers using {label} per year',
       yAxis: [{ label: 'Number of papers' }],
       series: [
         { dataKey: '1.0', label: '1 empirical methods' },
@@ -842,50 +832,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: (rawData: any[]): any[] => {
-      if (!rawData.length) return [];
-
-      const dataByYear: Record<number, Record<string, number>> = {};
-      const totalByYear: Record<number, number> = {};
-
-      rawData.forEach((item) => {
-        const year = item.year;
-        const toNumber = (v: any) =>
-          typeof v === 'number' ? v : parseInt(v || '0');
-
-        const methodCount =
-          toNumber(item.number_of_dc_methods) +
-          toNumber(item.number_of_inf_methods) +
-          toNumber(item.number_of_sim_methods) +
-          toNumber(item.number_of_oth_methods) +
-          toNumber(item.number_of_other_methods);
-
-        if (!dataByYear[year]) {
-          dataByYear[year] = {};
-          totalByYear[year] = 0;
-        }
-
-        const key = methodCount.toFixed(1);
-        dataByYear[year][key] = (dataByYear[year][key] || 0) + 1;
-        totalByYear[year]++;
-      });
-
-      return Object.entries(dataByYear)
-        .map(([yearStr, counts]) => {
-          const year = parseInt(yearStr);
-          const result: any = { year };
-
-          Object.entries(counts).forEach(([methodKey, count]) => {
-            result[methodKey] = count;
-            result[`normalized ${methodKey}`] = parseFloat(
-              (count / totalByYear[year]).toFixed(2)
-            );
-          });
-
-          return result;
-        })
-        .sort((a, b) => a.year - b.year);
-    },
+    dataProcessingFunction2: Query16DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the number of research methods used per publication evolved over time?',

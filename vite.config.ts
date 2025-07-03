@@ -1,37 +1,96 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-
-const apiCacheDuration = 24 * 60 * 60; // 1 day in seconds
+import packageJson from './package.json';
 
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      injectRegister: 'auto',
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true, // Optional: enable PWA in dev for testing
+      },
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
+      manifest: {
+        name: 'EmpiRE Compass',
+        short_name: 'EmpiRE Compass',
+        description: 'EmpiRE Compass a dashboard for research in RE',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
       workbox: {
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB limit
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
-            // Cache API requests
             urlPattern: /^https:\/\/orkg\.org\/.*$/,
             handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'api-cache',
               expiration: {
-                maxAgeSeconds: apiCacheDuration, // Cache for 1 day
+                maxAgeSeconds: 24 * 60 * 60, // 1 day
               },
               cacheableResponse: {
-                statuses: [0, 200], // Only cache valid responses
+                statuses: [0, 200],
               },
             },
           },
         ],
       },
-      devOptions: {
-        enabled: true, // Optional: enable PWA in dev for testing
-      },
     }),
   ],
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version),
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor libraries into separate chunks
+          'react-vendor': ['react', 'react-dom'],
+          'mui-vendor': [
+            '@mui/material',
+            '@mui/icons-material',
+            '@mui/x-charts',
+            '@mui/x-data-grid',
+          ],
+          'ai-vendor': [
+            'ai',
+            '@ai-sdk/groq',
+            '@ai-sdk/anthropic',
+            '@ai-sdk/openai',
+          ],
+          'utils-vendor': [
+            'react-router',
+            'react-router-dom',
+            '@reduxjs/toolkit',
+            'react-redux',
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // Increase warning limit to 1MB
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@mui/material',
+      '@mui/icons-material',
+      '@mui/x-charts',
+      '@mui/x-data-grid',
+    ],
+  },
 });

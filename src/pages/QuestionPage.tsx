@@ -52,10 +52,11 @@ const QuestionPage = () => {
     return <ErrorState message="Question not found" />;
   }
 
-  const finalQuery = mergeQueryWithFirebase(
-    targetQuery,
-    firebaseQuestions[targetQuery.uid] as unknown as Record<string, unknown>
-  );
+  const firebaseTargetQuery = Object.values(firebaseQuestions).find(
+    (q) => q.id === targetQuery.id
+  ) as unknown as Record<string, unknown>;
+
+  const finalQuery = mergeQueryWithFirebase(targetQuery, firebaseTargetQuery);
 
   return (
     <ThemeProvider theme={theme}>
@@ -69,31 +70,38 @@ const QuestionPage = () => {
         }}
       >
         <Box sx={{ position: 'relative' }}>
-          <Typography
-            variant="h3"
+          <Box
             sx={{
-              color: '#e86161',
-              fontWeight: 700,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              flexWrap: 'wrap',
               mb: 4,
-              fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
-              lineHeight: 1.3,
-              position: 'relative',
-              display: 'inline-block',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                bottom: -8,
-                left: 0,
-                right: 0,
-                width: '100%',
-                height: '4px',
-                backgroundColor: '#e86161',
-                borderRadius: '2px',
-              },
             }}
           >
-            {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
-          </Typography>
+            <Typography
+              variant="h3"
+              sx={{
+                color: '#e86161',
+                fontWeight: 700,
+                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+                lineHeight: 1.3,
+                position: 'relative',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -8,
+                  left: 0,
+                  width: '100%',
+                  height: '4px',
+                  backgroundColor: '#e86161',
+                  borderRadius: '2px',
+                },
+              }}
+            >
+              {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
+            </Typography>
+          </Box>
 
           <Question query={finalQuery} />
         </Box>

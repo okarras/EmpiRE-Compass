@@ -11,27 +11,7 @@ export const PREFIXES = `
 
 export const SPARQL_QUERIES = {
   query_1: `
-    SELECT DISTINCT ?paper ?year ?dc_label ?da_label
-        WHERE {
-        ?paper orkgp:P31 ?contribution;
-                orkgp:P29 ?year.
-        ?contribution a orkgc:C27001;
-                        orkgp:P135046 ?serie;
-                        orkgp:P56008 ?data_collection;
-                        orkgp:P15124 ?data_analysis.
-
-        ?data_collection rdfs:label ?dc_label.
-        ?data_analysis rdfs:label ?da_label.
-        ?serie rdfs:label ?venue_name.
-
-        FILTER(?dc_label != "no collection"^^xsd:string)
-        FILTER(?da_label != "no analysis"^^xsd:string)
-        FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-        }
-`,
-
-  query_2_1: `
-    SELECT ?paper, ?year, ?dc_method_type_label
+     SELECT ?paper, ?year, ?dc_label, ?da_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                         orkgp:P29 ?year.
@@ -40,16 +20,37 @@ export const SPARQL_QUERIES = {
                     ?serie rdfs:label ?venue_name.
 
                     OPTIONAL{?contribution orkgp:P56008 ?data_collection.
-                            ?data_collection orkgp:P1005 ?dc_method;
-                                            rdfs:label ?dc_label.
-                            ?dc_method orkgp:P94003 ?dc_method_type.
-                            ?dc_method_type rdfs:label ?dc_method_type_label.
-                    }
-
-                    FILTER(?dc_label != "no collection"^^xsd:string)
+                            ?data_collection rdfs:label ?dc_label.
+                            }
+                    OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                            ?data_analysis rdfs:label ?da_label.
+                            }
+                            
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
             }
+`,
+
+  query_2_1: `
+    SELECT ?paper, ?year, ?dc_method_type_label
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                       orkgp:P29 ?year.
+                ?contribution a orkgc:C27001;
+                              orkgp:P135046 ?serie.
+                ?serie rdfs:label ?venue_name.
+
+                OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+                         ?data_collection orkgp:P1005 ?dc_method;
+                                          rdfs:label ?dc_label.
+                         ?dc_method orkgp:P94003 ?dc_method_type.
+                         ?dc_method_type rdfs:label ?dc_method_type_label.
+                }
+
+                FILTER(?dc_label != "no collection"^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
 `,
 
   query_2_2: `
@@ -82,29 +83,24 @@ export const SPARQL_QUERIES = {
 `,
 
   query_3: `
-    SELECT DISTINCT ?paper ?year ?dc_label ?da_label
-        WHERE {
-        ?paper orkgp:P31 ?contribution;
-                orkgp:P29 ?year.
-        ?contribution a orkgc:C27001;
-                        orkgp:P135046 ?serie.
-        ?serie rdfs:label ?venue_name.
-
-        OPTIONAL {
-                ?contribution orkgp:P56008 ?data_collection.
-                ?data_collection rdfs:label ?dc_label.
-        }
-        OPTIONAL {
-                ?contribution orkgp:P15124 ?data_analysis.
-                ?data_analysis rdfs:label ?da_label.
-        }
-
-        FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-        FILTER(
-                ?dc_label = "no collection"^^xsd:string || 
-                ?da_label = "no analysis"^^xsd:string
-        )
-        }
+        SELECT ?paper, ?year, ?dc_label, ?da_label
+                WHERE {
+                        ?paper orkgp:P31 ?contribution;
+                        orkgp:P29 ?year.
+                        ?contribution a orkgc:C27001;
+                                orkgp:P135046 ?serie.
+                        ?serie rdfs:label ?venue_name.
+                        
+                        OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+                                ?data_collection rdfs:label ?dc_label.
+                        }
+                        OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                                ?data_analysis rdfs:label ?da_label.
+                        }
+                        
+                        #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                        FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)    
+                }
 `,
 
   query_4_1: `
@@ -183,8 +179,8 @@ export const SPARQL_QUERIES = {
 `,
 
   query_6_1: `
-    SELECT ?paper, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
-                ?range, ?variance, ?standard_deviation, ?boxplot
+    SELECT ?paper, ?da_label, ?Count, ?Percent, ?Mean, ?Median, ?Mode, ?Minimum, ?Maximum, 
+                ?Range, ?Variance, ?STD_deviation, ?Boxplot
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                             orkgp:P29 ?year.
@@ -197,20 +193,20 @@ export const SPARQL_QUERIES = {
                             
                             OPTIONAl{?data_analysis orkgp:P56048 ?descriptive_stats.
                                     OPTIONAL{?descriptive_stats orkgp:P56049 ?frequency.
-                                            OPTIONAL{?frequency orkgp:P55023 ?count.}
-                                            OPTIONAL{?frequency orkgp:P56050 ?percent.}}
+                                            OPTIONAL{?frequency orkgp:P55023 ?Count.}
+                                            OPTIONAL{?frequency orkgp:P56050 ?Percent.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57005 ?central_tendency.
-                                            OPTIONAL{?central_tendency orkgp:P47000 ?mean.}
-                                            OPTIONAL{?central_tendency orkgp:P57006 ?median.}
-                                            OPTIONAL{?central_tendency orkgp:P57007 ?mode.}
-                                            OPTIONAL{?central_tendency orkgp:P44107 ?minimum.}
-                                            OPTIONAL{?central_tendency orkgp:P44108 ?maximum.}}
+                                            OPTIONAL{?central_tendency orkgp:P47000 ?Mean.}
+                                            OPTIONAL{?central_tendency orkgp:P57006 ?Median.}
+                                            OPTIONAL{?central_tendency orkgp:P57007 ?Mode.}
+                                            OPTIONAL{?central_tendency orkgp:P44107 ?Minimum.}
+                                            OPTIONAL{?central_tendency orkgp:P44108 ?Maximum.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57008 ?variation.
-                                            OPTIONAL{?variation orkgp:P4013 ?range.}
-                                            OPTIONAL{?variation orkgp:P57009 ?variance.}
-                                            OPTIONAL{?variation orkgp:P44087 ?standard_deviation.}}
+                                            OPTIONAL{?variation orkgp:P4013 ?Range.}
+                                            OPTIONAL{?variation orkgp:P57009 ?Variance.}
+                                            OPTIONAL{?variation orkgp:P44087 ?STD_deviation.}}
                                     OPTIONAL{?descriptive_stats orkgp:P57010 ?position.
-                                            OPTIONAL{?position orkgp:P59065 ?boxplot.}}
+                                            OPTIONAL{?position orkgp:P59065 ?Boxplot.}}
                             }
                     }
                     
@@ -307,31 +303,42 @@ export const SPARQL_QUERIES = {
 `,
 
   query_8: `
-    SELECT ?paper, ?year, ?external, ?internal, ?construct, ?conclusion, ?reliability, ?generalizability, ?content, ?descriptive, ?theoretical, ?repeatability, ?mentioned
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                            orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                    orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
+        SELECT ?paper ?year 
+        (SAMPLE(?external) AS ?external)
+        (SAMPLE(?internal) AS ?internal)
+        (SAMPLE(?construct) AS ?construct)
+        (SAMPLE(?conclusion) AS ?conclusion)
+        (SAMPLE(?reliability) AS ?reliability)
+        (SAMPLE(?generalizability) AS ?generalizability)
+        (SAMPLE(?content) AS ?content)
+        (SAMPLE(?descriptive) AS ?descriptive)
+        (SAMPLE(?theoretical) AS ?theoretical)
+        (SAMPLE(?repeatability) AS ?repeatability)
+        (SAMPLE(?mentioned) AS ?mentioned)
+        WHERE {
+        ?paper orkgp:P31 ?contribution;
+                orkgp:P29 ?year.
+        ?contribution a orkgc:C27001;
+                        orkgp:P135046 ?serie.
+        ?serie rdfs:label ?venue_name.
 
-                    OPTIONAL{?contribution orkgp:P39099 ?threats.
-                            OPTIONAL{?threats orkgp:P55034 ?external.}
-                            OPTIONAL{?threats orkgp:P55035 ?internal.}
-                            OPTIONAL{?threats orkgp:P55037 ?construct.}
-                            OPTIONAL{?threats orkgp:P55036 ?conclusion.}
-                            OPTIONAL{?threats orkgp:P59109 ?reliability.}
-                            OPTIONAL{?threats orkgp:P60006 ?generalizability.}
-                            OPTIONAL{?threats orkgp:P68005 ?content.}
-                            OPTIONAL{?threats orkgp:P97000 ?descriptive.}
-                            OPTIONAL{?threats orkgp:P97001 ?theoretical.}
-                            OPTIONAL{?threats orkgp:P97002 ?repeatability.}
-                            OPTIONAL{?threats orkgp:P145000 ?mentioned}
-                    }
-                            
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
+        OPTIONAL {
+        ?contribution orkgp:P39099 ?threats.
+        OPTIONAL { ?threats orkgp:P55034 ?external. }
+        OPTIONAL { ?threats orkgp:P55035 ?internal. }
+        OPTIONAL { ?threats orkgp:P55037 ?construct. }
+        OPTIONAL { ?threats orkgp:P55036 ?conclusion. }
+        OPTIONAL { ?threats orkgp:P59109 ?reliability. }
+        OPTIONAL { ?threats orkgp:P60006 ?generalizability. }
+        OPTIONAL { ?threats orkgp:P68005 ?content. }
+        OPTIONAL { ?threats orkgp:P97000 ?descriptive. }
+        OPTIONAL { ?threats orkgp:P97001 ?theoretical. }
+        OPTIONAL { ?threats orkgp:P97002 ?repeatability. }
+        OPTIONAL { ?threats orkgp:P145000 ?mentioned. }
+        }
+        FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
+        GROUP BY ?paper ?year
 `,
 
   query_9: `
@@ -517,46 +524,46 @@ export const SPARQL_QUERIES = {
 `,
 
   query_16_1: `
-    SELECT ?paper, (COUNT(?dc_method_type_label) AS ?number_of_dc_methods), ?year
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                        orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
+        SELECT ?paper, (COUNT(?dc_method_type_label) AS ?number_of_dc_methods), ?year
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                       orkgp:P29 ?year.
+                ?contribution a orkgc:C27001;
+                              orkgp:P135046 ?serie.
+                ?serie rdfs:label ?venue_name.
 
-                    ?contribution orkgp:P56008 ?data_collection.
-                    ?data_collection orkgp:P1005 ?dc_method;
-                                    rdfs:label ?dc_label.
-                    ?dc_method orkgp:P94003 ?dc_method_type.
-                    ?dc_method_type rdfs:label ?dc_method_type_label.
-                    
-                    FILTER(?dc_label != "no collection"^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            } GROUP BY ?paper ?year
+                ?contribution orkgp:P56008 ?data_collection.
+                ?data_collection orkgp:P1005 ?dc_method;
+                                 rdfs:label ?dc_label.
+                ?dc_method orkgp:P94003 ?dc_method_type.
+                ?dc_method_type rdfs:label ?dc_method_type_label.
+                
+                FILTER(?dc_label != "no collection"^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        } GROUP BY ?paper ?year
 `,
 
   query_16_2: `
     SELECT ?paper, (COUNT(DISTINCT ?inferential) AS ?number_of_inf_methods), (COUNT(DISTINCT ?descriptive) AS ?number_of_des_methods), (COUNT(DISTINCT ?machine_learning) AS ?number_of_ml_methods), (COUNT(DISTINCT ?other_methods) AS ?number_of_other_methods), ?year
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                        orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                                orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                       orkgp:P29 ?year.
+                ?contribution a orkgc:C27001;
+                              orkgp:P135046 ?serie.
+                ?serie rdfs:label ?venue_name.
 
-                    ?contribution orkgp:P15124 ?data_analysis.
-                    ?data_analysis rdfs:label ?da_label.
-                    
-                    OPTIONAL{?data_analysis orkgp:P56043 ?inferential.}
-                    OPTIONAL{?data_analysis orkgp:P56048 ?descriptive.}
-                    OPTIONAL{?data_analysis orkgp:P57016 ?machine_learning.}
-                    OPTIONAL{?data_analysis orkgp:P1005 ?other_methods.}
-                    
-                    FILTER(?da_label != "no analysis"^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            } GROUP BY ?paper ?year
+                ?contribution orkgp:P15124 ?data_analysis.
+                ?data_analysis rdfs:label ?da_label.
+                
+                OPTIONAL{?data_analysis orkgp:P56043 ?inferential.}
+                OPTIONAL{?data_analysis orkgp:P56048 ?descriptive.}
+                OPTIONAL{?data_analysis orkgp:P57016 ?machine_learning.}
+                OPTIONAL{?data_analysis orkgp:P1005 ?other_methods.}
+                
+                FILTER(?da_label != "no analysis"^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        } GROUP BY ?paper ?year
 `,
 };

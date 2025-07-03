@@ -1,127 +1,82 @@
-import React from 'react';
-import { ChartSetting, Query } from '../constants/queries_chart_info';
-import { Box, Paper, Typography, Divider } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Button, Typography, IconButton } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
+import { PREFIXES, SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
+import CodeIcon from '@mui/icons-material/Code';
+import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import { Query, ChartSetting } from '../constants/queries_chart_info';
 
 interface QuestionChartViewProps {
   query: Query;
-  questionData: Record<string, unknown>[];
   normalized: boolean;
   setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
   queryId: string;
+  chartSettings: ChartSetting;
+  processedChartDataset: Record<string, unknown>[];
+  dataInterpretation: string;
+  type: string;
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   query,
-  questionData,
   normalized,
   setNormalized,
   queryId,
+  chartSettings,
+  processedChartDataset,
+  dataInterpretation,
+  type,
 }) => {
-  const isSecondSubQuery = query.uid_2 === queryId;
-  const chartSettingsKey = isSecondSubQuery
-    ? 'chartSettings2'
-    : 'chartSettings';
-  const hasSecondSubQueryChart = !!query.chartSettings2;
-  if (isSecondSubQuery && !hasSecondSubQueryChart) {
-    return null;
+  const [currentChartIndex, setCurrentChartIndex] = useState(0);
+  let series = chartSettings.series;
+  if (chartSettings.series.length > 1 && normalized) {
+    // add normalized to each series key string
+    series = series.map((chart: { dataKey: string }) => ({
+      ...chart,
+      dataKey: 'normalized_' + chart.dataKey,
+    }));
   }
-
-  const detailedChartData = isSecondSubQuery
-    ? (query.chartSettings2?.series ?? [])
-    : query.chartSettings.series;
-
-  const processedChartDataset = isSecondSubQuery
-    ? (query.dataProcessingFunction2?.(questionData ?? []) ?? [])
-    : query.dataProcessingFunction(questionData ?? []);
-
-  const chartSettings = isSecondSubQuery
-    ? ((query.chartSettings2 ?? []) as ChartSetting)
-    : query.chartSettings;
-
   const createHeading = (chart: { label: string }) => {
-    if(query[chartSettingsKey]?.seriesHeadingTemplate) {
-      return query[chartSettingsKey].seriesHeadingTemplate.replace(
+    if (chartSettings?.seriesHeadingTemplate) {
+      return chartSettings.seriesHeadingTemplate.replace(
         '{label}',
         chart.label
       );
     }
-    return 'Number of ' + chart.label + 's used';
+    if (type === 'dataCollection') {
+      return 'number of ' + chart.label + 's used for data collection';
+    } else if (type === 'dataAnalysis') {
+      return 'number of ' + chart.label + 's used for data analysis';
+    }
+  };
+
+  const handlePreviousChart = () => {
+    setCurrentChartIndex((prev) => (prev > 0 ? prev - 1 : series.length - 1));
+  };
+
+  const handleNextChart = () => {
+    setCurrentChartIndex((prev) => (prev < series.length - 1 ? prev + 1 : 0));
   };
 
   return (
     <Box sx={{ mt: 2 }}>
-      {/* Charts Section */}
-      {detailedChartData.length > 1 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: '#e86161',
-              fontWeight: 600,
-              fontSize: { xs: '1.25rem', sm: '1.5rem' },
-            }}
-          >
-            Detailed Charts
-          </Typography>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {detailedChartData.map(
-              (chart: { label: string; dataKey: unknown }, index: number) => (
-                <React.Fragment key={`${queryId}-chart-${index}`}>
-                  <ChartWrapper
-                    question_id={queryId}
-                    dataset={processedChartDataset}
-                    chartSetting={{
-                      ...chartSettings,
-                      series: [chart],
-                      heading: createHeading(chart),
-                      colors: [
-                        query.chartSettings.colors?.[index] ?? '#e86161',
-                      ],
-                      yAxis: [
-                        {
-                          label: chart.label,
-                          dataKey: chart.dataKey,
-                        },
-                      ],
-                    }}
-                    normalized={true}
-                    loading={false}
-                    defaultChartType={query.chartType ?? 'bar'}
-                    availableCharts={['bar', 'pie']}
-                  />
-                  {index < detailedChartData.length - 1 && (
-                    <Divider sx={{ my: 3 }} />
-                  )}
-                </React.Fragment>
-              )
-            )}
-          </Box>
-        </Paper>
-      )}
-
-      {/* Main Chart Section */}
-      <Paper
-        elevation={0}
+      <Typography
+        variant="h6"
         sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          mb: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 2,
-          border: '1px solid rgba(0, 0, 0, 0.1)',
+          color: '#e86161',
+          fontWeight: 600,
+          mb: 2,
+          fontSize: { xs: '1.1rem', sm: '1.2rem' },
         }}
       >
+        Data Interpretation
+      </Typography>
+
+      {/* Main Chart Section */}
+      <>
         <Box sx={{ mb: 3 }}>
           <ChartParamsSelector
             normalized={normalized}
@@ -133,13 +88,186 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           key={`${queryId}-chart`}
           question_id={queryId}
           dataset={processedChartDataset}
-          chartSetting={chartSettings}
+          chartSetting={{
+            ...chartSettings,
+            series: series,
+          }}
           normalized={normalized}
           loading={false}
           defaultChartType={query.chartType ?? 'bar'}
           availableCharts={['bar', 'pie']}
         />
-      </Paper>
+      </>
+
+      {/* Charts Section */}
+      {series.length > 1 && (
+        <>
+          <Typography
+            variant="h5"
+            sx={{
+              mb: 3,
+              color: '#e86161',
+              fontWeight: 600,
+              fontSize: { xs: '1.25rem', sm: '1.5rem' },
+            }}
+          >
+            Detailed Charts
+          </Typography>
+          <Box
+            sx={{
+              position: 'relative',
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 400,
+            }}
+          >
+            <IconButton
+              onClick={handlePreviousChart}
+              sx={{
+                position: 'absolute',
+                left: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                bgcolor: 'white',
+                boxShadow: 1,
+                '&:hover': { bgcolor: 'grey.100' },
+                zIndex: 1,
+              }}
+              aria-label="Previous chart"
+            >
+              <ArrowBackIosNewIcon />
+            </IconButton>
+            <Box
+              sx={{
+                width: { xs: '90vw', sm: 900, md: 1300 },
+                maxWidth: 800,
+                mx: 'auto',
+              }}
+            >
+              <ChartWrapper
+                question_id={queryId}
+                dataset={processedChartDataset}
+                chartSetting={{
+                  ...chartSettings,
+                  series: [series[currentChartIndex]],
+                  heading: chartSettings.noHeadingInSeries
+                    ? ''
+                    : createHeading(series[currentChartIndex]),
+                  colors: [
+                    chartSettings.colors?.[currentChartIndex] ?? '#e86161',
+                  ],
+                  yAxis: [
+                    {
+                      label: chartSettings.yAxis?.[0]?.label,
+                      dataKey: series[currentChartIndex].dataKey,
+                    },
+                  ],
+                }}
+                normalized={normalized}
+                loading={false}
+                defaultChartType={query.chartType ?? 'bar'}
+                availableCharts={['bar', 'pie']}
+                isSubChart={true}
+              />
+              {/* show the current chart index and total charts */}
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: '0.8rem',
+                  color: 'text.secondary',
+                  mt: 2,
+                  textAlign: 'center',
+                }}
+              >
+                {currentChartIndex + 1} of {series.length}
+              </Typography>
+            </Box>
+            <IconButton
+              onClick={handleNextChart}
+              sx={{
+                position: 'absolute',
+                right: 0,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                bgcolor: 'white',
+                boxShadow: 1,
+                '&:hover': { bgcolor: 'grey.100' },
+                zIndex: 1,
+              }}
+              aria-label="Next chart"
+            >
+              <ArrowForwardIosIcon />
+            </IconButton>
+          </Box>
+        </>
+      )}
+      <Box
+        component="div"
+        sx={{
+          '& p': {
+            fontSize: { xs: '0.95rem', sm: '1rem' },
+            lineHeight: 1.7,
+            color: 'text.primary',
+            mt: 4,
+            mb: 4,
+          },
+          '& a': {
+            color: '#e86161',
+            textDecoration: 'none',
+            fontWeight: 500,
+            '&:hover': {
+              textDecoration: 'underline',
+            },
+          },
+          '& strong': {
+            color: 'text.primary',
+            fontWeight: 600,
+          },
+        }}
+        dangerouslySetInnerHTML={{
+          __html: dataInterpretation,
+        }}
+      />
+
+      <Box>
+        <Button
+          href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
+          target="_blank"
+          sx={{
+            color: '#e86161',
+            mt: { xs: 2, sm: 0 },
+            '&:hover': {
+              color: '#b33a3a',
+            },
+          }}
+          variant="outlined"
+        >
+          <CodeIcon sx={{ mr: 1 }} />
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            Check and edit the code in Binder
+          </Typography>
+        </Button>
+        <Button
+          href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + SPARQL_QUERIES[query.uid as keyof typeof SPARQL_QUERIES])}`}
+          target="_blank"
+          sx={{
+            color: '#e86161',
+            mt: { xs: 2, sm: 0 },
+            ml: 2,
+            '&:hover': {
+              color: '#b33a3a',
+            },
+          }}
+          variant="outlined"
+        >
+          <LiveHelpIcon sx={{ mr: 1 }} />
+          <Typography variant="body1" sx={{ fontWeight: 500 }}>
+            SPARQL Query
+          </Typography>
+        </Button>
+      </Box>
     </Box>
   );
 };

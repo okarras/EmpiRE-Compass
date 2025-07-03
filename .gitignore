@@ -26,3 +26,4 @@ dev-dist/
 .env
 *storybook.log
 storybook-static
+research-test-data/

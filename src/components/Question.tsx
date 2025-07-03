@@ -7,12 +7,15 @@ import {
   Tabs,
   Tab,
   CircularProgress,
+  Divider,
 } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
+import SectionSelector from './SectionSelector';
+import { useAIAssistantContext } from '../context/AIAssistantContext';
 
 interface QuestionProps {
   query: Query;
@@ -21,6 +24,7 @@ interface QuestionProps {
 const Question: React.FC<QuestionProps> = ({ query }) => {
   // Tabs state
   const [tab, setTab] = useState(0);
+  const { setContext } = useAIAssistantContext();
 
   // State for primary data (uid)
   const [dataCollection, setDataCollection] = useState<
@@ -28,7 +32,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   >([]);
   const [loading1, setLoading1] = useState(true);
   const [error1, setError1] = useState<string | null>(null);
-  const [normalized1, setNormalized1] = useState(true);
+  const [normalized, setNormalized] = useState(true);
 
   // State for secondary data (uid_2 if exists)
   const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>(
@@ -36,6 +40,13 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   );
   const [loading2, setLoading2] = useState(false);
   const [error2, setError2] = useState<string | null>(null);
+
+  // Update AI Assistant context when data changes
+  useEffect(() => {
+    if (!loading1 && !error1) {
+      setContext(query, dataCollection);
+    }
+  }, [query, dataCollection, loading1, error1, setContext]);
 
   // Fetch primary data (uid)
   useEffect(() => {
@@ -55,29 +66,69 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         setLoading1(false);
       }
     };
+    setNormalized(true);
     fetchData();
   }, [query.uid]);
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
-    if (!query?.uid_2) return;
-    const fetchData = async () => {
-      try {
-        setLoading2(true);
-        setError2(null);
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
-        setDataAnalysis(data);
-      } catch (err) {
-        setError2('Failed to load secondary data');
-        console.error('Error fetching secondary data:', err);
-      } finally {
-        setLoading2(false);
+    if (query?.uid_2) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
+      fetchData();
+    } else if (query?.uid_2_merge) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2_merge]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
+      fetchData();
+    }
+  }, [query, query?.uid_2, query?.uid_2_merge]);
+
+  const getProcessedChartData = () => {
+    if (query.uid_2_merge) {
+      return (
+        query.dataProcessingFunction2?.(dataCollection ?? [], dataAnalysis) ??
+        []
+      );
+    }
+    return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
+  };
+
+  const getDataInterpretation = (tabName: string) => {
+    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+      if (tabName === 'dataCollection') {
+        return query.dataAnalysisInformation.dataInterpretation[0];
+      } else if (tabName === 'dataAnalysis') {
+        return query.dataAnalysisInformation.dataInterpretation[1];
       }
-    };
-    fetchData();
-  }, [query, query?.uid_2]);
+    }
+    return query.dataAnalysisInformation.dataInterpretation;
+  };
 
   const renderLoadingState = () => (
     <Box
@@ -124,10 +175,6 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Question Information - Always visible */}
-      <QuestionInformationView query={query} questionData={dataCollection} />
-
-      {/* Tabs for different views */}
       {query.uid_2 && (
         <Tabs
           value={tab}
@@ -136,44 +183,110 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           indicatorColor="primary"
           textColor="primary"
         >
-          <Tab label="Data Collection" />
-          <Tab label="Data Analysis" />
+          <Tab
+            label={query.chartSettings2?.tabs?.tab1_name ?? 'Data Collection'}
+          />
+          <Tab
+            label={query.chartSettings2?.tabs?.tab2_name ?? 'Data Analysis'}
+          />
         </Tabs>
       )}
 
-      {/* Data Collection View */}
-      <Box hidden={tab !== 0}>
-        <QuestionChartView
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, sm: 3, md: 4 },
+          mb: 4,
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: 2,
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+        }}
+      >
+        <SectionSelector
+          sectionType="information"
+          sectionTitle="Question Information"
           query={query}
-          questionData={dataCollection}
-          normalized={normalized1}
-          setNormalized={setNormalized1}
-          queryId={query.uid}
         />
-        <QuestionDataGridView questionData={dataCollection} />
-      </Box>
+        <QuestionInformationView query={query} />
 
-      {/* Data Analysis View */}
-      {query.uid_2 && (
-        <Box hidden={tab !== 1}>
-          {loading2 ? (
-            renderLoadingState()
-          ) : error2 ? (
-            renderErrorState(error2)
-          ) : (
+        {/* Data Collection View */}
+        <Box hidden={tab !== 0}>
+          {query.chartSettings && (
             <>
+              <Divider sx={{ my: 3 }} />
+              <SectionSelector
+                sectionType="chart"
+                sectionTitle="Chart Visualization"
+                query={query}
+                data={dataCollection}
+              />
               <QuestionChartView
                 query={query}
-                questionData={dataAnalysis}
-                normalized={normalized1}
-                setNormalized={setNormalized1}
-                queryId={query.uid_2}
+                normalized={normalized}
+                setNormalized={setNormalized}
+                queryId={query.uid}
+                chartSettings={query.chartSettings}
+                processedChartDataset={getProcessedChartData()}
+                dataInterpretation={getDataInterpretation('dataCollection')}
+                type="dataCollection"
               />
-              <QuestionDataGridView questionData={dataAnalysis} />
+              <Divider sx={{ my: 3 }} />
             </>
           )}
+          <SectionSelector
+            sectionType="data"
+            sectionTitle="Data Collection"
+            query={query}
+            data={dataCollection}
+          />
+          <QuestionDataGridView questionData={dataCollection} />
         </Box>
-      )}
+
+        {/* Data Analysis View */}
+        {query.uid_2 && (
+          <Box hidden={tab !== 1}>
+            {loading2 ? (
+              renderLoadingState()
+            ) : error2 ? (
+              renderErrorState(error2)
+            ) : (
+              <>
+                {query.chartSettings2 && (
+                  <>
+                    <SectionSelector
+                      sectionType="chart"
+                      sectionTitle="Data Analysis Chart"
+                      query={query}
+                      data={dataAnalysis}
+                    />
+                    <QuestionChartView
+                      query={query}
+                      normalized={normalized}
+                      setNormalized={setNormalized}
+                      queryId={query.uid_2}
+                      chartSettings={query.chartSettings2}
+                      processedChartDataset={
+                        query.dataProcessingFunction2?.(dataAnalysis ?? []) ??
+                        []
+                      }
+                      dataInterpretation={getDataInterpretation('dataAnalysis')}
+                      type="dataAnalysis"
+                    />
+                    <Divider sx={{ my: 3 }} />
+                  </>
+                )}
+                <SectionSelector
+                  sectionType="data"
+                  sectionTitle="Data Analysis"
+                  query={query}
+                  data={dataAnalysis}
+                />
+                <QuestionDataGridView questionData={dataAnalysis} />
+              </>
+            )}
+          </Box>
+        )}
+      </Paper>
     </Box>
   );
 };

@@ -1,40 +1,100 @@
-import { AccordionSummary, Box, Typography, Accordion } from '@mui/material';
+import {
+  AccordionSummary,
+  Box,
+  Typography,
+  Accordion,
+  Button,
+  Tabs,
+  Tab,
+  CircularProgress,
+  Divider,
+} from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
-import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
-import ChartWrapper from './CustomCharts/ChartWrapper';
 import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
-import QuestionDialog from './QuestionDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import { useNavigate } from 'react-router';
+import QuestionChartView from './QuestionChartView';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
-  const [questionData, setQuestionData] = useState<Record<string, unknown>[]>(
+  const [tab, setTab] = useState(0);
+  const [dataCollection, setDataCollection] = useState<
+    Record<string, unknown>[]
+  >([]);
+  const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>(
     []
   );
-  const [loading, setLoading] = useState(true);
+  const [loading1, setLoading1] = useState(true);
+  const [loading2, setLoading2] = useState(false);
+  const [error1, setError1] = useState<string | null>(null);
+  const [error2, setError2] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
 
+  // Fetch primary data (uid)
   useEffect(() => {
     const fetchData = async () => {
+      if (!expanded) return;
       try {
+        setLoading1(true);
+        setError1(null);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid]);
-        setQuestionData(data);
-      } catch (error) {
-        console.error('Error fetching data:', error);
+        setDataCollection(data);
+      } catch (err) {
+        setError1('Failed to load question data');
+        console.error('Error fetching question data:', err);
       } finally {
-        setLoading(false);
+        setLoading1(false);
       }
     };
+    fetchData();
+  }, [query.uid, expanded]);
 
-    if (expanded) {
+  // Fetch secondary data (uid_2) if it exists
+  useEffect(() => {
+    if (!expanded) return;
+    if (query?.uid_2) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
+      fetchData();
+    } else if (query?.uid_2_merge) {
+      const fetchData = async () => {
+        try {
+          setLoading2(true);
+          setError2(null);
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-ignore
+          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2_merge]);
+          setDataAnalysis(data);
+        } catch (err) {
+          setError2('Failed to load secondary data');
+          console.error('Error fetching secondary data:', err);
+        } finally {
+          setLoading2(false);
+        }
+      };
       fetchData();
     }
-  }, [query, expanded]);
+  }, [query, query?.uid_2, query?.uid_2_merge, expanded]);
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
@@ -42,6 +102,65 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   ) => {
     setExpanded(isExpanded);
   };
+
+  const openQuestionPage = () => {
+    navigate(`/questions/${query.id}`);
+  };
+
+  const getProcessedChartData = () => {
+    if (query.uid_2_merge) {
+      return (
+        query.dataProcessingFunction2?.(dataCollection ?? [], dataAnalysis) ??
+        []
+      );
+    }
+    return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
+  };
+
+  const getDataInterpretation = (tabName: string) => {
+    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+      if (tabName === 'dataCollection') {
+        return query.dataAnalysisInformation.dataInterpretation[0];
+      } else if (tabName === 'dataAnalysis') {
+        return query.dataAnalysisInformation.dataInterpretation[1];
+      }
+    }
+    return query.dataAnalysisInformation.dataInterpretation;
+  };
+
+  const renderLoadingState = () => (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        py: 8,
+      }}
+    >
+      <CircularProgress sx={{ color: '#e86161', mb: 2 }} />
+      <Typography color="text.secondary">Loading question data...</Typography>
+    </Box>
+  );
+
+  const renderErrorState = (error: string) => (
+    <Box
+      sx={{
+        p: 4,
+        mt: 4,
+        textAlign: 'center',
+        backgroundColor: 'rgba(232, 97, 97, 0.05)',
+        border: '1px solid rgba(232, 97, 97, 0.1)',
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h5" color="error" gutterBottom>
+        {error}
+      </Typography>
+      <Typography color="text.secondary">
+        Please try again later or contact support if the problem persists.
+      </Typography>
+    </Box>
+  );
 
   return (
     <Accordion
@@ -131,13 +250,28 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             minWidth: 'fit-content',
           }}
         >
-          <QuestionDialog
-            questionData={questionData}
-            query={query}
-            chartData={query.dataProcessingFunction(questionData) ?? []}
-            normalized={normalized}
-            setNormalized={setNormalized}
-          />
+          <Button
+            startIcon={<BarChartIcon />}
+            variant="outlined"
+            onClick={openQuestionPage}
+            sx={{
+              color: '#e86161',
+              borderColor: '#e86161',
+              marginLeft: '10px',
+              minWidth: '15vw',
+              '&:hover': {
+                backgroundColor: '#e86161',
+                color: 'white',
+                borderColor: '#e86161',
+              },
+              '&.MuiButton-outlined': {
+                borderColor: '#e86161',
+              },
+            }}
+            size="small"
+          >
+            Question Information
+          </Button>
         </Box>
       </AccordionSummary>
 
@@ -152,35 +286,79 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
           label="Required Data for Analysis"
         />
 
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-            mt: 2,
-          }}
-        >
-          <ChartParamsSelector
-            normalized={normalized}
-            setNormalized={setNormalized}
-            query={query}
-          />
-          <ChartWrapper
-            key={`${query.uid}-chart`}
-            question_id={query.uid}
-            dataset={query.dataProcessingFunction([...questionData]) ?? []}
-            chartSetting={query.chartSettings}
-            normalized={normalized}
-            loading={loading}
-            defaultChartType={query.chartType ?? 'bar'}
-            availableCharts={['bar', 'pie']}
-          />
+        {query.uid_2 && (
+          <Tabs
+            value={tab}
+            onChange={(_, v) => setTab(v)}
+            sx={{ mb: 2, mt: 2 }}
+            indicatorColor="primary"
+            textColor="primary"
+          >
+            <Tab label="Data Collection" />
+            <Tab label="Data Analysis" />
+          </Tabs>
+        )}
+
+        {/* Data Collection View */}
+        <Box hidden={tab !== 0}>
+          {loading1 ? (
+            renderLoadingState()
+          ) : error1 ? (
+            renderErrorState(error1)
+          ) : (
+            <>
+              {query.chartSettings && (
+                <>
+                  <QuestionChartView
+                    query={query}
+                    normalized={normalized}
+                    setNormalized={setNormalized}
+                    queryId={query.uid}
+                    chartSettings={query.chartSettings}
+                    processedChartDataset={getProcessedChartData()}
+                    dataInterpretation={getDataInterpretation('dataCollection')}
+                    type="dataCollection"
+                  />
+                  <Divider sx={{ my: 3 }} />
+                </>
+              )}
+              {/* <QuestionDataGridView questionData={dataCollection} /> */}
+            </>
+          )}
         </Box>
 
-        <QuestionInformation
-          information={query.dataAnalysisInformation.dataInterpretation}
-          label="Data Interpretation"
-        />
+        {/* Data Analysis View */}
+        {query.uid_2 && (
+          <Box hidden={tab !== 1}>
+            {loading2 ? (
+              renderLoadingState()
+            ) : error2 ? (
+              renderErrorState(error2)
+            ) : (
+              <>
+                {query.chartSettings2 && (
+                  <>
+                    <QuestionChartView
+                      query={query}
+                      normalized={normalized}
+                      setNormalized={setNormalized}
+                      queryId={query.uid_2}
+                      chartSettings={query.chartSettings2}
+                      processedChartDataset={
+                        query.dataProcessingFunction2?.(dataAnalysis ?? []) ??
+                        []
+                      }
+                      dataInterpretation={getDataInterpretation('dataAnalysis')}
+                      type="dataAnalysis"
+                    />
+                    {/* <Divider sx={{ my: 3 }} /> */}
+                  </>
+                )}
+                {/* <QuestionDataGridView questionData={dataAnalysis} /> */}
+              </>
+            )}
+          </Box>
+        )}
       </Box>
     </Accordion>
   );
