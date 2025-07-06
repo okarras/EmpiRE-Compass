@@ -61,3 +61,4 @@ MANIFEST
 # Cache directory
 cache/
 !cache/.gitkeep
+.vercel
