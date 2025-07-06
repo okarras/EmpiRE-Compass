@@ -59,10 +59,6 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
 
-      - name: Set up cache directory
-        run: |
-          mkdir -p cache
-
       - name: Run empire statistics script
         run: |
           cd scripts

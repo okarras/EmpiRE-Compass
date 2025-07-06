@@ -58,7 +58,5 @@ wheels/
 *.egg
 MANIFEST
 
-# Cache directory
-cache/
-!cache/.gitkeep
+# Note: scripts/orkg-cache/ is now committed to Git for GitHub Actions caching
 .vercel

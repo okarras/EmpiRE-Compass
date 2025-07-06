@@ -26,16 +26,19 @@ EmpiRE-Compass is a comprehensive platform that facilitates the exploration, rep
    1. [Prerequisites](#prerequisites)
    2. [Installation](#installation)
 4. [Usage](#usage)
-5. [Firebase Setup](#firebase-setup)
-6. [Statistics Automation](#statistics-automation)
-7. [License](#license)
-8. [Repository Links](#repository-links)
+5. [Design System & Storybook](#design-system--storybook)
+6. [Firebase Setup](#firebase-setup)
+7. [Statistics Automation](#statistics-automation)
+8. [License](#license)
+9. [Repository Links](#repository-links)
 
 ---
 
 ## Overview
 
 EmpiRE-Compass serves as a central hub for empirical research data management. It provides interactive diagrams connected to live ORKG data, offers reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. A Study Designer Knowledge Base helps users find similar research and receive design recommendations aligned with ACM standards.
+
+The project includes a comprehensive **Storybook design system** that documents all UI components, making it easy for developers to understand, reuse, and contribute to the component library.
 
 <!-- <p>
   <img src="https://user-images.githubusercontent.com/PLACEHOLDER/demo-screenshot.png" alt="EmpiRE-Compass Screenshot" width="700" />
@@ -117,6 +120,71 @@ Open [http://localhost:3000](http://localhost:3000) in your web browser.
 ## Usage
 
 The dashboard offers an immediate view of 16 competency questions with their answers and corresponding diagrams. Users can interact with the diagrams to navigate through empirical research data and discover relevant papers from ORKG. Historical states of KG-EmpiRE can be reproduced and compared to monitor data evolution. A statistics page displays up-to-date metrics such as the number of conferences, papers, and triples. Authors can submit new data via a survey, providing paper DOIs and research details for curator review. The Study Designer Knowledge Base aids in finding similar research and offers design recommendations aligned with ACM standards.
+
+---
+
+## Design System & Storybook
+
+EmpiRE-Compass includes a comprehensive design system documented in Storybook, providing a complete library of reusable UI components.
+
+### 📚 **Storybook (Component Library)**
+
+**Live Documentation**: [https://your-storybook-url.chromatic.com](https://your-storybook-url.chromatic.com) <!-- TODO: Update with actual Storybook URL -->
+
+### **Component Categories**
+
+- **🏠 Home Components**: Hero sections, feature highlights, contact forms
+- **📊 Data Visualization**: Custom charts, statistics cards, interactive graphs
+- **🤖 AI Components**: AI assistant interface, chat messages, dynamic questions
+- **🔧 Layout Components**: Headers, navigation, responsive containers
+- **⚙️ Utility Components**: Loading states, error handling, form elements
+
+### **Technology Stack**
+
+- **React 18** with TypeScript
+- **Material-UI** component library
+- **Storybook 7** for documentation
+- **Chromatic** for visual testing (planned)
+
+### **Local Development**
+
+```bash
+# Start Storybook locally
+npm run storybook
+
+# Build Storybook for deployment
+npm run build-storybook
+
+# Preview built Storybook
+npm run preview:storybook
+```
+
+### **Deployment to Chromatic**
+
+```bash
+# Deploy to Chromatic (requires CHROMATIC_PROJECT_TOKEN)
+npm run deploy:chromatic
+
+# Set up Chromatic project token as environment variable
+export CHROMATIC_PROJECT_TOKEN=your-token-here
+```
+
+**Setup Instructions:**
+
+1. Sign up at [chromatic.com](https://chromatic.com)
+2. Create a new project for EmpiRE-Compass
+3. Get your project token from the Chromatic dashboard
+4. Add the token to your environment variables
+5. Run `npm run deploy:chromatic` to publish your Storybook
+6. Update the URLs in `Header.tsx` and `README.md` with your Chromatic URL
+
+### **Features**
+
+- 📖 **Interactive Documentation** - Live component examples with controls
+- 🎨 **Design Tokens** - Consistent colors, typography, and spacing
+- ♿ **Accessibility Testing** - Built-in a11y checks
+- 📱 **Responsive Design** - Mobile-first component library
+- 🔧 **Developer Tools** - Props controls and code examples
 
 ---
 
@@ -205,4 +273,5 @@ This project is licensed under the [MIT License](LICENSE).
 ## Repository Links
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
-EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)
+EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
+Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs) -->

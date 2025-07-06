@@ -38,7 +38,7 @@ except Exception as e:
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
 SPARQL_ENDPOINT = "https://www.orkg.org/triplestore"
-CACHE_DIR = "scripts/cache"
+CACHE_DIR = "scripts/orkg-cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Initialize ORKG client
