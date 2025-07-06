@@ -66,7 +66,8 @@ jobs:
       - name: Run empire statistics script
         run: |
           cd scripts
-          python empire-statistics.py --service_account firebase-service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS="firebase-service-account.json"
+          python empire-statistics.py
         timeout-minutes: 60
         continue-on-error: true
 
