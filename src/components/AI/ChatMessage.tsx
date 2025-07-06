@@ -67,7 +67,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) {
-              new window.Chart(ctx, chartConfig);
+              new (window as any).Chart(ctx, chartConfig);
             }
           }
         } catch (error) {
