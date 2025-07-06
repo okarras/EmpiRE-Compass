@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import ChartTypeSelector from '../../../src/components/CustomCharts/ChartTypeSelector';
 import React, { useState } from 'react';
 

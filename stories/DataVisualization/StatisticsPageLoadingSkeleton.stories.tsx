@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import StatisticsPageLoadingSkeleton from '../../src/components/StatisticsPageLoadingSkeleton';
 
 const meta: Meta<typeof StatisticsPageLoadingSkeleton> = {

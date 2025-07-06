@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import ChartParamsSelector from '../../../src/components/CustomCharts/ChartParamsSelector';
 import React, { useState } from 'react';
 import { Query } from '../../constants/queries_chart_info';

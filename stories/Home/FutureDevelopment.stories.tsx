@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import FutureDevelopment from '../../src/components/Home/FutureDevelopment';
 
 const meta: Meta<typeof FutureDevelopment> = {

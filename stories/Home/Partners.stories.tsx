@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import Partners from '../../src/components/Home/Partners';
 
 // Note: You must ensure your Storybook is configured to handle image imports (e.g., with file-loader or Vite asset support)

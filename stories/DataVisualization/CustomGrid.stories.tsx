@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import MuiDataGrid from '../../src/components/CustomGrid';
 
 const meta: Meta<typeof MuiDataGrid> = {

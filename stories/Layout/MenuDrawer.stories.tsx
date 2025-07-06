@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
 import MenuDrawer from '../../src/components/MenuDrawer';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';

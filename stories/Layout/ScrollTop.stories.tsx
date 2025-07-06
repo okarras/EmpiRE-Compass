@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import ScrollTop from '../../src/components/ScrollTop';
 import { Box, Fab, Typography, Container } from '@mui/material';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
@@ -72,7 +72,6 @@ export const WithFloatingButton: Story = {
       </ScrollTop>
     </>
   ),
-  name: 'With Floating Button',
   parameters: {
     docs: {
       description: {

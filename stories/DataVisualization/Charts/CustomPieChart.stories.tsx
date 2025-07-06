@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import CustomPieChart from '../../../src/components/CustomCharts/CustomPieChart';
 import { ChartSetting } from '../../constants/queries_chart_info';
 

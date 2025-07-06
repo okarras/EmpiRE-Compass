@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import StatCard from '../../src/components/StatCard';
 import InsertChartIcon from '@mui/icons-material/InsertChart';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -95,7 +95,6 @@ export const DashboardGrid: Story = {
       </StatCard>
     </Box>
   ),
-  name: 'Dashboard Grid',
   parameters: {
     docs: {
       description: {

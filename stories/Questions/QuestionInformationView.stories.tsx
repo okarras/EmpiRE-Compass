@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import QuestionInformationView from '../../src/components/QuestionInformationView';
-import { Query } from '../constants/queries_chart_info';
+import { Query } from '../../src/constants/queries_chart_info';
 
 const mockQuery: Query = {
   uid: 'Q1',
   id: 1,
   chartType: 'bar',
   chartSettings: {},
-  dataProcessingFunction: (data: any[]) => data,
+  dataProcessingFunction: (data: Record<string, unknown>[]) => data,
   dataAnalysisInformation: {
     question: 'How has the proportion of empirical studies evolved over time?',
     questionExplanation: `

@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import InitialAnalysis from '../../src/components/AI/InitialAnalysis';
 
 const meta: Meta<typeof InitialAnalysis> = {

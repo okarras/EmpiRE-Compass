@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
 import ChartWrapper from '../../../src/components/CustomCharts/ChartWrapper';
 import { ChartSetting } from '../../constants/queries_chart_info';

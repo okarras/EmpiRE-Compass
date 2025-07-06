@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useEffect } from 'react';
 import Question from '../../src/components/Question';
 import { Query } from '../../src/constants/queries_chart_info';
@@ -57,7 +57,7 @@ type Story = StoryObj<typeof Question>;
 //  Mock SPARQL response override (used in dev/Storybook)
 const overrideFetchSPARQL = () => {
   import('../../src/helpers/fetch_query').then((mod) => {
-    mod.default = async (_query) => {
+    mod.default = async () => {
       return [
         { year: 1993, value: 20 },
         { year: 1995, value: 35 },

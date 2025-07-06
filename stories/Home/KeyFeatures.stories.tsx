@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import KeyFeatures from '../../src/components/Home/KeyFeatures';
 
 const meta: Meta<typeof KeyFeatures> = {

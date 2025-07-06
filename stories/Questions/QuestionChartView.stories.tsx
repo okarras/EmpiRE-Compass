@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import React, { useState } from 'react';
 import QuestionChartView from '../../src/components/QuestionChartView';
 import { Query } from '../constants/queries_chart_info';

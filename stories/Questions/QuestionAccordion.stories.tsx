@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import QuestionAccordion from '../../src/components/QuestionAccordion';
-import { Query } from '../constants/queries_chart_info';
+import { Provider } from 'react-redux';
+import { store } from '../../src/store';
+import { MemoryRouter } from 'react-router-dom';
+import { Query } from '../../src/constants/queries_chart_info';
 
 // --- MOCK: Minimal query config for display ---
 const mockQuery: Query = {
@@ -37,6 +39,15 @@ const meta: Meta<typeof QuestionAccordion> = {
   title: 'Components/QuestionAccordion',
   component: QuestionAccordion,
   tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <Provider store={store}>
+        <MemoryRouter>
+          <Story />
+        </MemoryRouter>
+      </Provider>
+    ),
+  ],
   parameters: {
     docs: {
       description: {

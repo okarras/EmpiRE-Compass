@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import QuestionDataGridView from '../../src/components/QuestionDataGridView';
 
 const meta: Meta<typeof QuestionDataGridView> = {

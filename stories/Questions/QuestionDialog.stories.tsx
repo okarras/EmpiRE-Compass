@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import QuestionDialog from '../../src/components/QuestionDialog';
-import { Query } from '../constants/queries_chart_info';
+import { Query } from '../../src/constants/queries_chart_info';
 
 const meta: Meta<typeof QuestionDialog> = {
   title: 'Components/QuestionDialog',
@@ -17,7 +17,7 @@ const mockQuery: Query = {
   id: 1,
   chartType: 'bar',
   chartSettings: {},
-  dataProcessingFunction: (data: any[]) => data,
+  dataProcessingFunction: (data: Record<string, unknown>[]) => data,
   dataAnalysisInformation: {
     question: 'How has the proportion of empirical studies evolved over time?',
     questionExplanation: `
