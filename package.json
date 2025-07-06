@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:all": "npm run build && npm run build-storybook && npm run combine-builds",
-    "combine-builds": "node scripts/combine-builds.js",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write .",
