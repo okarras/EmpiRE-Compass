@@ -14,7 +14,6 @@ import { fetchQuestionsFromFirebase } from './store/slices/questionSlice';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
 import './styles/global.css';
-import { queries } from './constants/queries_chart_info';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -26,10 +25,6 @@ const FloatingAIAssistant = lazy(
 const AppContent = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { mode } = useTheme();
-  const questions = queries.map(
-    (query) => query.dataAnalysisInformation.question
-  );
-  console.log(questions);
 
   // Create theme instance based on mode
   const theme = createTheme(getDesignTokens(mode));

@@ -1,0 +1,113 @@
+name: Update Empire Statistics
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+    types: [closed]
+  workflow_dispatch: # Allow manual triggering
+  schedule:
+    - cron: '0 6 * * 1' # Run every Monday at 6 AM UTC
+
+jobs:
+  update-statistics:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'workflow_dispatch' || 
+      github.event_name == 'schedule' || 
+      (github.event_name == 'push' && github.ref == 'refs/heads/main' && (
+        contains(github.event.head_commit.message, '[stats]') ||
+        contains(github.event.head_commit.message, '[update-stats]') ||
+        contains(github.event.head_commit.message, 'update statistics') ||
+        contains(github.event.head_commit.message, 'UPDATE_STATISTICS')
+      )) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true && (
+        contains(github.event.pull_request.title, '[stats]') ||
+        contains(github.event.pull_request.title, '[update-stats]') ||
+        contains(github.event.pull_request.title, 'update statistics') ||
+        contains(github.event.pull_request.body, '[stats]') ||
+        contains(github.event.pull_request.body, '[update-stats]') ||
+        contains(github.event.pull_request.body, 'update statistics')
+      ))
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('scripts/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Create Firebase service account key
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}' > scripts/firebase-service-account.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+
+      - name: Set up cache directory
+        run: |
+          mkdir -p cache
+
+      - name: Run empire statistics script
+        run: |
+          cd scripts
+          python empire-statistics.py --service_account firebase-service-account.json
+        timeout-minutes: 60
+        continue-on-error: true
+
+      - name: Check for results
+        run: |
+          if [ -f "scripts/daily_results_incremental.csv" ]; then
+            echo "✓ Statistics file generated successfully"
+            echo "File size: $(du -h scripts/daily_results_incremental.csv | cut -f1)"
+            echo "Line count: $(wc -l < scripts/daily_results_incremental.csv)"
+          else
+            echo "✗ Statistics file not found"
+            exit 1
+          fi
+
+      - name: Upload results as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: empire-statistics-results
+          path: |
+            scripts/daily_results_incremental.csv
+            scripts/*.log
+          retention-days: 30
+
+      - name: Clean up
+        run: |
+          rm -f scripts/firebase-service-account.json
+        if: always()
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Empire statistics update failed. Please check the logs."
+
+      - name: Summary
+        run: |
+          echo "## Empire Statistics Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          if [ -f "scripts/daily_results_incremental.csv" ]; then
+            echo "- **Papers processed**: $(tail -n +2 scripts/daily_results_incremental.csv | wc -l)" >> $GITHUB_STEP_SUMMARY
+            echo "- **File size**: $(du -h scripts/daily_results_incremental.csv | cut -f1)" >> $GITHUB_STEP_SUMMARY
+          fi

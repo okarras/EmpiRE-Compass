@@ -1,0 +1,4 @@
+requests>=2.31.0
+pandas>=2.0.0
+orkg>=0.19.0
+firebase-admin>=6.0.0 

@@ -5,7 +5,8 @@ daily_orkg_metrics.py
 1. Send SPARQL query directly to ORKG to list all KG-EmpiRE papers.
 2. For each paper IRI, fetch its statements bundle via ORKG library (with caching).
 3. Compute RPL metrics and output daily_results.csv.
-4. Supports --reload_data to force re-fetching everything.
+4. Update Firebase with computed statistics.
+5. Supports --reload_data to force re-fetching everything.
 """
 
 import os
@@ -14,8 +15,19 @@ import hashlib
 import argparse
 import requests
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 from orkg import ORKG
+
+# Import Firebase integration
+try:
+    from firebase_integration import FirebaseManager
+
+    FIREBASE_AVAILABLE = True
+except ImportError:
+    print(
+        "Firebase integration not available. Install firebase-admin to enable Firebase updates."
+    )
+    FIREBASE_AVAILABLE = False
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuration
@@ -105,7 +117,11 @@ def save_cache(iri: str, statements):
     path = iri_to_filename(iri)
     with open(path, "w") as f:
         json.dump(
-            {"fetched_at": datetime.utcnow().isoformat(), "statements": statements}, f
+            {
+                "fetched_at": datetime.now(timezone.utc).isoformat(),
+                "statements": statements,
+            },
+            f,
         )
 
 
@@ -228,6 +244,72 @@ def process_all(papers, reload_data=False):
 # ──────────────────────────────────────────────────────────────────────────────
 # 5) Main entrypoint & CLI
 # ──────────────────────────────────────────────────────────────────────────────
+def update_firebase_statistics(df, firebase_manager=None):
+    """Update Firebase with computed statistics."""
+    if not FIREBASE_AVAILABLE or firebase_manager is None:
+        print("Firebase not available or not initialized. Skipping Firebase update.")
+        return False
+
+    try:
+        # Calculate statistics from the dataframe
+        total_papers = len(df)
+        total_statements = df["#Statements"].sum()
+        total_resources = df["#Resources"].sum()
+        total_distresources = df["#DistResources"].sum()
+        total_literals = df["#Literals"].sum()
+        total_distliterals = df["#DistLiterals"].sum()
+        total_predicates = df["#Predicates"].sum()
+        total_distpredicates = df["#DistPredicates"].sum()
+
+        # Calculate averages
+        avg_statements = df["#Statements"].mean()
+        avg_resources = df["#Resources"].mean()
+        avg_literals = df["#Literals"].mean()
+        avg_predicates = df["#Predicates"].mean()
+
+        # Prepare statistics data for Firebase
+        statistics_data = {
+            "paperCount": int(total_papers),
+            "tripleCount": int(total_statements),  # Using statements as triples
+            "resources": int(total_resources),
+            "literals": int(total_literals),
+            "predicates": int(total_predicates),
+            "distinctResources": int(total_distresources),
+            "distinctLiterals": int(total_distliterals),
+            "distinctPredicates": int(total_distpredicates),
+            "venueCount": 0,  # This would need to be calculated separately
+            "perVenueData": [],  # This would need to be calculated separately
+            "averageStatements": float(avg_statements),
+            "averageResources": float(avg_resources),
+            "averageLiterals": float(avg_literals),
+            "averagePredicates": float(avg_predicates),
+            "lastProcessedAt": datetime.now(timezone.utc).isoformat(),
+            "dataSource": "empire-statistics-script",
+        }
+
+        # Update Firebase
+        success = firebase_manager.update_statistics(statistics_data)
+
+        if success:
+            print("✓ Firebase statistics updated successfully")
+            print(f"  - Papers: {total_papers}")
+            print(f"  - Total Statements: {total_statements}")
+            print(f"  - Total Resources: {total_resources}")
+            print(f"  - Total Distinct Resources: {total_distresources}")
+            print(f"  - Total Literals: {total_literals}")
+            print(f"  - Total Distinct Literals: {total_distliterals}")
+            print(f"  - Total Predicates: {total_predicates}")
+            print(f"  - Total Distinct Predicates: {total_distpredicates}")
+        else:
+            print("✗ Failed to update Firebase statistics")
+
+        return success
+
+    except Exception as e:
+        print(f"Error updating Firebase statistics: {e}")
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Daily ORKG KG‑EmpiRE RPL metrics via SPARQL + HTTP"
@@ -242,9 +324,29 @@ def main():
         type=int,
         help="Limit processing to first N papers (for testing)",
     )
+    parser.add_argument(
+        "--no_firebase",
+        action="store_true",
+        help="Skip Firebase update",
+    )
+    parser.add_argument(
+        "--service_account",
+        type=str,
+        help="Path to Firebase service account key file",
+    )
     args = parser.parse_args()
 
-    print(f"[{datetime.utcnow().isoformat()}] Fetching paper list…")
+    # Initialize Firebase if available and not disabled
+    firebase_manager = None
+    if FIREBASE_AVAILABLE and not args.no_firebase:
+        try:
+            firebase_manager = FirebaseManager(args.service_account)
+            print("✓ Firebase initialized successfully")
+        except Exception as e:
+            print(f"✗ Failed to initialize Firebase: {e}")
+            print("Continuing without Firebase integration...")
+
+    print(f"[{datetime.now(timezone.utc).isoformat()}] Fetching paper list…")
     papers = fetch_paper_list()
     print(f" → Found {len(papers)} papers.")
 
@@ -254,10 +356,11 @@ def main():
         print(f" → Limited to first {len(papers)} papers for testing.")
 
     print(
-        f"[{datetime.utcnow().isoformat()}] Fetching bundles{' (reload)' if args.reload_data else ''}…"
+        f"[{datetime.now(timezone.utc).isoformat()}] Fetching bundles{' (reload)' if args.reload_data else ''}…"
     )
     results = process_all(papers, reload_data=args.reload_data)
 
+    # Read the results and calculate totals
     df = pd.read_csv("scripts/daily_results_incremental.csv")
 
     # sum the number of statements, resources, distresources, literals, distliterals, predicates, distpredicates
@@ -268,6 +371,7 @@ def main():
     total_distliterals = df["#DistLiterals"].sum()
     total_predicates = df["#Predicates"].sum()
     total_distpredicates = df["#DistPredicates"].sum()
+
     print(f"Total statements: {total_statements}")
     print(f"Total resources: {total_resources}")
     print(f"Total distresources: {total_distresources}")
@@ -275,6 +379,17 @@ def main():
     print(f"Total distliterals: {total_distliterals}")
     print(f"Total predicates: {total_predicates}")
     print(f"Total distpredicates: {total_distpredicates}")
+
+    # Update Firebase with the computed statistics
+    if firebase_manager:
+        print(
+            f"\n[{datetime.now(timezone.utc).isoformat()}] Updating Firebase statistics…"
+        )
+        update_firebase_statistics(df, firebase_manager)
+    else:
+        print("\n[Firebase update skipped - not available or disabled]")
+
+    print(f"\n[{datetime.now(timezone.utc).isoformat()}] Processing completed!")
 
 
 if __name__ == "__main__":
