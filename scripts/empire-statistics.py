@@ -7,6 +7,8 @@ daily_orkg_metrics.py
 3. Compute RPL metrics and output daily_results.csv.
 4. Update Firebase with computed statistics.
 5. Supports --reload_data to force re-fetching everything.
+6. Calculates global distinct counts across all papers.
+7. Handles paper deletions by removing them from CSV.
 """
 
 import os
@@ -28,12 +30,15 @@ except ImportError:
         "Firebase integration not available. Install firebase-admin to enable Firebase updates."
     )
     FIREBASE_AVAILABLE = False
+except Exception as e:
+    print(f"Firebase integration error: {e}")
+    FIREBASE_AVAILABLE = False
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
 SPARQL_ENDPOINT = "https://www.orkg.org/triplestore"
-CACHE_DIR = "cache"
+CACHE_DIR = "scripts/cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Initialize ORKG client
@@ -126,47 +131,153 @@ def save_cache(iri: str, statements):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 3) RPL metric calculation
+# 3) RPL metric calculation (per paper - store all IDs for global distinct calculation)
 # ──────────────────────────────────────────────────────────────────────────────
-def analyze(statements):
+def analyze_paper(statements):
+    """Analyze a single paper - returns counts and all individual IDs for global distinct calculation."""
     total = len(statements)
     res_ids, lit_ids, pred_ids = [], [], []
-    dist_res, dist_lit, dist_pred = set(), set(), set()
 
     for stmt in statements:
         s = stmt["subject"]
         if s["_class"] == "resource":
             res_ids.append(s["id"])
-            dist_res.add(s["id"])
         else:
             lit_ids.append(s["id"])
-            dist_lit.add(s["id"])
 
         o = stmt["object"]
         if o["_class"] == "resource":
             res_ids.append(o["id"])
-            dist_res.add(o["id"])
         else:
             lit_ids.append(o["id"])
-            dist_lit.add(o["id"])
 
         p = stmt["predicate"]["id"]
         pred_ids.append(p)
-        dist_pred.add(p)
 
     return (
         total,
         len(res_ids),
-        len(dist_res),
         len(lit_ids),
-        len(dist_lit),
         len(pred_ids),
-        len(dist_pred),
+        res_ids,  # All resource IDs for global distinct calculation
+        lit_ids,  # All literal IDs for global distinct calculation
+        pred_ids,  # All predicate IDs for global distinct calculation
     )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 4) Fetch statements bundle with cache using ORKG library
+# 4) Main processing loop
+# ──────────────────────────────────────────────────────────────────────────────
+def process_papers(papers, reload_data=False):
+    """Process all papers and return results with global distinct counts."""
+    results = []
+    all_res_ids = set()
+    all_lit_ids = set()
+    all_pred_ids = set()
+
+    for i, paper in enumerate(papers, 1):
+        paper_id = paper
+        paper_title = paper  # Could be replaced with actual title if available
+        print(f"[{i}/{len(papers)}] Processing: {paper_title}")
+
+        # Check cache first (unless reload_data is True)
+        cache_key = (
+            f"paper_v2_{paper_id}"  # Use v2 to avoid conflicts with old cache format
+        )
+        if not reload_data:
+            cached_data = load_cached(cache_key)
+            if cached_data:
+                print(f"  Using cached data for {paper_id}")
+                # Handle both old and new cache formats
+                if (
+                    isinstance(cached_data.get("statements"), dict)
+                    and "statements" in cached_data["statements"]
+                ):
+                    # Old format: {"fetched_at": "...", "statements": {"statements": [...]}}
+                    statements = cached_data["statements"]["statements"]
+                else:
+                    # New format: {"statements": [...]}
+                    statements = cached_data["statements"]
+            else:
+                print(f"  Fetching fresh data for {paper_id}")
+                try:
+                    # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
+                    bundle = orkg.statements.bundle(thing_id=paper_id, maxLevel=15)
+                    statements = bundle.content["statements"]
+                    save_cache(
+                        cache_key, statements
+                    )  # Save statements directly, not wrapped
+                except Exception as e:
+                    print(f"  Error fetching {paper_id}: {e}")
+                    continue
+        else:
+            print(f"  Fetching fresh data for {paper_id}")
+            try:
+                # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
+                bundle = orkg.statements.bundle(thing_id=paper_id, maxLevel=15)
+                statements = bundle.content["statements"]
+                save_cache(
+                    cache_key, statements
+                )  # Save statements directly, not wrapped
+            except Exception as e:
+                print(f"  Error fetching {paper_id}: {e}")
+                continue
+
+        # Analyze paper
+        (
+            total,
+            res_count,
+            lit_count,
+            pred_count,
+            res_ids,
+            lit_ids,
+            pred_ids,
+        ) = analyze_paper(statements)
+
+        # Add to global sets for distinct calculation
+        all_res_ids.update(res_ids)
+        all_lit_ids.update(lit_ids)
+        all_pred_ids.update(pred_ids)
+
+        # Store results with all IDs for CSV
+        results.append(
+            {
+                "paper_id": paper_id,
+                "paper_title": paper_title,
+                "total_statements": total,
+                "resource_count": res_count,
+                "literal_count": lit_count,
+                "predicate_count": pred_count,
+                "resource_ids": json.dumps(res_ids),  # Store as JSON string
+                "literal_ids": json.dumps(lit_ids),  # Store as JSON string
+                "predicate_ids": json.dumps(pred_ids),  # Store as JSON string
+            }
+        )
+
+    # Calculate global distinct counts
+    global_distinct_resources = len(all_res_ids)
+    global_distinct_literals = len(all_lit_ids)
+    global_distinct_predicates = len(all_pred_ids)
+
+    # Calculate total counts across all papers
+    total_statements = sum(r["total_statements"] for r in results)
+    total_resources = sum(r["resource_count"] for r in results)
+    total_literals = sum(r["literal_count"] for r in results)
+    total_predicates = sum(r["predicate_count"] for r in results)
+
+    return results, {
+        "total_statements": total_statements,
+        "total_resources": total_resources,
+        "total_literals": total_literals,
+        "total_predicates": total_predicates,
+        "global_distinct_resources": global_distinct_resources,
+        "global_distinct_literals": global_distinct_literals,
+        "global_distinct_predicates": global_distinct_predicates,
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 5) Fetch statements bundle with cache using ORKG library
 # ──────────────────────────────────────────────────────────────────────────────
 def fetch_bundle(resource_id, reload_data=False):
     # Use cache if available
@@ -189,6 +300,7 @@ def fetch_bundle(resource_id, reload_data=False):
 def process_all(papers, reload_data=False):
     results = []
     results_file = "scripts/daily_results_incremental.csv"
+    all_statements = {}  # Store all statements for global distinct calculation
 
     # Check for already processed papers
     processed_papers = set()
@@ -203,193 +315,203 @@ def process_all(papers, reload_data=False):
     # Create header if file doesn't exist
     if not os.path.exists(results_file):
         with open(results_file, "w") as f:
-            f.write(
-                "paper,#Statements,#Resources,#DistResources,#Literals,#DistLiterals,#Predicates,#DistPredicates\n"
-            )
+            f.write("paper,#Statements,#Resources,#Literals,#Predicates\n")
 
+    # Process all papers (including already processed ones for global distinct calculation)
     for i, resource_id in enumerate(papers):
         # Skip if already processed (unless reload_data is True)
         if resource_id in processed_papers and not reload_data:
             print(f"Skipping {i+1}/{len(papers)}: {resource_id} (already processed)")
+            # Still load from cache for global distinct calculation
+            cached = load_cached(resource_id)
+            if cached:
+                all_statements[resource_id] = cached["statements"]
             continue
+
         print(f"Processing {i+1}/{len(papers)}: {resource_id}")
         try:
             iri, stmts = fetch_bundle(resource_id, reload_data)
-            metrics = analyze(stmts)
+            all_statements[resource_id] = stmts  # Store for global calculation
+
+            # Calculate per-paper metrics (no distinct counts)
+            metrics = analyze_paper(stmts)
             result = (iri, *metrics)
             results.append(result)
 
             # Save result immediately to file
             with open(results_file, "a") as f:
-                f.write(
-                    f"{iri},{metrics[0]},{metrics[1]},{metrics[2]},{metrics[3]},{metrics[4]},{metrics[5]},{metrics[6]}\n"
-                )
+                f.write(f"{iri},{metrics[0]},{metrics[1]},{metrics[2]},{metrics[3]}\n")
 
             print(f"  ✓ Saved: {metrics[0]} statements")
 
         except Exception as e:
             print(f"  ✗ Error processing {resource_id}: {e}")
             # Still append empty result to maintain list structure
-            result = (resource_id, 0, 0, 0, 0, 0, 0, 0)
+            result = (resource_id, 0, 0, 0, 0)
             results.append(result)
+            all_statements[resource_id] = []  # Empty statements for this paper
 
             # Save error result to file
             with open(results_file, "a") as f:
-                f.write(f"{resource_id},0,0,0,0,0,0,0\n")
+                f.write(f"{resource_id},0,0,0,0\n")
+
+    # Calculate global distinct counts
+    print("\nCalculating global distinct counts...")
+    global_dist_res, global_dist_lit, global_dist_pred = (
+        calculate_global_distinct_counts(all_statements)
+    )
+
+    print(f"Global distinct counts:")
+    print(f"  - Resources: {global_dist_res}")
+    print(f"  - Literals: {global_dist_lit}")
+    print(f"  - Predicates: {global_dist_pred}")
+
+    # Handle paper deletions - remove papers that are no longer in the SPARQL results
+    if os.path.exists(results_file):
+        current_papers_set = set(papers)
+        temp_file = results_file + ".tmp"
+
+        with open(results_file, "r") as infile, open(temp_file, "w") as outfile:
+            for line in infile:
+                if line.startswith("paper,"):  # Keep header
+                    outfile.write(line)
+                else:
+                    paper_id = line.split(",")[0].strip()
+                    if paper_id in current_papers_set:
+                        outfile.write(line)
+                    else:
+                        print(f"Removing deleted paper: {paper_id}")
+                        # Also remove from cache
+                        cache_file = iri_to_filename(paper_id)
+                        if os.path.exists(cache_file):
+                            os.remove(cache_file)
+                            print(f"  - Removed cache file: {cache_file}")
+
+        # Replace original file with cleaned version
+        os.replace(temp_file, results_file)
+        print(f"Cleaned CSV file - removed deleted papers")
 
     print(f"\nIncremental results saved to: {results_file}")
-    return results
+    return results, (global_dist_res, global_dist_lit, global_dist_pred)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 5) Main entrypoint & CLI
+# 5) Main execution
 # ──────────────────────────────────────────────────────────────────────────────
-def update_firebase_statistics(df, firebase_manager=None):
-    """Update Firebase with computed statistics."""
-    if not FIREBASE_AVAILABLE or firebase_manager is None:
-        print("Firebase not available or not initialized. Skipping Firebase update.")
-        return False
-
-    try:
-        # Calculate statistics from the dataframe
-        total_papers = len(df)
-        total_statements = df["#Statements"].sum()
-        total_resources = df["#Resources"].sum()
-        total_distresources = df["#DistResources"].sum()
-        total_literals = df["#Literals"].sum()
-        total_distliterals = df["#DistLiterals"].sum()
-        total_predicates = df["#Predicates"].sum()
-        total_distpredicates = df["#DistPredicates"].sum()
-
-        # Calculate averages
-        avg_statements = df["#Statements"].mean()
-        avg_resources = df["#Resources"].mean()
-        avg_literals = df["#Literals"].mean()
-        avg_predicates = df["#Predicates"].mean()
-
-        # Prepare statistics data for Firebase
-        statistics_data = {
-            "paperCount": int(total_papers),
-            "tripleCount": int(total_statements),  # Using statements as triples
-            "resources": int(total_resources),
-            "literals": int(total_literals),
-            "predicates": int(total_predicates),
-            "distinctResources": int(total_distresources),
-            "distinctLiterals": int(total_distliterals),
-            "distinctPredicates": int(total_distpredicates),
-            "venueCount": 0,  # This would need to be calculated separately
-            "perVenueData": [],  # This would need to be calculated separately
-            "averageStatements": float(avg_statements),
-            "averageResources": float(avg_resources),
-            "averageLiterals": float(avg_literals),
-            "averagePredicates": float(avg_predicates),
-            "lastProcessedAt": datetime.now(timezone.utc).isoformat(),
-            "dataSource": "empire-statistics-script",
-        }
-
-        # Update Firebase
-        success = firebase_manager.update_statistics(statistics_data)
-
-        if success:
-            print("✓ Firebase statistics updated successfully")
-            print(f"  - Papers: {total_papers}")
-            print(f"  - Total Statements: {total_statements}")
-            print(f"  - Total Resources: {total_resources}")
-            print(f"  - Total Distinct Resources: {total_distresources}")
-            print(f"  - Total Literals: {total_literals}")
-            print(f"  - Total Distinct Literals: {total_distliterals}")
-            print(f"  - Total Predicates: {total_predicates}")
-            print(f"  - Total Distinct Predicates: {total_distpredicates}")
-        else:
-            print("✗ Failed to update Firebase statistics")
-
-        return success
-
-    except Exception as e:
-        print(f"Error updating Firebase statistics: {e}")
-        return False
-
-
 def main():
-    parser = argparse.ArgumentParser(
-        description="Daily ORKG KG‑EmpiRE RPL metrics via SPARQL + HTTP"
+    parser = argparse.ArgumentParser(description="Calculate daily ORKG metrics")
+    parser.add_argument("--limit", type=int, help="Limit number of papers to process")
+    parser.add_argument(
+        "--reload_data", action="store_true", help="Force reload all data"
     )
     parser.add_argument(
-        "--reload_data",
-        action="store_true",
-        help="Ignore cache and re-fetch all bundles",
-    )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        help="Limit processing to first N papers (for testing)",
-    )
-    parser.add_argument(
-        "--no_firebase",
-        action="store_true",
-        help="Skip Firebase update",
-    )
-    parser.add_argument(
-        "--service_account",
-        type=str,
-        help="Path to Firebase service account key file",
+        "--no_firebase", action="store_true", help="Skip Firebase update"
     )
     args = parser.parse_args()
 
-    # Initialize Firebase if available and not disabled
-    firebase_manager = None
-    if FIREBASE_AVAILABLE and not args.no_firebase:
-        try:
-            firebase_manager = FirebaseManager(args.service_account)
-            print("✓ Firebase initialized successfully")
-        except Exception as e:
-            print(f"✗ Failed to initialize Firebase: {e}")
-            print("Continuing without Firebase integration...")
-
-    print(f"[{datetime.now(timezone.utc).isoformat()}] Fetching paper list…")
+    print("🔍 Fetching KG-EmpiRE papers from ORKG...")
     papers = fetch_paper_list()
-    print(f" → Found {len(papers)} papers.")
 
-    # Limit papers if requested
     if args.limit:
         papers = papers[: args.limit]
-        print(f" → Limited to first {len(papers)} papers for testing.")
+        print(f"📊 Processing limited set of {len(papers)} papers")
 
-    print(
-        f"[{datetime.now(timezone.utc).isoformat()}] Fetching bundles{' (reload)' if args.reload_data else ''}…"
-    )
-    results = process_all(papers, reload_data=args.reload_data)
+    print(f"📊 Processing {len(papers)} papers...")
 
-    # Read the results and calculate totals
-    df = pd.read_csv("scripts/daily_results_incremental.csv")
+    # Process papers and get results with global distinct counts
+    results, global_stats = process_papers(papers, reload_data=args.reload_data)
 
-    # sum the number of statements, resources, distresources, literals, distliterals, predicates, distpredicates
-    total_statements = df["#Statements"].sum()
-    total_resources = df["#Resources"].sum()
-    total_distresources = df["#DistResources"].sum()
-    total_literals = df["#Literals"].sum()
-    total_distliterals = df["#DistLiterals"].sum()
-    total_predicates = df["#Predicates"].sum()
-    total_distpredicates = df["#DistPredicates"].sum()
+    # Create DataFrame with all data including stored IDs
+    df = pd.DataFrame(results)
 
-    print(f"Total statements: {total_statements}")
-    print(f"Total resources: {total_resources}")
-    print(f"Total distresources: {total_distresources}")
-    print(f"Total literals: {total_literals}")
-    print(f"Total distliterals: {total_distliterals}")
-    print(f"Total predicates: {total_predicates}")
-    print(f"Total distpredicates: {total_distpredicates}")
+    # Add global statistics as separate columns
+    df["global_total_statements"] = global_stats["total_statements"]
+    df["global_total_resources"] = global_stats["total_resources"]
+    df["global_total_literals"] = global_stats["total_literals"]
+    df["global_total_predicates"] = global_stats["total_predicates"]
+    df["global_distinct_resources"] = global_stats["global_distinct_resources"]
+    df["global_distinct_literals"] = global_stats["global_distinct_literals"]
+    df["global_distinct_predicates"] = global_stats["global_distinct_predicates"]
 
-    # Update Firebase with the computed statistics
-    if firebase_manager:
-        print(
-            f"\n[{datetime.now(timezone.utc).isoformat()}] Updating Firebase statistics…"
+    # Calculate reuse ratios (with division by zero protection)
+    if global_stats["global_distinct_resources"] > 0:
+        df["resource_reuse_ratio"] = (
+            df["global_total_resources"] / df["global_distinct_resources"]
         )
-        update_firebase_statistics(df, firebase_manager)
     else:
-        print("\n[Firebase update skipped - not available or disabled]")
+        df["resource_reuse_ratio"] = 0
 
-    print(f"\n[{datetime.now(timezone.utc).isoformat()}] Processing completed!")
+    if global_stats["global_distinct_literals"] > 0:
+        df["literal_reuse_ratio"] = (
+            df["global_total_literals"] / df["global_distinct_literals"]
+        )
+    else:
+        df["literal_reuse_ratio"] = 0
+
+    if global_stats["global_distinct_predicates"] > 0:
+        df["predicate_reuse_ratio"] = (
+            df["global_total_predicates"] / df["global_distinct_predicates"]
+        )
+    else:
+        df["predicate_reuse_ratio"] = 0
+
+    # Save to CSV
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    df["timestamp"] = timestamp
+
+    csv_path = "scripts/daily_results_incremental.csv"
+    df.to_csv(csv_path, index=False)
+    print(f"💾 Results saved to {csv_path}")
+
+    # Print summary
+    print("\n📈 Summary:")
+    print(f"  Papers processed: {len(results)}")
+    print(f"  Total statements: {global_stats['total_statements']:,}")
+    print(f"  Total resources: {global_stats['total_resources']:,}")
+    print(f"  Total literals: {global_stats['total_literals']:,}")
+    print(f"  Total predicates: {global_stats['total_predicates']:,}")
+    print(f"  Global distinct resources: {global_stats['global_distinct_resources']:,}")
+    print(f"  Global distinct literals: {global_stats['global_distinct_literals']:,}")
+    print(
+        f"  Global distinct predicates: {global_stats['global_distinct_predicates']:,}"
+    )
+
+    # Calculate and print reuse ratios (with division by zero protection)
+    resource_reuse = (
+        global_stats["total_resources"] / global_stats["global_distinct_resources"]
+        if global_stats["global_distinct_resources"] > 0
+        else 0
+    )
+    literal_reuse = (
+        global_stats["total_literals"] / global_stats["global_distinct_literals"]
+        if global_stats["global_distinct_literals"] > 0
+        else 0
+    )
+    predicate_reuse = (
+        global_stats["total_predicates"] / global_stats["global_distinct_predicates"]
+        if global_stats["global_distinct_predicates"] > 0
+        else 0
+    )
+
+    print(f"  Resource reuse ratio: {resource_reuse:.2f}")
+    print(f"  Literal reuse ratio: {literal_reuse:.2f}")
+    print(f"  Predicate reuse ratio: {predicate_reuse:.2f}")
+
+    # Update Firebase if available and not disabled
+    if FIREBASE_AVAILABLE and not args.no_firebase:
+        print("\n🔥 Updating Firebase...")
+        try:
+            firebase_manager = FirebaseManager()
+            firebase_manager.update_statistics(global_stats)
+            print("✅ Firebase updated successfully")
+        except Exception as e:
+            print(f"❌ Firebase update failed: {e}")
+    elif not FIREBASE_AVAILABLE:
+        print("\n⚠️  Firebase not available - skipping update")
+    else:
+        print("\n⏭️  Skipping Firebase update (--no_firebase flag)")
+
+    print(f"\n✅ Done! Timestamp: {timestamp}")
 
 
 if __name__ == "__main__":

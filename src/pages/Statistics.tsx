@@ -35,27 +35,29 @@ interface VenueData {
 interface StatisticsData {
   paperCount: number;
   tripleCount: number;
-  resources: number;
-  literals: number;
-  predicates: number;
+  total_resources: number;
+  total_literals: number;
+  total_predicates: number;
+  total_statements: number;
   perVenueData: Array<VenueData>;
   venueCount: number;
-  distinctResources: number;
-  distinctLiterals: number;
-  distinctPredicates: number;
+  global_distinct_resources: number;
+  global_distinct_literals: number;
+  global_distinct_predicates: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
   paperCount: 0,
   tripleCount: 0,
-  resources: 0,
-  literals: 0,
-  predicates: 0,
+  total_resources: 0,
+  total_literals: 0,
+  total_predicates: 0,
+  total_statements: 0,
   perVenueData: [],
   venueCount: 0,
-  distinctResources: 0,
-  distinctLiterals: 0,
-  distinctPredicates: 0,
+  global_distinct_resources: 0,
+  global_distinct_literals: 0,
+  global_distinct_predicates: 0,
 };
 
 export default function Statistics() {
@@ -107,11 +109,15 @@ export default function Statistics() {
 
   const {
     paperCount,
-    resources,
-    literals,
-    predicates,
+    total_resources,
+    total_literals,
+    total_predicates,
+    total_statements,
     venueCount,
     perVenueData: papersPerVenue,
+    global_distinct_resources,
+    global_distinct_literals,
+    global_distinct_predicates,
   } = statistics;
 
   return (
@@ -141,29 +147,29 @@ export default function Statistics() {
           <StatCard value={venueCount} label="Venues">
             <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={resources} label="Resources">
+          <StatCard value={total_resources} label="Resources">
             <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={literals} label="Literals">
+          <StatCard value={total_literals} label="Literals">
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard value={predicates} label="Properties">
+          <StatCard value={total_predicates} label="Properties">
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={total_statements} label="Total Statements">
+            <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
-            value={statistics.distinctResources}
+            value={global_distinct_resources}
             label="Distinct Resources"
           >
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
-          <StatCard
-            value={statistics.distinctLiterals}
-            label="Distinct Literals"
-          >
+          <StatCard value={global_distinct_literals} label="Distinct Literals">
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
-            value={statistics.distinctPredicates}
+            value={global_distinct_predicates}
             label="Distinct Properties"
           >
             <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />

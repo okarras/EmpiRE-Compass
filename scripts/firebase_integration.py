@@ -14,10 +14,9 @@ try:
     from firebase_admin import credentials
     from firebase_admin import firestore
 except ImportError:
-    print(
+    raise ImportError(
         "Firebase Admin SDK not installed. Please install it with: pip install firebase-admin"
     )
-    exit(1)
 
 
 class FirebaseManager:
