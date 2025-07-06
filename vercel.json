@@ -1,21 +1,6 @@
 {
   "buildCommand": "npm run build:all",
   "outputDirectory": "dist",
-  "rewrites": [
-    {
-      "source": "/storybook/(.*)",
-      "destination": "/storybook/$1"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/storybook/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400"
-        }
-      ]
-    }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false
 }
