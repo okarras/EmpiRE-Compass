@@ -13,6 +13,7 @@ import { store } from './store';
 import { fetchQuestionsFromFirebase } from './store/slices/questionSlice';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
+import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
 import './styles/global.css';
 
 // Lazy load components to reduce initial bundle size
@@ -58,7 +59,9 @@ function App() {
     <Provider store={store}>
       <ThemeProvider>
         <AIAssistantProvider>
-          <AppContent />
+          <DynamicQuestionProvider>
+            <AppContent />
+          </DynamicQuestionProvider>
         </AIAssistantProvider>
       </ThemeProvider>
     </Provider>

@@ -807,7 +807,6 @@ export const Query16DataProcessingFunction = (
       }
     }
   }
-  console.log(all_of_different_keys_in_duplicated_data);
 
   deduplicatedData.forEach((item) => {
     const year = item.year;

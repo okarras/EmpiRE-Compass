@@ -15,7 +15,11 @@ import {
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/aiService';
 import AIConfigurationButton from './AI/AIConfigurationButton';
+
+import { useDynamicQuestion } from '../context/DynamicQuestionContext';
+import DynamicQuestionManager from './AI/DynamicQuestionManager';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
+import QuestionDataGridView from './QuestionDataGridView';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -46,23 +50,20 @@ interface DynamicQuery {
 
 const DynamicAIQuestion: React.FC = () => {
   const aiService = useAIService();
-  const [question, setQuestion] = useState<string>('');
-  const [generatedSparql, setGeneratedSparql] = useState<string>('');
-  const [queryResults, setQueryResults] = useState<Record<string, unknown>[]>(
-    []
-  );
+  const {
+    state,
+    updateQuestion,
+    updateSparqlQuery,
+    updateQueryResults,
+    updateChartHtml,
+    updateQuestionInterpretation,
+    updateDataCollectionInterpretation,
+    updateDataAnalysisInterpretation,
+  } = useDynamicQuestion();
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
-
-  // AI-generated content states
-  const [chartHtml, setChartHtml] = useState<string>('');
-  const [questionInterpretation, setQuestionInterpretation] =
-    useState<string>('');
-  const [dataCollectionInterpretation, setDataCollectionInterpretation] =
-    useState<string>('');
-  const [dataAnalysisInterpretation, setDataAnalysisInterpretation] =
-    useState<string>('');
 
   // History management
   const { addToHistory } = useHistoryManager();
@@ -71,10 +72,81 @@ const DynamicAIQuestion: React.FC = () => {
 
   // Update AI Assistant context when data changes
   useEffect(() => {
-    if (dynamicQuery && !loading && !error && queryResults.length > 0) {
-      setContext(dynamicQuery, queryResults);
+    if (dynamicQuery && !loading && !error && state.queryResults.length > 0) {
+      setContext(dynamicQuery, state.queryResults);
     }
-  }, [dynamicQuery, queryResults, loading, error, setContext]);
+  }, [dynamicQuery, state.queryResults, loading, error, setContext]);
+
+  // Recreate dynamic query when state is loaded from storage
+  useEffect(() => {
+    console.log('State loaded:', {
+      hasResults: state.queryResults.length > 0,
+      hasQuestion: !!state.question,
+      hasChart: !!state.chartHtml,
+      hasInterpretations: !!(
+        state.questionInterpretation ||
+        state.dataCollectionInterpretation ||
+        state.dataAnalysisInterpretation
+      ),
+      dynamicQuery: !!dynamicQuery,
+    });
+
+    if (state.queryResults.length > 0 && state.question && !dynamicQuery) {
+      const newDynamicQuery: DynamicQuery = {
+        title: `Dynamic Query: ${state.question}`,
+        id: Date.now(),
+        uid: 'dynamic-query',
+        dataAnalysisInformation: {
+          question: state.question,
+          questionExplanation:
+            state.questionInterpretation ||
+            `This is a dynamically generated query based on the user's question: "${state.question}". The query was generated using AI and executed against the ORKG database.`,
+          requiredDataForAnalysis:
+            state.dataCollectionInterpretation ||
+            `The query requires data from the ORKG database to answer: "${state.question}". The SPARQL query extracts relevant information based on the research question.`,
+          dataAnalysis:
+            state.dataAnalysisInterpretation ||
+            `The data is analyzed to provide insights related to: "${state.question}". The results show patterns and trends in the Requirements Engineering research domain.`,
+          dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${state.question}".`,
+        },
+        chartSettings: {
+          series: Object.keys(state.queryResults[0] || {})
+            .filter(
+              (key) =>
+                key !== 'year' &&
+                key !== 'paper' &&
+                typeof state.queryResults[0]?.[key] === 'number'
+            )
+            .map((key) => ({
+              dataKey: key,
+              label: key
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase()),
+            })),
+          colors: ['#e86161', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
+          yAxis: [
+            {
+              label: 'Count',
+              dataKey: 'value',
+            },
+          ],
+          height: 400,
+          sx: { width: '100%' },
+        },
+        chartType: 'bar',
+        dataProcessingFunction: processDynamicData,
+      };
+
+      setDynamicQuery(newDynamicQuery);
+    }
+  }, [
+    state.queryResults,
+    state.question,
+    state.questionInterpretation,
+    state.dataCollectionInterpretation,
+    state.dataAnalysisInterpretation,
+    dynamicQuery,
+  ]);
 
   const extractSparqlFromMarkdown = (markdown: string): string => {
     const sparqlRegex = /```sparql\n([\s\S]*?)\n```/;
@@ -165,32 +237,32 @@ const DynamicAIQuestion: React.FC = () => {
   const handleRunQuery = async (queryToRun: string) => {
     setLoading(true);
     setError(null);
-    setChartHtml('');
-    setQuestionInterpretation('');
-    setDataCollectionInterpretation('');
-    setDataAnalysisInterpretation('');
+    updateChartHtml('');
+    updateQuestionInterpretation('');
+    updateDataCollectionInterpretation('');
+    updateDataAnalysisInterpretation('');
 
     try {
       const data = await fetchSPARQLData(queryToRun);
-      setQueryResults(data);
+      updateQueryResults(data);
 
       // Create dynamic query object for charts and AI assistant
       const newDynamicQuery: DynamicQuery = {
-        title: `Dynamic Query: ${question}`,
+        title: `Dynamic Query: ${state.question}`,
         id: Date.now(),
         uid: 'dynamic-query',
         dataAnalysisInformation: {
-          question: question,
+          question: state.question,
           questionExplanation:
-            questionInterpretation ||
-            `This is a dynamically generated query based on the user's question: "${question}". The query was generated using AI and executed against the ORKG database.`,
+            state.questionInterpretation ||
+            `This is a dynamically generated query based on the user's question: "${state.question}". The query was generated using AI and executed against the ORKG database.`,
           requiredDataForAnalysis:
-            dataCollectionInterpretation ||
-            `The query requires data from the ORKG database to answer: "${question}". The SPARQL query extracts relevant information based on the research question.`,
+            state.dataCollectionInterpretation ||
+            `The query requires data from the ORKG database to answer: "${state.question}". The SPARQL query extracts relevant information based on the research question.`,
           dataAnalysis:
-            dataAnalysisInterpretation ||
-            `The data is analyzed to provide insights related to: "${question}". The results show patterns and trends in the Requirements Engineering research domain.`,
-          dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${question}".`,
+            state.dataAnalysisInterpretation ||
+            `The data is analyzed to provide insights related to: "${state.question}". The results show patterns and trends in the Requirements Engineering research domain.`,
+          dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${state.question}".`,
         },
         chartSettings: {
           series: Object.keys(data[0] || {})
@@ -229,14 +301,14 @@ const DynamicAIQuestion: React.FC = () => {
         errorMessage = err.message;
       }
       setError(errorMessage);
-      setQueryResults([]);
+      updateQueryResults([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGenerateAndRun = async () => {
-    if (!question.trim()) {
+    if (!state.question.trim()) {
       setError('Please enter a question.');
       return;
     }
@@ -250,14 +322,14 @@ const DynamicAIQuestion: React.FC = () => {
 
     setLoading(true);
     setError(null);
-    setGeneratedSparql('');
-    setQueryResults([]);
+    updateSparqlQuery('');
+    updateQueryResults([]);
     setDynamicQuery(null);
 
     try {
       const fullPrompt = promptTemplate.replace(
         '[Research Question]',
-        question
+        state.question
       );
 
       const result = await aiService.generateText(fullPrompt, {
@@ -277,11 +349,19 @@ const DynamicAIQuestion: React.FC = () => {
         );
       }
 
-      setGeneratedSparql(sparqlQuery);
+      updateSparqlQuery(sparqlQuery);
 
       // Add to history
-      addToHistory('query', question, `Research Question: ${question}`);
-      addToHistory('sparql', sparqlQuery, `SPARQL Query for: ${question}`);
+      addToHistory(
+        'query',
+        state.question,
+        `Research Question: ${state.question}`
+      );
+      addToHistory(
+        'sparql',
+        sparqlQuery,
+        `SPARQL Query for: ${state.question}`
+      );
 
       // Automatically run the generated query
       await handleRunQuery(sparqlQuery);
@@ -299,29 +379,32 @@ const DynamicAIQuestion: React.FC = () => {
   };
 
   const handleRunEditedQuery = () => {
-    if (!generatedSparql.trim()) {
+    if (!state.sparqlQuery.trim()) {
       setError('The query is empty.');
       return;
     }
 
     // Add edited query to history
-    addToHistory('sparql', generatedSparql, `Edited SPARQL Query: ${question}`);
+    addToHistory(
+      'sparql',
+      state.sparqlQuery,
+      `Edited SPARQL Query: ${state.question}`
+    );
 
-    handleRunQuery(generatedSparql);
+    handleRunQuery(state.sparqlQuery);
   };
 
   const handleContentGenerated = (
     chartHtmlContent: string,
-    chartDescriptionContent: string,
+    _chartDescriptionContent: string,
     questionInterpretationContent: string,
     dataCollectionInterpretationContent: string,
     dataAnalysisInterpretationContent: string
   ) => {
-    console.log('chartHtmlContent', chartHtmlContent);
-    setChartHtml(chartHtmlContent);
-    setQuestionInterpretation(questionInterpretationContent);
-    setDataCollectionInterpretation(dataCollectionInterpretationContent);
-    setDataAnalysisInterpretation(dataAnalysisInterpretationContent);
+    updateChartHtml(chartHtmlContent);
+    updateQuestionInterpretation(questionInterpretationContent);
+    updateDataCollectionInterpretation(dataCollectionInterpretationContent);
+    updateDataAnalysisInterpretation(dataAnalysisInterpretationContent);
 
     // Update the dynamic query with new AI-generated content
     if (dynamicQuery) {
@@ -340,26 +423,26 @@ const DynamicAIQuestion: React.FC = () => {
   const handleApplyHistoryItem = (item: HistoryItem) => {
     switch (item.type) {
       case 'query':
-        setQuestion(item.content);
+        updateQuestion(item.content);
         break;
       case 'sparql':
-        setGeneratedSparql(item.content);
+        updateSparqlQuery(item.content);
         break;
       case 'chart_html':
-        setChartHtml(item.content);
+        updateChartHtml(item.content);
         break;
       case 'question_interpretation':
-        setQuestionInterpretation(item.content);
+        updateQuestionInterpretation(item.content);
         break;
       case 'data_collection_interpretation':
-        setDataCollectionInterpretation(item.content);
+        updateDataCollectionInterpretation(item.content);
         break;
       case 'data_analysis_interpretation':
-        setDataAnalysisInterpretation(item.content);
+        updateDataAnalysisInterpretation(item.content);
         break;
       case 'data_interpretation':
         // Legacy support - apply to question interpretation
-        setQuestionInterpretation(item.content);
+        updateQuestionInterpretation(item.content);
         break;
     }
   };
@@ -398,7 +481,7 @@ const DynamicAIQuestion: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* AI Configuration and SPARQL Query Section */}
+      {/* AI Configuration and Dynamic Question Manager */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <AIConfigurationButton />
         <Typography variant="body2" color="text.secondary">
@@ -406,34 +489,42 @@ const DynamicAIQuestion: React.FC = () => {
         </Typography>
       </Box>
 
+      {/* Dynamic Question Manager */}
+      <DynamicQuestionManager />
+
       <SPARQLQuerySection
-        question={question}
-        sparqlQuery={generatedSparql}
+        question={state.question}
+        sparqlQuery={state.sparqlQuery}
         loading={loading}
-        onQuestionChange={setQuestion}
-        onSparqlChange={setGeneratedSparql}
+        onQuestionChange={updateQuestion}
+        onSparqlChange={updateSparqlQuery}
         onGenerateAndRun={handleGenerateAndRun}
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
       />
 
       {/* Loading and Error States */}
-      {loading && !generatedSparql && <TextSkeleton lines={12} />}
+      {loading && !state.sparqlQuery && <TextSkeleton lines={12} />}
       {error && renderErrorState(error)}
 
-      {/* AI Content Generation */}
-      {queryResults.length > 0 && question && (
-        <AIContentGenerator
-          data={queryResults}
-          question={question}
-          onContentGenerated={handleContentGenerated}
-          onAddToHistory={addToHistory}
-          onError={setError}
-        />
-      )}
+      {/* AI Content Generation - only if no saved content exists */}
+      {state.queryResults.length > 0 &&
+        state.question &&
+        !state.chartHtml &&
+        !state.questionInterpretation &&
+        !state.dataCollectionInterpretation &&
+        !state.dataAnalysisInterpretation && (
+          <AIContentGenerator
+            data={state.queryResults}
+            question={state.question}
+            onContentGenerated={handleContentGenerated}
+            onAddToHistory={addToHistory}
+            onError={setError}
+          />
+        )}
 
       {/* Results Section */}
-      {dynamicQuery && queryResults.length > 0 && (
+      {dynamicQuery && state.queryResults.length > 0 && (
         <Paper
           elevation={0}
           sx={{
@@ -453,14 +544,15 @@ const DynamicAIQuestion: React.FC = () => {
           <QuestionInformationView query={dynamicQuery} />
 
           {/* AI-Generated Chart (HTML/JS, iframe) */}
-          {chartHtml && (
+          {state.chartHtml && (
             <>
               <Divider sx={{ my: 3 }} />
               <HTMLRenderer
-                html={chartHtml}
+                html={state.chartHtml}
                 title="AI-Generated Chart"
                 type="chart"
                 useIframe={true}
+                onContentChange={updateChartHtml}
                 onHistoryClick={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography variant="subtitle2" color="text.secondary">
@@ -487,6 +579,10 @@ const DynamicAIQuestion: React.FC = () => {
             </>
           )}
         </Paper>
+      )}
+      {/* GRID VIEW */}
+      {state.queryResults.length > 0 && (
+        <QuestionDataGridView questionData={state.queryResults} />
       )}
 
       {/* History Manager Dialog */}

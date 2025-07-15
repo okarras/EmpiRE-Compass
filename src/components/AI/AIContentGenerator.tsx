@@ -51,7 +51,12 @@ Requirements:
    - Proper chart padding and margins
    - Smooth animations and hover effects
 5. Include proper titles, labels, and legends with good contrast
-6. Add tooltips and interactivity
+6. Add comprehensive interactivity:
+   - Hover tooltips showing detailed data
+   - Click events for data points
+   - Zoom and pan capabilities where appropriate
+   - Responsive interactions
+   - Smooth animations and transitions
 7. Use a container with max-width and centered layout
 8. The chart must work standalone in an iframe
 9. Include CSS for responsive design and professional appearance
@@ -62,6 +67,8 @@ Requirements:
 14. The chart container should have NO background color - only the chart itself should be visible
 15. Ensure all containers and wrappers have transparent backgrounds
 16. The chart should blend seamlessly with the parent page background
+17. Set chart height to at least 500px for better visibility and readability
+18. Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
 
 Return ONLY the complete HTML code that can be rendered directly in a browser.`;
 
