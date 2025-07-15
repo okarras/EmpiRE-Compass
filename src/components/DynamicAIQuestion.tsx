@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Divider, Typography, Paper, Button } from '@mui/material';
-import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
 import SectionSelector from './SectionSelector';
@@ -15,6 +13,8 @@ import {
   useHistoryManager,
 } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
+import { useAIService } from '../services/aiService';
+import AIConfigurationButton from './AI/AIConfigurationButton';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
 
 // Dynamic query interface to match the structure of Query
@@ -45,6 +45,7 @@ interface DynamicQuery {
 }
 
 const DynamicAIQuestion: React.FC = () => {
+  const aiService = useAIService();
   const [question, setQuestion] = useState<string>('');
   const [generatedSparql, setGeneratedSparql] = useState<string>('');
   const [queryResults, setQueryResults] = useState<Record<string, unknown>[]>(
@@ -240,6 +241,13 @@ const DynamicAIQuestion: React.FC = () => {
       return;
     }
 
+    if (!aiService.isConfigured()) {
+      setError(
+        'Please configure your AI settings before generating SPARQL queries.'
+      );
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setGeneratedSparql('');
@@ -252,13 +260,7 @@ const DynamicAIQuestion: React.FC = () => {
         question
       );
 
-      const openai = createOpenAI({
-        apiKey: import.meta.env.VITE_OPEN_AI_API_KEY,
-      });
-
-      const result = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: fullPrompt,
+      const result = await aiService.generateText(fullPrompt, {
         temperature: 0.1,
         maxTokens: 2000,
       });
@@ -396,7 +398,14 @@ const DynamicAIQuestion: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* SPARQL Query Section */}
+      {/* AI Configuration and SPARQL Query Section */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <AIConfigurationButton />
+        <Typography variant="body2" color="text.secondary">
+          Configure AI settings to use OpenAI or Groq models
+        </Typography>
+      </Box>
+
       <SPARQLQuerySection
         question={question}
         sparqlQuery={generatedSparql}

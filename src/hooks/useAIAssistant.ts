@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
-import {
-  generateText,
-  wrapLanguageModel,
-  extractReasoningMiddleware,
-} from 'ai';
-import { createGroq } from '@ai-sdk/groq';
 import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
+import { useAIService } from '../services/aiService';
 
 interface UseAIAssistantProps {
   query: Query;
@@ -79,6 +74,7 @@ const setChatHistory = (history: Record<string, ChatHistory>) => {
 };
 
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
+  const aiService = useAIService();
   const { pendingPrompt, clearPendingPrompt } = useAIAssistantContext();
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -121,16 +117,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       setChatHistory(chatHistory);
     }
   }, [messages, query.id]);
-
-  const groq = createGroq({
-    apiKey: import.meta.env.VITE_GROQ_API_KEY,
-  });
-
-  // Create enhanced model with reasoning middleware
-  const enhancedModel = wrapLanguageModel({
-    model: groq.languageModel('deepseek-r1-distill-llama-70b'),
-    middleware: extractReasoningMiddleware({ tagName: 'think' }),
-  });
 
   const generateSystemContext = () => {
     /*
@@ -177,9 +163,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     ]);
 
     try {
-      const response = await generateText({
-        model: enhancedModel,
-        prompt: `${generateSystemContext()}
+      const response = await aiService.generateText(
+        `${generateSystemContext()}
         User Question: ${structuredPrompt}
 
         Please provide a detailed and comprehensive answer to this structured question about the research data.
@@ -192,8 +177,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         5. Format your response using HTML tags (<p>, <ul>, <li>, <h3>, <h4>) to structure your response
         6. Do not include any markdown code blocks or backticks in your response
         7. Provide specific insights and detailed explanations
-        `,
-      });
+        `
+      );
 
       const { text, reasoning } = response;
 
@@ -250,9 +235,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           return;
         }
 
-        const { reasoning, text } = await generateText({
-          model: enhancedModel,
-          prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
+        const { reasoning, text } = await aiService.generateText(
+          `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
           <h1>Initial Analysis</h1>
 
           <h2>Question Overview</h2>
@@ -271,8 +255,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           <p>[Discuss any limitations or considerations to keep in mind]</p>
 
           Context:
-          ${generateSystemContext()}`,
-        });
+          ${generateSystemContext()}`
+        );
 
         // process the text to remove markdown code blocks
         //trim ```html and ```
@@ -352,9 +336,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('plot');
 
     try {
-      const response = await generateText({
-        model: enhancedModel,
-        prompt: `${generateSystemContext()}
+      const response = await aiService.generateText(
+        `${generateSystemContext()}
         User Question: ${prompt}
 
         Please provide a ${wantsDetailed ? 'detailed' : 'concise'} answer to the user's question.
@@ -416,9 +399,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         8. Answer based on the data and analysis provided above
         ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
         ${wantsChart ? '10. The chart width should be 100%' : ''}
-        `,
-        // stream: true,
-      });
+        `
+      );
 
       const { text, reasoning } = response;
 
@@ -495,9 +477,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         setLastCachedAnalysis(prevCacheEntry.analysis);
         setLastCachedReasoning(prevCacheEntry.reasoning || null);
       }
-      const { reasoning, text } = await generateText({
-        model: enhancedModel,
-        prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
+      const { reasoning, text } = await aiService.generateText(
+        `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
         <h1>Initial Analysis</h1>
 
         <h2>Question Overview</h2>
@@ -516,8 +497,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         <p>[Discuss any limitations or considerations to keep in mind]</p>
 
         Context:
-        ${generateSystemContext()}`,
-      });
+        ${generateSystemContext()}`
+      );
       // process the text to remove markdown code blocks
       const cleanedText = text
         .replace(/```html\n/g, '')

@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { CircularProgress, Typography, Paper } from '@mui/material';
-import { generateText } from 'ai';
-import { createOpenAI } from '@ai-sdk/openai';
 import { HistoryItem } from './HistoryManager';
+import { useAIService } from '../../services/aiService';
 
 interface AIContentGeneratorProps {
   data: Record<string, unknown>[];
@@ -29,15 +28,12 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   onAddToHistory,
   onError,
 }) => {
+  const aiService = useAIService();
   const [generating, setGenerating] = useState(false);
 
   const generateContent = async () => {
     setGenerating(true);
     try {
-      const openai = createOpenAI({
-        apiKey: import.meta.env.VITE_OPEN_AI_API_KEY,
-      });
-
       // Generate HTML chart
       const chartPrompt = `Based on the following SPARQL query results for the research question "${question}", generate a complete HTML chart visualization.
 
@@ -69,9 +65,7 @@ Requirements:
 
 Return ONLY the complete HTML code that can be rendered directly in a browser.`;
 
-      const chartResult = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: chartPrompt,
+      const chartResult = await aiService.generateText(chartPrompt, {
         temperature: 0.2,
         maxTokens: 2000,
       });
@@ -141,12 +135,13 @@ Requirements:
 
 Return ONLY the HTML content (no <html>, <head>, or <body> tags).`;
 
-      const descriptionResult = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: descriptionPrompt,
-        temperature: 0.3,
-        maxTokens: 1000,
-      });
+      const descriptionResult = await aiService.generateText(
+        descriptionPrompt,
+        {
+          temperature: 0.3,
+          maxTokens: 1000,
+        }
+      );
 
       const chartDescription = descriptionResult.text;
       onAddToHistory(
@@ -172,12 +167,13 @@ Requirements:
 
 Return ONLY the explanation text.`;
 
-      const questionInterpretationResult = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: questionInterpretationPrompt,
-        temperature: 0.3,
-        maxTokens: 200,
-      });
+      const questionInterpretationResult = await aiService.generateText(
+        questionInterpretationPrompt,
+        {
+          temperature: 0.3,
+          maxTokens: 200,
+        }
+      );
 
       const questionInterpretation = questionInterpretationResult.text;
       onAddToHistory(
@@ -203,12 +199,13 @@ Requirements:
 
 Return ONLY the explanation text.`;
 
-      const dataCollectionInterpretationResult = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: dataCollectionInterpretationPrompt,
-        temperature: 0.3,
-        maxTokens: 200,
-      });
+      const dataCollectionInterpretationResult = await aiService.generateText(
+        dataCollectionInterpretationPrompt,
+        {
+          temperature: 0.3,
+          maxTokens: 200,
+        }
+      );
 
       const dataCollectionInterpretation =
         dataCollectionInterpretationResult.text;
@@ -235,12 +232,13 @@ Requirements:
 
 Return ONLY the explanation text.`;
 
-      const dataAnalysisInterpretationResult = await generateText({
-        model: openai.languageModel('gpt-4o-mini'),
-        prompt: dataAnalysisInterpretationPrompt,
-        temperature: 0.3,
-        maxTokens: 200,
-      });
+      const dataAnalysisInterpretationResult = await aiService.generateText(
+        dataAnalysisInterpretationPrompt,
+        {
+          temperature: 0.3,
+          maxTokens: 200,
+        }
+      );
 
       const dataAnalysisInterpretation = dataAnalysisInterpretationResult.text;
       onAddToHistory(
@@ -283,6 +281,30 @@ Return ONLY the explanation text.`;
       generateContent();
     }
   }, [data, question]);
+
+  // Check if AI is configured
+  if (!aiService.isConfigured()) {
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 3,
+          backgroundColor: 'rgba(232, 97, 97, 0.05)',
+          border: '1px solid rgba(232, 97, 97, 0.1)',
+          borderRadius: 2,
+        }}
+      >
+        <Typography variant="h6" color="error" gutterBottom>
+          AI Configuration Required
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Please configure your AI settings before generating content. You can
+          choose between OpenAI and Groq providers.
+        </Typography>
+      </Paper>
+    );
+  }
 
   if (generating) {
     return (

@@ -23,6 +23,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import { Query } from '../../constants/queries_chart_info';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import { useRef, useEffect, useState, lazy, Suspense } from 'react';
+import AIConfigurationButton from './AIConfigurationButton';
 
 // Lazy load components to reduce initial bundle size
 const InitialAnalysis = lazy(() => import('./InitialAnalysis'));
@@ -122,6 +123,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             AI Assistant
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <AIConfigurationButton />
             <Tooltip
               title={showReasoning ? 'Hide AI Reasoning' : 'Show AI Reasoning'}
             >
