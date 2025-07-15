@@ -60,7 +60,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     setEditingSection(section);
-    setEditContent(getSectionContent(section));
+    setEditContent(getSectionContent(section) || '');
   };
 
   const handleSave = () => {
@@ -194,7 +194,7 @@ Modified Content:`;
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     const isEditing = editingSection === section;
-    const displayContent = isEditing ? editContent : content;
+    // const displayContent = isEditing ? editContent : content || '';
     const historyCount = getHistoryCount(section);
 
     return (
@@ -307,19 +307,19 @@ Modified Content:`;
 
       {renderInteractiveSection(
         'Explanation of the Competency Question',
-        getSectionContent('question'),
+        getSectionContent('question') || '',
         'question'
       )}
       <Divider sx={{ my: 2 }} />
       {renderInteractiveSection(
         'Required Data for Analysis',
-        getSectionContent('dataCollection'),
+        getSectionContent('dataCollection') || '',
         'dataCollection'
       )}
       <Divider sx={{ my: 2 }} />
       {renderInteractiveSection(
         'Data Analysis',
-        getSectionContent('dataAnalysis'),
+        getSectionContent('dataAnalysis') || '',
         'dataAnalysis'
       )}
 

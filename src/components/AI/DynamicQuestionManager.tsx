@@ -39,7 +39,7 @@ interface SavedDynamicQuestion {
 }
 
 const DynamicQuestionManager: React.FC = () => {
-  const { state, resetState, loadSavedState } = useDynamicQuestion();
+  const { state, loadSavedState } = useDynamicQuestion();
   const [savedQuestions, setSavedQuestions] = useState<SavedDynamicQuestion[]>(
     []
   );

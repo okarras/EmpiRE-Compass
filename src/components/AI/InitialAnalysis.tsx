@@ -25,7 +25,7 @@ const InitialAnalysis: React.FC<InitialAnalysisProps> = ({
           borderRadius: 2,
         }}
       >
-        <HTMLRenderer content={content} />
+        <HTMLRenderer html={content} />
       </Paper>
       {reasoning && showReasoning && (
         <Paper

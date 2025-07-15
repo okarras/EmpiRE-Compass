@@ -18,9 +18,9 @@ const ResponseDisplay: React.FC<ResponseDisplayProps> = ({ content }) => {
         borderRadius: 2,
       }}
     >
-      <HTMLRenderer content={content} />
+      <HTMLRenderer html={content} />
     </Paper>
   );
 };
 
-export default ResponseDisplay; 
+export default ResponseDisplay;

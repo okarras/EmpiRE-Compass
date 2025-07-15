@@ -91,7 +91,7 @@ export class AIService {
 
   public isConfigured(): boolean {
     const apiKey = this.getApiKey(this.config.provider);
-    return apiKey && apiKey.length > 0;
+    return !!apiKey && apiKey.length > 0;
   }
 
   public getCurrentConfig() {

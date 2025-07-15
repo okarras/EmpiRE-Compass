@@ -69,20 +69,20 @@ const HistoryManager: React.FC<HistoryManagerProps> = ({
     localStorage.setItem('dynamicAI_history', JSON.stringify(history));
   }, [history]);
 
-  const addToHistory = (
-    type: HistoryItem['type'],
-    content: string,
-    title: string
-  ) => {
-    const newItem: HistoryItem = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      content,
-      type,
-      title,
-    };
-    setHistory((prev) => [newItem, ...prev.slice(0, 49)]); // Keep last 50 items
-  };
+  // const addToHistory = (
+  //   type: HistoryItem['type'],
+  //   content: string,
+  //   title: string
+  // ) => {
+  //   const newItem: HistoryItem = {
+  //     id: Date.now().toString(),
+  //     timestamp: Date.now(),
+  //     content,
+  //     type,
+  //     title,
+  //   };
+  //   setHistory((prev) => [newItem, ...prev.slice(0, 49)]); // Keep last 50 items
+  // };
 
   const applyHistoryItem = (item: HistoryItem) => {
     onApplyHistoryItem(item);
