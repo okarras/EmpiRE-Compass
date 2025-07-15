@@ -207,7 +207,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           sectionTitle="Question Information"
           query={query}
         />
-        <QuestionInformationView query={query} />
+        <QuestionInformationView query={query} isInteractive={false} />
 
         {/* Data Collection View */}
         <Box hidden={tab !== 0}>

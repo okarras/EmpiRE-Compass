@@ -541,7 +541,7 @@ const DynamicAIQuestion: React.FC = () => {
             sectionTitle="Question Information"
             query={dynamicQuery}
           />
-          <QuestionInformationView query={dynamicQuery} />
+          <QuestionInformationView query={dynamicQuery} isInteractive={true} />
 
           {/* AI-Generated Chart (HTML/JS, iframe) */}
           {state.chartHtml && (

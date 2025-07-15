@@ -29,10 +29,12 @@ import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 
 interface QuestionInformationViewProps {
   query: Pick<Query, 'dataAnalysisInformation'>;
+  isInteractive?: boolean;
 }
 
 const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   query,
+  isInteractive = false,
 }) => {
   const info = query.dataAnalysisInformation;
   const aiService = useAIService();
@@ -98,34 +100,33 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
       const currentContent = getSectionContent(aiTargetSection);
 
       const contextPrompt = `You are modifying analysis content for a dynamic research question. 
+      Current Research Question: "${state.question}"
 
-Current Research Question: "${state.question}"
+      Current Data: ${JSON.stringify(state.queryResults, null, 2)}
 
-Current Data: ${JSON.stringify(state.queryResults, null, 2)}
+      Content Type: ${aiTargetSection === 'question' ? 'Question Interpretation' : aiTargetSection === 'dataCollection' ? 'Data Collection Interpretation' : 'Data Analysis Interpretation'}
 
-Content Type: ${aiTargetSection === 'question' ? 'Question Interpretation' : aiTargetSection === 'dataCollection' ? 'Data Collection Interpretation' : 'Data Analysis Interpretation'}
+      Current Content:
+      ${currentContent}
 
-Current Content:
-${currentContent}
+      Recent History:
+      ${recentHistory
+        .map(
+          (entry) =>
+            `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
+        )
+        .join('\n')}
 
-Recent History:
-${recentHistory
-  .map(
-    (entry) =>
-      `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
-  )
-  .join('\n')}
+      User Request: ${aiPrompt}
 
-User Request: ${aiPrompt}
+      Please modify the analysis content according to the user's request. Consider the context and history provided.
 
-Please modify the analysis content according to the user's request. Consider the context and history provided.
+      Requirements:
+      - Return clear, concise analysis text (not HTML)
+      - Maintain professional academic tone
+      - Focus on Requirements Engineering research context
 
-Requirements:
-- Return clear, concise analysis text (not HTML)
-- Maintain professional academic tone
-- Focus on Requirements Engineering research context
-
-Modified Content:`;
+      Modified Content:`;
 
       const result = await aiService.generateText(contextPrompt, {
         temperature: 0.3,
@@ -151,17 +152,32 @@ Modified Content:`;
   const getSectionContent = (
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
-    switch (section) {
-      case 'question':
-        return state.questionInterpretation || info.questionExplanation;
-      case 'dataCollection':
-        return (
-          state.dataCollectionInterpretation || info.requiredDataForAnalysis
-        );
-      case 'dataAnalysis':
-        return state.dataAnalysisInterpretation || info.dataAnalysis;
-      default:
-        return '';
+    if (isInteractive) {
+      // For interactive mode, use dynamic state content
+      switch (section) {
+        case 'question':
+          return state.questionInterpretation || info.questionExplanation;
+        case 'dataCollection':
+          return (
+            state.dataCollectionInterpretation || info.requiredDataForAnalysis
+          );
+        case 'dataAnalysis':
+          return state.dataAnalysisInterpretation || info.dataAnalysis;
+        default:
+          return '';
+      }
+    } else {
+      // For non-interactive mode, use static query content
+      switch (section) {
+        case 'question':
+          return info.questionExplanation;
+        case 'dataCollection':
+          return info.requiredDataForAnalysis;
+        case 'dataAnalysis':
+          return info.dataAnalysis;
+        default:
+          return '';
+      }
     }
   };
 
@@ -194,7 +210,6 @@ Modified Content:`;
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     const isEditing = editingSection === section;
-    // const displayContent = isEditing ? editContent : content || '';
     const historyCount = getHistoryCount(section);
 
     return (
@@ -213,44 +228,46 @@ Modified Content:`;
           >
             {title}
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {historyCount > 0 && (
-              <Chip
-                icon={<History />}
-                label={`${historyCount} changes`}
-                size="small"
-                variant="outlined"
-                color="primary"
-              />
-            )}
-            <Tooltip title="Edit manually">
-              <IconButton
-                onClick={() => handleEdit(section)}
-                size="small"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
-                }}
-              >
-                <Edit />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Ask AI to modify">
-              <IconButton
-                onClick={() => {
-                  setAiTargetSection(section);
-                  setShowAIDialog(true);
-                }}
-                size="small"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
-                }}
-              >
-                <SmartToy />
-              </IconButton>
-            </Tooltip>
-          </Box>
+          {isInteractive && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              {historyCount > 0 && (
+                <Chip
+                  icon={<History />}
+                  label={`${historyCount} changes`}
+                  size="small"
+                  variant="outlined"
+                  color="primary"
+                />
+              )}
+              <Tooltip title="Edit manually">
+                <IconButton
+                  onClick={() => handleEdit(section)}
+                  size="small"
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
+                  }}
+                >
+                  <Edit />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Ask AI to modify">
+                <IconButton
+                  onClick={() => {
+                    setAiTargetSection(section);
+                    setShowAIDialog(true);
+                  }}
+                  size="small"
+                  sx={{
+                    color: 'text.secondary',
+                    '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
+                  }}
+                >
+                  <SmartToy />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
         </Box>
 
         {isEditing ? (
@@ -264,9 +281,34 @@ Modified Content:`;
             sx={{ mb: 2 }}
           />
         ) : (
-          <Typography variant="body1" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-            {content}
-          </Typography>
+          <Box
+            component="div"
+            sx={{
+              mb: 2,
+              '& p': {
+                fontSize: { xs: '0.95rem', sm: '1rem' },
+                lineHeight: 1.7,
+                color: 'text.primary',
+                mt: 0,
+                mb: 2,
+              },
+              '& a': {
+                color: '#e86161',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              },
+              '& strong': {
+                color: 'text.primary',
+                fontWeight: 600,
+              },
+            }}
+            dangerouslySetInnerHTML={{
+              __html: content,
+            }}
+          />
         )}
 
         {isEditing && (
@@ -323,69 +365,71 @@ Modified Content:`;
         'dataAnalysis'
       )}
 
-      {/* AI Modification Dialog */}
-      <Dialog
-        open={showAIDialog}
-        onClose={() => setShowAIDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SmartToy sx={{ color: '#e86161' }} />
-            <Typography variant="h6">AI Analysis Modification</Typography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Describe how you want the AI to modify the{' '}
-            {aiTargetSection === 'question'
-              ? 'question interpretation'
-              : aiTargetSection === 'dataCollection'
-                ? 'data collection interpretation'
-                : 'data analysis interpretation'}
-            . The AI will have access to the full context of your research
-            question and previous changes.
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            placeholder={`Describe how you want to modify the ${aiTargetSection === 'question' ? 'question interpretation' : aiTargetSection === 'dataCollection' ? 'data collection interpretation' : 'data analysis interpretation'}...`}
-            variant="outlined"
-            disabled={isAIModifying}
-          />
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setShowAIDialog(false)}
-            disabled={isAIModifying}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAIModify}
-            variant="contained"
-            disabled={isAIModifying || !aiPrompt.trim()}
-            startIcon={
-              isAIModifying ? <CircularProgress size={16} /> : <Refresh />
-            }
-            sx={{
-              backgroundColor: '#e86161',
-              '&:hover': { backgroundColor: '#d45151' },
-            }}
-          >
-            {isAIModifying ? 'Modifying...' : 'Modify with AI'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* AI Modification Dialog - only show if interactive */}
+      {isInteractive && (
+        <Dialog
+          open={showAIDialog}
+          onClose={() => setShowAIDialog(false)}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <SmartToy sx={{ color: '#e86161' }} />
+              <Typography variant="h6">AI Analysis Modification</Typography>
+            </Box>
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Describe how you want the AI to modify the{' '}
+              {aiTargetSection === 'question'
+                ? 'question interpretation'
+                : aiTargetSection === 'dataCollection'
+                  ? 'data collection interpretation'
+                  : 'data analysis interpretation'}
+              . The AI will have access to the full context of your research
+              question and previous changes.
+            </Typography>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder={`Describe how you want to modify the ${aiTargetSection === 'question' ? 'question interpretation' : aiTargetSection === 'dataCollection' ? 'data collection interpretation' : 'data analysis interpretation'}...`}
+              variant="outlined"
+              disabled={isAIModifying}
+            />
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => setShowAIDialog(false)}
+              disabled={isAIModifying}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAIModify}
+              variant="contained"
+              disabled={isAIModifying || !aiPrompt.trim()}
+              startIcon={
+                isAIModifying ? <CircularProgress size={16} /> : <Refresh />
+              }
+              sx={{
+                backgroundColor: '#e86161',
+                '&:hover': { backgroundColor: '#d45151' },
+              }}
+            >
+              {isAIModifying ? 'Modifying...' : 'Modify with AI'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Box>
   );
 };
