@@ -19,7 +19,7 @@ import BookIcon from '@mui/icons-material/Book';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
-
+import ApiIcon from '@mui/icons-material/Api';
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
@@ -65,6 +65,10 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       'https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs',
       '_blank'
     );
+  };
+
+  const openApiSettings = () => {
+    console.log('openApiSettings');
   };
 
   return (
@@ -224,6 +228,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               >
                 v{import.meta.env.VITE_APP_VERSION}
               </Typography>
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Select AI Model and provide API Key">
+            <IconButton color="inherit" onClick={() => openApiSettings()}>
+              <ApiIcon />
             </IconButton>
           </Tooltip>
         </Box>

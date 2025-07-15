@@ -1,18 +1,48 @@
-import React, { useState } from 'react';
-import {
-  Box,
-  Paper,
-  Typography,
-  TextField,
-  Button,
-  CircularProgress,
-  Divider,
-} from '@mui/material';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import React, { useState, useEffect } from 'react';
+import { Box, Divider, Typography, Paper, Button } from '@mui/material';
+import { generateText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
 import fetchSPARQLData from '../helpers/fetch_query';
-import QuestionDataGridView from './QuestionDataGridView';
+import QuestionInformationView from './QuestionInformationView';
+import SectionSelector from './SectionSelector';
 import TextSkeleton from './AI/TextSkeleton';
+import HTMLRenderer from './AI/HTMLRenderer';
+import AIContentGenerator from './AI/AIContentGenerator';
+import SPARQLQuerySection from './AI/SPARQLQuerySection';
+import {
+  HistoryManager,
+  HistoryItem,
+  useHistoryManager,
+} from './AI/HistoryManager';
+import { useAIAssistantContext } from '../context/AIAssistantContext';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
+
+// Dynamic query interface to match the structure of Query
+interface DynamicQuery {
+  title: string;
+  id: number;
+  uid: string;
+  dataAnalysisInformation: {
+    question: string;
+    questionExplanation: string;
+    requiredDataForAnalysis: string;
+    dataAnalysis: string;
+    dataInterpretation: string;
+  };
+  chartSettings?: {
+    series: Array<{ dataKey: string; label: string }>;
+    colors?: string[];
+    yAxis: Array<{ label: string; dataKey: string }>;
+    seriesHeadingTemplate?: string;
+    noHeadingInSeries?: boolean;
+    height: number;
+    sx: Record<string, unknown>;
+  };
+  chartType?: 'bar' | 'pie';
+  dataProcessingFunction?: (
+    data: Record<string, unknown>[]
+  ) => Record<string, unknown>[];
+}
 
 const DynamicAIQuestion: React.FC = () => {
   const [question, setQuestion] = useState<string>('');
@@ -22,9 +52,28 @@ const DynamicAIQuestion: React.FC = () => {
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
 
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+  // AI-generated content states
+  const [chartHtml, setChartHtml] = useState<string>('');
+  const [questionInterpretation, setQuestionInterpretation] =
+    useState<string>('');
+  const [dataCollectionInterpretation, setDataCollectionInterpretation] =
+    useState<string>('');
+  const [dataAnalysisInterpretation, setDataAnalysisInterpretation] =
+    useState<string>('');
+
+  // History management
+  const { addToHistory } = useHistoryManager();
+
+  const { setContext } = useAIAssistantContext();
+
+  // Update AI Assistant context when data changes
+  useEffect(() => {
+    if (dynamicQuery && !loading && !error && queryResults.length > 0) {
+      setContext(dynamicQuery, queryResults);
+    }
+  }, [dynamicQuery, queryResults, loading, error, setContext]);
 
   const extractSparqlFromMarkdown = (markdown: string): string => {
     const sparqlRegex = /```sparql\n([\s\S]*?)\n```/;
@@ -40,12 +89,137 @@ const DynamicAIQuestion: React.FC = () => {
     return markdown.trim();
   };
 
+  // Simple data processing function for dynamic queries
+  const processDynamicData = (
+    data: Record<string, unknown>[]
+  ): Record<string, unknown>[] => {
+    if (!data || data.length === 0) return [];
+
+    // Get all unique keys from the data
+    const allKeys = new Set<string>();
+    data.forEach((item) => {
+      Object.keys(item).forEach((key) => {
+        if (
+          key !== 'year' &&
+          key !== 'paper' &&
+          typeof item[key] === 'number'
+        ) {
+          allKeys.add(key);
+        }
+      });
+    });
+
+    // If we have year data, group by year
+    if (data.some((item) => item.year)) {
+      const yearGroups = new Map<string, Record<string, unknown>[]>();
+
+      data.forEach((item) => {
+        const year = String(item.year || 'Unknown');
+        if (!yearGroups.has(year)) {
+          yearGroups.set(year, []);
+        }
+        yearGroups.get(year)!.push(item);
+      });
+
+      return Array.from(yearGroups.entries())
+        .map(([year, items]) => {
+          const result: Record<string, unknown> = {
+            year: parseInt(year) || year,
+          };
+
+          allKeys.forEach((key) => {
+            const values = items
+              .map((item) => item[key])
+              .filter((val) => typeof val === 'number') as number[];
+            if (values.length > 0) {
+              result[key] = values.reduce((sum, val) => sum + val, 0);
+              result[`normalized_${key}`] =
+                values.length > 0
+                  ? Number(
+                      (
+                        (values.reduce((sum, val) => sum + val, 0) /
+                          items.length) *
+                        100
+                      ).toFixed(2)
+                    )
+                  : 0;
+            }
+          });
+
+          return result;
+        })
+        .sort((a, b) => {
+          const yearA =
+            typeof a.year === 'number' ? a.year : parseInt(String(a.year));
+          const yearB =
+            typeof b.year === 'number' ? b.year : parseInt(String(b.year));
+          return yearA - yearB;
+        });
+    }
+
+    // If no year data, just return the data as is
+    return data;
+  };
+
   const handleRunQuery = async (queryToRun: string) => {
     setLoading(true);
     setError(null);
+    setChartHtml('');
+    setQuestionInterpretation('');
+    setDataCollectionInterpretation('');
+    setDataAnalysisInterpretation('');
+
     try {
       const data = await fetchSPARQLData(queryToRun);
       setQueryResults(data);
+
+      // Create dynamic query object for charts and AI assistant
+      const newDynamicQuery: DynamicQuery = {
+        title: `Dynamic Query: ${question}`,
+        id: Date.now(),
+        uid: 'dynamic-query',
+        dataAnalysisInformation: {
+          question: question,
+          questionExplanation:
+            questionInterpretation ||
+            `This is a dynamically generated query based on the user's question: "${question}". The query was generated using AI and executed against the ORKG database.`,
+          requiredDataForAnalysis:
+            dataCollectionInterpretation ||
+            `The query requires data from the ORKG database to answer: "${question}". The SPARQL query extracts relevant information based on the research question.`,
+          dataAnalysis:
+            dataAnalysisInterpretation ||
+            `The data is analyzed to provide insights related to: "${question}". The results show patterns and trends in the Requirements Engineering research domain.`,
+          dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${question}".`,
+        },
+        chartSettings: {
+          series: Object.keys(data[0] || {})
+            .filter(
+              (key) =>
+                key !== 'year' &&
+                key !== 'paper' &&
+                typeof data[0]?.[key] === 'number'
+            )
+            .map((key) => ({
+              dataKey: key,
+              label: key
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase()),
+            })),
+          colors: ['#e86161', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
+          yAxis: [
+            {
+              label: 'Count',
+              dataKey: 'value',
+            },
+          ],
+          height: 400,
+          sx: { width: '100%' },
+        },
+        chartType: 'bar',
+        dataProcessingFunction: processDynamicData,
+      };
+
+      setDynamicQuery(newDynamicQuery);
     } catch (err: unknown) {
       console.error('An error occurred during query execution:', err);
       let errorMessage =
@@ -54,7 +228,7 @@ const DynamicAIQuestion: React.FC = () => {
         errorMessage = err.message;
       }
       setError(errorMessage);
-      setQueryResults([]); // Clear previous results on error
+      setQueryResults([]);
     } finally {
       setLoading(false);
     }
@@ -70,15 +244,26 @@ const DynamicAIQuestion: React.FC = () => {
     setError(null);
     setGeneratedSparql('');
     setQueryResults([]);
+    setDynamicQuery(null);
 
     try {
       const fullPrompt = promptTemplate.replace(
         '[Research Question]',
         question
       );
-      const result = await model.generateContent(fullPrompt);
-      const response = await result.response;
-      const generatedText = response.text();
+
+      const openai = createOpenAI({
+        apiKey: import.meta.env.VITE_OPEN_AI_API_KEY,
+      });
+
+      const result = await generateText({
+        model: openai.languageModel('gpt-4o-mini'),
+        prompt: fullPrompt,
+        temperature: 0.1,
+        maxTokens: 2000,
+      });
+
+      const generatedText = result.text;
       const sparqlQuery = extractSparqlFromMarkdown(generatedText);
 
       if (
@@ -89,7 +274,13 @@ const DynamicAIQuestion: React.FC = () => {
           'The AI did not return a valid SPARQL query. Please try rephrasing your question.'
         );
       }
+
       setGeneratedSparql(sparqlQuery);
+
+      // Add to history
+      addToHistory('query', question, `Research Question: ${question}`);
+      addToHistory('sparql', sparqlQuery, `SPARQL Query for: ${question}`);
+
       // Automatically run the generated query
       await handleRunQuery(sparqlQuery);
     } catch (err: unknown) {
@@ -110,12 +301,83 @@ const DynamicAIQuestion: React.FC = () => {
       setError('The query is empty.');
       return;
     }
+
+    // Add edited query to history
+    addToHistory('sparql', generatedSparql, `Edited SPARQL Query: ${question}`);
+
     handleRunQuery(generatedSparql);
   };
 
+  const handleContentGenerated = (
+    chartHtmlContent: string,
+    chartDescriptionContent: string,
+    questionInterpretationContent: string,
+    dataCollectionInterpretationContent: string,
+    dataAnalysisInterpretationContent: string
+  ) => {
+    console.log('chartHtmlContent', chartHtmlContent);
+    setChartHtml(chartHtmlContent);
+    setQuestionInterpretation(questionInterpretationContent);
+    setDataCollectionInterpretation(dataCollectionInterpretationContent);
+    setDataAnalysisInterpretation(dataAnalysisInterpretationContent);
+
+    // Update the dynamic query with new AI-generated content
+    if (dynamicQuery) {
+      setDynamicQuery({
+        ...dynamicQuery,
+        dataAnalysisInformation: {
+          ...dynamicQuery.dataAnalysisInformation,
+          questionExplanation: questionInterpretationContent,
+          requiredDataForAnalysis: dataCollectionInterpretationContent,
+          dataAnalysis: dataAnalysisInterpretationContent,
+        },
+      });
+    }
+  };
+
+  const handleApplyHistoryItem = (item: HistoryItem) => {
+    switch (item.type) {
+      case 'query':
+        setQuestion(item.content);
+        break;
+      case 'sparql':
+        setGeneratedSparql(item.content);
+        break;
+      case 'chart_html':
+        setChartHtml(item.content);
+        break;
+      case 'question_interpretation':
+        setQuestionInterpretation(item.content);
+        break;
+      case 'data_collection_interpretation':
+        setDataCollectionInterpretation(item.content);
+        break;
+      case 'data_analysis_interpretation':
+        setDataAnalysisInterpretation(item.content);
+        break;
+      case 'data_interpretation':
+        // Legacy support - apply to question interpretation
+        setQuestionInterpretation(item.content);
+        break;
+    }
+  };
+
+  // History dialog state
+  const [historyType, setHistoryType] = useState<HistoryItem['type'] | null>(
+    null
+  );
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const handleOpenHistory = (type: HistoryItem['type']) => {
+    setHistoryType(type);
+    setHistoryOpen(true);
+  };
+  const handleCloseHistory = () => {
+    setHistoryOpen(false);
+    setHistoryType(null);
+  };
+
   const renderErrorState = (errorMessage: string) => (
-    <Paper
-      elevation={0}
+    <Box
       sx={{
         p: 4,
         mt: 4,
@@ -129,142 +391,102 @@ const DynamicAIQuestion: React.FC = () => {
         An Error Occurred
       </Typography>
       <Typography color="text.secondary">{errorMessage}</Typography>
-    </Paper>
+    </Box>
   );
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          mb: 4,
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: 2,
-          border: '1px solid rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            variant="outlined"
-            label="Your Research Question"
-            placeholder="e.g., How many papers were published each year?"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            disabled={loading}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'background.paper',
-                '&:hover > fieldset': {
-                  borderColor: 'primary.main',
-                },
-                '&.Mui-focused > fieldset': {
-                  borderColor: 'primary.main',
-                },
-              },
-              '& .MuiInputLabel-root.Mui-focused': {
-                color: 'primary.main',
-              },
-            }}
-          />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              onClick={handleGenerateAndRun}
-              disabled={loading}
-              startIcon={
-                loading && !generatedSparql ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : null
-              }
-              sx={{
-                backgroundColor: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
-              }}
-            >
-              {loading && !generatedSparql
-                ? 'Generating...'
-                : 'Generate and Run Query'}
-            </Button>
-          </Box>
-        </Box>
-      </Paper>
+      {/* SPARQL Query Section */}
+      <SPARQLQuerySection
+        question={question}
+        sparqlQuery={generatedSparql}
+        loading={loading}
+        onQuestionChange={setQuestion}
+        onSparqlChange={setGeneratedSparql}
+        onGenerateAndRun={handleGenerateAndRun}
+        onRunEditedQuery={handleRunEditedQuery}
+        onOpenHistory={handleOpenHistory}
+      />
 
+      {/* Loading and Error States */}
       {loading && !generatedSparql && <TextSkeleton lines={12} />}
       {error && renderErrorState(error)}
-      {generatedSparql && (
+
+      {/* AI Content Generation */}
+      {queryResults.length > 0 && question && (
+        <AIContentGenerator
+          data={queryResults}
+          question={question}
+          onContentGenerated={handleContentGenerated}
+          onAddToHistory={addToHistory}
+          onError={setError}
+        />
+      )}
+
+      {/* Results Section */}
+      {dynamicQuery && queryResults.length > 0 && (
         <Paper
           elevation={0}
           sx={{
             p: { xs: 2, sm: 3, md: 4 },
+            mb: 4,
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             borderRadius: 2,
             border: '1px solid rgba(0, 0, 0, 0.1)',
           }}
         >
-          <Typography variant="h5" gutterBottom>
-            SPARQL Query
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            minRows={6}
-            variant="outlined"
-            value={generatedSparql}
-            onChange={(e) => setGeneratedSparql(e.target.value)}
-            disabled={loading}
-            sx={{
-              mt: 2,
-              mb: 2,
-              fontFamily: 'monospace',
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                '& textarea': {
-                  fontFamily: 'monospace',
-                },
-              },
-            }}
+          {/* Question Information Section */}
+          <SectionSelector
+            sectionType="information"
+            sectionTitle="Question Information"
+            query={dynamicQuery}
           />
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              onClick={handleRunEditedQuery}
-              disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={20} color="inherit" /> : null
-              }
-              sx={{
-                backgroundColor: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
-              }}
-            >
-              {loading ? 'Running...' : 'Run Edited Query'}
-            </Button>
-          </Box>
-          <Divider sx={{ my: 4 }} />
-          <Typography variant="h5" gutterBottom>
-            Query Results
-          </Typography>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-              <CircularProgress sx={{ color: 'primary.main' }} />
-            </Box>
-          ) : queryResults.length > 0 ? (
-            <QuestionDataGridView questionData={queryResults} />
-          ) : (
-            <Typography color="text.secondary" sx={{ mt: 2 }}>
-              The query returned no results.
-            </Typography>
+          <QuestionInformationView query={dynamicQuery} />
+
+          {/* AI-Generated Chart (HTML/JS, iframe) */}
+          {chartHtml && (
+            <>
+              <Divider sx={{ my: 3 }} />
+              <HTMLRenderer
+                html={chartHtml}
+                title="AI-Generated Chart"
+                type="chart"
+                useIframe={true}
+                onHistoryClick={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Chart HTML History
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleOpenHistory('chart_html')}
+                      sx={{
+                        borderColor: '#e86161',
+                        color: '#e86161',
+                        '&:hover': {
+                          borderColor: '#d45151',
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      History
+                    </Button>
+                  </Box>
+                }
+              />
+            </>
           )}
         </Paper>
       )}
+
+      {/* History Manager Dialog */}
+      <HistoryManager
+        onApplyHistoryItem={handleApplyHistoryItem}
+        open={historyOpen}
+        type={historyType}
+        onClose={handleCloseHistory}
+      />
     </Box>
   );
 };
