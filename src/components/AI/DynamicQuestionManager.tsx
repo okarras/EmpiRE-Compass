@@ -113,7 +113,7 @@ const DynamicQuestionManager: React.FC = () => {
       setShowLoadDialog(false);
       setSuccess('Question loaded successfully!');
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
+    } catch {
       setError('Failed to load the saved question.');
     }
   };
@@ -138,7 +138,7 @@ const DynamicQuestionManager: React.FC = () => {
       URL.revokeObjectURL(url);
       setSuccess('All questions exported successfully!');
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
+    } catch {
       setError('Failed to export questions.');
     }
   };
@@ -172,7 +172,7 @@ const DynamicQuestionManager: React.FC = () => {
 
         setSuccess(`Imported ${newQuestions.length} questions successfully!`);
         setTimeout(() => setSuccess(null), 3000);
-      } catch (err) {
+      } catch {
         setError('Failed to import questions. Please check the file format.');
       }
     };
