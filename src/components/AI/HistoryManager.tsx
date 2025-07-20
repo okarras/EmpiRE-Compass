@@ -11,11 +11,16 @@ import {
   Button,
   TextField,
   Paper,
+  List,
+  ListItem,
+  Divider,
 } from '@mui/material';
 import {
   History as HistoryIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Restore as RestoreIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 
 export interface HistoryItem {
@@ -324,6 +329,20 @@ export const useHistoryManager = () => {
     });
   };
 
+  const getHistoryByType = (type: HistoryItem['type']) => {
+    return history.filter((item) => item.type === type);
+  };
+
+  const removeFromHistory = (type: HistoryItem['type'], id: string) => {
+    setHistory((prev) => {
+      const newHistory = prev.filter(
+        (item) => !(item.type === type && item.id === id)
+      );
+      localStorage.setItem('dynamicAI_history', JSON.stringify(newHistory));
+      return newHistory;
+    });
+  };
+
   const renderHistoryButton = (
     type: HistoryItem['type'],
     title: string,
@@ -346,6 +365,300 @@ export const useHistoryManager = () => {
   return {
     history,
     addToHistory,
+    getHistoryByType,
+    removeFromHistory,
     renderHistoryButton,
   };
+};
+
+// New Section History Dialog Component
+interface SectionHistoryDialogProps {
+  open: boolean;
+  onClose: () => void;
+  sectionType: HistoryItem['type'];
+  sectionTitle: string;
+  onRevert: (item: HistoryItem) => void;
+  history: HistoryItem[];
+}
+
+export const SectionHistoryDialog: React.FC<SectionHistoryDialogProps> = ({
+  open,
+  onClose,
+  sectionType,
+  sectionTitle,
+  onRevert,
+  history,
+}) => {
+  const [editDialogOpen, setEditDialogOpen] = useState<boolean>(false);
+  const [editingItem, setEditingItem] = useState<HistoryItem | null>(null);
+  const [editContent, setEditContent] = useState<string>('');
+
+  const filteredHistory = history.filter((item) => item.type === sectionType);
+
+  const openEditDialog = (item: HistoryItem) => {
+    setEditingItem(item);
+    setEditContent(item.content);
+    setEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingItem(null);
+    setEditContent('');
+  };
+
+  const saveEdit = () => {
+    if (!editingItem) return;
+
+    const updatedItem = { ...editingItem, content: editContent };
+    // Update the history in localStorage
+    const savedHistory = localStorage.getItem('dynamicAI_history');
+    if (savedHistory) {
+      try {
+        const allHistory = JSON.parse(savedHistory);
+        const updatedHistory = allHistory.map((item: HistoryItem) =>
+          item.id === editingItem.id ? updatedItem : item
+        );
+        localStorage.setItem(
+          'dynamicAI_history',
+          JSON.stringify(updatedHistory)
+        );
+        // Apply the edit to current state
+        onRevert(updatedItem);
+      } catch (error) {
+        console.error('Error updating history:', error);
+      }
+    }
+    closeEditDialog();
+  };
+
+  const deleteHistoryItem = (id: string) => {
+    const savedHistory = localStorage.getItem('dynamicAI_history');
+    if (savedHistory) {
+      try {
+        const allHistory = JSON.parse(savedHistory);
+        const updatedHistory = allHistory.filter(
+          (item: HistoryItem) => item.id !== id
+        );
+        localStorage.setItem(
+          'dynamicAI_history',
+          JSON.stringify(updatedHistory)
+        );
+        // Force a re-render by triggering a page reload or state update
+        window.location.reload();
+      } catch (error) {
+        console.error('Error deleting history item:', error);
+      }
+    }
+  };
+
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+  };
+
+  const truncateContent = (content: string, maxLength: number = 100) => {
+    if (content.length <= maxLength) return content;
+    return content.substring(0, maxLength) + '...';
+  };
+
+  return (
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <DialogTitle>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <HistoryIcon sx={{ color: '#e86161' }} />
+              <Typography variant="h6">{sectionTitle} History</Typography>
+            </Box>
+            <IconButton onClick={onClose} size="small">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {filteredHistory.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <HistoryIcon
+                sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }}
+              />
+              <Typography variant="body1" color="text.secondary">
+                No history available for this section yet.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Changes will appear here once you make edits or AI
+                modifications.
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {filteredHistory.map((item, index) => (
+                <React.Fragment key={item.id}>
+                  <ListItem
+                    sx={{
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                      p: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="bold"
+                          color="text.primary"
+                        >
+                          {item.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatTimestamp(item.timestamp)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<RestoreIcon />}
+                          onClick={() => onRevert(item)}
+                          sx={{
+                            backgroundColor: '#e86161',
+                            '&:hover': { backgroundColor: '#d45151' },
+                          }}
+                        >
+                          Restore
+                        </Button>
+                        <IconButton
+                          size="small"
+                          onClick={() => openEditDialog(item)}
+                          sx={{ color: 'primary.main' }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() => deleteHistoryItem(item.id)}
+                          sx={{ color: 'error.main' }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: 1,
+                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                        fontFamily: ['sparql', 'chart_html'].includes(item.type)
+                          ? 'monospace'
+                          : 'inherit',
+                        fontSize: '0.875rem',
+                        maxHeight: '120px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        component="pre"
+                        sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      >
+                        {truncateContent(item.content, 200)}
+                      </Typography>
+                    </Paper>
+                  </ListItem>
+                  {index < filteredHistory.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={closeEditDialog}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <EditIcon />
+            <Typography variant="h6">
+              Edit {editingItem?.type.replace('_', ' ')}
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            multiline
+            rows={10}
+            variant="outlined"
+            label="Content"
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            sx={{
+              mt: 2,
+              fontFamily:
+                editingItem &&
+                ['sparql', 'chart_html'].includes(editingItem.type)
+                  ? 'monospace'
+                  : 'inherit',
+              '& .MuiOutlinedInput-root': {
+                '& textarea': {
+                  fontFamily:
+                    editingItem &&
+                    ['sparql', 'chart_html'].includes(editingItem.type)
+                      ? 'monospace'
+                      : 'inherit',
+                },
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeEditDialog}>Cancel</Button>
+          <Button
+            onClick={saveEdit}
+            variant="contained"
+            sx={{ backgroundColor: '#e86161' }}
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
 };

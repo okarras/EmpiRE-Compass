@@ -2,33 +2,46 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Divider,
+  Paper,
+  TextField,
+  Button,
   IconButton,
-  Tooltip,
-  Chip,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  Button,
+  List,
+  ListItem,
+  Divider,
   CircularProgress,
+  Chip,
+  Alert,
+  Tooltip,
 } from '@mui/material';
 import {
-  Edit,
   SmartToy,
   Save,
   Cancel,
   History,
+  Restore,
+  Close,
   Refresh,
+  Edit,
 } from '@mui/icons-material';
-import { Query } from '../constants/queries_chart_info';
 import { useAIService } from '../services/aiService';
-import { useDynamicQuestion } from '../context/DynamicQuestionContext';
+import {
+  useDynamicQuestion,
+  DynamicQuestionHistory,
+} from '../context/DynamicQuestionContext';
 
 interface QuestionInformationViewProps {
-  query: Pick<Query, 'dataAnalysisInformation'>;
+  query: {
+    dataAnalysisInformation: {
+      questionExplanation: string;
+      requiredDataForAnalysis: string;
+      dataAnalysis: string;
+    };
+  };
   isInteractive?: boolean;
 }
 
@@ -36,7 +49,6 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   query,
   isInteractive = false,
 }) => {
-  const info = query.dataAnalysisInformation;
   const aiService = useAIService();
   const {
     state,
@@ -49,28 +61,29 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   const [editingSection, setEditingSection] = useState<
     'question' | 'dataCollection' | 'dataAnalysis' | null
   >(null);
-  const [isAIModifying, setIsAIModifying] = useState(false);
+  const [editContent, setEditContent] = useState('');
   const [showAIDialog, setShowAIDialog] = useState(false);
   const [aiTargetSection, setAiTargetSection] = useState<
     'question' | 'dataCollection' | 'dataAnalysis' | null
   >(null);
-  const [editContent, setEditContent] = useState('');
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isAIModifying, setIsAIModifying] = useState(false);
 
-  const handleEdit = (
-    section: 'question' | 'dataCollection' | 'dataAnalysis'
-  ) => {
-    setEditingSection(section);
-    setEditContent(getSectionContent(section) || '');
-  };
+  // History dialog state
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [historySection, setHistorySection] = useState<
+    'question' | 'dataCollection' | 'dataAnalysis' | null
+  >(null);
+
+  const info = query.dataAnalysisInformation;
 
   const handleSave = () => {
     if (editingSection) {
       const updateFunction = getUpdateFunction(editingSection);
       updateFunction(editContent);
       setEditingSection(null);
-      setError(null);
+      setEditContent('');
     }
   };
 
@@ -80,80 +93,38 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     setError(null);
   };
 
-  const handleAIModify = async () => {
-    if (!aiPrompt.trim() || !aiTargetSection) {
-      setError('Please enter a prompt for the AI.');
-      return;
-    }
+  const handleOpenHistory = (
+    section: 'question' | 'dataCollection' | 'dataAnalysis'
+  ) => {
+    setHistorySection(section);
+    setHistoryDialogOpen(true);
+  };
 
-    if (!aiService.isConfigured()) {
-      setError('Please configure your AI settings first.');
-      return;
-    }
+  const handleCloseHistory = () => {
+    setHistoryDialogOpen(false);
+    setHistorySection(null);
+  };
 
-    setIsAIModifying(true);
+  const handleRestoreHistory = (item: DynamicQuestionHistory) => {
+    if (historySection) {
+      const updateFunction = getUpdateFunction(historySection);
+      updateFunction(item.content);
+      handleCloseHistory();
+    }
+  };
+
+  const handleEdit = (
+    section: 'question' | 'dataCollection' | 'dataAnalysis'
+  ) => {
+    setEditingSection(section);
+    setEditContent(getSectionContent(section));
     setError(null);
-
-    try {
-      const history = getHistoryByType('analysis');
-      const recentHistory = history.slice(-5);
-      const currentContent = getSectionContent(aiTargetSection);
-
-      const contextPrompt = `You are modifying analysis content for a dynamic research question. 
-      Current Research Question: "${state.question}"
-
-      Current Data: ${JSON.stringify(state.queryResults, null, 2)}
-
-      Content Type: ${aiTargetSection === 'question' ? 'Question Interpretation' : aiTargetSection === 'dataCollection' ? 'Data Collection Interpretation' : 'Data Analysis Interpretation'}
-
-      Current Content:
-      ${currentContent}
-
-      Recent History:
-      ${recentHistory
-        .map(
-          (entry) =>
-            `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
-        )
-        .join('\n')}
-
-      User Request: ${aiPrompt}
-
-      Please modify the analysis content according to the user's request. Consider the context and history provided.
-
-      Requirements:
-      - Return clear, concise analysis text (not HTML)
-      - Maintain professional academic tone
-      - Focus on Requirements Engineering research context
-
-      Modified Content:`;
-
-      const result = await aiService.generateText(contextPrompt, {
-        temperature: 0.3,
-        maxTokens: 1000,
-      });
-
-      const modifiedContent = result.text.trim();
-      const updateFunction = getUpdateFunction(aiTargetSection);
-      updateFunction(modifiedContent, aiPrompt);
-
-      setShowAIDialog(false);
-      setAiPrompt('');
-      setAiTargetSection(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to modify content with AI'
-      );
-    } finally {
-      setIsAIModifying(false);
-    }
   };
 
   const getSectionContent = (
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     if (isInteractive) {
-      // For interactive mode, use dynamic state content
       switch (section) {
         case 'question':
           return state.questionInterpretation || info.questionExplanation;
@@ -167,7 +138,6 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
           return '';
       }
     } else {
-      // For non-interactive mode, use static query content
       switch (section) {
         case 'question':
           return info.questionExplanation;
@@ -196,21 +166,112 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     }
   };
 
-  const getHistoryCount = (
+  const getSectionHistory = (
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
-    return getHistoryByType('analysis').filter(
-      (entry) => entry.content === getSectionContent(section)
-    ).length;
+    const allHistory = getHistoryByType('analysis');
+    const currentContent = getSectionContent(section);
+
+    // Filter history items that are different from current content and not duplicates
+    const seenContents = new Set();
+    return allHistory
+      .filter((item) => {
+        // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
+        const trimmedContent = item.content.trim();
+        if (
+          !trimmedContent ||
+          trimmedContent === currentContent.trim() ||
+          seenContents.has(trimmedContent)
+        ) {
+          return false;
+        }
+        seenContents.add(trimmedContent);
+        return true;
+      })
+      .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
   };
 
-  const renderInteractiveSection = (
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+  };
+
+  const handleAIModify = async () => {
+    if (!aiPrompt.trim() || !aiTargetSection) {
+      setError('Please enter a prompt for the AI.');
+      return;
+    }
+
+    if (!aiService.isConfigured()) {
+      setError('Please configure your AI settings first.');
+      return;
+    }
+
+    setIsAIModifying(true);
+    setError(null);
+
+    try {
+      const currentContent = getSectionContent(aiTargetSection);
+      const sectionName =
+        aiTargetSection === 'question'
+          ? 'question interpretation'
+          : aiTargetSection === 'dataCollection'
+            ? 'data collection interpretation'
+            : 'data analysis interpretation';
+
+      const contextPrompt = `You are modifying a ${sectionName} for a dynamic research question analysis.
+
+Current Research Question: "${state.question}"
+
+Current ${sectionName}:
+${currentContent}
+
+User Request: ${aiPrompt}
+
+Please modify the ${sectionName} according to the user's request. Return only the modified content, no explanations.
+
+Modified ${sectionName}:`;
+
+      const result = await aiService.generateText(contextPrompt, {
+        temperature: 0.3,
+        maxTokens: 1000,
+      });
+
+      const modifiedContent = result.text.trim();
+      const updateFunction = getUpdateFunction(aiTargetSection);
+      updateFunction(modifiedContent, aiPrompt);
+
+      setShowAIDialog(false);
+      setAiPrompt('');
+      setAiTargetSection(null);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to modify content with AI'
+      );
+    } finally {
+      setIsAIModifying(false);
+    }
+  };
+
+  const renderSection = (
     title: string,
     content: string,
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     const isEditing = editingSection === section;
-    const historyCount = getHistoryCount(section);
+    const sectionHistory = getSectionHistory(section);
+    const hasHistory = sectionHistory.length > 0;
 
     return (
       <Box sx={{ mb: 3 }}>
@@ -230,16 +291,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
           </Typography>
           {isInteractive && (
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {historyCount > 0 && (
-                <Chip
-                  icon={<History />}
-                  label={`${historyCount} changes`}
-                  size="small"
-                  variant="outlined"
-                  color="primary"
-                />
-              )}
-              <Tooltip title="Edit manually">
+              <Tooltip title="Edit manually or view history">
                 <IconButton
                   onClick={() => handleEdit(section)}
                   size="small"
@@ -266,20 +318,87 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
                   <SmartToy />
                 </IconButton>
               </Tooltip>
+              {isEditing && editingSection === section && (
+                <>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    startIcon={<Save />}
+                    onClick={handleSave}
+                    disabled={isAIModifying}
+                    sx={{
+                      backgroundColor: '#e86161',
+                      '&:hover': { backgroundColor: '#d45151' },
+                    }}
+                  >
+                    {isAIModifying ? <CircularProgress size={16} /> : 'Save'}
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={handleCancel}
+                    disabled={isAIModifying}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
             </Box>
           )}
         </Box>
 
         {isEditing ? (
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            variant="outlined"
-            sx={{ mb: 2 }}
-          />
+          <Box>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+              <Button
+                variant="contained"
+                size="small"
+                onClick={handleSave}
+                startIcon={<Save />}
+                sx={{
+                  backgroundColor: '#e86161',
+                  '&:hover': { backgroundColor: '#d45151' },
+                }}
+              >
+                Save
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleCancel}
+                startIcon={<Cancel />}
+              >
+                Cancel
+              </Button>
+              {hasHistory && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => handleOpenHistory(section)}
+                  startIcon={<History />}
+                  sx={{
+                    borderColor: '#e86161',
+                    color: '#e86161',
+                    '&:hover': {
+                      borderColor: '#d45151',
+                      backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                    },
+                  }}
+                >
+                  History ({sectionHistory.length})
+                </Button>
+              )}
+            </Box>
+          </Box>
         ) : (
           <Box
             component="div"
@@ -310,31 +429,6 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
             }}
           />
         )}
-
-        {isEditing && (
-          <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleSave}
-              startIcon={<Save />}
-              sx={{
-                backgroundColor: '#e86161',
-                '&:hover': { backgroundColor: '#d45151' },
-              }}
-            >
-              Save
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={handleCancel}
-              startIcon={<Cancel />}
-            >
-              Cancel
-            </Button>
-          </Box>
-        )}
       </Box>
     );
   };
@@ -347,25 +441,25 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
         </Alert>
       )}
 
-      {renderInteractiveSection(
+      {renderSection(
         'Explanation of the Competency Question',
-        getSectionContent('question') || '',
+        getSectionContent('question'),
         'question'
       )}
       <Divider sx={{ my: 2 }} />
-      {renderInteractiveSection(
+      {renderSection(
         'Required Data for Analysis',
-        getSectionContent('dataCollection') || '',
+        getSectionContent('dataCollection'),
         'dataCollection'
       )}
       <Divider sx={{ my: 2 }} />
-      {renderInteractiveSection(
+      {renderSection(
         'Data Analysis',
-        getSectionContent('dataAnalysis') || '',
+        getSectionContent('dataAnalysis'),
         'dataAnalysis'
       )}
 
-      {/* AI Modification Dialog - only show if interactive */}
+      {/* AI Modification Dialog */}
       {isInteractive && (
         <Dialog
           open={showAIDialog}
@@ -376,7 +470,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
           <DialogTitle>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <SmartToy sx={{ color: '#e86161' }} />
-              <Typography variant="h6">AI Analysis Modification</Typography>
+              <Typography variant="h6">AI Content Modification</Typography>
             </Box>
           </DialogTitle>
           <DialogContent>
@@ -387,8 +481,6 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
                 : aiTargetSection === 'dataCollection'
                   ? 'data collection interpretation'
                   : 'data analysis interpretation'}
-              . The AI will have access to the full context of your research
-              question and previous changes.
             </Typography>
             <TextField
               fullWidth
@@ -396,7 +488,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
               rows={4}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
-              placeholder={`Describe how you want to modify the ${aiTargetSection === 'question' ? 'question interpretation' : aiTargetSection === 'dataCollection' ? 'data collection interpretation' : 'data analysis interpretation'}...`}
+              placeholder="Describe your modifications..."
               variant="outlined"
               disabled={isAIModifying}
             />
@@ -430,6 +522,179 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
           </DialogActions>
         </Dialog>
       )}
+
+      {/* History Dialog */}
+      <Dialog
+        open={historyDialogOpen}
+        onClose={handleCloseHistory}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {/* Removed Psychology icon as per edit hint */}
+              <Typography variant="h6">
+                {historySection === 'question'
+                  ? 'Question Interpretation'
+                  : historySection === 'dataCollection'
+                    ? 'Data Collection Interpretation'
+                    : 'Data Analysis Interpretation'}{' '}
+                History
+              </Typography>
+            </Box>
+            <IconButton onClick={handleCloseHistory} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {historySection && getSectionHistory(historySection).length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="body1" color="text.secondary">
+                No history available for this section yet.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Changes will appear here once you make edits or AI
+                modifications.
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {historySection &&
+                getSectionHistory(historySection).map((item, index) => (
+                  <React.Fragment key={item.id}>
+                    <ListItem
+                      sx={{
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
+                        p: 2,
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                        },
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          mb: 1,
+                        }}
+                      >
+                        <Box sx={{ flex: 1 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              mb: 0.5,
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="bold"
+                              color="text.primary"
+                            >
+                              {item.action === 'ai_modified'
+                                ? 'AI Modified'
+                                : 'Manual Edit'}
+                            </Typography>
+                            <Chip
+                              label={
+                                item.action === 'ai_modified'
+                                  ? 'LLM Context'
+                                  : 'Manual'
+                              }
+                              size="small"
+                              color={
+                                item.action === 'ai_modified'
+                                  ? 'primary'
+                                  : 'default'
+                              }
+                              variant="outlined"
+                            />
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatTimestamp(item.timestamp)}
+                          </Typography>
+                          {item.prompt && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: 'block', mt: 0.5 }}
+                            >
+                              <strong>LLM Prompt:</strong> {item.prompt}
+                            </Typography>
+                          )}
+                          {item.previousContent && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: 'block', mt: 0.5 }}
+                            >
+                              <strong>Previous Content:</strong>{' '}
+                              {item.previousContent.substring(0, 100)}...
+                            </Typography>
+                          )}
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<Restore />}
+                            onClick={() => handleRestoreHistory(item)}
+                            sx={{
+                              backgroundColor: '#e86161',
+                              '&:hover': { backgroundColor: '#d45151' },
+                            }}
+                          >
+                            Restore
+                          </Button>
+                        </Box>
+                      </Box>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                          borderRadius: 1,
+                          border: '1px solid rgba(0, 0, 0, 0.05)',
+                          fontSize: '0.875rem',
+                          maxHeight: '120px',
+                          overflowY: 'auto',
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          component="pre"
+                          sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                        >
+                          {item.content.length > 200
+                            ? `${item.content.substring(0, 200)}...`
+                            : item.content}
+                        </Typography>
+                      </Paper>
+                    </ListItem>
+                    {index < getSectionHistory(historySection).length - 1 && (
+                      <Divider />
+                    )}
+                  </React.Fragment>
+                ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHistory}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

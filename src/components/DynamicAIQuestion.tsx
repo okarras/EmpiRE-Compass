@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Divider, Typography, Paper, Button } from '@mui/material';
+import {
+  Box,
+  Divider,
+  Typography,
+  Paper,
+  Button,
+  Tooltip,
+} from '@mui/material';
+import { History } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
 import SectionSelector from './SectionSelector';
@@ -7,6 +15,7 @@ import TextSkeleton from './AI/TextSkeleton';
 import HTMLRenderer from './AI/HTMLRenderer';
 import AIContentGenerator from './AI/AIContentGenerator';
 import SPARQLQuerySection from './AI/SPARQLQuerySection';
+import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import {
   HistoryManager,
   HistoryItem,
@@ -244,6 +253,16 @@ const DynamicAIQuestion: React.FC = () => {
 
     try {
       const data = await fetchSPARQLData(queryToRun);
+
+      // Check if we got results
+      if (!data || data.length === 0) {
+        setError(
+          'Query executed successfully but returned no results. Try modifying your query or research question.'
+        );
+        updateQueryResults([]);
+        return;
+      }
+
       updateQueryResults(data);
 
       // Create dynamic query object for charts and AI assistant
@@ -297,9 +316,35 @@ const DynamicAIQuestion: React.FC = () => {
       console.error('An error occurred during query execution:', err);
       let errorMessage =
         'An unexpected error occurred while running the query.';
+
       if (err instanceof Error) {
-        errorMessage = err.message;
+        // Provide more specific error messages
+        if (err.message.includes('404') || err.message.includes('Not Found')) {
+          errorMessage =
+            'The SPARQL endpoint is not available. Please try again later.';
+        } else if (
+          err.message.includes('timeout') ||
+          err.message.includes('Timeout')
+        ) {
+          errorMessage =
+            'The query took too long to execute. Try simplifying your query.';
+        } else if (
+          err.message.includes('syntax') ||
+          err.message.includes('Syntax')
+        ) {
+          errorMessage =
+            'The SPARQL query has syntax errors. Please check and fix the query.';
+        } else if (
+          err.message.includes('network') ||
+          err.message.includes('Network')
+        ) {
+          errorMessage =
+            'Network error. Please check your internet connection and try again.';
+        } else {
+          errorMessage = err.message;
+        }
       }
+
       setError(errorMessage);
       updateQueryResults([]);
     } finally {
@@ -452,6 +497,8 @@ const DynamicAIQuestion: React.FC = () => {
     null
   );
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [llmContextHistoryOpen, setLlmContextHistoryOpen] = useState(false);
+
   const handleOpenHistory = (type: HistoryItem['type']) => {
     setHistoryType(type);
     setHistoryOpen(true);
@@ -459,6 +506,14 @@ const DynamicAIQuestion: React.FC = () => {
   const handleCloseHistory = () => {
     setHistoryOpen(false);
     setHistoryType(null);
+  };
+
+  const handleOpenLlmContextHistory = () => {
+    setLlmContextHistoryOpen(true);
+  };
+
+  const handleCloseLlmContextHistory = () => {
+    setLlmContextHistoryOpen(false);
   };
 
   const renderErrorState = (errorMessage: string) => (
@@ -487,6 +542,26 @@ const DynamicAIQuestion: React.FC = () => {
         <Typography variant="body2" color="text.secondary">
           Configure AI settings to use OpenAI or Groq models
         </Typography>
+        <Box sx={{ ml: 'auto' }}>
+          <Tooltip title="Manage LLM Context History">
+            <Button
+              variant="outlined"
+              startIcon={<History />}
+              onClick={handleOpenLlmContextHistory}
+              size="small"
+              sx={{
+                borderColor: '#e86161',
+                color: '#e86161',
+                '&:hover': {
+                  borderColor: '#d45151',
+                  backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                },
+              }}
+            >
+              LLM Context History
+            </Button>
+          </Tooltip>
+        </Box>
       </Box>
 
       {/* Dynamic Question Manager */}
@@ -496,6 +571,8 @@ const DynamicAIQuestion: React.FC = () => {
         question={state.question}
         sparqlQuery={state.sparqlQuery}
         loading={loading}
+        queryResults={state.queryResults}
+        queryError={error}
         onQuestionChange={updateQuestion}
         onSparqlChange={updateSparqlQuery}
         onGenerateAndRun={handleGenerateAndRun}
@@ -553,28 +630,6 @@ const DynamicAIQuestion: React.FC = () => {
                 type="chart"
                 useIframe={true}
                 onContentChange={updateChartHtml}
-                onHistoryClick={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Chart HTML History
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => handleOpenHistory('chart_html')}
-                      sx={{
-                        borderColor: '#e86161',
-                        color: '#e86161',
-                        '&:hover': {
-                          borderColor: '#d45151',
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      History
-                    </Button>
-                  </Box>
-                }
               />
             </>
           )}
@@ -591,6 +646,13 @@ const DynamicAIQuestion: React.FC = () => {
         open={historyOpen}
         type={historyType}
         onClose={handleCloseHistory}
+      />
+
+      {/* LLM Context History Dialog */}
+      <LLMContextHistoryDialog
+        open={llmContextHistoryOpen}
+        onClose={handleCloseLlmContextHistory}
+        onApplyHistoryItem={handleApplyHistoryItem}
       />
     </Box>
   );

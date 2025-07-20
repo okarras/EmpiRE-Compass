@@ -8,12 +8,15 @@ import {
   CircularProgress,
   IconButton,
   Tooltip,
-  Chip,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  List,
+  ListItem,
+  Divider,
+  Chip,
 } from '@mui/material';
 import {
   Edit,
@@ -22,15 +25,22 @@ import {
   Cancel,
   History,
   Refresh,
+  Restore,
+  Close,
 } from '@mui/icons-material';
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/aiService';
-import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
+import {
+  useDynamicQuestion,
+  DynamicQuestionHistory,
+} from '../../context/DynamicQuestionContext';
 
 interface SPARQLQuerySectionProps {
   question: string;
   sparqlQuery: string;
   loading: boolean;
+  queryResults?: Record<string, unknown>[];
+  queryError?: string | null;
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
   onGenerateAndRun: () => void;
@@ -42,6 +52,8 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   question,
   sparqlQuery,
   loading,
+  queryResults = [],
+  queryError,
   onQuestionChange,
   onSparqlChange,
   onGenerateAndRun,
@@ -58,6 +70,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [editContent, setEditContent] = useState(sparqlQuery);
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -74,6 +87,58 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     setIsEditing(false);
     setEditContent(sparqlQuery);
     setError(null);
+  };
+
+  const handleOpenHistory = () => {
+    setHistoryDialogOpen(true);
+  };
+
+  const handleCloseHistory = () => {
+    setHistoryDialogOpen(false);
+  };
+
+  const handleRevertHistory = (item: DynamicQuestionHistory) => {
+    onSparqlChange(item.content);
+    handleCloseHistory();
+  };
+
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
+  };
+
+  const getSparqlHistory = () => {
+    const allHistory = getHistoryByType('sparql');
+    const currentContent = sparqlQuery;
+
+    // Filter history items that are different from current content and not duplicates
+    const seenContents = new Set();
+    return allHistory
+      .filter((item) => {
+        // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
+        const trimmedContent = item.content.trim();
+        if (
+          !trimmedContent ||
+          trimmedContent === currentContent.trim() ||
+          seenContents.has(trimmedContent)
+        ) {
+          return false;
+        }
+        seenContents.add(trimmedContent);
+        return true;
+      })
+      .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
   };
 
   const handleAIModify = async () => {
@@ -139,10 +204,6 @@ Modified SPARQL Query:`;
     } finally {
       setIsAIModifying(false);
     }
-  };
-
-  const getHistoryCount = () => {
-    return getHistoryByType('sparql').length;
   };
 
   return (
@@ -242,42 +303,98 @@ Modified SPARQL Query:`;
               SPARQL Query
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {getHistoryCount() > 0 && (
-                <Chip
-                  icon={<History />}
-                  label={`${getHistoryCount()} changes`}
-                  size="small"
-                  variant="outlined"
-                  color="primary"
-                />
+              {isEditing ? (
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleSave}
+                    startIcon={<Save />}
+                    sx={{
+                      backgroundColor: '#e86161',
+                      '&:hover': { backgroundColor: '#d45151' },
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handleCancel}
+                    startIcon={<Cancel />}
+                  >
+                    Cancel
+                  </Button>
+                  {getSparqlHistory().length > 0 && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleOpenHistory}
+                      startIcon={<History />}
+                      sx={{
+                        borderColor: '#e86161',
+                        color: '#e86161',
+                        '&:hover': {
+                          borderColor: '#d45151',
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      History ({getSparqlHistory().length})
+                    </Button>
+                  )}
+                </Box>
+              ) : (
+                <>
+                  <Tooltip title="Edit manually">
+                    <IconButton
+                      onClick={handleEdit}
+                      size="small"
+                      sx={{
+                        color: 'text.secondary',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      <Edit />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Ask AI to modify">
+                    <IconButton
+                      onClick={() => setShowAIDialog(true)}
+                      size="small"
+                      sx={{
+                        color: 'text.secondary',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      <SmartToy />
+                    </IconButton>
+                  </Tooltip>
+                  {getSparqlHistory().length > 0 && (
+                    <Tooltip
+                      title={`View ${getSparqlHistory().length} previous versions`}
+                    >
+                      <IconButton
+                        onClick={handleOpenHistory}
+                        size="small"
+                        sx={{
+                          color: '#e86161',
+                          '&:hover': {
+                            backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                          },
+                        }}
+                      >
+                        <History />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {/* Remove the problematic renderHistoryButton that causes rendering issues */}
+                </>
               )}
-              <Tooltip title="Edit manually">
-                <IconButton
-                  onClick={handleEdit}
-                  size="small"
-                  sx={{
-                    color: 'text.secondary',
-                    '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
-                  }}
-                >
-                  <Edit />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Ask AI to modify">
-                <IconButton
-                  onClick={() => setShowAIDialog(true)}
-                  size="small"
-                  sx={{
-                    color: 'text.secondary',
-                    '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
-                  }}
-                >
-                  <SmartToy />
-                </IconButton>
-              </Tooltip>
-              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-              {/* @ts-expect-error */}
-              {renderHistoryButton('sparql', 'SPARQL History', onOpenHistory)}
             </Box>
           </Box>
 
@@ -312,30 +429,37 @@ Modified SPARQL Query:`;
             }}
           />
 
-          {isEditing && (
-            <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={handleSave}
-                startIcon={<Save />}
-                sx={{
-                  backgroundColor: '#e86161',
-                  '&:hover': { backgroundColor: '#d45151' },
-                }}
-              >
-                Save
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleCancel}
-                startIcon={<Cancel />}
-              >
-                Cancel
-              </Button>
+          {/* Query Results Status */}
+          {!loading && sparqlQuery && !queryError && (
+            <Box sx={{ mb: 2 }}>
+              {queryResults.length > 0 ? (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    ✅ Query executed successfully! Found{' '}
+                    <strong>{queryResults.length}</strong> result
+                    {queryResults.length !== 1 ? 's' : ''}.
+                  </Typography>
+                </Alert>
+              ) : (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  <Typography variant="body2">
+                    ⚠️ Query executed successfully but returned no results. Try
+                    modifying your query or research question.
+                  </Typography>
+                </Alert>
+              )}
             </Box>
           )}
+
+          {/* Query Error */}
+          {!loading && queryError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                ❌ Query failed: {queryError}
+              </Typography>
+            </Alert>
+          )}
+
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
@@ -351,7 +475,7 @@ Modified SPARQL Query:`;
                 },
               }}
             >
-              {loading ? 'Running...' : 'Run Edited Query'}
+              {loading ? 'Running...' : 'Run'}
             </Button>
           </Box>
         </Paper>
@@ -413,6 +537,170 @@ Modified SPARQL Query:`;
           >
             {isAIModifying ? 'Modifying...' : 'Modify with AI'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* History Dialog */}
+      <Dialog
+        open={historyDialogOpen}
+        onClose={handleCloseHistory}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <History sx={{ color: '#e86161' }} />
+              <Typography variant="h6">SPARQL Query History</Typography>
+            </Box>
+            <IconButton onClick={handleCloseHistory} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {getSparqlHistory().length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="body1" color="text.secondary">
+                No SPARQL query history available yet.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Changes will appear here once you make edits or AI
+                modifications.
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {getSparqlHistory().map((item, index) => (
+                <React.Fragment key={item.id}>
+                  <ListItem
+                    sx={{
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                      p: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="bold"
+                            color="text.primary"
+                          >
+                            {item.action === 'ai_modified'
+                              ? 'AI Modified SPARQL'
+                              : 'Manual Edit SPARQL'}
+                          </Typography>
+                          <Chip
+                            label={
+                              item.action === 'ai_modified'
+                                ? 'LLM Context'
+                                : 'Manual'
+                            }
+                            size="small"
+                            color={
+                              item.action === 'ai_modified'
+                                ? 'primary'
+                                : 'default'
+                            }
+                            variant="outlined"
+                          />
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatTimestamp(item.timestamp)}
+                        </Typography>
+                        {item.prompt && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            <strong>LLM Prompt:</strong> {item.prompt}
+                          </Typography>
+                        )}
+                        {item.previousContent && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            <strong>Previous Content:</strong>{' '}
+                            {item.previousContent.substring(0, 100)}...
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<Restore />}
+                          onClick={() => handleRevertHistory(item)}
+                          sx={{
+                            backgroundColor: '#e86161',
+                            '&:hover': { backgroundColor: '#d45151' },
+                          }}
+                        >
+                          Restore
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: 1,
+                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                        fontFamily: 'monospace',
+                        fontSize: '0.875rem',
+                        maxHeight: '120px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        component="pre"
+                        sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      >
+                        {item.content.length > 200
+                          ? `${item.content.substring(0, 200)}...`
+                          : item.content}
+                      </Typography>
+                    </Paper>
+                  </ListItem>
+                  {index < getSparqlHistory().length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHistory}>Close</Button>
         </DialogActions>
       </Dialog>
     </>

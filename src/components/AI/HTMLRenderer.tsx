@@ -14,6 +14,9 @@ import {
   TextField,
   Button,
   CircularProgress,
+  List,
+  ListItem,
+  Divider,
 } from '@mui/material';
 import {
   Edit,
@@ -22,10 +25,13 @@ import {
   Cancel,
   History,
   Refresh,
+  Restore,
+  Close,
 } from '@mui/icons-material';
 import DOMPurify from 'dompurify';
 import { useAIService } from '../../services/aiService';
 import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
+import { HistoryItem } from './HistoryManager';
 
 interface HTMLRendererProps {
   html: string;
@@ -53,6 +59,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   const [editContent, setEditContent] = useState(html);
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const handleEdit = () => {
     setEditContent(html);
@@ -71,6 +78,60 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
     setIsEditing(false);
     setEditContent(html);
     setError(null);
+  };
+
+  const handleOpenHistory = () => {
+    setHistoryDialogOpen(true);
+  };
+
+  const handleCloseHistory = () => {
+    setHistoryDialogOpen(false);
+  };
+
+  const handleRestoreHistory = (item: HistoryItem) => {
+    if (onContentChange) {
+      onContentChange(item.content);
+    }
+    handleCloseHistory();
+  };
+
+  const getChartHistory = () => {
+    const allHistory = getHistoryByType('chart');
+    const currentContent = html;
+
+    // Filter history items that are different from current content and not duplicates
+    const seenContents = new Set();
+    return allHistory
+      .filter((item) => {
+        // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
+        const trimmedContent = item.content.trim();
+        if (
+          !trimmedContent ||
+          trimmedContent === currentContent.trim() ||
+          seenContents.has(trimmedContent)
+        ) {
+          return false;
+        }
+        seenContents.add(trimmedContent);
+        return true;
+      })
+      .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
+  };
+
+  const formatTimestamp = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 1) {
+      const diffInMinutes = Math.floor(diffInHours * 60);
+      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInHours < 24) {
+      const hours = Math.floor(diffInHours);
+      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+    }
   };
 
   const handleAIModify = async () => {
@@ -118,14 +179,15 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
       Please modify the chart HTML according to the user's request. Consider the context and history provided.
 
       Requirements:
-- Return complete HTML with Chart.js CDN included
-- Use transparent background, no scrollbars
-- Include professional, responsive styling
-- Use brand colors (#e86161, #4CAF50, #2196F3, #FF9800, #9C27B0)
-- Set chart height to at least 500px for better visibility
-- Ensure the chart is properly sized and responsive
-- Include comprehensive interactivity (hover tooltips, click events, zoom/pan)
-- Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
+      - Return complete HTML with Chart.js CDN included
+      - Use transparent background, no scrollbars
+      - Include professional, responsive styling
+      - Use brand colors (#e86161, #4CAF50, #2196F3, #FF9800, #9C27B0)
+      - Set chart height to at least 500px for better visibility
+      - Ensure the chart is properly sized and responsive
+      - Include comprehensive interactivity (hover tooltips, click events, zoom/pan)
+      - Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
+      - Set padding to 40px
 
       Modified Chart HTML:`;
 
@@ -173,10 +235,6 @@ ${bodyMatch[0]}
     } finally {
       setIsAIModifying(false);
     }
-  };
-
-  const getHistoryCount = () => {
-    return getHistoryByType('chart').length;
   };
 
   // Sanitize HTML content
@@ -309,7 +367,6 @@ ${bodyMatch[0]}
             }}
             title={title || 'AI Generated Chart'}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-            scrolling="no"
           />
         </Box>
       );
@@ -427,15 +484,6 @@ ${bodyMatch[0]}
             {title}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {type === 'chart' && getHistoryCount() > 0 && (
-              <Chip
-                icon={<History />}
-                label={`${getHistoryCount()} changes`}
-                size="small"
-                variant="outlined"
-                color="primary"
-              />
-            )}
             {type === 'chart' && onContentChange && (
               <>
                 <Tooltip title="Edit manually">
@@ -462,6 +510,24 @@ ${bodyMatch[0]}
                     <SmartToy />
                   </IconButton>
                 </Tooltip>
+                {getChartHistory().length > 0 && (
+                  <Tooltip
+                    title={`View ${getChartHistory().length} previous versions`}
+                  >
+                    <IconButton
+                      onClick={handleOpenHistory}
+                      size="small"
+                      sx={{
+                        color: '#e86161',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      <History />
+                    </IconButton>
+                  </Tooltip>
+                )}
               </>
             )}
             {onHistoryClick && <Box>{onHistoryClick}</Box>}
@@ -509,6 +575,24 @@ ${bodyMatch[0]}
           >
             Cancel
           </Button>
+          {getChartHistory().length > 0 && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleOpenHistory}
+              startIcon={<History />}
+              sx={{
+                borderColor: '#e86161',
+                color: '#e86161',
+                '&:hover': {
+                  borderColor: '#d45151',
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              History ({getChartHistory().length})
+            </Button>
+          )}
         </Box>
       )}
       {renderContent()}
@@ -573,6 +657,172 @@ ${bodyMatch[0]}
           </DialogActions>
         </Dialog>
       )}
+
+      {/* History Dialog */}
+      <Dialog
+        open={historyDialogOpen}
+        onClose={handleCloseHistory}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <History sx={{ color: '#e86161' }} />
+              <Typography variant="h6">Chart History</Typography>
+            </Box>
+            <IconButton onClick={handleCloseHistory} size="small">
+              <Close />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {getChartHistory().length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="body1" color="text.secondary">
+                No chart history available yet.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Changes will appear here once you make edits or AI
+                modifications.
+              </Typography>
+            </Box>
+          ) : (
+            <List sx={{ p: 0 }}>
+              {getChartHistory().map((item, index) => (
+                <React.Fragment key={item.id}>
+                  <ListItem
+                    sx={{
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                      p: 2,
+                      '&:hover': {
+                        backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight="bold"
+                            color="text.primary"
+                          >
+                            {item.action === 'ai_modified'
+                              ? 'AI Modified Chart'
+                              : 'Manual Edit Chart'}
+                          </Typography>
+                          <Chip
+                            label={
+                              item.action === 'ai_modified'
+                                ? 'LLM Context'
+                                : 'Manual'
+                            }
+                            size="small"
+                            color={
+                              item.action === 'ai_modified'
+                                ? 'primary'
+                                : 'default'
+                            }
+                            variant="outlined"
+                          />
+                        </Box>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatTimestamp(item.timestamp)}
+                        </Typography>
+                        {item.prompt && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            <strong>LLM Prompt:</strong> {item.prompt}
+                          </Typography>
+                        )}
+                        {item.previousContent && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mt: 0.5 }}
+                          >
+                            <strong>Previous Content:</strong>{' '}
+                            {item.previousContent.substring(0, 100)}...
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<Restore />}
+                          onClick={() =>
+                            handleRestoreHistory(item as unknown as HistoryItem)
+                          }
+                          sx={{
+                            backgroundColor: '#e86161',
+                            '&:hover': { backgroundColor: '#d45151' },
+                          }}
+                        >
+                          Restore
+                        </Button>
+                      </Box>
+                    </Box>
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        p: 2,
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: 1,
+                        border: '1px solid rgba(0, 0, 0, 0.05)',
+                        fontFamily: 'monospace',
+                        fontSize: '0.875rem',
+                        maxHeight: '120px',
+                        overflowY: 'auto',
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        component="pre"
+                        sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      >
+                        {item.content.length > 200
+                          ? `${item.content.substring(0, 200)}...`
+                          : item.content}
+                      </Typography>
+                    </Paper>
+                  </ListItem>
+                  {index < getChartHistory().length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseHistory}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };
