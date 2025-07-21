@@ -12,9 +12,7 @@
   <img src="https://user-images.githubusercontent.com/PLACEHOLDER/logo.png" alt="EmpiRE-Compass Logo" width="300" />
 </p> -->
 
-"Navigating the EmpiRE of Empirical Research in Requirements Engineering"
-
-EmpiRE-Compass is a comprehensive platform that facilitates the exploration, reproduction, and enrichment of empirical research data within the KG-EmpiRE ecosystem. By leveraging live data from the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution—all while aligning with ACM standards.
+EmpiRE-Compass is a neuro-symbolic dashboard that facilitates the exploration, replication, and reuse of empirical research knowledge of KG-EmpiRE - a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering. By leveraging live data of KG-EmpiRE stored in the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution.
 
 ---
 
