@@ -6,7 +6,7 @@
   </a>
 </div>
 <h2 align="center">EmpiRE-Compass<br/>
-<i>"Navigating the EmpiRE of Empirical Research in Requirements Engineering"</i></h2>
+<i>"Navigating the Landscape of Empirical Research in Requirements Engineering"</i></h2>
 
 <!-- <p>
   <img src="https://user-images.githubusercontent.com/PLACEHOLDER/logo.png" alt="EmpiRE-Compass Logo" width="300" />
