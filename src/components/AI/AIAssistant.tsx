@@ -21,7 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Query } from '../../constants/queries_chart_info';
-import useAIAssistant from '../../hooks/useAIAssistant';
+import useBackendAIAssistant from '../../hooks/useBackendAIAssistant';
 import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import AIConfigurationButton from './AIConfigurationButton';
 
@@ -57,7 +57,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     setShowChart,
     clearChatHistory,
     exportChatHistory,
-  } = useAIAssistant({ query, questionData });
+  } = useBackendAIAssistant({ query, questionData });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
