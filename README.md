@@ -437,18 +437,18 @@ python empire-statistics.py --service_account path/to/service-account.json --lim
 ```
 
 
-## Statistics Automation
+# Statistics Automation
 
 EmpiRE-Compass automatically updates statistics using GitHub Actions that run the `empire-statistics.py` script:
 
-### Automated Updates
+## Automated Updates
 
 - **On every commit** to main branch
 - **On merged pull requests**
 - **Weekly schedule** (Mondays at 6 AM UTC)
 - **Manual trigger** via GitHub Actions
 
-### Statistics Collected
+## Statistics Collected
 
 - **Paper count** - Total number of papers in KG-EmpiRE
 - **Resources & Literals** - RDF resources and literal values
@@ -457,7 +457,7 @@ EmpiRE-Compass automatically updates statistics using GitHub Actions that run th
 - **Averages** - Mean values per paper
 - **Timestamps** - Last update and processing times
 
-### Manual Execution
+## Manual Execution
 
 ```bash
 # Process all papers and update Firebase
@@ -470,21 +470,19 @@ python scripts/empire-statistics.py --limit 10 --service_account path/to/service
 python scripts/empire-statistics.py --no_firebase
 ```
 
-### Monitoring
+## Monitoring
 
 - View execution logs in **GitHub Actions** tab
 - Check results in **Firebase Console** → **Firestore Database**
 - Download CSV reports from workflow artifacts
 
----
 
-## License
+# License
 
 This project is licensed under the [MIT License](LICENSE).
 
----
 
-## Repository Links
+# Repository Links
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
 EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
