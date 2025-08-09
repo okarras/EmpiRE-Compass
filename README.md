@@ -65,10 +65,10 @@ EmpiRE-Compass/
 ┃   ┗━ workflows/
 ┃       ┗━ update-statistics.yml
 ┣━ .husky/
-┃   ┣━ _/                       # git hook templates and shell
+┃   ┣━ _/                       
 ┃   ┣━ commit-msg
 ┃   ┗━ pre-commit
-┣━ .idea/                       # IDE project files
+┣━ .idea/                       
 ┣━ .storybook/
 ┃   ├── main.ts
 ┃   ├── preview.ts
@@ -209,8 +209,8 @@ EmpiRE-Compass/
 ┃   ├── main.css
 ┃   ├── main.tsx
 ┃   └── vite-env.d.ts
-┣━ stories/                      # Storybook stories mirror src/components
-┃   ├── AI/ …                    # *.stories.tsx
+┣━ stories/                      
+┃   ├── AI/ …                   
 ┃   ├── DataVisualization/ …
 ┃   ├── Home/ …
 ┃   ├── Layout/ …
