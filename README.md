@@ -1,20 +1,23 @@
-<!-- PROJECT LOGO -->
-<br />
+<a id='top'></a>
 <div align="center">
   <a href="https://github.com/okarras/EmpiRE-Compass">
     <img src="logo.png" alt="Logo" width="500" height="250">
   </a>
+
+<h2 align="center" style="font-weight: normal">EmpiRE-Compass<br/>
+<i>"Navigating the Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
+
+[![GitHub - Project](https://img.shields.io/badge/GitHub-Project-2ea44f)](https://github.com/okarras/EmpiRE-Compass) [![Issues - Bug Report](https://img.shields.io/badge/Issues-Bug_Report-2ea44f)](https://github.com/okarras/EmpiRE-Compass/issues) [![Issues - Feature Request](https://img.shields.io/badge/Issues-Feature_Request-2ea44f)](https://github.com/okarras/EmpiRE-Compass/issues) [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/okarras/EmpiRE-Compass/HEAD) 
+[![ORKG - KG-EmpiRE](https://img.shields.io/badge/ORKG-KG--EmpiRE-e86161)](https://orkg.org/observatory/Empirical_Software_Engineering?sort=combined&classesFilter=Paper,Comparison,Visualization)
+[![ORKG - RDF dump](https://img.shields.io/badge/ORKG-RDF_dump-e86161)](https://orkg.org/api/rdf/dump)
 </div>
-<h2 align="center">EmpiRE-Compass<br/>
-<i>"Navigating the Landscape of Empirical Research in Requirements Engineering"</i></h2>
-
-<!-- <p>
-  <img src="https://user-images.githubusercontent.com/PLACEHOLDER/logo.png" alt="EmpiRE-Compass Logo" width="300" />
-</p> -->
-
-EmpiRE-Compass is a neuro-symbolic dashboard that facilitates the exploration, replication, and reuse of empirical research knowledge of KG-EmpiRE - a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering. By leveraging live data of KG-EmpiRE stored in the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution.
 
 ---
+
+EmpiRE-Compass is a neuro-symbolic dashboard that facilitates the exploration, replication, and reuse of empirical research knowledge of **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering.  
+By leveraging live data of KG-EmpiRE stored in the **Open Research Knowledge Graph (ORKG)**, EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution.
 
 ## Table of Contents
 
