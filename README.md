@@ -52,9 +52,56 @@ Key capabilities include:
 5. **Data Contribution Workflow** – Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
 6. **Study Designer Knowledge Base** – Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+# Folder Structure and Files
+
+In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
+
+## Graphical Overview
+EmpiRE-Compass/
+┣━ .storybook/
+┃   ┣━ main.js                # Main Storybook configuration file
+┃   ┣━ preview.js             # Global Storybook settings and decorators
+┃   ┗━ manager.js             # Storybook UI configuration
+┣━ public/
+┃   ┗━ logo.png                # Project logo
+┣━ src/
+┃   ┣━ assets/
+┃   ┃   ┣━ images/             # Image assets
+┃   ┃   ┗━ styles/             # Style-related assets (CSS/SCSS)
+┃   ┣━ components/
+┃   ┃   ┣━ Dashboard/          # Dashboard-specific components
+┃   ┃   ┣━ Charts/             # Chart and graph components
+┃   ┃   ┣━ Forms/              # Form elements for data submission
+┃   ┃   ┗━ Shared/             # Reusable UI components (buttons, modals, etc.)
+┃   ┣━ hooks/
+┃   ┃   ┣━ useFetchData.js     # Custom hook for fetching ORKG data
+┃   ┃   ┗━ usePagination.js    # Pagination logic
+┃   ┣━ pages/
+┃   ┃   ┣━ HomePage.js         # Landing page
+┃   ┃   ┣━ DashboardPage.js    # Dashboard overview
+┃   ┃   ┗━ StatisticsPage.js   # Statistics view
+┃   ┣━ services/
+┃   ┃   ┣━ api.js              # API configuration and methods
+┃   ┃   ┗━ orkgService.js      # ORKG-specific API calls
+┃   ┣━ store/
+┃   ┃   ┗━ comparisonStore.js  # Zustand store for state management
+┃   ┣━ styles/
+┃   ┃   ┣━ globals.css         # Global styles
+┃   ┃   ┗━ theme.css           # Theme variables and layout styles
+┃   ┣━ tests/
+┃   ┃   ┣━ App.test.js         # Application-level tests
+┃   ┃   ┗━ utils.test.js       # Utility function tests
+┃   ┣━ utils/
+┃   ┃   ┣━ fetchData.js        # Data fetching utility
+┃   ┃   ┗━ formatData.js       # Data formatting helper
+┃   ┗━ index.js                # Application entry point
+┣━ .gitignore                  # Git ignore rules
+┣━ package.json                # Project dependencies and scripts
+┣━ README.md                   # Project README
+┣━ LICENSE                     # Project license
+┣━ yarn.lock                   # Yarn lockfile for dependency versions
 
 ## Description of the Folders and Files
 | **Directory / File** | **Description** |
