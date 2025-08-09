@@ -11,9 +11,6 @@
 
 </div>
 
-EmpiRE-Compass is a neuro-symbolic dashboard that facilitates the exploration, replication, and reuse of empirical research knowledge of **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering.  
-By leveraging live data of KG-EmpiRE stored in the **Open Research Knowledge Graph (ORKG)**, EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution.
-
 
 # Table of Contents
 <details>
@@ -38,45 +35,24 @@ By leveraging live data of KG-EmpiRE stored in the **Open Research Knowledge Gra
 </details>
 
 
-## Overview
+# About the Project
 
-EmpiRE-Compass serves as a central hub for empirical research data management. It provides interactive diagrams connected to live ORKG data, offers reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. A Study Designer Knowledge Base helps users find similar research and receive design recommendations aligned with ACM standards.
+EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, replication, and reuse of empirical research knowledge from **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering (RE). By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
+
+The platform serves as a **central hub for empirical research data management**. It provides interactive diagrams connected to live ORKG data, supports reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. An integrated **Study Designer Knowledge Base** helps users find similar research and receive design recommendations aligned with ACM standards.
 
 The project includes a comprehensive **Storybook design system** that documents all UI components, making it easy for developers to understand, reuse, and contribute to the component library.
 
-<!-- <p>
-  <img src="https://user-images.githubusercontent.com/PLACEHOLDER/demo-screenshot.png" alt="EmpiRE-Compass Screenshot" width="700" />
-</p> -->
+Key capabilities include:
 
----
+1. **Dashboard Display** – Visualizes 16 competency questions and their answers with interactive diagrams, providing an overview of KG-EmpiRE data.
+2. **Live Interactive Diagrams** – Dynamically fetches real-time data from ORKG. Users can click diagram elements to explore related research papers and insights.
+3. **Reproduction & Comparison** – Allows reviewing historical published states of KG-EmpiRE and comparing them with the current live data to understand how research evolves.
+4. **Statistics & Metrics** – Displays real-time counts of conferences, papers, triples, resources, and literals to keep track of the KG-EmpiRE scope.
+5. **Data Contribution Workflow** – Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
+6. **Study Designer Knowledge Base** – Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
 
-## Key Features
-
-### Dashboard Display
-
-Visualizes 16 competency questions and their answers with interactive diagrams, providing an overview of KG-EmpiRE data.
-
-### Live Interactive Diagrams
-
-Dynamically fetches real-time data from ORKG. Users can click diagram elements to explore related research papers and insights.
-
-### Reproduction & Comparison
-
-Allows reviewing historical published states of KG-EmpiRE and comparing them with the current live data to understand how research evolves.
-
-### Statistics & Metrics
-
-Displays real-time counts of conferences, papers, triples, resources, and literals to keep track of the KG-EmpiRE scope.
-
-### Data Contribution Workflow
-
-Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
-
-### Study Designer Knowledge Base
-
-Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
-
----
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Getting Started
 
