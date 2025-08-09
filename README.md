@@ -54,6 +54,57 @@ Key capabilities include:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Description of the Folders and Files
+| **Directory / File** | **Description** |
+|----------------------|-----------------|
+| [.storybook/](.storybook/) | Storybook configuration files used to document UI components. |
+| [.storybook/main.js](.storybook/main.js) | Main Storybook configuration (addons, stories). |
+| [.storybook/preview.js](.storybook/preview.js) | Global settings, decorators, and parameters for Storybook. |
+| [.storybook/manager.js](.storybook/manager.js) | Custom Storybook UI configuration. |
+| [public/](public/) | Static files served by the app. |
+| [public/logo.png](public/logo.png) | Logo of the project. |
+| [src/assets/](src/assets/) | Contains static project assets. |
+| [src/assets/images/](src/assets/images/) | Image files for UI. |
+| [src/assets/styles/](src/assets/styles/) | CSS/SCSS files for asset styling. |
+| [src/components/](src/components/) | All reusable and page-specific components. |
+| [src/components/Dashboard/](src/components/Dashboard/) | Components for dashboard display. |
+| [src/components/Charts/](src/components/Charts/) | Chart.js and diagram components. |
+| [src/components/Forms/](src/components/Forms/) | Form components for data input. |
+| [src/components/Shared/](src/components/Shared/) | Shared UI elements like buttons and modals. |
+| [src/hooks/](src/hooks/) | Custom React hooks for reusable logic. |
+| [src/hooks/useFetchData.js](src/hooks/useFetchData.js) | Data fetching logic for ORKG queries. |
+| [src/hooks/usePagination.js](src/hooks/usePagination.js) | Hook for pagination logic. |
+| [src/pages/](src/pages/) | Page-level React components for routing. |
+| [src/pages/HomePage.js](src/pages/HomePage.js) | Landing page. |
+| [src/pages/DashboardPage.js](src/pages/DashboardPage.js) | Dashboard overview page. |
+| [src/pages/StatisticsPage.js](src/pages/StatisticsPage.js) | Statistics visualization page. |
+| [src/services/](src/services/) | Service layer for API interactions. |
+| [src/services/api.js](src/services/api.js) | Base API setup. |
+| [src/services/orkgService.js](src/services/orkgService.js) | ORKG-specific API requests. |
+| [src/store/](src/store/) | Global state management with Zustand. |
+| [src/store/comparisonStore.js](src/store/comparisonStore.js) | Zustand store for comparisons. |
+| [src/styles/](src/styles/) | Global style definitions. |
+| [src/styles/globals.css](src/styles/globals.css) | Base global styles. |
+| [src/styles/theme.css](src/styles/theme.css) | Theme definitions and color variables. |
+| [src/tests/](src/tests/) | Unit and integration tests. |
+| [src/tests/App.test.js](src/tests/App.test.js) | Main app test. |
+| [src/tests/utils.test.js](src/tests/utils.test.js) | Utility function tests. |
+| [src/utils/](src/utils/) | Helper functions. |
+| [src/utils/fetchData.js](src/utils/fetchData.js) | Fetch data helper. |
+| [src/utils/formatData.js](src/utils/formatData.js) | Data formatting helper. |
+| [src/index.js](src/index.js) | Entry point for the React app. |
+| [.gitignore](.gitignore) | Git ignore rules. |
+| [package.json](package.json) | Project dependencies and scripts. |
+| [README.md](README.md) | Project documentation. |
+| [LICENSE](LICENSE) | Project license. |
+| [yarn.lock](yarn.lock) | Dependency lockfile for Yarn. |
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+
 ## Getting Started
 
 ### Prerequisites
