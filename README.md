@@ -477,10 +477,6 @@ python scripts/empire-statistics.py --no_firebase
 - Download CSV reports from workflow artifacts
 
 
-# License
-
-This project is licensed under the [MIT License](LICENSE).
-
 
 # Repository Links
 
