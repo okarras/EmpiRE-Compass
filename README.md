@@ -60,48 +60,173 @@ In the following, we first show a graphical overview of the folder structure and
 
 ## Graphical Overview
 EmpiRE-Compass/
+┣━ .github/
+┃   ┗━ workflows/
+┃       ┗━ update-statistics.yml
+┣━ .husky/
+┃   ┣━ _/                       # git hook templates and shell
+┃   ┣━ commit-msg
+┃   ┗━ pre-commit
+┣━ .idea/                       # IDE project files
 ┣━ .storybook/
-┃   ┣━ main.js                # Main Storybook configuration file
-┃   ┣━ preview.js             # Global Storybook settings and decorators
-┃   ┗━ manager.js             # Storybook UI configuration
-┣━ public/
-┃   ┗━ logo.png                # Project logo
+┃   ├── main.ts
+┃   ├── preview.ts
+┃   └── vitest.setup.ts
+┣━ data/
+┃   ├── questions.json
+┃   ├── sample_data.json
+┃   ├── query_1_data_2024-07-26.json
+┃   ├── query_2.1_data_2024-07-26.json
+┃   ├── query_6.1_data_2024-07-26.json
+┃   ├── query_10_data_2025-02-27.json
+┃   ├── query_11_data_2025-02-27.json
+┃   ├── query_12_data_2025-02-27.json
+┃   ├── query_13_data_2025-02-27.json
+┃   ├── query_14_data_2025-02-27.json
+┃   ├── query_15.1_data_2025-02-27.json
+┃   ├── query_15.2_data_2025-02-27.json
+┃   ├── query_4.1_data_2025-02-27.json
+┃   ├── query_4.2_data_2025-02-27.json
+┃   ├── query_5_data_2025-02-27.json
+┃   ├── query_7.1_data_2025-02-27.json
+┃   ├── query_8_data_2025-02-27.json
+┃   └── query_9_data_2025-02-27.json
+┣━ dev-dist/
+┃   ├── registerSW.js
+┃   ├── sw.js
+┃   └── workbox-6244ca5c.js
+┣━ docs/
+┃   ├── CONTRIBUTING.md
+┃   ├── FIREBASE_QUICK_SETUP.md
+┃   ├── FIREBASE_SETUP.md
+┃   ├── GITHUB_FIREBASE_SETUP.md
+┃   ├── STORYBOOK_PUBLISHING.md
+┃   └── VERSIONING.md
+┣━ empire-compass-dashboard/
+┃   └── src/ (macOS .DS_Store files)
+┣━ scripts/
+┃   ├── empire-statistics.py
+┃   ├── firebase_integration.py
+┃   ├── firebase-service-account.json.template
+┃   ├── daily_results_incremental.csv
+┃   ├── requirements.txt
+┃   ├── update_statistics_dummy.txt
+┃   └── orkg-cache/
+┃       ├── .gitkeep
+┃       ├── <many cached ORKG *.json files> …
+┃       └── (hundreds of hashed cache entries)
 ┣━ src/
-┃   ┣━ assets/
-┃   ┃   ┣━ images/             # Image assets
-┃   ┃   ┗━ styles/             # Style-related assets (CSS/SCSS)
-┃   ┣━ components/
-┃   ┃   ┣━ Dashboard/          # Dashboard-specific components
-┃   ┃   ┣━ Charts/             # Chart and graph components
-┃   ┃   ┣━ Forms/              # Form elements for data submission
-┃   ┃   ┗━ Shared/             # Reusable UI components (buttons, modals, etc.)
-┃   ┣━ hooks/
-┃   ┃   ┣━ useFetchData.js     # Custom hook for fetching ORKG data
-┃   ┃   ┗━ usePagination.js    # Pagination logic
-┃   ┣━ pages/
-┃   ┃   ┣━ HomePage.js         # Landing page
-┃   ┃   ┣━ DashboardPage.js    # Dashboard overview
-┃   ┃   ┗━ StatisticsPage.js   # Statistics view
-┃   ┣━ services/
-┃   ┃   ┣━ api.js              # API configuration and methods
-┃   ┃   ┗━ orkgService.js      # ORKG-specific API calls
-┃   ┣━ store/
-┃   ┃   ┗━ comparisonStore.js  # Zustand store for state management
-┃   ┣━ styles/
-┃   ┃   ┣━ globals.css         # Global styles
-┃   ┃   ┗━ theme.css           # Theme variables and layout styles
-┃   ┣━ tests/
-┃   ┃   ┣━ App.test.js         # Application-level tests
-┃   ┃   ┗━ utils.test.js       # Utility function tests
-┃   ┣━ utils/
-┃   ┃   ┣━ fetchData.js        # Data fetching utility
-┃   ┃   ┗━ formatData.js       # Data formatting helper
-┃   ┗━ index.js                # Application entry point
-┣━ .gitignore                  # Git ignore rules
-┣━ package.json                # Project dependencies and scripts
-┣━ README.md                   # Project README
-┣━ LICENSE                     # Project license
-┣━ yarn.lock                   # Yarn lockfile for dependency versions
+┃   ├── api/
+┃   │   ├── SPARQL_QUERIES.ts
+┃   │   └── STATISTICS_SPARQL_QUERIES.ts
+┃   ├── assets/
+┃   │   ├── KGEmpire.png
+┃   │   ├── ORKG.png
+┃   │   ├── ORKGask.png
+┃   │   └── TIB.png
+┃   ├── components/
+┃   │   ├── AI/
+┃   │   │   ├── AIAssistant.tsx
+┃   │   │   ├── AIConfigurationButton.tsx
+┃   │   │   ├── AIConfigurationDialog.tsx
+┃   │   │   ├── AIContentGenerator.tsx
+┃   │   │   ├── ChatMessage.tsx
+┃   │   │   ├── CodeBlock.tsx
+┃   │   │   ├── DynamicQuestionManager.tsx
+┃   │   │   ├── FloatingAIAssistant.tsx
+┃   │   │   ├── HistoryManager.tsx
+┃   │   │   ├── HTMLRenderer.tsx
+┃   │   │   ├── InitialAnalysis.tsx
+┃   │   │   ├── InteractiveSection.tsx
+┃   │   │   ├── LLMContextHistoryDialog.tsx
+┃   │   │   ├── MessageContent.tsx
+┃   │   │   ├── ReasoningSection.tsx
+┃   │   │   ├── ResponseDisplay.tsx
+┃   │   │   ├── SPARQLQuerySection.tsx
+┃   │   │   └── TextSkeleton.tsx
+┃   │   ├── CustomCharts/
+┃   │   │   ├── ChartParamsSelector.tsx
+┃   │   │   ├── ChartTypeSelector.tsx
+┃   │   │   ├── ChartWrapper.tsx
+┃   │   │   ├── CustomBarChart.tsx
+┃   │   │   ├── CustomGaugeChart.tsx
+┃   │   │   ├── CustomPieChart.tsx
+┃   │   │   └── StatsChartTypeSelector.tsx
+┃   │   ├── Home/
+┃   │   │   ├── AboutProject.tsx
+┃   │   │   ├── Contact.tsx
+┃   │   │   ├── FutureDevelopment.tsx
+┃   │   │   ├── Header.tsx
+┃   │   │   └── KeyFeatures.tsx
+┃   │   ├── Layout pieces (Header.tsx, MenuDrawer.tsx, ScrollTop.tsx)
+┃   │   ├── Question*.tsx (Question, Dialog, Accordion, Views)
+┃   │   ├── Dashboard.tsx
+┃   │   ├── CustomGrid.tsx
+┃   │   ├── ErrorState.tsx
+┃   │   ├── LoadingState.tsx
+┃   │   ├── SectionSelector.tsx
+┃   │   ├── StatCard.tsx
+┃   │   └── StatisticsPageLoadingSkeleton.tsx
+┃   ├── constants/
+┃   │   ├── data_processing_helper_functions.ts
+┃   │   └── queries_chart_info.ts
+┃   ├── context/
+┃   │   ├── AIAssistantContext.tsx
+┃   │   └── DynamicQuestionContext.tsx
+┃   ├── contexts/ (ThemeContext.tsx)
+┃   ├── firestore/
+┃   │   ├── CRUDQuestions.ts
+┃   │   └── CRUDStatistics.ts
+┃   ├── helpers/
+┃   │   ├── fetch_query.ts
+┃   │   ├── query.ts
+┃   │   └── statistics_calculator.ts
+┃   ├── hooks/ (useAIAssistant.ts)
+┃   ├── pages/
+┃   │   ├── DynamicQuestionPage.tsx
+┃   │   ├── QuestionDashboardPage.tsx
+┃   │   ├── QuestionPage.tsx
+┃   │   ├── Statistics.tsx
+┃   │   ├── Home.tsx
+┃   │   ├── Layout.tsx
+┃   │   ├── ErrorFallback.tsx
+┃   │   └── NotFound.tsx
+┃   ├── prompts/ (GENERATE_SPARQL.txt)
+┃   ├── services/ (aiService.ts)
+┃   ├── store/
+┃   │   ├── hooks.ts
+┃   │   ├── index.ts
+┃   │   └── slices/
+┃   │       ├── aiSlice.ts
+┃   │       └── questionSlice.ts
+┃   ├── styles/ (global.css)
+┃   ├── types/ (chart.d.ts)
+┃   ├── utils/ (theme.ts)
+┃   ├── App.tsx
+┃   ├── Router.tsx
+┃   ├── firebase.ts
+┃   ├── main.css
+┃   ├── main.tsx
+┃   └── vite-env.d.ts
+┣━ stories/                      # Storybook stories mirror src/components
+┃   ├── AI/ …                    # *.stories.tsx
+┃   ├── DataVisualization/ …
+┃   ├── Home/ …
+┃   ├── Layout/ …
+┃   ├── Questions/ …
+┃   └── Utility/ …
+┣━ docs/ (see above)
+┣━ index.html
+┣━ logo.png
+┣━ LICENSE
+┣━ README.md
+┣━ package.json
+┣━ package-lock.json
+┣━ tsconfig*.json
+┣━ vercel.json
+┣━ vite.config.ts
+┣━ vitest.*.d.ts
+┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
 
 ## Description of the Folders and Files
 | **Directory / File** | **Description** |
