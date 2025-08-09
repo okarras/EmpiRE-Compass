@@ -54,6 +54,8 @@ Key capabilities include:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ## Description of the Folders and Files
 | **Directory / File** | **Description** |
 |----------------------|-----------------|
@@ -101,7 +103,6 @@ Key capabilities include:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 
