@@ -403,26 +403,26 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 - 🔧 **Developer Tools** - Props controls and code examples
 
 
-## Firebase Setup
+# Firebase Setup
 
 EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data updates. Follow these guides to set up Firebase integration:
 
-### Quick Setup (5 minutes)
+## Quick Setup (5 minutes)
 
 📋 **[Firebase Quick Setup Guide](docs/FIREBASE_QUICK_SETUP.md)** - Fast-track setup with essential steps
 
-### Detailed Setup
+## Detailed Setup
 
 📖 **[Complete Firebase Setup Guide](docs/GITHUB_FIREBASE_SETUP.md)** - Comprehensive guide with troubleshooting
 
-### Firebase Configuration Steps:
+## Firebase Configuration Steps:
 
 1. **Create Firebase Project** - Set up a new project in Firebase Console
 2. **Generate Service Account** - Download the service account JSON key
 3. **Configure GitHub Secret** - Add `FIREBASE_SERVICE_ACCOUNT_KEY` to repository secrets
 4. **Test Integration** - Run the workflow to verify everything works
 
-### Local Development
+## Local Development
 
 ```bash
 # Validate your Firebase JSON file
@@ -436,7 +436,6 @@ python firebase_integration.py
 python empire-statistics.py --service_account path/to/service-account.json --limit 5
 ```
 
----
 
 ## Statistics Automation
 
