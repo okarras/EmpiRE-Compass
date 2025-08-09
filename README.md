@@ -402,7 +402,6 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 - 📱 **Responsive Design** - Mobile-first component library
 - 🔧 **Developer Tools** - Props controls and code examples
 
----
 
 ## Firebase Setup
 
