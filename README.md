@@ -280,48 +280,51 @@ EmpiRE-Compass/
 
 
 
-## Getting Started
+## Installation Instructions
+In the following, we explain how to install and run the project locally using a terminal, assuming that the prerequisites are met.
 
-### Prerequisites
+### 1. Ensure prerequisites are installed
+- **Node.js** (version 14 or higher)  
+- **Modern web browser** (e.g., Chrome, Firefox)  
+- **Git** (optional, for version control)  
 
-Node.js (version 14 or higher), a modern web browser, and optionally Git for version control.
-
-### Installation
-
-Clone the repository:
-
-```
+### 2. Clone the repository
+```sh
 git clone https://github.com/okarras/EmpiRE-Compass.git
+```
+
+### 3. Navigate to the main project directory
+```sh
 cd EmpiRE-Compass
 ```
 
-Install dependencies:
-
-```
+### 4. Install dependencies
+Using **npm**:
+```sh
 npm install
 ```
-
-or
-
-```
+or using **yarn**:
+```sh
 yarn install
 ```
 
-Start the development server:
-
-```
+### 5. Start the development server
+Using **npm**:
+```sh
 npm start
 ```
-
-or
-
-```
+or using **yarn**:
+```sh
 yarn start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your web browser.
+### 6. Open the application in your browser
+Visit:
+```
+http://localhost:3000
+```
 
----
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Usage
 
