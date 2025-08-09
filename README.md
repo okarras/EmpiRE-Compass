@@ -59,6 +59,7 @@ Key capabilities include:
 In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
 
 ## Graphical Overview
+```
 EmpiRE-Compass/
 ┣━ .github/
 ┃   ┗━ workflows/
@@ -227,6 +228,7 @@ EmpiRE-Compass/
 ┣━ vite.config.ts
 ┣━ vitest.*.d.ts
 ┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
+```
 
 ## Description of the Folders and Files
 | **Directory / File** | **Description** |
