@@ -280,7 +280,9 @@ EmpiRE-Compass/
 
 
 
-# Installation Instructions
+# Getting Started
+
+## Installation Instructions
 In the following, we explain how to install and run the project locally using a terminal, assuming that the prerequisites are met.
 
 ### 1. Ensure prerequisites are installed
@@ -326,11 +328,17 @@ http://localhost:3000
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## Usage
+## Usage Instructions
+The dashboard offers an immediate view of **16 competency questions** with their answers and corresponding diagrams.  
+Users can:
+- Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.  
+- Reproduce and compare historical states of KG-EmpiRE to monitor data evolution.  
+- View up-to-date metrics such as the number of conferences, papers, and triples on the statistics page.  
+- Submit new data via a survey (including paper DOIs and research details) for curator review.  
+- Use the **Study Designer Knowledge Base** to find similar research and receive design recommendations aligned with ACM standards.
 
-The dashboard offers an immediate view of 16 competency questions with their answers and corresponding diagrams. Users can interact with the diagrams to navigate through empirical research data and discover relevant papers from ORKG. Historical states of KG-EmpiRE can be reproduced and compared to monitor data evolution. A statistics page displays up-to-date metrics such as the number of conferences, papers, and triples. Authors can submit new data via a survey, providing paper DOIs and research details for curator review. The Study Designer Knowledge Base aids in finding similar research and offers design recommendations aligned with ACM standards.
+<p align="right">(<a href="#top">back to top</a>)</p>
 
----
 
 ## Design System & Storybook
 
