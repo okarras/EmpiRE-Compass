@@ -54,6 +54,7 @@ Key capabilities include:
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
 # Folder Structure and Files
 
 In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
@@ -280,27 +281,25 @@ EmpiRE-Compass/
 
 
 
-# Getting Started
-
-## Installation Instructions
+# Installation Instructions
 In the following, we explain how to install and run the project locally using a terminal, assuming that the prerequisites are met.
 
-### 1. Ensure prerequisites are installed
+## 1. Ensure prerequisites are installed
 - **Node.js** (version 14 or higher)  
 - **Modern web browser** (e.g., Chrome, Firefox)  
 - **Git** (optional, for version control)  
 
-### 2. Clone the repository
+## 2. Clone the repository
 ```sh
 git clone https://github.com/okarras/EmpiRE-Compass.git
 ```
 
-### 3. Navigate to the main project directory
+## 3. Navigate to the main project directory
 ```sh
 cd EmpiRE-Compass
 ```
 
-### 4. Install dependencies
+## 4. Install dependencies
 Using **npm**:
 ```sh
 npm install
@@ -310,7 +309,7 @@ or using **yarn**:
 yarn install
 ```
 
-### 5. Start the development server
+## 5. Start the development server
 Using **npm**:
 ```sh
 npm start
@@ -320,7 +319,7 @@ or using **yarn**:
 yarn start
 ```
 
-### 6. Open the application in your browser
+## 6. Open the application in your browser
 Visit:
 ```
 http://localhost:3000
@@ -328,7 +327,7 @@ http://localhost:3000
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-## Usage Instructions
+# Usage Instructions
 The dashboard offers an immediate view of **16 competency questions** with their answers and corresponding diagrams.  
 Users can:
 - Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.  
@@ -340,15 +339,15 @@ Users can:
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
-## Design System & Storybook
+# Design System & Storybook
 
 EmpiRE-Compass includes a comprehensive design system documented in Storybook, providing a complete library of reusable UI components.
 
-### 📚 **Storybook (Component Library)**
+## 📚 **Storybook (Component Library)**
 
 **Live Documentation**: [https://your-storybook-url.chromatic.com](https://your-storybook-url.chromatic.com) <!-- TODO: Update with actual Storybook URL -->
 
-### **Component Categories**
+## **Component Categories**
 
 - **🏠 Home Components**: Hero sections, feature highlights, contact forms
 - **📊 Data Visualization**: Custom charts, statistics cards, interactive graphs
@@ -356,14 +355,14 @@ EmpiRE-Compass includes a comprehensive design system documented in Storybook, p
 - **🔧 Layout Components**: Headers, navigation, responsive containers
 - **⚙️ Utility Components**: Loading states, error handling, form elements
 
-### **Technology Stack**
+## **Technology Stack**
 
 - **React 18** with TypeScript
 - **Material-UI** component library
 - **Storybook 7** for documentation
 - **Chromatic** for visual testing (planned)
 
-### **Local Development**
+## **Local Development**
 
 ```bash
 # Start Storybook locally
@@ -376,7 +375,7 @@ npm run build-storybook
 npm run preview:storybook
 ```
 
-### **Deployment to Chromatic**
+## **Deployment to Chromatic**
 
 ```bash
 # Deploy to Chromatic (requires CHROMATIC_PROJECT_TOKEN)
@@ -395,7 +394,7 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 5. Run `npm run deploy:chromatic` to publish your Storybook
 6. Update the URLs in `Header.tsx` and `README.md` with your Chromatic URL
 
-### **Features**
+## **Features**
 
 - 📖 **Interactive Documentation** - Live component examples with controls
 - 🎨 **Design Tokens** - Consistent colors, typography, and spacing
