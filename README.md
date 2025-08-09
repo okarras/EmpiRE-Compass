@@ -15,21 +15,28 @@ EmpiRE-Compass is a neuro-symbolic dashboard that facilitates the exploration, r
 By leveraging live data of KG-EmpiRE stored in the **Open Research Knowledge Graph (ORKG)**, EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution.
 
 
-## Table of Contents
+# Table of Contents
+<details>
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#key-features">Key Features</a></li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ol>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ol>
+    </li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#design-system--storybook">Design System & Storybook</a></li>
+    <li><a href="#firebase-setup">Firebase Setup</a></li>
+    <li><a href="#statistics-automation">Statistics Automation</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#repository-links">Repository Links</a></li>
+  </ol>
+</details>
 
-1. [Overview](#overview)
-2. [Key Features](#key-features)
-3. [Getting Started](#getting-started)
-   1. [Prerequisites](#prerequisites)
-   2. [Installation](#installation)
-4. [Usage](#usage)
-5. [Design System & Storybook](#design-system--storybook)
-6. [Firebase Setup](#firebase-setup)
-7. [Statistics Automation](#statistics-automation)
-8. [License](#license)
-9. [Repository Links](#repository-links)
-
----
 
 ## Overview
 
