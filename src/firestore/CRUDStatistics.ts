@@ -23,7 +23,6 @@ const setStatistics = async (statisticsData: DocumentData) => {
       ...statisticsData,
       updatedAt: new Date().toISOString(),
     });
-    console.log('Statistics updated successfully');
   } catch (error) {
     console.error('Error updating statistics:', error);
     throw error;

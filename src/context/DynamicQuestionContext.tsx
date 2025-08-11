@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 export interface DynamicQuestionState {
   question: string;
@@ -46,6 +52,8 @@ interface DynamicQuestionContextType {
     type: DynamicQuestionHistory['type']
   ) => DynamicQuestionHistory[];
   clearHistory: () => void;
+  removeFromHistory: (id: string) => void;
+  removeMultipleFromHistory: (ids: string[]) => void;
   resetState: () => void;
   loadSavedState: (savedState: DynamicQuestionState) => void;
 }
@@ -74,9 +82,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
       const saved = localStorage.getItem('current-dynamic-question');
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Ensure history is preserved and not overwritten by initialState
         return {
           ...initialState,
           ...parsed,
+          history: parsed.history || [],
         };
       }
     } catch (err) {
@@ -99,6 +109,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
       history: [...prev.history, historyEntry],
     }));
   };
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('current-dynamic-question', JSON.stringify(state));
+  }, [state]);
 
   const updateQuestion = (question: string) => {
     setState((prev) => ({
@@ -214,6 +229,20 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
+  const removeFromHistory = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      history: prev.history.filter((item) => item.id !== id),
+    }));
+  };
+
+  const removeMultipleFromHistory = (ids: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      history: prev.history.filter((item) => !ids.includes(item.id)),
+    }));
+  };
+
   const resetState = () => {
     setState(initialState);
     // Clear the saved state from localStorage
@@ -221,16 +250,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const loadSavedState = (savedState: DynamicQuestionState) => {
-    console.log('Loading saved state:', {
-      hasQuestion: !!savedState.question,
-      hasResults: savedState.queryResults.length > 0,
-      hasChart: !!savedState.chartHtml,
-      hasInterpretations: !!(
-        savedState.questionInterpretation ||
-        savedState.dataCollectionInterpretation ||
-        savedState.dataAnalysisInterpretation
-      ),
-    });
     setState(savedState);
     // Save to localStorage for persistence
     localStorage.setItem(
@@ -253,6 +272,8 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         addToHistory,
         getHistoryByType,
         clearHistory,
+        removeFromHistory,
+        removeMultipleFromHistory,
         resetState,
         loadSavedState,
       }}

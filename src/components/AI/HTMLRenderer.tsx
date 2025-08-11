@@ -188,6 +188,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
       - Include comprehensive interactivity (hover tooltips, click events, zoom/pan)
       - Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
       - Set padding to 40px
+      - Set the minimum height to 500px
 
       Modified Chart HTML:`;
 

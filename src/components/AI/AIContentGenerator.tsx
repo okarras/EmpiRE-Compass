@@ -13,11 +13,6 @@ interface AIContentGeneratorProps {
     dataCollectionInterpretation: string,
     dataAnalysisInterpretation: string
   ) => void;
-  onAddToHistory: (
-    type: HistoryItem['type'],
-    content: string,
-    title: string
-  ) => void;
   onError: (error: string) => void;
 }
 
@@ -25,7 +20,6 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   data,
   question,
   onContentGenerated,
-  onAddToHistory,
   onError,
 }) => {
   const aiService = useAIService();
@@ -120,7 +114,6 @@ Return ONLY the complete HTML code that can be rendered directly in a browser.`;
           );
         }
       );
-      onAddToHistory('chart_html', chartHtml, `Chart HTML: ${question}`);
 
       // Generate chart description
       const descriptionPrompt = `Based on the following data from a SPARQL query about "${question}", provide a detailed chart analysis in HTML format.
@@ -151,11 +144,6 @@ Return ONLY the HTML content (no <html>, <head>, or <body> tags).`;
       );
 
       const chartDescription = descriptionResult.text;
-      onAddToHistory(
-        'chart_description',
-        chartDescription,
-        `Chart Analysis: ${question}`
-      );
 
       // Generate Question Information interpretation
       const questionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Explanation of the Competency Question" section.
@@ -183,11 +171,6 @@ Return ONLY the explanation text.`;
       );
 
       const questionInterpretation = questionInterpretationResult.text;
-      onAddToHistory(
-        'question_interpretation',
-        questionInterpretation,
-        `Question Interpretation: ${question}`
-      );
 
       // Generate Data Collection interpretation
       const dataCollectionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Required Data for Analysis" section.
@@ -216,11 +199,6 @@ Return ONLY the explanation text.`;
 
       const dataCollectionInterpretation =
         dataCollectionInterpretationResult.text;
-      onAddToHistory(
-        'data_collection_interpretation',
-        dataCollectionInterpretation,
-        `Data Collection Interpretation: ${question}`
-      );
 
       // Generate Data Analysis interpretation
       const dataAnalysisInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Data Analysis" section.
@@ -248,11 +226,6 @@ Return ONLY the explanation text.`;
       );
 
       const dataAnalysisInterpretation = dataAnalysisInterpretationResult.text;
-      onAddToHistory(
-        'data_analysis_interpretation',
-        dataAnalysisInterpretation,
-        `Data Analysis Interpretation: ${question}`
-      );
 
       // Clean up code blocks from generated content
       const chartHtmlWithoutCodeBlocks = chartHtml.replace(

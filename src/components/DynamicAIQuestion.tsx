@@ -16,11 +16,7 @@ import HTMLRenderer from './AI/HTMLRenderer';
 import AIContentGenerator from './AI/AIContentGenerator';
 import SPARQLQuerySection from './AI/SPARQLQuerySection';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
-import {
-  HistoryManager,
-  HistoryItem,
-  useHistoryManager,
-} from './AI/HistoryManager';
+import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/aiService';
 import AIConfigurationButton from './AI/AIConfigurationButton';
@@ -74,8 +70,7 @@ const DynamicAIQuestion: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
 
-  // History management
-  const { addToHistory } = useHistoryManager();
+  // History management - no longer needed since DynamicQuestionContext handles history
 
   const { setContext } = useAIAssistantContext();
 
@@ -88,18 +83,6 @@ const DynamicAIQuestion: React.FC = () => {
 
   // Recreate dynamic query when state is loaded from storage
   useEffect(() => {
-    console.log('State loaded:', {
-      hasResults: state.queryResults.length > 0,
-      hasQuestion: !!state.question,
-      hasChart: !!state.chartHtml,
-      hasInterpretations: !!(
-        state.questionInterpretation ||
-        state.dataCollectionInterpretation ||
-        state.dataAnalysisInterpretation
-      ),
-      dynamicQuery: !!dynamicQuery,
-    });
-
     if (state.queryResults.length > 0 && state.question && !dynamicQuery) {
       const newDynamicQuery: DynamicQuery = {
         title: `Dynamic Query: ${state.question}`,
@@ -396,18 +379,6 @@ const DynamicAIQuestion: React.FC = () => {
 
       updateSparqlQuery(sparqlQuery);
 
-      // Add to history
-      addToHistory(
-        'query',
-        state.question,
-        `Research Question: ${state.question}`
-      );
-      addToHistory(
-        'sparql',
-        sparqlQuery,
-        `SPARQL Query for: ${state.question}`
-      );
-
       // Automatically run the generated query
       await handleRunQuery(sparqlQuery);
     } catch (err: unknown) {
@@ -428,13 +399,6 @@ const DynamicAIQuestion: React.FC = () => {
       setError('The query is empty.');
       return;
     }
-
-    // Add edited query to history
-    addToHistory(
-      'sparql',
-      state.sparqlQuery,
-      `Edited SPARQL Query: ${state.question}`
-    );
 
     handleRunQuery(state.sparqlQuery);
   };
@@ -595,7 +559,6 @@ const DynamicAIQuestion: React.FC = () => {
             data={state.queryResults}
             question={state.question}
             onContentGenerated={handleContentGenerated}
-            onAddToHistory={addToHistory}
             onError={setError}
           />
         )}
@@ -652,7 +615,6 @@ const DynamicAIQuestion: React.FC = () => {
       <LLMContextHistoryDialog
         open={llmContextHistoryOpen}
         onClose={handleCloseLlmContextHistory}
-        onApplyHistoryItem={handleApplyHistoryItem}
       />
     </Box>
   );

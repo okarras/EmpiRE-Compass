@@ -11,17 +11,19 @@ import {
   Typography,
   Box,
   Chip,
-  Checkbox,
   Divider,
   Paper,
+  Alert,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
-import { History, Delete, Close, Restore } from '@mui/icons-material';
-import { useHistoryManager, HistoryItem } from './HistoryManager';
+import { History, Close, CheckCircle, Cancel } from '@mui/icons-material';
+import { HistoryItem } from './HistoryManager';
+import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 
 interface LLMContextHistoryDialogProps {
   open: boolean;
   onClose: () => void;
-  onApplyHistoryItem: (item: HistoryItem) => void;
 }
 
 // Extended history item with additional properties
@@ -30,89 +32,126 @@ interface ExtendedHistoryItem extends HistoryItem {
   action: 'manual_edit' | 'ai_modified';
   prompt: string;
   previousContent: string;
+  usedInPrompts: boolean;
+  isExcluded: boolean;
+  isLatest?: boolean; // Added for the latest SPARQL result
 }
 
 const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
   open,
   onClose,
-  onApplyHistoryItem,
 }) => {
-  const { getHistoryByType, removeFromHistory, history } = useHistoryManager();
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const { getHistoryByType } = useDynamicQuestion();
+  const [excludedItems, setExcludedItems] = useState<Set<string>>(new Set());
 
-  console.log(history);
-  // Get all history items from different types
-  const allHistory: ExtendedHistoryItem[] = [
-    ...getHistoryByType('query').map((item) => ({
-      ...item,
-      source: 'Research Question',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-    ...getHistoryByType('sparql').map((item) => ({
-      ...item,
-      source: 'SPARQL Query',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-    ...getHistoryByType('chart_html').map((item) => ({
-      ...item,
-      source: 'Chart',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-    ...getHistoryByType('question_interpretation').map((item) => ({
-      ...item,
-      source: 'Question Analysis',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-    ...getHistoryByType('data_collection_interpretation').map((item) => ({
-      ...item,
-      source: 'Data Collection',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-    ...getHistoryByType('data_analysis_interpretation').map((item) => ({
-      ...item,
-      source: 'Data Analysis',
-      action: 'manual_edit' as const,
-      prompt: '',
-      previousContent: '',
-    })),
-  ].sort((a, b) => b.timestamp - a.timestamp);
-
-  const handleToggleSelection = (itemId: string) => {
-    const newSelected = new Set(selectedItems);
-    if (newSelected.has(itemId)) {
-      newSelected.delete(itemId);
-    } else {
-      newSelected.add(itemId);
-    }
-    setSelectedItems(newSelected);
+  // Helper function to convert action type
+  const convertAction = (action: string): 'manual_edit' | 'ai_modified' => {
+    return action === 'ai_modified' ? 'ai_modified' : 'manual_edit';
   };
 
-  const handleSelectAll = () => {
-    if (selectedItems.size === allHistory.length) {
-      setSelectedItems(new Set());
-    } else {
-      setSelectedItems(new Set(allHistory.map((item) => item.id)));
-    }
+  // Helper function to check if content is meaningful (not empty or whitespace)
+  const isMeaningfulContent = (content: string): boolean => {
+    return Boolean(content && content.trim().length > 0);
   };
 
-  const handleDeleteSelected = () => {
-    selectedItems.forEach((itemId) => {
-      const item = allHistory.find((h) => h.id === itemId);
-      if (item) {
-        removeFromHistory(item.type, itemId);
-      }
-    });
-    setSelectedItems(new Set());
+  // Get history items that are actually used in AI prompts and have meaningful content
+  const getPromptHistory = (): ExtendedHistoryItem[] => {
+    const allHistory: ExtendedHistoryItem[] = [
+      ...getHistoryByType('question')
+        .filter((item) => isMeaningfulContent(item.content))
+        .map((item) => ({
+          id: item.id,
+          timestamp: item.timestamp,
+          content: item.content,
+          type: 'query' as const,
+          title: `Question: ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}`,
+          source: 'Research Question',
+          action: convertAction(item.action),
+          prompt: item.prompt || '',
+          previousContent: item.previousContent || '',
+          usedInPrompts: true, // Questions are used in all prompts
+          isExcluded: excludedItems.has(item.id),
+        })),
+      ...getHistoryByType('sparql')
+        .filter((item) => isMeaningfulContent(item.content))
+        .map((item, index) => {
+          // The latest SPARQL query result should always be included
+          const isLatest = index === 0; // Assuming array is sorted by timestamp desc
+          return {
+            id: item.id,
+            timestamp: item.timestamp,
+            content: item.content,
+            type: 'sparql' as const,
+            title: `SPARQL Query: ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}`,
+            source: 'SPARQL Query',
+            action: convertAction(item.action),
+            prompt: item.prompt || '',
+            previousContent: item.previousContent || '',
+            usedInPrompts: true, // SPARQL history is used in SPARQL modification prompts
+            isExcluded: isLatest ? false : excludedItems.has(item.id), // Latest is never excluded
+            isLatest: isLatest, // Flag to identify the latest SPARQL result
+          };
+        }),
+      ...getHistoryByType('chart')
+        .filter((item) => isMeaningfulContent(item.content))
+        .map((item) => ({
+          id: item.id,
+          timestamp: item.timestamp,
+          content: item.content,
+          type: 'chart_html' as const,
+          title: `Chart HTML: ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}`,
+          source: 'Chart',
+          action: convertAction(item.action),
+          prompt: item.prompt || '',
+          previousContent: item.previousContent || '',
+          usedInPrompts: true, // Chart history is used in chart modification prompts
+          isExcluded: excludedItems.has(item.id),
+        })),
+      ...getHistoryByType('analysis')
+        .filter((item) => isMeaningfulContent(item.content))
+        .map((item) => ({
+          id: item.id,
+          timestamp: item.timestamp,
+          content: item.content,
+          type: 'question_interpretation' as const,
+          title: `Analysis: ${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}`,
+          source: 'Question Analysis',
+          action: convertAction(item.action),
+          prompt: item.prompt || '',
+          previousContent: item.previousContent || '',
+          usedInPrompts: true, // Analysis history is used in analysis modification prompts
+          isExcluded: excludedItems.has(item.id),
+        })),
+    ].sort((a, b) => b.timestamp - a.timestamp);
+
+    return allHistory;
+  };
+
+  const promptHistory = getPromptHistory();
+
+  const handleToggleExclusion = (itemId: string) => {
+    // Find the item to check if it's the latest SPARQL result
+    const item = promptHistory.find((h) => h.id === itemId);
+    if (item?.isLatest) {
+      // Don't allow excluding the latest SPARQL result
+      return;
+    }
+
+    const newExcluded = new Set(excludedItems);
+    if (newExcluded.has(itemId)) {
+      newExcluded.delete(itemId);
+    } else {
+      newExcluded.add(itemId);
+    }
+    setExcludedItems(newExcluded);
+  };
+
+  const handleIncludeAll = () => {
+    setExcludedItems(new Set());
+  };
+
+  const handleExcludeAll = () => {
+    setExcludedItems(new Set(promptHistory.map((item) => item.id)));
   };
 
   const formatTimestamp = (timestamp: number) => {
@@ -127,6 +166,9 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
     if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
     return `${days} day${days > 1 ? 's' : ''} ago`;
   };
+
+  const includedCount = promptHistory.length - excludedItems.size;
+  const excludedCount = excludedItems.size;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -149,14 +191,26 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
       </DialogTitle>
 
       <DialogContent>
-        {allHistory.length === 0 ? (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2">
+              Control which history items are used as context in AI prompts.
+              Excluded items will not be included in future AI interactions. The
+              latest SPARQL query result is always included and cannot be
+              excluded.
+            </Typography>
+          </Box>
+        </Alert>
+
+        {promptHistory.length === 0 ? (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="body1" color="text.secondary">
               No LLM context history available yet.
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Context will appear here once you interact with the AI.
+              Context will appear here once you interact with the AI and
+              generate meaningful content.
             </Typography>
           </Box>
         ) : (
@@ -169,41 +223,45 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
                 mb: 2,
               }}
             >
-              <Typography variant="subtitle2" color="text.secondary">
-                {allHistory.length} context items
-              </Typography>
+              <Box>
+                <Typography variant="subtitle2" color="text.secondary">
+                  {promptHistory.length} context items available
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {includedCount} included • {excludedCount} excluded
+                </Typography>
+              </Box>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <Button
                   size="small"
-                  onClick={handleSelectAll}
+                  onClick={handleIncludeAll}
                   variant="outlined"
+                  color="success"
+                  startIcon={<CheckCircle />}
                 >
-                  {selectedItems.size === allHistory.length
-                    ? 'Deselect All'
-                    : 'Select All'}
+                  Include All
                 </Button>
-                {selectedItems.size > 0 && (
-                  <Button
-                    size="small"
-                    onClick={handleDeleteSelected}
-                    variant="outlined"
-                    color="error"
-                    startIcon={<Delete />}
-                  >
-                    Delete Selected ({selectedItems.size})
-                  </Button>
-                )}
+                <Button
+                  size="small"
+                  onClick={handleExcludeAll}
+                  variant="outlined"
+                  color="error"
+                  startIcon={<Cancel />}
+                >
+                  Exclude All
+                </Button>
               </Box>
             </Box>
 
             <List sx={{ p: 0 }}>
-              {allHistory.map((item, index) => (
+              {promptHistory.map((item, index) => (
                 <React.Fragment key={item.id}>
                   <ListItem
                     sx={{
                       flexDirection: 'column',
                       alignItems: 'stretch',
                       p: 2,
+                      opacity: item.isExcluded ? 0.6 : 1,
                       '&:hover': {
                         backgroundColor: 'rgba(232, 97, 97, 0.04)',
                       },
@@ -225,10 +283,18 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
                           flex: 1,
                         }}
                       >
-                        <Checkbox
-                          checked={selectedItems.has(item.id)}
-                          onChange={() => handleToggleSelection(item.id)}
-                          size="small"
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={!item.isExcluded}
+                              onChange={() => handleToggleExclusion(item.id)}
+                              size="small"
+                              color="primary"
+                              disabled={item.isLatest} // Disable switch for latest SPARQL result
+                            />
+                          }
+                          label=""
+                          sx={{ mr: 0 }}
                         />
                         <Box sx={{ flex: 1 }}>
                           <Box
@@ -251,58 +317,42 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
                             <Chip
                               label={item.source}
                               size="small"
-                              color="primary"
+                              color={item.isExcluded ? 'default' : 'primary'}
                               variant="outlined"
                             />
-                            <Chip
-                              label={
-                                item.action === 'ai_modified'
-                                  ? 'LLM Context'
-                                  : 'Manual'
-                              }
-                              size="small"
-                              color={
-                                item.action === 'ai_modified'
-                                  ? 'primary'
-                                  : 'default'
-                              }
-                              variant="outlined"
-                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              {formatTimestamp(item.timestamp)}
+                            </Typography>
+                            {item.isLatest && (
+                              <Chip
+                                label="Latest Result"
+                                size="small"
+                                color="success"
+                                variant="outlined"
+                              />
+                            )}
+                            {item.isExcluded && !item.isLatest && (
+                              <Chip
+                                label="Excluded"
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                              />
+                            )}
                           </Box>
-                          <Typography variant="caption" color="text.secondary">
-                            {formatTimestamp(item.timestamp)}
-                          </Typography>
                           {item.prompt && (
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ display: 'block', mt: 0.5 }}
+                              sx={{ fontStyle: 'italic' }}
                             >
-                              <strong>LLM Prompt:</strong> {item.prompt}
+                              Prompt: {item.prompt}
                             </Typography>
                           )}
                         </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<Restore />}
-                          onClick={() => onApplyHistoryItem(item)}
-                          sx={{
-                            backgroundColor: '#e86161',
-                            '&:hover': { backgroundColor: '#d45151' },
-                          }}
-                        >
-                          Restore
-                        </Button>
-                        <IconButton
-                          size="small"
-                          onClick={() => removeFromHistory(item.type, item.id)}
-                          color="error"
-                        >
-                          <Delete />
-                        </IconButton>
                       </Box>
                     </Box>
                     <Paper
@@ -312,7 +362,9 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
                         backgroundColor: 'rgba(0, 0, 0, 0.02)',
                         borderRadius: 1,
                         border: '1px solid rgba(0, 0, 0, 0.05)',
-                        fontFamily: 'monospace',
+                        fontFamily: ['sparql', 'chart_html'].includes(item.type)
+                          ? 'monospace'
+                          : 'inherit',
                         fontSize: '0.875rem',
                         maxHeight: '120px',
                         overflowY: 'auto',
@@ -329,14 +381,13 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
                       </Typography>
                     </Paper>
                   </ListItem>
-                  {index < allHistory.length - 1 && <Divider />}
+                  {index < promptHistory.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
             </List>
           </>
         )}
       </DialogContent>
-
       <DialogActions>
         <Button onClick={onClose}>Close</Button>
       </DialogActions>
