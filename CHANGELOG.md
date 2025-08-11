@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.3.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.2.1...v1.3.0) (2025-08-11)
+
+### Features
+
+- add combined build for main app + storybook deployment ([a282b39](https://github.com/okarras/EmpiRE-Compass/commit/a282b39c11493ed111e8bc54f5adf68bcf639749))
+- add graph and analysis generation to dynamicquestion ([2740506](https://github.com/okarras/EmpiRE-Compass/commit/27405069b380378506cb04030b70d8a5a02501bc))
+- add history manager for edits ([19ccede](https://github.com/okarras/EmpiRE-Compass/commit/19ccedef36c0e7e038853d9c3f60192a21b70618))
+- added API configuration ([fa2c5d7](https://github.com/okarras/EmpiRE-Compass/commit/fa2c5d7ae51df6924c94ab181b566a2c2a5618b3))
+- added update statistics automation ([004b731](https://github.com/okarras/EmpiRE-Compass/commit/004b731eaaa2b074cae9cd553777525feca428a5))
+- dynamic question styles ([c1cf09d](https://github.com/okarras/EmpiRE-Compass/commit/c1cf09d421f27640cab588306bfd51979944a264))
+- update dynamic question ([618025d](https://github.com/okarras/EmpiRE-Compass/commit/618025dd5deddb3d076283a4eff1afe7eb9c43df))
+
+### Bug Fixes
+
+- bug fix [update-stats] ([ad29919](https://github.com/okarras/EmpiRE-Compass/commit/ad299196d680d9bf987e423d8c2905a7265848b4))
+- build problems ([b28a7bb](https://github.com/okarras/EmpiRE-Compass/commit/b28a7bbaa223b102e1c42ca0ebe7b45924f79d38))
+- delete additional logs update statistics ([800e59b](https://github.com/okarras/EmpiRE-Compass/commit/800e59b669e2ee0dc325bfbc40125c8da4dc1f61))
+- fixed deploy problems ([e24bbf2](https://github.com/okarras/EmpiRE-Compass/commit/e24bbf2f53175c4a2b6e08c57afb6a52f67b497a))
+- fixed distinct statistics ([dc25b07](https://github.com/okarras/EmpiRE-Compass/commit/dc25b07cda16c86e2e36b0554680413d8b7a915a))
+- fixed linter problems ([3a84011](https://github.com/okarras/EmpiRE-Compass/commit/3a84011e9c832cb9f31762b0d2dc0893b352212b))
+- fixed some bugs in questions ([a1cef71](https://github.com/okarras/EmpiRE-Compass/commit/a1cef7195e1ad86e2e6def131db5029a68716043))
+- refactor storybook ([14e876a](https://github.com/okarras/EmpiRE-Compass/commit/14e876affe10c39378f24443e21f30df3cb1bde6))
+- simplify vercel.json to properly serve storybook static files ([137ac60](https://github.com/okarras/EmpiRE-Compass/commit/137ac6072ac31911480b70dc6e61a515c1a7c37d))
+- update orkg cache system and github workflow ([1198eff](https://github.com/okarras/EmpiRE-Compass/commit/1198effc4358881be0a397b8f880d2914d988012))
+- update statistics ([5c8f4e9](https://github.com/okarras/EmpiRE-Compass/commit/5c8f4e96bad9242b91b643d59602589b298c3ca1))
+
 ### [1.2.1](https://github.com/okarras/EmpiRE-Compass/compare/v1.2.0...v1.2.1) (2025-07-02)
 
 ### Bug Fixes
