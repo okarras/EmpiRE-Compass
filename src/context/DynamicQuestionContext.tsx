@@ -14,13 +14,15 @@ export interface DynamicQuestionState {
   questionInterpretation: string;
   dataCollectionInterpretation: string;
   dataAnalysisInterpretation: string;
+  // Stores the latest AI-generated JavaScript data processing function code
+  processingFunctionCode: string;
   history: DynamicQuestionHistory[];
 }
 
 export interface DynamicQuestionHistory {
   id: string;
   timestamp: number;
-  type: 'question' | 'sparql' | 'chart' | 'analysis';
+  type: 'question' | 'sparql' | 'chart' | 'analysis' | 'processing';
   action: 'generated' | 'edited' | 'ai_modified';
   content: string;
   prompt?: string; // The prompt that led to this change
@@ -45,6 +47,7 @@ interface DynamicQuestionContextType {
     interpretation: string,
     prompt?: string
   ) => void;
+  updateProcessingFunctionCode: (code: string, prompt?: string) => void;
   addToHistory: (
     entry: Omit<DynamicQuestionHistory, 'id' | 'timestamp'>
   ) => void;
@@ -70,6 +73,7 @@ const initialState: DynamicQuestionState = {
   questionInterpretation: '',
   dataCollectionInterpretation: '',
   dataAnalysisInterpretation: '',
+  processingFunctionCode: '',
   history: [],
 };
 
@@ -218,6 +222,21 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const updateProcessingFunctionCode = (code: string, prompt?: string) => {
+    const previousContent = state.processingFunctionCode;
+    setState((prev) => ({
+      ...prev,
+      processingFunctionCode: code,
+    }));
+    addToHistory({
+      type: 'processing',
+      action: prompt ? 'ai_modified' : 'edited',
+      content: code,
+      prompt,
+      previousContent,
+    });
+  };
+
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -269,6 +288,7 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         updateQuestionInterpretation,
         updateDataCollectionInterpretation,
         updateDataAnalysisInterpretation,
+        updateProcessingFunctionCode,
         addToHistory,
         getHistoryByType,
         clearHistory,

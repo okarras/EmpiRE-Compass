@@ -80,7 +80,9 @@ class FirebaseManager:
 
 def main():
     """Test the Firebase integration."""
-    firebase_manager = FirebaseManager()
+    # Use the service account file
+    service_account_path = "firebase-service-account.json"
+    firebase_manager = FirebaseManager(service_account_path)
 
     # Test data
     test_data = {

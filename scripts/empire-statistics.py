@@ -501,7 +501,9 @@ def main():
     if FIREBASE_AVAILABLE and not args.no_firebase:
         print("\n🔥 Updating Firebase...")
         try:
-            firebase_manager = FirebaseManager()
+            # Use the service account file
+            service_account_path = "scripts/firebase-service-account.json"
+            firebase_manager = FirebaseManager(service_account_path)
             firebase_manager.update_statistics(global_stats)
             print("✅ Firebase updated successfully")
         except Exception as e:
