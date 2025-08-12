@@ -557,7 +557,7 @@ export const SectionHistoryDialog: React.FC<SectionHistoryDialogProps> = ({
                         <IconButton
                           size="small"
                           onClick={() => openEditDialog(item)}
-                          sx={{ color: 'primary.main' }}
+                          sx={{ color: '#e86161' }}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

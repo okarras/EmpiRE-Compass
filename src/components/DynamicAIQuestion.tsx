@@ -1,34 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  Box,
-  Divider,
-  Typography,
-  Paper,
-  Button,
-  Tooltip,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Chip,
-} from '@mui/material';
-import { History, ExpandMore, Code } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
-import QuestionInformationView from './QuestionInformationView';
-import SectionSelector from './SectionSelector';
-import TextSkeleton from './AI/TextSkeleton';
-import HTMLRenderer from './AI/HTMLRenderer';
-import AIContentGenerator from './AI/AIContentGenerator';
-import SPARQLQuerySection from './AI/SPARQLQuerySection';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/aiService';
-import AIConfigurationButton from './AI/AIConfigurationButton';
 
 import { useDynamicQuestion } from '../context/DynamicQuestionContext';
-import DynamicQuestionManager from './AI/DynamicQuestionManager';
+import QueryExecutionSection from './AI/QueryExecutionSection';
+import DataProcessingCodeSection from './AI/DataProcessingCodeSection';
+import ResultsDisplaySection from './AI/ResultsDisplaySection';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
-import QuestionDataGridView from './QuestionDataGridView';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -97,6 +79,18 @@ const DynamicAIQuestion: React.FC = () => {
       setContext(dynamicQuery, state.queryResults);
     }
   }, [dynamicQuery, state.queryResults, loading, error, setContext]);
+
+  // Hydrate AI-generated processing function and its code from persisted state
+  useEffect(() => {
+    if (state.processingFunctionCode && state.processingFunctionCode.trim()) {
+      setAiProcessingCode(state.processingFunctionCode);
+      const compiled = compileProcessingFunction(state.processingFunctionCode);
+      setAiProcessingFn(compiled);
+    } else {
+      setAiProcessingCode(null);
+      setAiProcessingFn(null);
+    }
+  }, [state.processingFunctionCode]);
 
   // Parse SPARQL and JavaScript blocks from Markdown output
   const extractFromMarkdown = (
@@ -442,8 +436,20 @@ const DynamicAIQuestion: React.FC = () => {
   // Generate data processing function based on actual data structure
   const generateDataProcessingFunction = async (
     rawData: Record<string, unknown>[],
-    question: string
+    question: string,
+    skipIfExists: boolean = false
   ): Promise<DataProcessingFn | null> => {
+    // Skip generation if we already have processing code and skipIfExists is true
+    if (
+      skipIfExists &&
+      state.processingFunctionCode &&
+      state.processingFunctionCode.trim()
+    ) {
+      console.log(
+        'Skipping processing function generation - code already exists'
+      );
+      return aiProcessingFn;
+    }
     try {
       // Safety check for raw data
       if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
@@ -655,6 +661,22 @@ function processData(rows) {
 
       updateQueryResults(transformed);
 
+      // Auto-update processing function if we have a question and the results changed
+      if (state.question && state.question.trim() && transformed.length > 0) {
+        try {
+          const newProcessingFn = await generateDataProcessingFunction(
+            transformed,
+            state.question,
+            true // Skip if we already have processing code to avoid overwriting manual edits
+          );
+          if (newProcessingFn) {
+            setAiProcessingFn(newProcessingFn);
+          }
+        } catch (err) {
+          console.warn('Failed to auto-update processing function:', err);
+        }
+      }
+
       // Create dynamic query object for charts and AI assistant
       const newDynamicQuery: DynamicQuery = {
         title: `Dynamic Query: ${state.question}`,
@@ -815,7 +837,8 @@ function processData(rows) {
       // Step 3: Generate data processing function based on actual data structure
       const processingFn = await generateDataProcessingFunction(
         rawData,
-        state.question
+        state.question,
+        false // Always generate new processing function for new queries
       );
 
       // Step 4: Apply processing function to transform data
@@ -861,7 +884,7 @@ function processData(rows) {
     }
   };
 
-  const handleRunEditedQuery = () => {
+  const handleRunEditedQuery = async () => {
     if (!state.sparqlQuery.trim()) {
       setError('The query is empty.');
       return;
@@ -873,18 +896,49 @@ function processData(rows) {
     updateDataCollectionInterpretation('');
     updateDataAnalysisInterpretation('');
     updateQueryResults([]);
-    setAiProcessingFn(null);
-    setAiProcessingCode(null);
-    updateProcessingFunctionCode('', 'Reset before running edited query');
 
     // Detect whether the edited content contains multiple SPARQL blocks
     const { sparqlBlocks } = extractFromMarkdown(
       '```sparql\n' + state.sparqlQuery + '\n```'
     );
+    // If parsing failed (e.g., unclosed code fences), sanitize the input by
+    // stripping any markdown code fence lines before running.
     const blocks =
       sparqlBlocks.length > 0
         ? sparqlBlocks
-        : [{ id: 'main', query: state.sparqlQuery }];
+        : [
+            {
+              id: 'main',
+              query: state.sparqlQuery
+                // Remove any lines that start with code fences like ``` or ```sparql
+                .replace(/^```.*$/gm, '')
+                // Remove trailing code fences
+                .replace(/```\s*$/gm, '')
+                .trim(),
+            },
+          ];
+
+    // Auto-regenerate processing function when SPARQL is edited and we have a question
+    if (state.question && state.question.trim()) {
+      try {
+        setLoading(true);
+        const rawData = await executeQueriesRaw(blocks);
+        if (rawData && rawData.length > 0) {
+          const newProcessingFn = await generateDataProcessingFunction(
+            rawData,
+            state.question,
+            true // Skip if we already have processing code to avoid overwriting manual edits
+          );
+          if (newProcessingFn) {
+            setAiProcessingFn(newProcessingFn);
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.warn('Failed to regenerate processing function:', err);
+        setLoading(false);
+      }
+    }
 
     handleRunQuery(blocks, aiProcessingFn);
   };
@@ -960,6 +1014,11 @@ function processData(rows) {
     setHistoryType(type);
     setHistoryOpen(true);
   };
+
+  const handleOpenProcessingHistory = () => {
+    setHistoryType('data_analysis_interpretation'); // Map processing to existing type for now
+    setHistoryOpen(true);
+  };
   const handleCloseHistory = () => {
     setHistoryOpen(false);
     setHistoryType(null);
@@ -973,56 +1032,77 @@ function processData(rows) {
     setLlmContextHistoryOpen(false);
   };
 
-  const renderErrorState = (errorMessage: string) => (
-    <Box
-      sx={{
-        p: 4,
-        mt: 4,
-        textAlign: 'center',
-        backgroundColor: 'rgba(232, 97, 97, 0.05)',
-        border: '1px solid rgba(232, 97, 97, 0.1)',
-        borderRadius: 2,
-      }}
-    >
-      <Typography variant="h5" color="error" gutterBottom>
-        An Error Occurred
-      </Typography>
-      <Typography color="text.secondary">{errorMessage}</Typography>
-    </Box>
-  );
+  const handleProcessingCodeChange = async (code: string) => {
+    setAiProcessingCode(code);
+    const compiled = compileProcessingFunction(code);
+    setAiProcessingFn(compiled);
+
+    // Auto-update results when processing function changes
+    if (compiled && state.queryResults.length > 0) {
+      try {
+        // Get the raw data by re-running the SPARQL query
+        if (state.sparqlQuery && state.sparqlQuery.trim()) {
+          const { sparqlBlocks } = extractFromMarkdown(
+            '```sparql\n' + state.sparqlQuery + '\n```'
+          );
+          const blocks =
+            sparqlBlocks.length > 0
+              ? sparqlBlocks
+              : [
+                  {
+                    id: 'main',
+                    query: state.sparqlQuery
+                      .replace(/^```.*$/gm, '')
+                      .replace(/```\s*$/gm, '')
+                      .trim(),
+                  },
+                ];
+
+          const rawData = await executeQueriesRaw(blocks);
+          if (rawData && rawData.length > 0) {
+            const reprocessedData = compiled(rawData);
+            if (reprocessedData && reprocessedData.length > 0) {
+              updateQueryResults(reprocessedData);
+              createDynamicQueryObject(reprocessedData);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(
+          'Failed to auto-update results after processing function change:',
+          err
+        );
+      }
+    }
+  };
+
+  const handleRegenerateProcessingCode = async () => {
+    if (!state.question || !state.queryResults.length) {
+      setError('No question or data available to regenerate processing code.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const processingFn = await generateDataProcessingFunction(
+        state.queryResults,
+        state.question,
+        false // Force regeneration
+      );
+      if (processingFn) {
+        setAiProcessingFn(processingFn);
+      }
+    } catch (err) {
+      console.error('Failed to regenerate processing code:', err);
+      setError('Failed to regenerate processing code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <AIConfigurationButton />
-        <Typography variant="body2" color="text.secondary">
-          Configure AI settings to use OpenAI or Groq models
-        </Typography>
-        <Box sx={{ ml: 'auto' }}>
-          <Tooltip title="Manage LLM Context History">
-            <Button
-              variant="outlined"
-              startIcon={<History />}
-              onClick={handleOpenLlmContextHistory}
-              size="small"
-              sx={{
-                borderColor: '#e86161',
-                color: '#e86161',
-                '&:hover': {
-                  borderColor: '#d45151',
-                  backgroundColor: 'rgba(232, 97, 97, 0.04)',
-                },
-              }}
-            >
-              LLM Context History
-            </Button>
-          </Tooltip>
-        </Box>
-      </Box>
-
-      <DynamicQuestionManager />
-
-      <SPARQLQuerySection
+      <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
         loading={loading}
@@ -1033,125 +1113,32 @@ function processData(rows) {
         onGenerateAndRun={handleGenerateAndRun}
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
+        onOpenLlmContextHistory={handleOpenLlmContextHistory}
       />
 
-      {/* AI-Generated Data Processing Function Display */}
-      {aiProcessingCode && (
-        <Paper
-          elevation={0}
-          sx={{
-            mb: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <Accordion>
-            <AccordionSummary
-              expandIcon={<ExpandMore />}
-              sx={{
-                backgroundColor: 'rgba(76, 175, 80, 0.08)',
-                '&:hover': {
-                  backgroundColor: 'rgba(76, 175, 80, 0.12)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Code sx={{ color: '#4CAF50' }} />
-                <Typography variant="h6" sx={{ color: '#4CAF50' }}>
-                  AI-Generated Data Processing Function
-                </Typography>
-                <Chip
-                  label="JavaScript"
-                  size="small"
-                  sx={{
-                    backgroundColor: '#4CAF50',
-                    color: 'white',
-                    fontSize: '0.7rem',
-                  }}
-                />
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                This function was automatically generated by AI to transform the
-                SPARQL query results into the format needed for visualization
-                and analysis.
-              </Typography>
-              <Box
-                component="pre"
-                sx={{
-                  backgroundColor: '#f5f5f5',
-                  border: '1px solid #ddd',
-                  borderRadius: 1,
-                  p: 2,
-                  overflow: 'auto',
-                  fontSize: '0.875rem',
-                  fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {aiProcessingCode}
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-        </Paper>
-      )}
+      <DataProcessingCodeSection
+        processingCode={aiProcessingCode}
+        loading={loading}
+        onCodeChange={handleProcessingCodeChange}
+        onRegenerateCode={handleRegenerateProcessingCode}
+        onOpenHistory={handleOpenProcessingHistory}
+      />
 
-      {loading && !state.sparqlQuery && <TextSkeleton lines={12} />}
-      {error && renderErrorState(error)}
-
-      {state.queryResults.length > 0 &&
-        state.question &&
-        !state.chartHtml &&
-        !state.questionInterpretation &&
-        !state.dataCollectionInterpretation &&
-        !state.dataAnalysisInterpretation && (
-          <AIContentGenerator
-            data={state.queryResults}
-            question={state.question}
-            onContentGenerated={handleContentGenerated}
-            onError={setError}
-          />
-        )}
-
-      {dynamicQuery && state.queryResults.length > 0 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <SectionSelector
-            sectionType="information"
-            sectionTitle="Question Information"
-            query={dynamicQuery}
-          />
-          <QuestionInformationView query={dynamicQuery} isInteractive={true} />
-
-          {state.chartHtml && (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <HTMLRenderer
-                html={state.chartHtml}
-                title="AI-Generated Chart"
-                type="chart"
-                useIframe={true}
-                onContentChange={updateChartHtml}
-              />
-            </>
-          )}
-        </Paper>
-      )}
-
-      {state.queryResults.length > 0 && (
-        <QuestionDataGridView questionData={state.queryResults} />
-      )}
+      <ResultsDisplaySection
+        loading={loading}
+        error={error}
+        question={state.question}
+        sparqlQuery={state.sparqlQuery}
+        queryResults={state.queryResults}
+        chartHtml={state.chartHtml}
+        questionInterpretation={state.questionInterpretation}
+        dataCollectionInterpretation={state.dataCollectionInterpretation}
+        dataAnalysisInterpretation={state.dataAnalysisInterpretation}
+        dynamicQuery={dynamicQuery}
+        onContentGenerated={handleContentGenerated}
+        onError={setError}
+        onChartHtmlChange={updateChartHtml}
+      />
 
       <HistoryManager
         onApplyHistoryItem={handleApplyHistoryItem}

@@ -249,7 +249,7 @@ Modified Content:`;
                 onClick={handleEdit}
                 size="small"
                 sx={{
-                  color: 'text.secondary',
+                  color: '#e86161',
                   '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
                 }}
               >
