@@ -45,14 +45,20 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 orkg = ORKG(host="https://www.orkg.org/")
 
 SPARQL_QUERY = """
-PREFIX orkgr: <http://orkg.org/orkg/resource/>
-PREFIX orkgc: <http://orkg.org/orkg/class/>
-PREFIX orkgp: <http://orkg.org/orkg/predicate/>
+PREFIX r: <http://orkg.org/orkg/resource/>
+PREFIX c: <http://orkg.org/orkg/class/>
+PREFIX p: <http://orkg.org/orkg/predicate/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?paper WHERE {
-  ?paper orkgp:P31 ?contri.
-  ?contri a orkgc:C27001.
+#Get papers from KG-EmpiRE with its DOIs (für Andrea)
+SELECT ?paper, ?doi
+WHERE {
+    ?paper p:P31 ?contri.
+    OPTIONAL{?paper p:P26 ?doi.} 
+    ?contri a c:C27001.
+    ?contri p:P135046 ?venue.
+    ?venue rdfs:label ?venue_name.
+  FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
 }
 """
 
