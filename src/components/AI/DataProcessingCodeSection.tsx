@@ -47,7 +47,7 @@ const DataProcessingCodeSection: React.FC<DataProcessingCodeSectionProps> = ({
   loading,
   onCodeChange,
   onRegenerateCode,
-  onOpenHistory = () => {},
+  // onOpenHistory = () => {},
 }) => {
   const { getHistoryByType, updateProcessingFunctionCode } =
     useDynamicQuestion();
