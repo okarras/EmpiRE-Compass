@@ -2,10 +2,15 @@ type StatisticalQuerysType = {
   [key: string]: string;
 };
 const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
-  PAPERS_QUERY: `SELECT (COUNT(?paper) AS ?paper_count)
+  PAPERS_QUERY: `
+  SELECT COUNT(?paper) AS ?paper_count
   WHERE {
-    ?paper orkgp:P31 ?contri.
-    ?contri a orkgc:C27001.
+      ?paper orkgp:P31 ?contri.
+      OPTIONAL{?paper orkgp:P26 ?doi.} 
+      ?contri a orkgc:C27001.
+      ?contri orkgp:P135046 ?venue.
+      ?venue rdfs:label ?venue_name.
+    FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
   }`,
   TRIPLES_QUERY: `
   SELECT (COUNT(?s) AS ?tripleCount)
