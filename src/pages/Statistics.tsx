@@ -35,14 +35,15 @@ interface VenueData {
 interface StatisticsData {
   paperCount: number;
   tripleCount: number;
-  resources: number;
-  literals: number;
-  predicates: number;
+  total_resources: number;
+  total_literals: number;
+  total_predicates: number;
+  total_statements: number;
   perVenueData: Array<VenueData>;
   venueCount: number;
-  distinctResources: number;
-  distinctLiterals: number;
-  distinctPredicates: number;
+  global_distinct_resources: number;
+  global_distinct_literals: number;
+  global_distinct_predicates: number;
   answeredCQs: number;
   averageEmpiricalPerYear: number;
   maxEmpiricalPerYear: number;
@@ -51,14 +52,15 @@ interface StatisticsData {
 const DEFAULT_STATS: StatisticsData = {
   paperCount: 0,
   tripleCount: 0,
-  resources: 0,
-  literals: 0,
-  predicates: 0,
+  total_resources: 0,
+  total_literals: 0,
+  total_predicates: 0,
+  total_statements: 0,
   perVenueData: [],
   venueCount: 0,
-  distinctResources: 0,
-  distinctLiterals: 0,
-  distinctPredicates: 0,
+  global_distinct_resources: 0,
+  global_distinct_literals: 0,
+  global_distinct_predicates: 0,
   answeredCQs: 0,
   averageEmpiricalPerYear: 0,
   maxEmpiricalPerYear: 0,
@@ -81,12 +83,18 @@ export default function Statistics() {
         const [paperData, , , , , perVenueData, venuesData, avgEmpiricalData] =
           results;
 
-        const empiricalCounts = avgEmpiricalData.map((row: { paperCount: string; }) => Number(row.paperCount ?? 0));
+        const empiricalCounts = avgEmpiricalData.map(
+          (row: { paperCount: string }) => Number(row.paperCount ?? 0)
+        );
         const average = empiricalCounts.length
-          ? Number((empiricalCounts.reduce((a: number, b: number) => a + b, 0) / empiricalCounts.length).toFixed(2))
+          ? Number(
+              (
+                empiricalCounts.reduce((a: number, b: number) => a + b, 0) /
+                empiricalCounts.length
+              ).toFixed(2)
+            )
           : 0;
         const maxEmpiricalPerYear = Math.max(...empiricalCounts);
-
 
         setStatistics({
           ...statistics,
@@ -125,67 +133,90 @@ export default function Statistics() {
 
   const {
     paperCount,
-    resources,
-    literals,
-    predicates,
+    total_resources,
+    total_literals,
+    total_predicates,
+    total_statements,
     venueCount,
     perVenueData: papersPerVenue,
+    global_distinct_resources,
+    global_distinct_literals,
+    global_distinct_predicates,
   } = statistics;
 
   return (
     <ThemeProvider theme={theme}>
       <Container sx={{ mt: 8, height: '100vh' }}>
-        <StatsChartTypeSelector chartType={chartType} setChartType={setChartType} />
+        <StatsChartTypeSelector
+          chartType={chartType}
+          setChartType={setChartType}
+        />
 
         {chartType === 'gauge' ? (
           <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
             <CustomGaugeChart label="Papers" value={paperCount} />
             <CustomGaugeChart label="Venues" value={venueCount} />
-            <CustomGaugeChart label="Resources" value={resources} />
-            <CustomGaugeChart label="Literals" value={literals} />
-            <CustomGaugeChart label="Properties" value={predicates} />
-            <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
-            <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
-            <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
-            <CustomGaugeChart label="Avg. Empirical Papers per Year" value={statistics.averageEmpiricalPerYear} maxValue={statistics.maxEmpiricalPerYear} />
+            <CustomGaugeChart label="Resources" value={total_resources} />
+            <CustomGaugeChart label="Literals" value={total_literals} />
+            <CustomGaugeChart label="Properties" value={total_predicates} />
+            <CustomGaugeChart
+              label="Distinct Resources"
+              value={global_distinct_resources}
+            />
+            <CustomGaugeChart
+              label="Distinct Literals"
+              value={global_distinct_literals}
+            />
+            <CustomGaugeChart
+              label="Distinct Properties"
+              value={global_distinct_predicates}
+            />
+            <CustomGaugeChart
+              label="Avg. Empirical Papers per Year"
+              value={statistics.averageEmpiricalPerYear}
+              maxValue={statistics.maxEmpiricalPerYear}
+            />
           </Stack>
         ) : (
-        <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
-          <StatCard value={paperCount} label="Papers">
-            <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={venueCount} label="Venues">
-            <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={resources} label="Resources">
-            <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={literals} label="Literals">
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={predicates} label="Properties">
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard
-            value={statistics.distinctResources}
-            label="Distinct Resources"
-          >
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard
-            value={statistics.distinctLiterals}
-            label="Distinct Literals"
-          >
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard
-            value={statistics.distinctPredicates}
-            label="Distinct Properties"
-          >
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-        </Stack>
-         )}
+          <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
+            <StatCard value={paperCount} label="Papers">
+              <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={venueCount} label="Venues">
+              <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_resources} label="Resources">
+              <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_literals} label="Literals">
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_predicates} label="Properties">
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_statements} label="Total Statements">
+              <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_resources}
+              label="Distinct Resources"
+            >
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_literals}
+              label="Distinct Literals"
+            >
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_predicates}
+              label="Distinct Properties"
+            >
+              <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+          </Stack>
+        )}
 
         <Divider sx={{ mt: 2 }} />
 

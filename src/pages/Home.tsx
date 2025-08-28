@@ -20,14 +20,14 @@ const Home = () => {
           flexDirection: 'column',
         }}
       >
-        <Container 
+        <Container
           maxWidth="lg"
-          sx={{ 
+          sx={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             py: { xs: 1, sm: 2, md: 3 },
-            px: { xs: 1, sm: 1, md: 2 }
+            px: { xs: 1, sm: 1, md: 2 },
           }}
         >
           <Stack spacing={2} sx={{ flex: 1 }}>

@@ -1,5 +1,10 @@
 // StatsChartTypeSelector.tsx
-import { ToggleButton, ToggleButtonGroup, Box, Typography } from '@mui/material';
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Box,
+  Typography,
+} from '@mui/material';
 import DonutLargeIcon from '@mui/icons-material/DonutLarge';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 
@@ -8,8 +13,14 @@ interface StatsChartTypeSelectorProps {
   setChartType: (type: 'gauge' | 'card') => void;
 }
 
-const StatsChartTypeSelector = ({ chartType, setChartType }: StatsChartTypeSelectorProps) => {
-  const handleChange = (_: React.MouseEvent<HTMLElement>, newType: 'gauge' | 'card' | null) => {
+const StatsChartTypeSelector = ({
+  chartType,
+  setChartType,
+}: StatsChartTypeSelectorProps) => {
+  const handleChange = (
+    _: React.MouseEvent<HTMLElement>,
+    newType: 'gauge' | 'card' | null
+  ) => {
     if (newType) setChartType(newType);
   };
 
@@ -18,23 +29,34 @@ const StatsChartTypeSelector = ({ chartType, setChartType }: StatsChartTypeSelec
       <Typography variant="body1" color="text.secondary">
         Display Mode:
       </Typography>
-      <ToggleButtonGroup value={chartType} exclusive onChange={handleChange} size="small">
-        <ToggleButton value="gauge" aria-label="Gauge Charts"
+      <ToggleButtonGroup
+        value={chartType}
+        exclusive
+        onChange={handleChange}
+        size="small"
+      >
+        <ToggleButton
+          value="gauge"
+          aria-label="Gauge Charts"
           sx={{
             '&.Mui-selected': {
               backgroundColor: '#e86161',
               color: 'white',
             },
-          }}>
+          }}
+        >
           <DonutLargeIcon />
         </ToggleButton>
-        <ToggleButton value="card" aria-label="Stat Cards"
+        <ToggleButton
+          value="card"
+          aria-label="Stat Cards"
           sx={{
             '&.Mui-selected': {
               backgroundColor: '#e86161',
               color: 'white',
             },
-          }}>
+          }}
+        >
           <ViewModuleIcon />
         </ToggleButton>
       </ToggleButtonGroup>

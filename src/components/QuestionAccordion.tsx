@@ -317,6 +317,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                     chartSettings={query.chartSettings}
                     processedChartDataset={getProcessedChartData()}
                     dataInterpretation={getDataInterpretation('dataCollection')}
+                    type="dataCollection"
                   />
                   <Divider sx={{ my: 3 }} />
                 </>
@@ -348,6 +349,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                         []
                       }
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
+                      type="dataAnalysis"
                     />
                     {/* <Divider sx={{ my: 3 }} /> */}
                   </>

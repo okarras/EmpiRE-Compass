@@ -2,11 +2,11 @@ import { Box, Typography } from '@mui/material';
 
 const Header = () => {
   return (
-    <Box 
-      sx={{ 
-        textAlign: 'center', 
+    <Box
+      sx={{
+        textAlign: 'center',
         mb: { xs: 4, sm: 5, md: 6 },
-        px: { xs: 2, sm: 4, md: 6 }
+        px: { xs: 2, sm: 4, md: 6 },
       }}
     >
       <Typography
@@ -22,14 +22,14 @@ const Header = () => {
       >
         EmpiRE-Compass
       </Typography>
-      <Typography 
-        variant="h5" 
-        color="text.secondary" 
-        sx={{ 
+      <Typography
+        variant="h5"
+        color="text.secondary"
+        sx={{
           fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
           lineHeight: 1.5,
           maxWidth: '800px',
-          mx: 'auto'
+          mx: 'auto',
         }}
       >
         A Community-Maintainable Knowledge Graph Dashboard for Empirical
@@ -39,4 +39,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;

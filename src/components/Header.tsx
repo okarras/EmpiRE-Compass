@@ -15,10 +15,10 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import BookIcon from '@mui/icons-material/Book';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
-
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
@@ -55,7 +55,17 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const redirectToGitHub = () => {
     window.open('https://github.com/okarras/empire-Compass/', '_blank');
   };
-  
+
+  const redirectToStorybook = () => {
+    // TODO: Replace with your actual Chromatic Storybook URL after deployment
+    // Example: https://64a1b2c3d4e5f6789012345.chromatic.com
+    // To deploy: npm run deploy:chromatic (requires CHROMATIC_PROJECT_TOKEN)
+    window.open(
+      'https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs',
+      '_blank'
+    );
+  };
+
   return (
     <AppBar
       position="sticky"
@@ -177,9 +187,20 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               )}
             </IconButton>
           </Tooltip>
-          <Tooltip
-            title={`Check out the source code on GitHub`}
-          >
+          <Tooltip title="View Design System & Components">
+            <IconButton
+              onClick={redirectToStorybook}
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              <BookIcon sx={{ color: 'text.primary' }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={`Check out the source code on GitHub`}>
             <IconButton
               onClick={redirectToGitHub}
               color="inherit"
@@ -190,6 +211,18 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               }}
             >
               <GitHubIcon sx={{ color: 'text.primary' }} />
+              <Typography
+                variant="caption"
+                sx={{
+                  color: 'text.secondary',
+                  textAlign: 'right',
+                  display: 'block',
+                  mt: 1,
+                  opacity: 0.7,
+                }}
+              >
+                v{import.meta.env.VITE_APP_VERSION}
+              </Typography>
             </IconButton>
           </Tooltip>
         </Box>

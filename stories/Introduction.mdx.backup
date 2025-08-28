@@ -1,0 +1,122 @@
+import { Meta } from '@storybook/addon-docs';
+
+<Meta title="Introduction" />
+
+# EmpiRE-Compass Design System
+
+## Welcome to EmpiRE-Compass
+*"Navigating the EmpiRE of Empirical Research in Requirements Engineering"*
+
+---
+
+## 🔬 About the Project
+
+EmpiRE-Compass is a comprehensive platform that facilitates the exploration, reproduction, and enrichment of empirical research data within the KG-EmpiRE ecosystem. By leveraging live data from the Open Research Knowledge Graph (ORKG), EmpiRE-Compass offers researchers a suite of tools for data visualization, comparative analysis, and structured data contribution—all while aligning with ACM standards.
+
+## 🎯 Key Features
+
+### 📊 Interactive Dashboards
+- Live data visualization from ORKG
+- 16 competency questions with dynamic answers
+- Real-time statistics and metrics
+
+### 🔄 Research Reproduction
+- Historical state comparison
+- Data evolution tracking
+- Reproducibility tools
+
+### 📈 Statistics & Analytics
+- Conference and paper metrics
+- RDF triple analysis
+- Resource and literal counting
+
+### 🤝 Collaboration Tools
+- Survey-based data contribution
+- Curator approval workflow
+- ACM standards alignment
+
+### 🧭 Study Designer
+- Similar research identification
+- Design recommendations
+- Knowledge base integration
+
+## 🎨 Design System Overview
+
+This Storybook contains the complete component library for EmpiRE-Compass, organized into the following categories:
+
+### 📱 Layout Components
+- Header, Footer, Navigation
+- Responsive containers and grids
+- Menu and drawer systems
+
+### 🏠 Home Page Components
+- Hero sections and feature highlights
+- Contact forms and partner displays
+- Project information sections
+
+### 📊 Data Visualization
+- Custom charts and graphs
+- Statistics cards and displays
+- Interactive data components
+
+### 🔧 Utility Components
+- Loading and error states
+- Form elements and inputs
+- Modal and dialog systems
+
+### 🤖 AI Components
+- AI Assistant interface
+- Chat message components
+- Dynamic question handlers
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React 18, TypeScript, Material-UI
+- **State Management**: Redux Toolkit
+- **Routing**: React Router v7
+- **Charts**: Material-UI X-Charts
+- **Styling**: Material-UI Theme System
+- **Backend**: Firebase Firestore
+- **Build**: Vite
+- **Testing**: Storybook, Vitest
+
+## 📖 How to Use This Storybook
+
+1. **Browse Components**: Navigate through the sidebar to explore different components
+2. **Interactive Examples**: Use the controls panel to modify component props
+3. **Documentation**: Read the docs tab for implementation details
+4. **Code Examples**: Copy code snippets for your own use
+
+## 🚀 Getting Started
+
+```bash
+# Clone the repository
+git clone https://github.com/okarras/EmpiRE-Compass.git
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Start Storybook
+npm run storybook
+```
+
+## 🔗 Useful Links
+
+- **Live Application**: [EmpiRE-Compass Demo](https://empire-compass.vercel.app)
+- **GitHub Repository**: [okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)
+- **ORKG Platform**: [Open Research Knowledge Graph](https://orkg.org)
+- **Documentation**: [Project Wiki](https://github.com/okarras/EmpiRE-Compass/wiki)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/okarras/EmpiRE-Compass/blob/main/LICENSE) file for details.
+
+---
+
+## 💡 Pro Tip
+
+Use the **Controls** panel below each story to interact with component props in real-time. 
+This helps you understand how components behave with different configurations. 

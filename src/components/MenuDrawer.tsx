@@ -16,6 +16,7 @@ import { useEffect } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
+import PsychologyIcon from '@mui/icons-material/Psychology';
 import { queries } from '../constants/queries_chart_info';
 
 const drawerWidth = 280;
@@ -186,6 +187,41 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 All Questions
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* Dynamic Question Link */}
+        <ListItem
+          onClick={() => {
+            navigate('/dynamic-question');
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/dynamic-question')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': {
+              backgroundColor: 'rgba(232, 97, 97, 0.05)',
+            },
+          }}
+        >
+          <ListItemIcon>
+            <PsychologyIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/dynamic-question') ? 600 : 500,
+                }}
+              >
+                Dynamic Question
               </Typography>
             }
           />
