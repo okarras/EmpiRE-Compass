@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from 'react';
 
 export interface DynamicQuestionState {
   question: string;
@@ -8,13 +14,15 @@ export interface DynamicQuestionState {
   questionInterpretation: string;
   dataCollectionInterpretation: string;
   dataAnalysisInterpretation: string;
+  // Stores the latest AI-generated JavaScript data processing function code
+  processingFunctionCode: string;
   history: DynamicQuestionHistory[];
 }
 
 export interface DynamicQuestionHistory {
   id: string;
   timestamp: number;
-  type: 'question' | 'sparql' | 'chart' | 'analysis';
+  type: 'question' | 'sparql' | 'chart' | 'analysis' | 'processing';
   action: 'generated' | 'edited' | 'ai_modified';
   content: string;
   prompt?: string; // The prompt that led to this change
@@ -39,6 +47,7 @@ interface DynamicQuestionContextType {
     interpretation: string,
     prompt?: string
   ) => void;
+  updateProcessingFunctionCode: (code: string, prompt?: string) => void;
   addToHistory: (
     entry: Omit<DynamicQuestionHistory, 'id' | 'timestamp'>
   ) => void;
@@ -46,6 +55,8 @@ interface DynamicQuestionContextType {
     type: DynamicQuestionHistory['type']
   ) => DynamicQuestionHistory[];
   clearHistory: () => void;
+  removeFromHistory: (id: string) => void;
+  removeMultipleFromHistory: (ids: string[]) => void;
   resetState: () => void;
   loadSavedState: (savedState: DynamicQuestionState) => void;
 }
@@ -62,6 +73,7 @@ const initialState: DynamicQuestionState = {
   questionInterpretation: '',
   dataCollectionInterpretation: '',
   dataAnalysisInterpretation: '',
+  processingFunctionCode: '',
   history: [],
 };
 
@@ -74,9 +86,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
       const saved = localStorage.getItem('current-dynamic-question');
       if (saved) {
         const parsed = JSON.parse(saved);
+        // Ensure history is preserved and not overwritten by initialState
         return {
           ...initialState,
           ...parsed,
+          history: parsed.history || [],
         };
       }
     } catch (err) {
@@ -99,6 +113,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
       history: [...prev.history, historyEntry],
     }));
   };
+
+  // Save state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('current-dynamic-question', JSON.stringify(state));
+  }, [state]);
 
   const updateQuestion = (question: string) => {
     setState((prev) => ({
@@ -203,6 +222,21 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const updateProcessingFunctionCode = (code: string, prompt?: string) => {
+    const previousContent = state.processingFunctionCode;
+    setState((prev) => ({
+      ...prev,
+      processingFunctionCode: code,
+    }));
+    addToHistory({
+      type: 'processing',
+      action: prompt ? 'ai_modified' : 'edited',
+      content: code,
+      prompt,
+      previousContent,
+    });
+  };
+
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -214,6 +248,20 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
+  const removeFromHistory = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      history: prev.history.filter((item) => item.id !== id),
+    }));
+  };
+
+  const removeMultipleFromHistory = (ids: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      history: prev.history.filter((item) => !ids.includes(item.id)),
+    }));
+  };
+
   const resetState = () => {
     setState(initialState);
     // Clear the saved state from localStorage
@@ -221,16 +269,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const loadSavedState = (savedState: DynamicQuestionState) => {
-    console.log('Loading saved state:', {
-      hasQuestion: !!savedState.question,
-      hasResults: savedState.queryResults.length > 0,
-      hasChart: !!savedState.chartHtml,
-      hasInterpretations: !!(
-        savedState.questionInterpretation ||
-        savedState.dataCollectionInterpretation ||
-        savedState.dataAnalysisInterpretation
-      ),
-    });
     setState(savedState);
     // Save to localStorage for persistence
     localStorage.setItem(
@@ -250,9 +288,12 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         updateQuestionInterpretation,
         updateDataCollectionInterpretation,
         updateDataAnalysisInterpretation,
+        updateProcessingFunctionCode,
         addToHistory,
         getHistoryByType,
         clearHistory,
+        removeFromHistory,
+        removeMultipleFromHistory,
         resetState,
         loadSavedState,
       }}

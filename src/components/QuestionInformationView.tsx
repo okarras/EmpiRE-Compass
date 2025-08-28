@@ -33,15 +33,10 @@ import {
   useDynamicQuestion,
   DynamicQuestionHistory,
 } from '../context/DynamicQuestionContext';
+import type { Query } from '../constants/queries_chart_info';
 
 interface QuestionInformationViewProps {
-  query: {
-    dataAnalysisInformation: {
-      questionExplanation: string;
-      requiredDataForAnalysis: string;
-      dataAnalysis: string;
-    };
-  };
+  query: Query;
   isInteractive?: boolean;
 }
 
@@ -117,7 +112,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
     setEditingSection(section);
-    setEditContent(getSectionContent(section));
+    setEditContent(getSectionContent(section ?? '') ?? '');
     setError(null);
   };
 
@@ -180,7 +175,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
         const trimmedContent = item.content.trim();
         if (
           !trimmedContent ||
-          trimmedContent === currentContent.trim() ||
+          trimmedContent === currentContent?.trim() ||
           seenContents.has(trimmedContent)
         ) {
           return false;
@@ -296,7 +291,7 @@ Modified ${sectionName}:`;
                   onClick={() => handleEdit(section)}
                   size="small"
                   sx={{
-                    color: 'text.secondary',
+                    color: '#e86161',
                     '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
                   }}
                 >
@@ -443,19 +438,19 @@ Modified ${sectionName}:`;
 
       {renderSection(
         'Explanation of the Competency Question',
-        getSectionContent('question'),
+        getSectionContent('question') ?? '',
         'question'
       )}
       <Divider sx={{ my: 2 }} />
       {renderSection(
         'Required Data for Analysis',
-        getSectionContent('dataCollection'),
+        getSectionContent('dataCollection') ?? '',
         'dataCollection'
       )}
       <Divider sx={{ my: 2 }} />
       {renderSection(
         'Data Analysis',
-        getSectionContent('dataAnalysis'),
+        getSectionContent('dataAnalysis') ?? '',
         'dataAnalysis'
       )}
 

@@ -41,6 +41,20 @@ Base your query on the following ORKG terms. Note the specific relationships bet
 | **Threats to Validity** | `orkgp:P39099` | Predicate | Links a `Contribution` to its validity threats node. |
 | **Research Question** | `orkgp:P37330` | Predicate | Links a `Contribution` to its research question(s). |
 
+**4. Knowledge Graph Properties Reference:**
+The following properties are available in the knowledge graph for querying research information:
+
+| Property Name | ORKG ID | ORKG Property ID | Cardinality | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Venue Serie** | `orkgc:C81025` | `orkgp:P135046` | 1 to 1 | In which conference venue is the publication published? |
+| **Research Problem** | `orkgc:Problem` | `orkgp:P32` | 1 to 1 | What is the research problem under consideration in the publication? |
+| **Research Paradigm** | `orkgc:C29004` | `orkgp:P57003` | 1 to 1 | What is the underlying research paradigm of the publication? |
+| **Research Question** | `orkgc:C27006` | `orkgp:P37330` | 1 to * | What is the research question reported in the publication? |
+| **Research Question Answer** | `orkgc:C81029` | `orkgp:P135050` | 1 to 1 | How is the answer to the research question reported in the publication? |
+| **Data Collection** | `orkgc:C27004` | `orkgp:P56008` | 1 to 1 | What is reported about the data collection in the publication? |
+| **Data Analysis** | `orkgc:P15124` | `orkgc:C28004` | 1 to 1 | What is reported about the data analysis in the publication? |
+| **Threats to Validity** | `orkgc:P39099` | `orkgc:C27003` | 1 to 1 | What threats to validity are reported in a publication? |
+
 **\#\# Best Practices & Critical Rules**
 
 To ensure your queries are correct, you **MUST** adhere to the following rules.
@@ -110,10 +124,15 @@ You will now be given the research question to process.
 [Research Question]
 ```
 
-**\#\# Output Requirements & Constraints**
+**## Output Requirements & Constraints**
 
-  * Your output must be **ONLY** the SPARQL query (or queries).
-  * The entire output must be enclosed in one or more Markdown code blocks.
-  * **Do not provide any explanation, summary, or conversational text** before or after the code blocks.
-  * If you provide multiple queries to resolve ambiguity, add a comment at the top of each code block to explain its specific purpose (e.g., `# Query 1: Data Collection Methods`).
-  * If a question cannot be answered with the provided schema, return a SPARQL query containing **only a comment** that explains the limitation.
+- Your output must be one or more SPARQL code blocks only.
+- If multiple queries are needed, output separate SPARQL code blocks. The FIRST line inside each SPARQL block MUST be a single-line comment indicating a short identifier, e.g.: `# id: main` or `# id: per_year`.
+- Do not provide any explanation, summary, or conversational text before, between, or after the code blocks.
+- Do not provide JavaScript code blocks - data processing will be handled separately.
+
+- SPARQL code block rules:
+  - Use the exact prefixes and mandatory conference filter provided above.
+  - Respect the schema and rules listed above.
+  - Focus on extracting the raw data needed to answer the research question.
+  - Return all relevant columns that might be needed for analysis and visualization.

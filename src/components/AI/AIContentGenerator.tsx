@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CircularProgress, Typography, Paper } from '@mui/material';
-import { HistoryItem } from './HistoryManager';
 import { useAIService } from '../../services/aiService';
 
 interface AIContentGeneratorProps {
@@ -13,11 +12,6 @@ interface AIContentGeneratorProps {
     dataCollectionInterpretation: string,
     dataAnalysisInterpretation: string
   ) => void;
-  onAddToHistory: (
-    type: HistoryItem['type'],
-    content: string,
-    title: string
-  ) => void;
   onError: (error: string) => void;
 }
 
@@ -25,19 +19,81 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   data,
   question,
   onContentGenerated,
-  onAddToHistory,
   onError,
 }) => {
   const aiService = useAIService();
   const [generating, setGenerating] = useState(false);
 
-  const generateContent = async () => {
+  // Helper function to prepare data summary for AI processing
+  const prepareDataSummary = (data: Record<string, unknown>[]) => {
+    if (!data || data.length === 0) return 'No data available';
+
+    const columns = Object.keys(data[0] || {});
+    const summary: Record<
+      string,
+      {
+        type: string;
+        count: number;
+        min?: number;
+        max?: number;
+        unique_values: number;
+        sample_values?: unknown[];
+      }
+    > = {};
+
+    // For each column, provide a summary
+    columns.forEach((col) => {
+      const values = data
+        .map((row) => row[col])
+        .filter((val) => val !== null && val !== undefined);
+      const uniqueValues = [...new Set(values)];
+
+      if (typeof values[0] === 'number') {
+        const nums = values as number[];
+        summary[col] = {
+          type: 'numeric',
+          count: values.length,
+          min: Math.min(...nums),
+          max: Math.max(...nums),
+          unique_values: uniqueValues.length,
+        };
+      } else {
+        summary[col] = {
+          type: 'categorical',
+          count: values.length,
+          unique_values: uniqueValues.length,
+          sample_values: uniqueValues.slice(0, 10), // Show first 10 unique values
+        };
+      }
+    });
+
+    return JSON.stringify(summary, null, 2);
+  };
+
+  const generateContent = useCallback(async () => {
     setGenerating(true);
     try {
+      // Prepare data summary for efficient AI processing
+      const dataSummary = prepareDataSummary(data);
+
       // Generate HTML chart
       const chartPrompt = `Based on the following SPARQL query results for the research question "${question}", generate a complete HTML chart visualization.
 
-Data: ${JSON.stringify(data, null, 2)}
+Data Structure:
+- Total rows: ${data.length}
+- Columns: ${Object.keys(data[0] || {}).join(', ')}
+- Sample data (first 5 rows): ${JSON.stringify(data.slice(0, 5), null, 2)}
+- Last 2 rows (for range): ${JSON.stringify(data.slice(-2), null, 2)}
+
+Data Summary: ${dataSummary}
+
+IMPORTANT DATA PROCESSING INSTRUCTIONS:
+- The data will be provided as a JavaScript variable named 'chartData' in the HTML
+- DO NOT include the actual data in your generated code - just reference the 'chartData' variable
+- The 'chartData' variable will contain the complete dataset as an array of objects
+- Process the 'chartData' variable to create appropriate chart datasets
+- For time-series data with methods/categories, create grouped or stacked bar charts
+- Use all data points from the 'chartData' variable without limiting or sampling
 
 Requirements:
 1. Create a complete HTML document with embedded CSS and JavaScript
@@ -57,27 +113,82 @@ Requirements:
    - Zoom and pan capabilities where appropriate
    - Responsive interactions
    - Smooth animations and transitions
-7. Use a container with max-width and centered layout
-8. The chart must work standalone in an iframe
-9. Include CSS for responsive design and professional appearance
-10. CRITICAL: Set html and body background to transparent (background: transparent !important)
-11. Remove any scrollbars by setting overflow: hidden on html and body
-12. Make the chart container fit the iframe without creating scrollbars
-13. Use padding instead of margins to avoid overflow issues
-14. The chart container should have NO background color - only the chart itself should be visible
-15. Ensure all containers and wrappers have transparent backgrounds
-16. The chart should blend seamlessly with the parent page background
-17. Set chart height to at least 500px for better visibility and readability
-18. Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
+    7. Use a container with max-width and centered layout
+    8. The chart must work standalone in an iframe
+    9. Include CSS for responsive design and professional appearance
+    10. CRITICAL: Set html and body background to transparent (background: transparent !important)
+    11. Remove any scrollbars by setting overflow: hidden on html and body
+    12. Make the chart container fit the iframe without creating scrollbars
+    13. Use padding instead of margins to avoid overflow issues
+    14. The chart container should have NO background color - only the chart itself should be visible
+    15. Ensure all containers and wrappers have transparent backgrounds
+    16. The chart should blend seamlessly with the parent page background
+    17. Set chart height to at least 500px for better visibility and readability
+    18. Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
+    19. CRITICAL: You must generate COMPLETE HTML from <!DOCTYPE html> to </html>
+    20. CRITICAL: Include ALL the data processing logic in the JavaScript
+    21. CRITICAL: Do not truncate or abbreviate - generate the full, working HTML document
+    22. For large datasets, process and aggregate the data efficiently within the JavaScript
+    23. Use appropriate chart types (bar for time series, stacked bar for categories over time)
+    24. Ensure the chart handles all data points appropriately
 
-Return ONLY the complete HTML code that can be rendered directly in a browser.`;
+         Return ONLY the complete HTML code that can be rendered directly in a browser. The HTML must be complete and functional.
+
+EXAMPLE of how to use the chartData variable in your JavaScript:
+\`\`\`javascript
+// The chartData variable will be automatically available
+// Process the data to create Chart.js datasets
+const processedData = {
+  labels: [...], // Extract from chartData
+  datasets: [...] // Process chartData into chart datasets
+};
+
+const chart = new Chart(ctx, {
+  type: 'bar', // or other appropriate type
+  data: processedData,
+  options: { ... }
+});
+\`\`\`
+
+Generate the complete HTML now:`;
 
       const chartResult = await aiService.generateText(chartPrompt, {
-        temperature: 0.2,
-        maxTokens: 2000,
+        temperature: 0.1, // Lower temperature for more consistent generation
+        maxTokens: 4000, // Sufficient tokens for HTML structure without data
       });
 
       let chartHtml = chartResult.text;
+
+      // Inject the actual data into the HTML
+      const dataScript = `
+    <script>
+        // Data provided by the application
+        const chartData = ${JSON.stringify(data, null, 2)};
+
+        // Helper function to process data for charts
+        window.processChartData = function(data) {
+            return data; // Default: return data as-is, can be overridden by generated code
+        };
+    </script>`;
+
+      // Remove any existing chartData declarations to avoid conflicts
+      chartHtml = chartHtml.replace(
+        /const\s+chartData\s*=\s*\[[\s\S]*?\];/g,
+        ''
+      );
+      chartHtml = chartHtml.replace(/var\s+chartData\s*=\s*\[[\s\S]*?\];/g, '');
+      chartHtml = chartHtml.replace(/let\s+chartData\s*=\s*\[[\s\S]*?\];/g, '');
+
+      // Insert data script after Chart.js CDN but before any other scripts
+      if (chartHtml.includes('</head>')) {
+        chartHtml = chartHtml.replace('</head>', `${dataScript}\n</head>`);
+      } else if (chartHtml.includes('<body>')) {
+        chartHtml = chartHtml.replace('<body>', `<body>${dataScript}`);
+      } else {
+        // Fallback: add before </body>
+        chartHtml = chartHtml.replace('</body>', `${dataScript}\n</body>`);
+      }
+
       // Ensure Chart.js CDN is present
       if (!chartHtml.includes('cdn.jsdelivr.net/npm/chart.js')) {
         chartHtml = chartHtml.replace(
@@ -120,12 +231,16 @@ Return ONLY the complete HTML code that can be rendered directly in a browser.`;
           );
         }
       );
-      onAddToHistory('chart_html', chartHtml, `Chart HTML: ${question}`);
 
       // Generate chart description
       const descriptionPrompt = `Based on the following data from a SPARQL query about "${question}", provide a detailed chart analysis in HTML format.
 
-Data: ${JSON.stringify(data, null, 2)}
+Data Structure:
+- Total rows: ${data.length}
+- Columns: ${Object.keys(data[0] || {}).join(', ')}
+- Sample data: ${JSON.stringify(data.slice(0, 5), null, 2)}
+
+Data Summary: ${dataSummary}
 
 Requirements:
 1. Return properly formatted HTML content (not a complete HTML document, just the content)
@@ -151,16 +266,11 @@ Return ONLY the HTML content (no <html>, <head>, or <body> tags).`;
       );
 
       const chartDescription = descriptionResult.text;
-      onAddToHistory(
-        'chart_description',
-        chartDescription,
-        `Chart Analysis: ${question}`
-      );
 
       // Generate Question Information interpretation
       const questionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Explanation of the Competency Question" section.
 
-Data: ${JSON.stringify(data, null, 2)}
+Data Summary: ${dataSummary}
 
 Requirements:
 1. Return a simple, clear explanation (not HTML)
@@ -183,16 +293,11 @@ Return ONLY the explanation text.`;
       );
 
       const questionInterpretation = questionInterpretationResult.text;
-      onAddToHistory(
-        'question_interpretation',
-        questionInterpretation,
-        `Question Interpretation: ${question}`
-      );
 
       // Generate Data Collection interpretation
       const dataCollectionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Required Data for Analysis" section.
 
-Data: ${JSON.stringify(data, null, 2)}
+Data Summary: ${dataSummary}
 
 Requirements:
 1. Return a simple, clear explanation (not HTML)
@@ -216,16 +321,11 @@ Return ONLY the explanation text.`;
 
       const dataCollectionInterpretation =
         dataCollectionInterpretationResult.text;
-      onAddToHistory(
-        'data_collection_interpretation',
-        dataCollectionInterpretation,
-        `Data Collection Interpretation: ${question}`
-      );
 
       // Generate Data Analysis interpretation
       const dataAnalysisInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Data Analysis" section.
 
-Data: ${JSON.stringify(data, null, 2)}
+Data Summary: ${dataSummary}
 
 Requirements:
 1. Return a simple, clear explanation (not HTML)
@@ -248,11 +348,6 @@ Return ONLY the explanation text.`;
       );
 
       const dataAnalysisInterpretation = dataAnalysisInterpretationResult.text;
-      onAddToHistory(
-        'data_analysis_interpretation',
-        dataAnalysisInterpretation,
-        `Data Analysis Interpretation: ${question}`
-      );
 
       // Clean up code blocks from generated content
       const chartHtmlWithoutCodeBlocks = chartHtml.replace(
@@ -280,14 +375,14 @@ Return ONLY the explanation text.`;
     } finally {
       setGenerating(false);
     }
-  };
+  }, [data, question, aiService, onContentGenerated, onError]);
 
   // Auto-generate content when data changes
   React.useEffect(() => {
     if (data.length > 0 && question) {
       generateContent();
     }
-  }, [data, question]);
+  }, [data, question, generateContent]);
 
   // Check if AI is configured
   if (!aiService.isConfigured()) {

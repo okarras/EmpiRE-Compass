@@ -1,34 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Divider,
-  Typography,
-  Paper,
-  Button,
-  Tooltip,
-} from '@mui/material';
-import { History } from '@mui/icons-material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Box } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
-import QuestionInformationView from './QuestionInformationView';
-import SectionSelector from './SectionSelector';
-import TextSkeleton from './AI/TextSkeleton';
-import HTMLRenderer from './AI/HTMLRenderer';
-import AIContentGenerator from './AI/AIContentGenerator';
-import SPARQLQuerySection from './AI/SPARQLQuerySection';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
-import {
-  HistoryManager,
-  HistoryItem,
-  useHistoryManager,
-} from './AI/HistoryManager';
+import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/aiService';
-import AIConfigurationButton from './AI/AIConfigurationButton';
 
 import { useDynamicQuestion } from '../context/DynamicQuestionContext';
-import DynamicQuestionManager from './AI/DynamicQuestionManager';
+import QueryExecutionSection from './AI/QueryExecutionSection';
+import DataProcessingCodeSection from './AI/DataProcessingCodeSection';
+import ResultsDisplaySection from './AI/ResultsDisplaySection';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
-import QuestionDataGridView from './QuestionDataGridView';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -57,6 +39,11 @@ interface DynamicQuery {
   ) => Record<string, unknown>[];
 }
 
+// Added: Type alias for AI-provided processing function
+type DataProcessingFn = (
+  data: Record<string, unknown>[] | Record<string, Record<string, unknown>[]>
+) => Record<string, unknown>[];
+
 const DynamicAIQuestion: React.FC = () => {
   const aiService = useAIService();
   const {
@@ -68,14 +55,21 @@ const DynamicAIQuestion: React.FC = () => {
     updateQuestionInterpretation,
     updateDataCollectionInterpretation,
     updateDataAnalysisInterpretation,
+    updateProcessingFunctionCode,
   } = useDynamicQuestion();
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
 
-  // History management
-  const { addToHistory } = useHistoryManager();
+  // Added: state to hold optional AI-provided processing function
+  const [aiProcessingFn, setAiProcessingFn] = useState<DataProcessingFn | null>(
+    null
+  );
+  // Added: state to hold the raw JS code for display
+  const [aiProcessingCode, setAiProcessingCode] = useState<string | null>(null);
+
+  // History management - no longer needed since DynamicQuestionContext handles history
 
   const { setContext } = useAIAssistantContext();
 
@@ -86,20 +80,277 @@ const DynamicAIQuestion: React.FC = () => {
     }
   }, [dynamicQuery, state.queryResults, loading, error, setContext]);
 
+  // Hydrate AI-generated processing function and its code from persisted state
+  useEffect(() => {
+    if (state.processingFunctionCode && state.processingFunctionCode.trim()) {
+      setAiProcessingCode(state.processingFunctionCode);
+      const compiled = compileProcessingFunction(state.processingFunctionCode);
+      setAiProcessingFn(compiled);
+    } else {
+      setAiProcessingCode(null);
+      setAiProcessingFn(null);
+    }
+  }, [state.processingFunctionCode]);
+
+  // Parse SPARQL and JavaScript blocks from Markdown output
+  const extractFromMarkdown = (
+    markdown: string
+  ): {
+    sparqlBlocks: Array<{ id: string; query: string }>;
+    javascript: string | null;
+  } => {
+    const sparqlBlockRegex = /```sparql\n([\s\S]*?)\n```/gi;
+    const jsRegex = /```(?:javascript|js)\n([\s\S]*?)\n```/i;
+
+    const sparqlBlocks: Array<{ id: string; query: string }> = [];
+    let match: RegExpExecArray | null;
+    while ((match = sparqlBlockRegex.exec(markdown)) !== null) {
+      const full = match[1].trim();
+      const lines = full.split(/\n/);
+      let id = 'main';
+      let startIndex = 0;
+      if (lines[0].trim().startsWith('#')) {
+        const idMatch = lines[0].match(/#\s*id\s*:\s*([A-Za-z0-9_-]+)/i);
+        if (idMatch) {
+          id = idMatch[1];
+          startIndex = 1;
+        }
+      }
+      const query = lines.slice(startIndex).join('\n').trim();
+      if (query) {
+        sparqlBlocks.push({ id, query });
+      }
+    }
+
+    const jsMatch = markdown.match(jsRegex);
+
+    return {
+      sparqlBlocks,
+      javascript: jsMatch && jsMatch[1] ? jsMatch[1].trim() : null,
+    };
+  };
+
+  // Compile a processing function from JS code block with better error handling
+  const compileProcessingFunction = (
+    jsCode: string
+  ): DataProcessingFn | null => {
+    try {
+      const normalized = jsCode.replace(/export\s+default\s+/g, '');
+      const factory = new Function(
+        `"use strict";\n${normalized}\nreturn typeof processData === 'function' ? processData : null;`
+      );
+      const fn = factory();
+      if (typeof fn === 'function') {
+        // Wrap the function to add error handling
+        return ((
+          data:
+            | Record<string, unknown>[]
+            | Record<string, Record<string, unknown>[]>
+        ) => {
+          try {
+            // Additional safety check for null/undefined data
+            if (data === null || data === undefined) {
+              console.warn(
+                'AI processing function received null/undefined data, returning empty array'
+              );
+              return [];
+            }
+            return fn(data);
+          } catch (error) {
+            console.error('Error in AI processing function:', error);
+            console.error('Function code:', jsCode);
+            console.error('Input data:', data);
+            // Return empty array on error to prevent crashes
+            return [];
+          }
+        }) as DataProcessingFn;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error compiling processing function:', error);
+      console.error('JS code:', jsCode);
+      return null;
+    }
+  };
+
+  // Helper function to transform method/category data by year
+  const transformMethodDataByYear = useCallback(
+    (data: Record<string, unknown>[]): Record<string, unknown>[] => {
+      const yearGroups = new Map<string, Map<string, number>>();
+
+      // Find the method/type field and count field
+      const firstItem = data[0] as Record<string, unknown>;
+      const methodField =
+        Object.keys(firstItem).find(
+          (key) =>
+            key.toLowerCase().includes('method') ||
+            key.toLowerCase().includes('type') ||
+            key.toLowerCase().includes('label')
+        ) || 'method_type_label';
+
+      const countField =
+        Object.keys(firstItem).find(
+          (key) =>
+            key.toLowerCase().includes('count') ||
+            typeof firstItem[key] === 'number'
+        ) || 'method_count';
+
+      // Group data by year and method type
+      data.forEach((item) => {
+        const year = String(
+          (item as Record<string, unknown>)['year'] || 'Unknown'
+        );
+        const methodType = String(
+          (item as Record<string, unknown>)[methodField] || 'Unknown'
+        );
+        const count = parseInt(
+          String((item as Record<string, unknown>)[countField] || '0')
+        );
+
+        if (!yearGroups.has(year)) {
+          yearGroups.set(year, new Map());
+        }
+
+        const yearData = yearGroups.get(year)!;
+        yearData.set(methodType, (yearData.get(methodType) || 0) + count);
+      });
+
+      // Transform to chart-friendly format
+      return Array.from(yearGroups.entries())
+        .map(([year, methods]) => {
+          const result: Record<string, unknown> = {
+            year: parseInt(year) || year,
+          };
+
+          // Add each method type as a separate column
+          methods.forEach((count, methodType) => {
+            // Clean up method type name for chart display
+            const cleanMethodType = methodType
+              .replace(/[^a-zA-Z0-9\s]/g, '')
+              .replace(/\s+/g, '_')
+              .toLowerCase();
+            result[cleanMethodType] = count;
+          });
+
+          return result;
+        })
+        .sort((a, b) => {
+          const yearA =
+            typeof (a as Record<string, unknown>)['year'] === 'number'
+              ? ((a as Record<string, unknown>)['year'] as number)
+              : parseInt(String((a as Record<string, unknown>)['year']));
+          const yearB =
+            typeof (b as Record<string, unknown>)['year'] === 'number'
+              ? ((b as Record<string, unknown>)['year'] as number)
+              : parseInt(String((b as Record<string, unknown>)['year']));
+          return (yearA || 0) - (yearB || 0);
+        });
+    },
+    []
+  );
+
+  // Enhanced data processing function for dynamic queries (fallback)
+  const processDynamicData = useCallback(
+    (data: Record<string, unknown>[]): Record<string, unknown>[] => {
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        console.warn('processDynamicData received invalid data:', data);
+        return [];
+      }
+
+      // Detect data structure and apply appropriate processing
+      const firstItem = data[0] as Record<string, unknown>;
+      const keys = Object.keys(firstItem);
+
+      // Check if this looks like method/category data with counts
+      const hasMethodType = keys.some(
+        (key) =>
+          key.toLowerCase().includes('method') ||
+          key.toLowerCase().includes('type') ||
+          key.toLowerCase().includes('label')
+      );
+      const hasCount = keys.some(
+        (key) =>
+          key.toLowerCase().includes('count') ||
+          typeof firstItem[key] === 'number'
+      );
+      const hasYear = keys.includes('year');
+
+      // If this is method/category data by year, transform it appropriately
+      if (hasYear && hasMethodType && hasCount) {
+        return transformMethodDataByYear(data);
+      }
+
+      // Get all unique numeric keys from the data
+      const allKeys = new Set<string>();
+      data.forEach((item) => {
+        Object.keys(item).forEach((key) => {
+          if (
+            key !== 'year' &&
+            key !== 'paper' &&
+            typeof item[key] === 'number'
+          ) {
+            allKeys.add(key);
+          }
+        });
+      });
+
+      // If we have year data, group by year
+      if (data.some((item) => (item as Record<string, unknown>)['year'])) {
+        const yearGroups = new Map<string, Record<string, unknown>[]>();
+
+        data.forEach((item) => {
+          const year = String(
+            (item as Record<string, unknown>)['year'] || 'Unknown'
+          );
+          if (!yearGroups.has(year)) {
+            yearGroups.set(year, []);
+          }
+          yearGroups.get(year)!.push(item);
+        });
+
+        return Array.from(yearGroups.entries())
+          .map(([year, items]) => {
+            const result: Record<string, unknown> = {
+              year: parseInt(year) || year,
+            };
+
+            allKeys.forEach((key) => {
+              const values = items
+                .map((item) => (item as Record<string, unknown>)[key])
+                .filter((val) => typeof val === 'number') as number[];
+              if (values.length > 0) {
+                const sum = values.reduce((sum, val) => sum + val, 0);
+                result[key] = sum;
+                result[`normalized_${key}`] =
+                  values.length > 0
+                    ? Number(((sum / items.length) * 100).toFixed(2))
+                    : 0;
+              }
+            });
+
+            return result;
+          })
+          .sort((a, b) => {
+            const yearA =
+              typeof (a as Record<string, unknown>)['year'] === 'number'
+                ? ((a as Record<string, unknown>)['year'] as number)
+                : parseInt(String((a as Record<string, unknown>)['year']));
+            const yearB =
+              typeof (b as Record<string, unknown>)['year'] === 'number'
+                ? ((b as Record<string, unknown>)['year'] as number)
+                : parseInt(String((b as Record<string, unknown>)['year']));
+            return (yearA || 0) - (yearB || 0);
+          });
+      }
+
+      // If no year data, just return the data as is
+      return data;
+    },
+    [transformMethodDataByYear]
+  );
+
   // Recreate dynamic query when state is loaded from storage
   useEffect(() => {
-    console.log('State loaded:', {
-      hasResults: state.queryResults.length > 0,
-      hasQuestion: !!state.question,
-      hasChart: !!state.chartHtml,
-      hasInterpretations: !!(
-        state.questionInterpretation ||
-        state.dataCollectionInterpretation ||
-        state.dataAnalysisInterpretation
-      ),
-      dynamicQuery: !!dynamicQuery,
-    });
-
     if (state.queryResults.length > 0 && state.question && !dynamicQuery) {
       const newDynamicQuery: DynamicQuery = {
         title: `Dynamic Query: ${state.question}`,
@@ -143,7 +394,8 @@ const DynamicAIQuestion: React.FC = () => {
           sx: { width: '100%' },
         },
         chartType: 'bar',
-        dataProcessingFunction: processDynamicData,
+        // Don't include processing function to avoid Redux serialization issues
+        // dataProcessingFunction: processDynamicData,
       };
 
       setDynamicQuery(newDynamicQuery);
@@ -155,95 +407,236 @@ const DynamicAIQuestion: React.FC = () => {
     state.dataCollectionInterpretation,
     state.dataAnalysisInterpretation,
     dynamicQuery,
+    processDynamicData,
   ]);
 
-  const extractSparqlFromMarkdown = (markdown: string): string => {
-    const sparqlRegex = /```sparql\n([\s\S]*?)\n```/;
-    const match = markdown.match(sparqlRegex);
-    if (match && match[1]) {
-      return match[1].trim();
+  // Execute SPARQL queries and return raw data without processing
+  const executeQueriesRaw = async (
+    blocks: Array<{ id: string; query: string }>
+  ): Promise<Record<string, unknown>[]> => {
+    if (!blocks || blocks.length === 0) return [];
+
+    if (blocks.length === 1) {
+      return await fetchSPARQLData(blocks[0].query);
     }
-    const genericCodeBlock = /```\n([\s\S]*?)\n```/;
-    const genericMatch = markdown.match(genericCodeBlock);
-    if (genericMatch && genericMatch[1]) {
-      return genericMatch[1].trim();
+
+    // Multiple queries: fetch sequentially, build datasets map
+    const datasets: Record<string, Record<string, unknown>[]> = {};
+    for (const b of blocks) {
+      const rows = await fetchSPARQLData(b.query);
+      datasets[b.id] = rows;
     }
-    return markdown.trim();
+
+    // For multiple queries, we need to let the AI processing function handle combination
+    // For now, return the first dataset or empty array
+    const firstKey = Object.keys(datasets)[0];
+    return firstKey ? datasets[firstKey] : [];
   };
 
-  // Simple data processing function for dynamic queries
-  const processDynamicData = (
-    data: Record<string, unknown>[]
-  ): Record<string, unknown>[] => {
-    if (!data || data.length === 0) return [];
-
-    // Get all unique keys from the data
-    const allKeys = new Set<string>();
-    data.forEach((item) => {
-      Object.keys(item).forEach((key) => {
-        if (
-          key !== 'year' &&
-          key !== 'paper' &&
-          typeof item[key] === 'number'
-        ) {
-          allKeys.add(key);
-        }
-      });
-    });
-
-    // If we have year data, group by year
-    if (data.some((item) => item.year)) {
-      const yearGroups = new Map<string, Record<string, unknown>[]>();
-
-      data.forEach((item) => {
-        const year = String(item.year || 'Unknown');
-        if (!yearGroups.has(year)) {
-          yearGroups.set(year, []);
-        }
-        yearGroups.get(year)!.push(item);
-      });
-
-      return Array.from(yearGroups.entries())
-        .map(([year, items]) => {
-          const result: Record<string, unknown> = {
-            year: parseInt(year) || year,
-          };
-
-          allKeys.forEach((key) => {
-            const values = items
-              .map((item) => item[key])
-              .filter((val) => typeof val === 'number') as number[];
-            if (values.length > 0) {
-              result[key] = values.reduce((sum, val) => sum + val, 0);
-              result[`normalized_${key}`] =
-                values.length > 0
-                  ? Number(
-                      (
-                        (values.reduce((sum, val) => sum + val, 0) /
-                          items.length) *
-                        100
-                      ).toFixed(2)
-                    )
-                  : 0;
-            }
-          });
-
-          return result;
-        })
-        .sort((a, b) => {
-          const yearA =
-            typeof a.year === 'number' ? a.year : parseInt(String(a.year));
-          const yearB =
-            typeof b.year === 'number' ? b.year : parseInt(String(b.year));
-          return yearA - yearB;
-        });
+  // Generate data processing function based on actual data structure
+  const generateDataProcessingFunction = async (
+    rawData: Record<string, unknown>[],
+    question: string,
+    skipIfExists: boolean = false
+  ): Promise<DataProcessingFn | null> => {
+    // Skip generation if we already have processing code and skipIfExists is true
+    if (
+      skipIfExists &&
+      state.processingFunctionCode &&
+      state.processingFunctionCode.trim()
+    ) {
+      console.log(
+        'Skipping processing function generation - code already exists'
+      );
+      return aiProcessingFn;
     }
+    try {
+      // Safety check for raw data
+      if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+        console.warn(
+          'generateDataProcessingFunction received invalid data:',
+          rawData
+        );
+        return null;
+      }
 
-    // If no year data, just return the data as is
-    return data;
+      // Create a sample of the data structure for the LLM
+      const dataSample = rawData.slice(0, 5); // First 5 rows as sample
+      const dataStructure = {
+        totalRows: rawData.length,
+        columns: Object.keys(rawData[0] || {}),
+        sampleData: dataSample,
+        dataTypes: Object.fromEntries(
+          Object.keys(rawData[0] || {}).map((key) => [
+            key,
+            typeof rawData[0]?.[key],
+          ])
+        ),
+      };
+
+      const processingPrompt = `You are a data processing expert. Given the following research question and raw data structure from a SPARQL query, generate a JavaScript function to transform the data for visualization.
+
+**Research Question:** ${question}
+
+**Raw Data Structure:**
+- Total rows: ${dataStructure.totalRows}
+- Columns: ${dataStructure.columns.join(', ')}
+- Data types: ${JSON.stringify(dataStructure.dataTypes, null, 2)}
+
+**Sample Data (first 5 rows):**
+${JSON.stringify(dataSample, null, 2)}
+
+**Requirements:**
+1. Create a function named \`processData\` that takes the raw data array as input
+2. ALWAYS check if the input data is null, undefined, or not an array and handle gracefully
+3. Transform the data into a format suitable for charting (typically grouped by year if available)
+4. Return an array of objects where each object represents a data point for visualization
+5. Clean up column names to be chart-friendly (no spaces, lowercase with underscores)
+6. Convert string numbers to actual numbers where appropriate
+7. Handle missing or null values gracefully
+
+**Output only the JavaScript code block:**
+
+\`\`\`javascript
+function processData(rows) {
+  // ALWAYS check for null/undefined input first
+  if (!rows || !Array.isArray(rows) || rows.length === 0) {
+    return [];
+  }
+  
+  // Your transformation logic here
+  return transformedData;
+}
+\`\`\``;
+
+      const result = await aiService.generateText(processingPrompt, {
+        temperature: 0.2,
+        maxTokens: 1500,
+      });
+
+      const { javascript } = extractFromMarkdown(result.text);
+
+      if (javascript) {
+        setAiProcessingCode(javascript);
+        // Save to shared state and history, labeled as AI-generated
+        updateProcessingFunctionCode(javascript, processingPrompt);
+        return compileProcessingFunction(javascript);
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error generating data processing function:', error);
+      return null;
+    }
   };
 
-  const handleRunQuery = async (queryToRun: string) => {
+  // Create dynamic query object for charts and AI assistant
+  const createDynamicQueryObject = (
+    transformedData: Record<string, unknown>[]
+  ) => {
+    const newDynamicQuery: DynamicQuery = {
+      title: `Dynamic Query: ${state.question}`,
+      id: Date.now(),
+      uid: 'dynamic-query',
+      dataAnalysisInformation: {
+        question: state.question,
+        questionExplanation:
+          state.questionInterpretation ||
+          `This is a dynamically generated query based on the user's question: "${state.question}". The query was generated using AI and executed against the ORKG database.`,
+        requiredDataForAnalysis:
+          state.dataCollectionInterpretation ||
+          `The query requires data from the ORKG database to answer: "${state.question}". The SPARQL query extracts relevant information based on the research question.`,
+        dataAnalysis:
+          state.dataAnalysisInterpretation ||
+          `The data is analyzed to provide insights related to: "${state.question}". The results show patterns and trends in the Requirements Engineering research domain.`,
+        dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${state.question}".`,
+      },
+      chartSettings: {
+        series: Object.keys(transformedData[0] || {})
+          .filter(
+            (key) =>
+              key !== 'year' &&
+              key !== 'paper' &&
+              typeof (transformedData[0] as Record<string, unknown>)?.[key] ===
+                'number'
+          )
+          .map((key) => ({
+            dataKey: key,
+            label: key
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+          })),
+        colors: ['#e86161', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
+        yAxis: [
+          {
+            label: 'Count',
+            dataKey: 'value',
+          },
+        ],
+        height: 400,
+        sx: { width: '100%' },
+      },
+      chartType: 'bar',
+      // Don't include processing function in the query object to avoid Redux serialization issues
+      // dataProcessingFunction: processingFn || processDynamicData,
+    };
+
+    setDynamicQuery(newDynamicQuery);
+  };
+
+  // Execute single or multiple SPARQL queries and return transformed data (legacy method for edited queries)
+  const executeQueries = async (
+    blocks: Array<{ id: string; query: string }>,
+    processingFn?: DataProcessingFn | null
+  ): Promise<Record<string, unknown>[]> => {
+    if (!blocks || blocks.length === 0) return [];
+
+    if (blocks.length === 1) {
+      const rows = await fetchSPARQLData(blocks[0].query);
+      if (processingFn) {
+        try {
+          return processingFn(rows);
+        } catch (e) {
+          console.warn(
+            'Processing function failed, falling back to default:',
+            e
+          );
+          return processDynamicData(rows);
+        }
+      }
+      return processDynamicData(rows);
+    }
+
+    // Multiple queries: fetch sequentially, build datasets map
+    const datasets: Record<string, Record<string, unknown>[]> = {};
+    for (const b of blocks) {
+      const rows = await fetchSPARQLData(b.query);
+      datasets[b.id] = rows;
+    }
+
+    if (processingFn) {
+      try {
+        return processingFn(datasets);
+      } catch (e) {
+        console.error(
+          'AI provided multiple queries but processing function failed. Please provide a JS block to combine datasets.',
+          e
+        );
+        return [];
+      }
+    }
+
+    // No processing function provided for multiple datasets
+    setError(
+      'Multiple SPARQL queries were generated but no data processing function was provided to combine them.'
+    );
+    return [];
+  };
+
+  const handleRunQuery = async (
+    queryOrBlocks: string | Array<{ id: string; query: string }>,
+    processingFn?: DataProcessingFn | null
+  ) => {
     setLoading(true);
     setError(null);
     updateChartHtml('');
@@ -252,18 +645,37 @@ const DynamicAIQuestion: React.FC = () => {
     updateDataAnalysisInterpretation('');
 
     try {
-      const data = await fetchSPARQLData(queryToRun);
+      const blocks = Array.isArray(queryOrBlocks)
+        ? queryOrBlocks
+        : [{ id: 'main', query: queryOrBlocks }];
 
-      // Check if we got results
-      if (!data || data.length === 0) {
+      const transformed = await executeQueries(blocks, processingFn);
+
+      if (!transformed || transformed.length === 0) {
         setError(
-          'Query executed successfully but returned no results. Try modifying your query or research question.'
+          'Query executed successfully but returned no results after processing. Try modifying your query or research question.'
         );
         updateQueryResults([]);
         return;
       }
 
-      updateQueryResults(data);
+      updateQueryResults(transformed);
+
+      // Auto-update processing function if we have a question and the results changed
+      if (state.question && state.question.trim() && transformed.length > 0) {
+        try {
+          const newProcessingFn = await generateDataProcessingFunction(
+            transformed,
+            state.question,
+            true // Skip if we already have processing code to avoid overwriting manual edits
+          );
+          if (newProcessingFn) {
+            setAiProcessingFn(newProcessingFn);
+          }
+        } catch (err) {
+          console.warn('Failed to auto-update processing function:', err);
+        }
+      }
 
       // Create dynamic query object for charts and AI assistant
       const newDynamicQuery: DynamicQuery = {
@@ -284,12 +696,13 @@ const DynamicAIQuestion: React.FC = () => {
           dataInterpretation: `The results should be interpreted in the context of Requirements Engineering research, specifically addressing: "${state.question}".`,
         },
         chartSettings: {
-          series: Object.keys(data[0] || {})
+          series: Object.keys(transformed[0] || {})
             .filter(
               (key) =>
                 key !== 'year' &&
                 key !== 'paper' &&
-                typeof data[0]?.[key] === 'number'
+                typeof (transformed[0] as Record<string, unknown>)?.[key] ===
+                  'number'
             )
             .map((key) => ({
               dataKey: key,
@@ -308,7 +721,7 @@ const DynamicAIQuestion: React.FC = () => {
           sx: { width: '100%' },
         },
         chartType: 'bar',
-        dataProcessingFunction: processDynamicData,
+        dataProcessingFunction: processingFn || processDynamicData,
       };
 
       setDynamicQuery(newDynamicQuery);
@@ -318,7 +731,6 @@ const DynamicAIQuestion: React.FC = () => {
         'An unexpected error occurred while running the query.';
 
       if (err instanceof Error) {
-        // Provide more specific error messages
         if (err.message.includes('404') || err.message.includes('Not Found')) {
           errorMessage =
             'The SPARQL endpoint is not available. Please try again later.';
@@ -367,49 +779,98 @@ const DynamicAIQuestion: React.FC = () => {
 
     setLoading(true);
     setError(null);
+
+    // Immediately clear any previous outputs so UI doesn't show stale content
+    updateChartHtml('');
+    updateQuestionInterpretation('');
+    updateDataCollectionInterpretation('');
+    updateDataAnalysisInterpretation('');
+
     updateSparqlQuery('');
     updateQueryResults([]);
     setDynamicQuery(null);
+    setAiProcessingFn(null);
+    setAiProcessingCode(null);
+    updateProcessingFunctionCode('', 'Reset before new generation');
 
     try {
-      const fullPrompt = promptTemplate.replace(
+      // Step 1: Generate SPARQL query only (no JavaScript processing function)
+      const sparqlPrompt = promptTemplate.replace(
         '[Research Question]',
         state.question
       );
 
-      const result = await aiService.generateText(fullPrompt, {
+      const sparqlResult = await aiService.generateText(sparqlPrompt, {
         temperature: 0.1,
         maxTokens: 2000,
       });
 
-      const generatedText = result.text;
-      const sparqlQuery = extractSparqlFromMarkdown(generatedText);
+      const sparqlText = sparqlResult.text;
+      const { sparqlBlocks } = extractFromMarkdown(sparqlText);
 
-      if (
-        !sparqlQuery.trim() ||
-        !sparqlQuery.toLowerCase().includes('select')
-      ) {
+      if (!sparqlBlocks || sparqlBlocks.length === 0) {
         throw new Error(
-          'The AI did not return a valid SPARQL query. Please try rephrasing your question.'
+          'The AI did not return a SPARQL code block. Please try rephrasing your question.'
         );
       }
 
-      updateSparqlQuery(sparqlQuery);
+      // Prepare a combined display string for the editor
+      const combinedQueryForEditor = sparqlBlocks
+        .map((b) => `# id: ${b.id}\n${b.query}`)
+        .join('\n\n');
+      // Mark as AI-generated by passing the prompt
+      updateSparqlQuery(combinedQueryForEditor, sparqlPrompt);
 
-      // Add to history
-      addToHistory(
-        'query',
+      // Step 2: Execute SPARQL query to get raw data
+      const rawData = await executeQueriesRaw(sparqlBlocks);
+
+      if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+        setError(
+          'Query executed successfully but returned no results. Try modifying your research question.'
+        );
+        updateQueryResults([]);
+        return;
+      }
+
+      console.log('Raw data from SPARQL:', rawData.slice(0, 3)); // Log first 3 rows for debugging
+
+      // Step 3: Generate data processing function based on actual data structure
+      const processingFn = await generateDataProcessingFunction(
+        rawData,
         state.question,
-        `Research Question: ${state.question}`
-      );
-      addToHistory(
-        'sparql',
-        sparqlQuery,
-        `SPARQL Query for: ${state.question}`
+        false // Always generate new processing function for new queries
       );
 
-      // Automatically run the generated query
-      await handleRunQuery(sparqlQuery);
+      // Step 4: Apply processing function to transform data
+      let transformedData: Record<string, unknown>[] = [];
+      try {
+        if (processingFn) {
+          console.log('Applying AI-generated processing function to raw data');
+          transformedData = processingFn(rawData);
+          setAiProcessingFn(processingFn);
+        } else {
+          console.log(
+            'No AI processing function generated, using default processing'
+          );
+          transformedData = processDynamicData(rawData);
+        }
+
+        // Validate transformed data
+        if (!transformedData || !Array.isArray(transformedData)) {
+          console.warn(
+            'Processing function returned invalid data, falling back to default'
+          );
+          transformedData = processDynamicData(rawData);
+        }
+      } catch (e) {
+        console.warn('Processing function failed, falling back to default:', e);
+        transformedData = processDynamicData(rawData);
+      }
+
+      console.log('Transformed data:', transformedData.slice(0, 3)); // Log first 3 rows for debugging
+
+      updateQueryResults(transformedData);
+      createDynamicQueryObject(transformedData);
     } catch (err: unknown) {
       console.error('An error occurred during generation:', err);
       let errorMessage =
@@ -423,20 +884,63 @@ const DynamicAIQuestion: React.FC = () => {
     }
   };
 
-  const handleRunEditedQuery = () => {
+  const handleRunEditedQuery = async () => {
     if (!state.sparqlQuery.trim()) {
       setError('The query is empty.');
       return;
     }
 
-    // Add edited query to history
-    addToHistory(
-      'sparql',
-      state.sparqlQuery,
-      `Edited SPARQL Query: ${state.question}`
-    );
+    // Immediately clear any previous outputs so UI doesn't show stale content
+    updateChartHtml('');
+    updateQuestionInterpretation('');
+    updateDataCollectionInterpretation('');
+    updateDataAnalysisInterpretation('');
+    updateQueryResults([]);
 
-    handleRunQuery(state.sparqlQuery);
+    // Detect whether the edited content contains multiple SPARQL blocks
+    const { sparqlBlocks } = extractFromMarkdown(
+      '```sparql\n' + state.sparqlQuery + '\n```'
+    );
+    // If parsing failed (e.g., unclosed code fences), sanitize the input by
+    // stripping any markdown code fence lines before running.
+    const blocks =
+      sparqlBlocks.length > 0
+        ? sparqlBlocks
+        : [
+            {
+              id: 'main',
+              query: state.sparqlQuery
+                // Remove any lines that start with code fences like ``` or ```sparql
+                .replace(/^```.*$/gm, '')
+                // Remove trailing code fences
+                .replace(/```\s*$/gm, '')
+                .trim(),
+            },
+          ];
+
+    // Auto-regenerate processing function when SPARQL is edited and we have a question
+    if (state.question && state.question.trim()) {
+      try {
+        setLoading(true);
+        const rawData = await executeQueriesRaw(blocks);
+        if (rawData && rawData.length > 0) {
+          const newProcessingFn = await generateDataProcessingFunction(
+            rawData,
+            state.question,
+            true // Skip if we already have processing code to avoid overwriting manual edits
+          );
+          if (newProcessingFn) {
+            setAiProcessingFn(newProcessingFn);
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.warn('Failed to regenerate processing function:', err);
+        setLoading(false);
+      }
+    }
+
+    handleRunQuery(blocks, aiProcessingFn);
   };
 
   const handleContentGenerated = (
@@ -446,12 +950,21 @@ const DynamicAIQuestion: React.FC = () => {
     dataCollectionInterpretationContent: string,
     dataAnalysisInterpretationContent: string
   ) => {
-    updateChartHtml(chartHtmlContent);
-    updateQuestionInterpretation(questionInterpretationContent);
-    updateDataCollectionInterpretation(dataCollectionInterpretationContent);
-    updateDataAnalysisInterpretation(dataAnalysisInterpretationContent);
+    // Mark as AI-generated by passing the prompt identifier
+    updateChartHtml(chartHtmlContent, 'AI generated chart HTML');
+    updateQuestionInterpretation(
+      questionInterpretationContent,
+      'AI generated question interpretation'
+    );
+    updateDataCollectionInterpretation(
+      dataCollectionInterpretationContent,
+      'AI generated data collection interpretation'
+    );
+    updateDataAnalysisInterpretation(
+      dataAnalysisInterpretationContent,
+      'AI generated data analysis interpretation'
+    );
 
-    // Update the dynamic query with new AI-generated content
     if (dynamicQuery) {
       setDynamicQuery({
         ...dynamicQuery,
@@ -486,13 +999,11 @@ const DynamicAIQuestion: React.FC = () => {
         updateDataAnalysisInterpretation(item.content);
         break;
       case 'data_interpretation':
-        // Legacy support - apply to question interpretation
         updateQuestionInterpretation(item.content);
         break;
     }
   };
 
-  // History dialog state
   const [historyType, setHistoryType] = useState<HistoryItem['type'] | null>(
     null
   );
@@ -501,6 +1012,11 @@ const DynamicAIQuestion: React.FC = () => {
 
   const handleOpenHistory = (type: HistoryItem['type']) => {
     setHistoryType(type);
+    setHistoryOpen(true);
+  };
+
+  const handleOpenProcessingHistory = () => {
+    setHistoryType('data_analysis_interpretation'); // Map processing to existing type for now
     setHistoryOpen(true);
   };
   const handleCloseHistory = () => {
@@ -516,58 +1032,77 @@ const DynamicAIQuestion: React.FC = () => {
     setLlmContextHistoryOpen(false);
   };
 
-  const renderErrorState = (errorMessage: string) => (
-    <Box
-      sx={{
-        p: 4,
-        mt: 4,
-        textAlign: 'center',
-        backgroundColor: 'rgba(232, 97, 97, 0.05)',
-        border: '1px solid rgba(232, 97, 97, 0.1)',
-        borderRadius: 2,
-      }}
-    >
-      <Typography variant="h5" color="error" gutterBottom>
-        An Error Occurred
-      </Typography>
-      <Typography color="text.secondary">{errorMessage}</Typography>
-    </Box>
-  );
+  const handleProcessingCodeChange = async (code: string) => {
+    setAiProcessingCode(code);
+    const compiled = compileProcessingFunction(code);
+    setAiProcessingFn(compiled);
+
+    // Auto-update results when processing function changes
+    if (compiled && state.queryResults.length > 0) {
+      try {
+        // Get the raw data by re-running the SPARQL query
+        if (state.sparqlQuery && state.sparqlQuery.trim()) {
+          const { sparqlBlocks } = extractFromMarkdown(
+            '```sparql\n' + state.sparqlQuery + '\n```'
+          );
+          const blocks =
+            sparqlBlocks.length > 0
+              ? sparqlBlocks
+              : [
+                  {
+                    id: 'main',
+                    query: state.sparqlQuery
+                      .replace(/^```.*$/gm, '')
+                      .replace(/```\s*$/gm, '')
+                      .trim(),
+                  },
+                ];
+
+          const rawData = await executeQueriesRaw(blocks);
+          if (rawData && rawData.length > 0) {
+            const reprocessedData = compiled(rawData);
+            if (reprocessedData && reprocessedData.length > 0) {
+              updateQueryResults(reprocessedData);
+              createDynamicQueryObject(reprocessedData);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(
+          'Failed to auto-update results after processing function change:',
+          err
+        );
+      }
+    }
+  };
+
+  const handleRegenerateProcessingCode = async () => {
+    if (!state.question || !state.queryResults.length) {
+      setError('No question or data available to regenerate processing code.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const processingFn = await generateDataProcessingFunction(
+        state.queryResults,
+        state.question,
+        false // Force regeneration
+      );
+      if (processingFn) {
+        setAiProcessingFn(processingFn);
+      }
+    } catch (err) {
+      console.error('Failed to regenerate processing code:', err);
+      setError('Failed to regenerate processing code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
-      {/* AI Configuration and Dynamic Question Manager */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <AIConfigurationButton />
-        <Typography variant="body2" color="text.secondary">
-          Configure AI settings to use OpenAI or Groq models
-        </Typography>
-        <Box sx={{ ml: 'auto' }}>
-          <Tooltip title="Manage LLM Context History">
-            <Button
-              variant="outlined"
-              startIcon={<History />}
-              onClick={handleOpenLlmContextHistory}
-              size="small"
-              sx={{
-                borderColor: '#e86161',
-                color: '#e86161',
-                '&:hover': {
-                  borderColor: '#d45151',
-                  backgroundColor: 'rgba(232, 97, 97, 0.04)',
-                },
-              }}
-            >
-              LLM Context History
-            </Button>
-          </Tooltip>
-        </Box>
-      </Box>
-
-      {/* Dynamic Question Manager */}
-      <DynamicQuestionManager />
-
-      <SPARQLQuerySection
+      <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
         loading={loading}
@@ -578,69 +1113,33 @@ const DynamicAIQuestion: React.FC = () => {
         onGenerateAndRun={handleGenerateAndRun}
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
+        onOpenLlmContextHistory={handleOpenLlmContextHistory}
       />
 
-      {/* Loading and Error States */}
-      {loading && !state.sparqlQuery && <TextSkeleton lines={12} />}
-      {error && renderErrorState(error)}
+      <DataProcessingCodeSection
+        processingCode={aiProcessingCode}
+        loading={loading}
+        onCodeChange={handleProcessingCodeChange}
+        onRegenerateCode={handleRegenerateProcessingCode}
+        onOpenHistory={handleOpenProcessingHistory}
+      />
 
-      {/* AI Content Generation - only if no saved content exists */}
-      {state.queryResults.length > 0 &&
-        state.question &&
-        !state.chartHtml &&
-        !state.questionInterpretation &&
-        !state.dataCollectionInterpretation &&
-        !state.dataAnalysisInterpretation && (
-          <AIContentGenerator
-            data={state.queryResults}
-            question={state.question}
-            onContentGenerated={handleContentGenerated}
-            onAddToHistory={addToHistory}
-            onError={setError}
-          />
-        )}
+      <ResultsDisplaySection
+        loading={loading}
+        error={error}
+        question={state.question}
+        sparqlQuery={state.sparqlQuery}
+        queryResults={state.queryResults}
+        chartHtml={state.chartHtml}
+        questionInterpretation={state.questionInterpretation}
+        dataCollectionInterpretation={state.dataCollectionInterpretation}
+        dataAnalysisInterpretation={state.dataAnalysisInterpretation}
+        dynamicQuery={dynamicQuery}
+        onContentGenerated={handleContentGenerated}
+        onError={setError}
+        onChartHtmlChange={updateChartHtml}
+      />
 
-      {/* Results Section */}
-      {dynamicQuery && state.queryResults.length > 0 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          {/* Question Information Section */}
-          <SectionSelector
-            sectionType="information"
-            sectionTitle="Question Information"
-            query={dynamicQuery}
-          />
-          <QuestionInformationView query={dynamicQuery} isInteractive={true} />
-
-          {/* AI-Generated Chart (HTML/JS, iframe) */}
-          {state.chartHtml && (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <HTMLRenderer
-                html={state.chartHtml}
-                title="AI-Generated Chart"
-                type="chart"
-                useIframe={true}
-                onContentChange={updateChartHtml}
-              />
-            </>
-          )}
-        </Paper>
-      )}
-      {/* GRID VIEW */}
-      {state.queryResults.length > 0 && (
-        <QuestionDataGridView questionData={state.queryResults} />
-      )}
-
-      {/* History Manager Dialog */}
       <HistoryManager
         onApplyHistoryItem={handleApplyHistoryItem}
         open={historyOpen}
@@ -648,11 +1147,9 @@ const DynamicAIQuestion: React.FC = () => {
         onClose={handleCloseHistory}
       />
 
-      {/* LLM Context History Dialog */}
       <LLMContextHistoryDialog
         open={llmContextHistoryOpen}
         onClose={handleCloseLlmContextHistory}
-        onApplyHistoryItem={handleApplyHistoryItem}
       />
     </Box>
   );
