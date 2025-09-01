@@ -26,7 +26,6 @@ dev-dist/
 .env
 *storybook.log
 storybook-static
-research-test-data/
 
 # Firebase Service Account Keys (Security)
 firebase-service-account.json
