@@ -39,7 +39,7 @@ const loadAIConfig = (): Partial<InitialState> => {
     if (savedConfig) {
       const parsed = JSON.parse(savedConfig);
       return {
-        provider: parsed.provider || 'openai',
+        provider: parsed.provider || 'groq',
         openaiModel: parsed.openaiModel || 'gpt-4o-mini',
         groqModel: parsed.groqModel || 'deepseek-r1-distill-llama-70b',
         openaiApiKey: parsed.openaiApiKey || '',
@@ -67,7 +67,7 @@ const saveAIConfig = (config: InitialState) => {
 };
 
 const defaultConfig: InitialState = {
-  provider: 'openai',
+  provider: 'groq',
   openaiModel: 'gpt-4o-mini',
   groqModel: 'deepseek-r1-distill-llama-70b',
   openaiApiKey: '',

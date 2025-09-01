@@ -7,7 +7,6 @@ import {
   DialogActions,
   Button,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   TextField,
@@ -16,7 +15,6 @@ import {
   Box,
   Typography,
   Alert,
-  Divider,
   Chip,
   IconButton,
 } from '@mui/material';
@@ -135,7 +133,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const handleClearStoredSettings = () => {
     dispatch(clearStoredConfiguration());
     // Reset to defaults
-    setLocalProvider('openai');
+    setLocalProvider('groq');
     setLocalOpenAIModel('gpt-4o-mini');
     setLocalGroqModel('deepseek-r1-distill-llama-70b');
     setLocalOpenAIApiKey('');
@@ -168,152 +166,237 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Settings sx={{ color: '#e86161' }} />
-          <Typography variant="h6">AI Configuration</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 600 }}>
+            AI Assistant Setup
+          </Typography>
           {isConfigured && (
             <Chip
               icon={<CheckCircle />}
-              label="Configured"
+              label="Ready"
               size="small"
-              sx={{
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                color: '#4caf50',
-                border: '1px solid #4caf50',
-              }}
+              color="success"
+              variant="outlined"
             />
           )}
         </Box>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Configure your AI provider to get started
+        </Typography>
       </DialogTitle>
 
-      <DialogContent>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 3,
-            marginTop: 2,
-          }}
-        >
+      <DialogContent sx={{ pt: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           {/* Provider Selection */}
-          <FormControl fullWidth>
-            <InputLabel>AI Provider</InputLabel>
-            <Select
-              value={localProvider}
-              onChange={(e) => setLocalProvider(e.target.value as AIProvider)}
-              label="AI Provider"
-            >
-              <MenuItem value="openai">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography>OpenAI</Typography>
-                  <Chip
-                    label="GPT-4, GPT-3.5"
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
-              </MenuItem>
-              <MenuItem value="groq">
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography>Groq</Typography>
-                  <Chip
-                    label="Llama, Mixtral, Gemma"
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
-              </MenuItem>
-            </Select>
-          </FormControl>
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              Choose AI Provider
+            </Typography>
+            <FormControl fullWidth>
+              <Select
+                value={localProvider}
+                onChange={(e) => setLocalProvider(e.target.value as AIProvider)}
+                variant="outlined"
+                sx={{ '& .MuiSelect-select': { py: 1.5 } }}
+              >
+                <MenuItem value="groq">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Groq
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Fast inference • Llama, DeepSeek, Mixtral
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label="Recommended"
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                </MenuItem>
+                <MenuItem value="openai">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        OpenAI
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        GPT-4, GPT-3.5 models
+                      </Typography>
+                    </Box>
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
           {/* Model Selection */}
-          <FormControl fullWidth>
-            <InputLabel>Model</InputLabel>
-            <Select
-              value={
-                localProvider === 'openai' ? localOpenAIModel : localGroqModel
-              }
-              onChange={(e) => {
-                if (localProvider === 'openai') {
-                  setLocalOpenAIModel(e.target.value as OpenAIModel);
-                } else {
-                  setLocalGroqModel(e.target.value as GroqModel);
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              Select Model
+            </Typography>
+            <FormControl fullWidth>
+              <Select
+                value={
+                  localProvider === 'openai' ? localOpenAIModel : localGroqModel
                 }
-              }}
-              label="Model"
-            >
-              {localProvider === 'openai'
-                ? OPENAI_MODELS.map((model) => (
-                    <MenuItem key={model} value={model}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                        }}
-                      >
-                        <Typography>{model}</Typography>
-                        <Chip
-                          label={
-                            model.includes('gpt-4') ? 'Advanced' : 'Standard'
-                          }
-                          size="small"
-                          variant="outlined"
-                          color={
-                            model.includes('gpt-4') ? 'primary' : 'default'
-                          }
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))
-                : GROQ_MODELS.map((model) => (
-                    <MenuItem key={model} value={model}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                        }}
-                      >
-                        <Typography>{model}</Typography>
-                        <Chip
-                          label={
-                            model.includes('70b') || model.includes('405b')
-                              ? 'Large'
-                              : 'Standard'
-                          }
-                          size="small"
-                          variant="outlined"
-                          color={
-                            model.includes('70b') || model.includes('405b')
-                              ? 'primary'
-                              : 'default'
-                          }
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))}
-            </Select>
-          </FormControl>
-
-          <Divider />
+                onChange={(e) => {
+                  if (localProvider === 'openai') {
+                    setLocalOpenAIModel(e.target.value as OpenAIModel);
+                  } else {
+                    setLocalGroqModel(e.target.value as GroqModel);
+                  }
+                }}
+                variant="outlined"
+                sx={{ '& .MuiSelect-select': { py: 1.5 } }}
+              >
+                {localProvider === 'openai'
+                  ? OPENAI_MODELS.map((model) => (
+                      <MenuItem key={model} value={model}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                          }}
+                        >
+                          <Typography sx={{ fontWeight: 500 }}>
+                            {model}
+                          </Typography>
+                          <Chip
+                            label={
+                              model.includes('gpt-4') ? 'Advanced' : 'Standard'
+                            }
+                            size="small"
+                            variant="outlined"
+                            color={
+                              model.includes('gpt-4') ? 'primary' : 'default'
+                            }
+                          />
+                        </Box>
+                      </MenuItem>
+                    ))
+                  : GROQ_MODELS.map((model) => (
+                      <MenuItem key={model} value={model}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                          }}
+                        >
+                          <Typography sx={{ fontWeight: 500 }}>
+                            {model}
+                          </Typography>
+                          {model === 'deepseek-r1-distill-llama-70b' && (
+                            <Chip
+                              label="Recommended"
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                            />
+                          )}
+                          {(model.includes('70b') || model.includes('405b')) &&
+                            model !== 'deepseek-r1-distill-llama-70b' && (
+                              <Chip
+                                label="Large"
+                                size="small"
+                                variant="outlined"
+                                color="primary"
+                              />
+                            )}
+                        </Box>
+                      </MenuItem>
+                    ))}
+              </Select>
+            </FormControl>
+          </Box>
 
           {/* API Key Configuration */}
           <Box>
-            <Typography variant="h6" gutterBottom>
-              API Key Configuration
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+              API Key Setup
             </Typography>
+
+            <Box
+              sx={{
+                mb: 3,
+                p: 2,
+                backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                borderRadius: 2,
+              }}
+            >
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>What is an API key?</strong>
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                An API key is a secure token that allows this application to
+                access AI services. You'll need to create one from your chosen
+                provider's platform.
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  href="https://console.groq.com/keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ textTransform: 'none' }}
+                >
+                  Get Groq API Key
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  href="https://platform.openai.com/api-keys"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ textTransform: 'none' }}
+                >
+                  Get OpenAI API Key
+                </Button>
+              </Box>
+            </Box>
 
             <FormControlLabel
               control={
                 <Switch
                   checked={localUseEnvironmentKeys}
                   onChange={(e) => setLocalUseEnvironmentKeys(e.target.checked)}
+                  color="primary"
                 />
               }
-              label="Use environment variables (recommended for production)"
+              label={
+                <Box>
+                  <Typography variant="body2">
+                    Use environment variables
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Recommended for production deployments
+                  </Typography>
+                </Box>
+              }
             />
 
             {localUseEnvironmentKeys ? (
@@ -378,72 +461,58 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             </Alert>
           )}
 
-          {/* Configuration Status */}
-          <Box
-            sx={{
-              p: 2,
-              backgroundColor: 'rgba(232, 97, 97, 0.02)',
-              borderRadius: 1,
-              border: '1px solid rgba(232, 97, 97, 0.1)',
-            }}
-          >
+          {/* Quick Status */}
+          {hasStoredSettings() && (
             <Box
               sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 1,
+                p: 2,
+                backgroundColor: 'rgba(25, 118, 210, 0.04)',
+                borderRadius: 2,
+                border: '1px solid rgba(25, 118, 210, 0.12)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#e86161' }}>
-                Current Configuration
-              </Typography>
-              {hasStoredSettings() && (
-                <Chip
-                  label="Saved in Browser"
-                  size="small"
-                  variant="outlined"
-                  color="success"
-                  sx={{ fontSize: '0.7rem' }}
-                />
-              )}
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              Provider: <strong>{localProvider.toUpperCase()}</strong>
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Model:{' '}
-              <strong>
-                {localProvider === 'openai' ? localOpenAIModel : localGroqModel}
-              </strong>
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              API Key:{' '}
-              <strong>{isApiKeyValid() ? 'Valid' : 'Invalid/Missing'}</strong>
-            </Typography>
-            {hasStoredSettings() && (
-              <Button
-                size="small"
-                onClick={handleClearStoredSettings}
+              <Box
                 sx={{
-                  mt: 1,
-                  color: '#e86161',
-                  fontSize: '0.75rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                  },
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}
               >
-                Clear Stored Settings
-              </Button>
-            )}
-          </Box>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {localProvider.toUpperCase()} •{' '}
+                    {localProvider === 'openai'
+                      ? localOpenAIModel
+                      : localGroqModel}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Settings saved locally
+                  </Typography>
+                </Box>
+                <Button
+                  size="small"
+                  onClick={handleClearStoredSettings}
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.75rem',
+                    textTransform: 'none',
+                    '&:hover': { backgroundColor: 'action.hover' },
+                  }}
+                >
+                  Reset
+                </Button>
+              </Box>
+            </Box>
+          )}
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={handleCancel} color="inherit">
+      <DialogActions sx={{ p: 3, gap: 1 }}>
+        <Button
+          onClick={handleCancel}
+          color="inherit"
+          sx={{ textTransform: 'none' }}
+        >
           Cancel
         </Button>
         <Button
@@ -452,12 +521,17 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           disabled={!isApiKeyValid()}
           sx={{
             backgroundColor: '#e86161',
+            textTransform: 'none',
+            px: 3,
             '&:hover': {
               backgroundColor: '#d45151',
             },
+            '&:disabled': {
+              backgroundColor: 'action.disabledBackground',
+            },
           }}
         >
-          Save Configuration
+          {isConfigured ? 'Update Configuration' : 'Save & Continue'}
         </Button>
       </DialogActions>
     </Dialog>
