@@ -313,7 +313,7 @@ Modified ${sectionName}:`;
                   <SmartToy />
                 </IconButton>
               </Tooltip>
-              {isEditing && editingSection === section && (
+              {/* {isEditing && editingSection === section && (
                 <>
                   <Button
                     size="small"
@@ -337,7 +337,7 @@ Modified ${sectionName}:`;
                     Cancel
                   </Button>
                 </>
-              )}
+              )} */}
             </Box>
           )}
         </Box>
