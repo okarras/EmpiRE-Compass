@@ -25,7 +25,110 @@ Every query MUST filter results to only include papers from the "IEEE Internatio
 ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
 ```
 
-### 3. ORKG Empirical Research Practice Schema
+### 3. Mandatory Empirical Research Filters
+For empirical research questions, queries MUST exclude papers with "no collection" and "no analysis" to focus only on actual empirical studies:
+
+**For Data Collection queries:**
+```sparql
+FILTER(?dc_label != "no collection"^^xsd:string)
+```
+
+**For Data Analysis queries:**
+```sparql
+FILTER(?da_label != "no analysis"^^xsd:string)
+```
+
+**For combined empirical studies (both collection AND analysis):**
+```sparql
+FILTER(?dc_label != "no collection"^^xsd:string)
+FILTER(?da_label != "no analysis"^^xsd:string)
+FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+```
+
+### 3.1 Canonical Empirical Study Patterns (Use Exactly)
+
+**Empirical Study (requires collection and analysis, NOT optional):**
+```sparql
+# Canonical empirical study pattern (DO NOT use OPTIONAL here)
+?paper orkgp:P31 ?contribution .
+?contribution orkgp:P135046 ?serie .
+?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+
+# Data collection branch
+?contribution orkgp:P56008 ?dc_instance .
+?dc_instance orkgp:P1005 ?dc_method .
+?dc_method rdfs:label ?dc_label .
+FILTER(?dc_label != "no collection"^^xsd:string)
+
+# Data analysis branch
+?contribution orkgp:P15124 ?da_instance .
+?da_instance orkgp:P1005 ?da_method .
+?da_method rdfs:label ?da_label .
+FILTER(?da_label != "no analysis"^^xsd:string)
+```
+
+**Empirical Count by Year (template):**
+```sparql
+SELECT ?year (COUNT(DISTINCT ?paper) AS ?empirical_studies) WHERE {
+  ?paper orkgp:P29 ?year .
+  # Canonical empirical study pattern starts
+  ?paper orkgp:P31 ?contribution .
+  ?contribution orkgp:P135046 ?serie .
+  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?contribution orkgp:P56008 ?dc_instance .
+  ?dc_instance orkgp:P1005 ?dc_method .
+  ?dc_method rdfs:label ?dc_label .
+  FILTER(?dc_label != "no collection"^^xsd:string)
+  ?contribution orkgp:P15124 ?da_instance .
+  ?da_instance orkgp:P1005 ?da_method .
+  ?da_method rdfs:label ?da_label .
+  FILTER(?da_label != "no analysis"^^xsd:string)
+  # Canonical empirical study pattern ends
+}
+GROUP BY ?year
+```
+
+**Proportion of Empirical Studies Over Time (template):**
+```sparql
+SELECT
+  ?year
+  ?total_papers
+  ?empirical_studies
+  (xsd:decimal(?empirical_studies) / xsd:decimal(?total_papers) AS ?proportion)
+WHERE {
+  {
+    SELECT ?year (COUNT(DISTINCT ?paper) AS ?total_papers)
+    WHERE {
+      ?paper orkgp:P29 ?year .
+      ?paper orkgp:P31 ?contribution .
+      ?contribution orkgp:P135046 ?serie .
+      ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+    }
+    GROUP BY ?year
+  }
+  {
+    SELECT ?year (COUNT(DISTINCT ?paper) AS ?empirical_studies)
+    WHERE {
+      ?paper orkgp:P29 ?year .
+      ?paper orkgp:P31 ?contribution .
+      ?contribution orkgp:P135046 ?serie .
+      ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+      ?contribution orkgp:P56008 ?dc_instance .
+      ?dc_instance orkgp:P1005 ?dc_method .
+      ?dc_method rdfs:label ?dc_label .
+      FILTER(?dc_label != "no collection"^^xsd:string)
+      ?contribution orkgp:P15124 ?da_instance .
+      ?da_instance orkgp:P1005 ?da_method .
+      ?da_method rdfs:label ?da_label .
+      FILTER(?da_label != "no analysis"^^xsd:string)
+    }
+    GROUP BY ?year
+  }
+}
+ORDER BY ?year
+```
+
+### 4. ORKG Empirical Research Practice Schema
 
 The schema is based on the Empirical Research Practice template (R186491) which describes empirical research practices in publications. Use the following terms and relationships:
 
@@ -159,16 +262,20 @@ The publication year (`orkgp:P29`) is ALWAYS a property of the `?paper` resource
 
 ### 2. Critical Rule: Definition of "Empirical Study"
 An "empirical study" typically refers to research that involves:
-- Data collection from real-world sources
-- Analysis of that data using systematic methods
+- Data collection from real-world sources (NOT "no collection")
+- Analysis of that data using systematic methods (NOT "no analysis")
+
+**MANDATORY: Always exclude non-empirical studies using these filters:**
+- `FILTER(?dc_label != "no collection"^^xsd:string)` - for data collection queries
+- `FILTER(?da_label != "no analysis"^^xsd:string)` - for data analysis queries
 
 When filtering for empirical studies, consider what makes sense for the specific question:
-- Studies with data collection methods
-- Studies with data analysis methods  
-- Studies with both (most restrictive definition)
+- Studies with data collection methods (exclude "no collection")
+- Studies with data analysis methods (exclude "no analysis")
+- Studies with both (most restrictive definition - exclude both)
 - Studies with specific types of data (quantitative/qualitative)
 
-Choose the appropriate criteria based on the research question context.
+Choose the appropriate criteria based on the research question context, but ALWAYS exclude "no collection" and "no analysis".
 
 ### 3. Critical Rule: Handle Ambiguity with Multiple Queries
 For ambiguous questions (e.g., "which empirical methods" could mean data collection OR data analysis methods), provide separate, clearly-labeled SPARQL queries for each interpretation. Do not combine unrelated concepts in one complex query.
@@ -217,6 +324,10 @@ BIND(IF(condition, 1, 0) AS ?flagVariable)
 - Correct: `SELECT ?var WHERE { BIND("value" AS ?var) }`
 - Wrong: `SELECT (BIND("value" AS ?var)) WHERE { }`
 
+**Division Safety:**
+- Always cast to decimals for ratios: `(xsd:decimal(?a) / xsd:decimal(?b))`
+- Compute totals and subsets in separate subqueries, then divide in outer SELECT
+
 **Filter Conditions:**
 - Use FILTER for complex conditions: `FILTER(?year >= 2000 && ?year <= 2010)`
 - Use simple patterns for basic filtering
@@ -242,6 +353,38 @@ SELECT ?year (COUNT(?paper) AS ?count) WHERE {
   ?paper orkgp:P31 ?contribution .
   ?contribution orkgp:P135046 ?serie .
   ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+} GROUP BY ?year
+```
+
+*Empirical studies with data collection:*
+```sparql
+SELECT ?year (COUNT(?paper) AS ?empirical_studies) WHERE {
+  ?paper orkgp:P29 ?year .
+  ?paper orkgp:P31 ?contribution .
+  ?contribution orkgp:P135046 ?serie .
+  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?contribution orkgp:P56008 ?dc_instance .
+  ?dc_instance orkgp:P1005 ?dc_method .
+  ?dc_method rdfs:label ?dc_label .
+  FILTER(?dc_label != "no collection"^^xsd:string)
+} GROUP BY ?year
+```
+
+*Empirical studies with both collection and analysis:*
+```sparql
+SELECT ?year (COUNT(?paper) AS ?full_empirical_studies) WHERE {
+  ?paper orkgp:P29 ?year .
+  ?paper orkgp:P31 ?contribution .
+  ?contribution orkgp:P135046 ?serie .
+  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?contribution orkgp:P56008 ?dc_instance .
+  ?dc_instance orkgp:P1005 ?dc_method .
+  ?dc_method rdfs:label ?dc_label .
+  ?contribution orkgp:P15124 ?da_instance .
+  ?da_instance orkgp:P1005 ?da_method .
+  ?da_method rdfs:label ?da_label .
+  FILTER(?dc_label != "no collection"^^xsd:string)
+  FILTER(?da_label != "no analysis"^^xsd:string)
 } GROUP BY ?year
 ```
 
@@ -317,10 +460,28 @@ SELECT ... WHERE { ... }
 
 ### Important Reminders
 - Always include the conference filter
+- **CRITICAL: For empirical research questions, always exclude "no collection" and "no analysis"**
+- **Do NOT use OPTIONAL for empirical constraints** (data collection/analysis branches must be required)
 - Remember that year belongs to paper, not contribution
-- Use OPTIONAL for properties that might not exist
+- Use OPTIONAL only for truly optional attributes (never for empirical constraints)
 - Be careful with FILTER vs. conditional logic in BIND
 - Consider whether you need multiple queries for different interpretations
+
+### Common Mistakes (Avoid These)
+- Using `OPTIONAL` for data collection/analysis in empirical queries
+- Putting multiple `SELECT` statements in a single code block
+- Using `?contribution orkgp:P29 ?year` instead of `?paper orkgp:P29 ?year`
+- Counting without `DISTINCT` when the pattern can duplicate `?paper`
+- Missing explicit `FILTER` for venue and empirical constraints
+- Calculating proportions without subqueries and decimal casting
+
+### Validation Checklist (Before Returning Your Query)
+- Query starts with the required PREFIX block
+- Includes the mandatory conference filter
+- Uses the canonical empirical pattern (no OPTIONAL) when required
+- Uses DISTINCT when counting papers where duplication is possible
+- For proportions: uses two subqueries and decimal casting in division
+- Each query is in its own separate ```sparql code block and has a single SELECT
 
 ## Input Research Question
 You will now be given the research question to process.
