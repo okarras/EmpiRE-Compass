@@ -19,6 +19,8 @@ import BookIcon from '@mui/icons-material/Book';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
+import LoginORKG from './LoginORKG';
+
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
@@ -114,7 +116,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             EmpiRE-Compass
           </Typography>
         </Box>
-
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <LoginORKG />
+        </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {!isMobile && (
             <Breadcrumbs
