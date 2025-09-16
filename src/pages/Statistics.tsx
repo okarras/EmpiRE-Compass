@@ -21,10 +21,10 @@ import FeedIcon from '@mui/icons-material/Feed';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import LabelIcon from '@mui/icons-material/Label';
-import CallSplitIcon from '@mui/icons-material/CallSplit';
 import HubIcon from '@mui/icons-material/Hub';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
 import CRUDStatistics from '../firestore/CRUDStatistics';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 // import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 // import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
@@ -155,7 +155,7 @@ export default function Statistics() {
             <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_predicates} label="Properties">
-            <CallSplitIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_statements} label="Total Statements">
             <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
@@ -173,7 +173,7 @@ export default function Statistics() {
             value={global_distinct_predicates}
             label="Distinct Properties"
           >
-            <CallSplitIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
         </Stack>
         {/* )} */}
