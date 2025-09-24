@@ -11,8 +11,11 @@ import ReactFlow, {
   useEdgesState,
   MarkerType,
   DefaultEdgeOptions,
+  ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import { useRef, useCallback } from 'react';
+import { toPng } from 'html-to-image';
 
 // Types representing the JSON schema pieces we use
 type Template = {
@@ -161,10 +164,12 @@ function computeNodePositions<T extends { id: string }>(
 }
 
 export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const templates = useMemo(
     () => (Array.isArray(data) ? (data as Template[]) : []),
     [data]
   );
+  const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
 
   // Map target_class.id -> template for quick lookup when creating edges
   const targetClassIdToTemplate = useMemo(() => {
@@ -261,8 +266,137 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
     []
   );
 
+  const handleDownload = useCallback(async () => {
+    if (!containerRef.current) return;
+    try {
+      const rfEl = containerRef.current.querySelector(
+        '.react-flow'
+      ) as HTMLElement | null;
+      if (!rfEl) return;
+
+      const instance = reactFlowInstanceRef.current;
+      let originalViewport: { x: number; y: number; zoom: number } | null =
+        null;
+
+      // Compute bounding box of all nodes to size the export image dynamically
+      // Fallback to current viewport if node sizes are not yet measured
+      const currentNodes =
+        (instance?.getNodes ? instance.getNodes() : null) ||
+        (Array.isArray(nodes) ? nodes : []);
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+      currentNodes.forEach((n) => {
+        const x = n.positionAbsolute?.x ?? n.position.x;
+        const y = n.positionAbsolute?.y ?? n.position.y;
+        const w = n.width ?? 0;
+        const h = n.height ?? 0;
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + w);
+        maxY = Math.max(maxY, y + h);
+      });
+
+      // If bounds are invalid, fallback to fitView method
+      const hasValidBounds =
+        Number.isFinite(minX) &&
+        Number.isFinite(minY) &&
+        Number.isFinite(maxX) &&
+        Number.isFinite(maxY) &&
+        maxX > minX &&
+        maxY > minY;
+      const padding = 80; // px padding around the graph in the export
+      let cleanupViewportTransform: (() => void) | null = null;
+
+      if (instance) {
+        originalViewport = instance.getViewport();
+      }
+
+      if (hasValidBounds) {
+        const exportWidth = Math.ceil(maxX - minX + padding * 2);
+        const exportHeight = Math.ceil(maxY - minY + padding * 2);
+
+        // Resize the container element to fit all nodes
+        const originalWidth = rfEl.style.width;
+        const originalHeight = rfEl.style.height;
+        rfEl.style.width = `${exportWidth}px`;
+        rfEl.style.height = `${exportHeight}px`;
+
+        // Translate the viewport so the graph fits inside with padding
+        const viewportEl = rfEl.querySelector(
+          '.react-flow__viewport'
+        ) as HTMLElement | null;
+        const originalTransform = viewportEl?.style.transform ?? '';
+        if (viewportEl) {
+          viewportEl.style.transform = `translate(${padding - minX}px, ${padding - minY}px) scale(1)`;
+        }
+
+        cleanupViewportTransform = () => {
+          if (viewportEl) viewportEl.style.transform = originalTransform;
+          rfEl.style.width = originalWidth;
+          rfEl.style.height = originalHeight;
+        };
+
+        // wait a frame so styles/transforms settle
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => resolve(null))
+        );
+      } else if (instance) {
+        // Fallback: fitView, then export
+        instance.fitView({
+          padding: 0.4,
+          includeHiddenNodes: true,
+          duration: 0,
+        });
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => resolve(null))
+        );
+      }
+
+      const dataUrl = await toPng(rfEl as HTMLElement, {
+        backgroundColor: '#ffffff',
+        cacheBust: true,
+        filter: (domNode) => {
+          const el = domNode as HTMLElement;
+          return !(
+            el?.dataset &&
+            Object.prototype.hasOwnProperty.call(
+              el.dataset,
+              'html2imageExclude'
+            )
+          );
+        },
+      });
+
+      // restore any temporary transforms/sizes
+      if (cleanupViewportTransform) cleanupViewportTransform();
+      if (instance && originalViewport) {
+        instance.setViewport(originalViewport);
+      }
+
+      const link = document.createElement('a');
+      const timestamp = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const fileName = `template-graph-${timestamp.getFullYear()}${pad(timestamp.getMonth() + 1)}${pad(timestamp.getDate())}-${pad(timestamp.getHours())}${pad(timestamp.getMinutes())}${pad(timestamp.getSeconds())}.png`;
+      link.download = fileName;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Failed to export graph image:', error);
+    }
+  }, []);
+
   return (
-    <div style={{ width: '100%', height: '100%', minHeight: 600 }}>
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        minHeight: 600,
+        position: 'relative',
+      }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -271,11 +405,31 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
         nodeTypes={nodeTypes}
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
+        onInit={(instance) => {
+          reactFlowInstanceRef.current = instance;
+        }}
       >
         <Background />
         <MiniMap nodeColor={() => '#2b2f36'} maskColor="rgba(0,0,0,0.1)" />
         <Controls />
       </ReactFlow>
+      <button
+        data-html2image-exclude
+        onClick={handleDownload}
+        style={{
+          position: 'absolute',
+          left: 48,
+          bottom: 12,
+          padding: '8px 12px',
+          borderRadius: 6,
+          border: '1px solid #A8A8AF',
+          background: '#EA7070',
+          color: '#e5e7eb',
+          cursor: 'pointer',
+        }}
+      >
+        Download Graph as Image
+      </button>
     </div>
   );
 };
