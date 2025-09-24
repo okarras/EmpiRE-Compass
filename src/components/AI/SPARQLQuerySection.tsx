@@ -192,7 +192,15 @@ Modified SPARQL Query:`;
         maxTokens: 2000,
       });
 
-      const modifiedQuery = result.text.trim();
+      let modifiedQuery = result.text.trim();
+
+      // Clean up any markdown code fences that might be in the response
+      modifiedQuery = modifiedQuery
+        .replace(/```sparql\s*/gi, '')
+        .replace(/```\s*$/gm, '')
+        .replace(/^```.*$/gm, '')
+        .trim();
+
       onSparqlChange(modifiedQuery);
 
       setShowAIDialog(false);
@@ -351,7 +359,7 @@ Modified SPARQL Query:`;
                       onClick={handleEdit}
                       size="small"
                       sx={{
-                        color: 'text.secondary',
+                        color: '#e86161',
                         '&:hover': {
                           backgroundColor: 'rgba(232, 97, 97, 0.08)',
                         },
@@ -415,7 +423,7 @@ Modified SPARQL Query:`;
                 ? setEditContent(e.target.value)
                 : onSparqlChange(e.target.value)
             }
-            disabled={loading}
+            disabled={loading || !isEditing}
             sx={{
               mt: 2,
               mb: 2,
@@ -425,6 +433,9 @@ Modified SPARQL Query:`;
                 '& textarea': {
                   fontFamily: 'monospace',
                 },
+              },
+              '& .MuiInputBase-input.Mui-disabled': {
+                WebkitTextFillColor: '#000000',
               },
             }}
           />

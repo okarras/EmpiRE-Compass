@@ -128,7 +128,24 @@ const DynamicQuestionManager: React.FC = () => {
 
   const handleExportAll = () => {
     try {
-      const dataStr = JSON.stringify(savedQuestions, null, 2);
+      // Ensure the current in-memory question (including processingFunctionCode)
+      // is also exported even if the user hasn't explicitly saved it.
+      const hasCurrent = Boolean(state.question.trim());
+      const currentAsSaved = hasCurrent
+        ? [
+            {
+              id: `current_${Date.now()}`,
+              name:
+                (state.question?.trim()?.slice(0, 80) ||
+                  'Current Dynamic Question') + ' (Current)',
+              timestamp: Date.now(),
+              state: { ...state },
+            },
+          ]
+        : [];
+
+      const toExport = [...currentAsSaved, ...savedQuestions];
+      const dataStr = JSON.stringify(toExport, null, 2);
       const dataBlob = new Blob([dataStr], { type: 'application/json' });
       const url = URL.createObjectURL(dataBlob);
       const link = document.createElement('a');

@@ -1,0 +1,1987 @@
+[
+  {
+    "id": "R186491",
+    "label": "Empirical Research Practice",
+    "description": "The template is intended to describe the empirical research practice reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C27001",
+      "label": "empirical research practice",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691178",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "In which conference venue is the publication published?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P135046",
+          "label": "venue serie"
+        },
+        "created_at": "2024-05-13T15:19:43.409143964+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C81025",
+          "label": "venue serie"
+        }
+      },
+      {
+        "id": "R691160",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What is the research problem under consideration in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P32",
+          "label": "research problem"
+        },
+        "created_at": "2024-05-13T14:14:10.756195677+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "Problem",
+          "label": "Problem"
+        }
+      },
+      {
+        "id": "R691173",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What is the underlying research paradigm of the publication?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57003",
+          "label": "research paradigm"
+        },
+        "created_at": "2024-05-13T14:59:27.424572497+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29004",
+          "label": "research paradigm"
+        }
+      },
+      {
+        "id": "R691179",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What is the research question reported in the publication?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": null,
+        "path": {
+          "id": "P37330",
+          "label": "research  question "
+        },
+        "created_at": "2024-05-13T15:20:34.049075822+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C27006",
+          "label": "research question"
+        }
+      },
+      {
+        "id": "R691177",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "How is the answer to the research question reported in the publication?",
+        "order": 4,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57004",
+          "label": "research question answer"
+        },
+        "created_at": "2024-05-13T15:19:16.337269346+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29005",
+          "label": "research question answer"
+        }
+      },
+      {
+        "id": "R691442",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What is reported about the data collection in the publication?",
+        "order": 5,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P56008",
+          "label": "data collection"
+        },
+        "created_at": "2024-05-14T14:27:21.297679774+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C27004",
+          "label": "data collection"
+        }
+      },
+      {
+        "id": "R691417",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What is reported about the data analysis in the publication?",
+        "order": 6,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P15124",
+          "label": "data analysis"
+        },
+        "created_at": "2024-05-14T13:13:35.944972864+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C28004",
+          "label": "data analysis"
+        }
+      },
+      {
+        "id": "R691165",
+        "label": "Property shape for R186491",
+        "placeholder": null,
+        "description": "What threats to validity are reported in a publication?",
+        "order": 7,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P39099",
+          "label": "threat to validity"
+        },
+        "created_at": "2024-05-13T14:43:09.251103802+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C27003",
+          "label": "threats to validity"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-15T12:07:14.116536Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R186763",
+    "label": "Research Question",
+    "description": "The template is intended to describe the research question reported in a publication.",
+    "formatted_label": "{P44139}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C27006",
+      "label": "research question",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691162",
+        "label": "Component for template R186763",
+        "placeholder": null,
+        "description": "What is the research question reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "pattern": null,
+        "path": {
+          "id": "P44139",
+          "label": "question"
+        },
+        "created_at": "2024-05-13T14:36:42.059884327+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      {
+        "id": "R691166",
+        "label": "Component for template R186763",
+        "placeholder": null,
+        "description": "Is the research question reported in the publication hidden in the text?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55038",
+          "label": "hidden in text"
+        },
+        "created_at": "2024-05-13T14:45:21.754605857+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691167",
+        "label": "Component for template R186763",
+        "placeholder": null,
+        "description": "Is the research question reported in the publication highlighted in the text?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55039",
+          "label": "highlighted in text"
+        },
+        "created_at": "2024-05-13T14:45:21.847658669+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691168",
+        "label": "Component for template R186763",
+        "placeholder": null,
+        "description": "What is the type of the research question?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P41928",
+          "label": "question type"
+        },
+        "created_at": "2024-05-13T14:45:21.938596443+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29000",
+          "label": "question type"
+        }
+      },
+      {
+        "id": "R691169",
+        "label": "Component for template R186763",
+        "placeholder": null,
+        "description": "What is the subquestion of the research question reported in the publication?",
+        "order": 4,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P57000",
+          "label": "subquestion"
+        },
+        "created_at": "2024-05-13T14:52:47.531909224+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29003",
+          "label": "subquestion"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-20T11:10:11.304919Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188024",
+    "label": "Research Question Answer",
+    "description": "The template is intended to describe the representation of the answer to the research question in a publication.",
+    "formatted_label": "Hidden: {P55038}, Highlighted: {P55039}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29005",
+      "label": "research question answer",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691175",
+        "label": "Component for template R188024",
+        "placeholder": null,
+        "description": "Is the answer to the research question reported in the publication hidden in the text?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55038",
+          "label": "hidden in text"
+        },
+        "created_at": "2024-05-13T15:15:07.493308194+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691176",
+        "label": "Component for template R188024",
+        "placeholder": null,
+        "description": "Is the answer to the research question reported in the publication highlighted in the text?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55039",
+          "label": "highlighted in text"
+        },
+        "created_at": "2024-05-13T15:15:07.582690746+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:13:42.16956Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R48000",
+    "label": "Problem",
+    "description": "The template is intended to describe the research problem addressed in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "Problem",
+      "label": "Problem",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R576884",
+        "label": "Component for template R48000",
+        "placeholder": null,
+        "description": null,
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "pattern": null,
+        "path": {
+          "id": "description",
+          "label": "description"
+        },
+        "created_at": "2023-03-20T15:47:09.367708Z",
+        "created_by": "1ce9b643-32aa-439a-8237-058342cc2b6a",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      {
+        "id": "R576885",
+        "label": "Component for template R48000",
+        "placeholder": null,
+        "description": null,
+        "order": 1,
+        "min_count": 1,
+        "max_count": null,
+        "pattern": null,
+        "path": {
+          "id": "SAME_AS",
+          "label": "same as"
+        },
+        "created_at": "2023-03-20T15:47:09.377594Z",
+        "created_by": "1ce9b643-32aa-439a-8237-058342cc2b6a",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      {
+        "id": "R576886",
+        "label": "Component for template R48000",
+        "placeholder": null,
+        "description": null,
+        "order": 2,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "subProblem",
+          "label": "Sub Problem"
+        },
+        "created_at": "2023-03-20T15:47:09.367433Z",
+        "created_by": "1ce9b643-32aa-439a-8237-058342cc2b6a",
+        "class": {
+          "id": "Problem",
+          "label": "Problem"
+        }
+      }
+    ],
+    "is_closed": false,
+    "created_at": "2020-07-22T15:44:57.860135+02:00",
+    "created_by": "00000000-0000-0000-0000-000000000000",
+    "observatories": ["00000000-0000-0000-0000-000000000000"],
+    "organizations": ["00000000-0000-0000-0000-000000000000"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R186737",
+    "label": "Data Collection",
+    "description": "The template is intended to describe the data collection reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C27004",
+      "label": "data collection",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691441",
+        "label": "Component for template R186737",
+        "placeholder": null,
+        "description": "What is reported about the collected data in the publication?",
+        "order": 0,
+        "min_count": 0,
+        "max_count": 1,
+        "path": {
+          "id": "DATA",
+          "label": "data"
+        },
+        "created_at": "2024-05-14T14:26:41.67588309+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29030",
+          "label": "research data"
+        }
+      },
+      {
+        "id": "R691435",
+        "label": "Property shape",
+        "placeholder": null,
+        "description": "What is the data collection method reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": null,
+        "path": {
+          "id": "P1005",
+          "label": "method"
+        },
+        "created_at": "2024-05-14T14:16:58.762733243+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C89001",
+          "label": "data collection method"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-20T08:39:07.103251Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R186724",
+    "label": "Threats to Validity",
+    "description": "The template is intended to describe the threats to validity reported in a publication.",
+    "formatted_label": "Mentioned, but not classified: {P145000}, Construct validity: {P55037}, Internal validity: {P55035}, External validity: {P55034}, Conclusion validity: {P55036}, Reliability: {P59109}, Generalizability: {P60006}, Repeatability: {P97002}, Content validity: {P68005}, Descriptive validity: {P97000}, Theoretical validity: {P97001}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C27003",
+      "label": "threats to validity",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691029",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to construct validity reported?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55037",
+          "label": "construct validity"
+        },
+        "created_at": "2024-05-09T11:42:21.649811115+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691030",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to internal validity reported?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55035",
+          "label": "internal validity"
+        },
+        "created_at": "2024-05-09T11:42:21.750046808+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691031",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to external validity reported?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55034",
+          "label": "external validity"
+        },
+        "created_at": "2024-05-09T11:42:21.851010681+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691032",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to conclusion validity reported?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55036",
+          "label": "conclusion validity"
+        },
+        "created_at": "2024-05-09T11:42:21.954788372+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691033",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to reliability reported?",
+        "order": 4,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P59109",
+          "label": "reliability"
+        },
+        "created_at": "2024-05-09T11:42:22.046239585+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691034",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to generalizability reported?",
+        "order": 5,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P60006",
+          "label": "generalizability"
+        },
+        "created_at": "2024-05-09T11:42:22.137545949+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691038",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to repeatability reported?",
+        "order": 6,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P97002",
+          "label": "repeatability"
+        },
+        "created_at": "2024-05-09T11:42:22.53988718+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691035",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to content validity reported?",
+        "order": 7,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P68005",
+          "label": "content validity"
+        },
+        "created_at": "2024-05-09T11:42:22.227314941+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691036",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to descriptive validity reported?",
+        "order": 8,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P97000",
+          "label": "descriptive validity"
+        },
+        "created_at": "2024-05-09T11:42:22.332697541+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691037",
+        "label": "Component for template R186724",
+        "placeholder": null,
+        "description": "Are threats to theoretical validity reported?",
+        "order": 9,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P97001",
+          "label": "theoretical validity"
+        },
+        "created_at": "2024-05-09T11:42:22.415516052+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691039",
+        "label": "Property shape",
+        "placeholder": null,
+        "description": "Are threats to validity mentioned but not classified?",
+        "order": 10,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P145000",
+          "label": "mentioned"
+        },
+        "created_at": "2024-05-09T12:08:36.372011278+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-20T08:32:59.1354Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R187817",
+    "label": "Data Analysis",
+    "description": "The template is intended to describe the data analysis reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C28004",
+      "label": "data analysis",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691436",
+        "label": "Property shape",
+        "placeholder": null,
+        "description": "What is the data analysis method reported in the publication?",
+        "order": 0,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P1005",
+          "label": "method"
+        },
+        "created_at": "2024-05-14T14:18:53.223926321+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "Method",
+          "label": "Method"
+        }
+      },
+      {
+        "id": "R691437",
+        "label": "Component for template R187817",
+        "placeholder": null,
+        "description": "What is reported about inferential statistics used for data analysis in the publication?",
+        "order": 1,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P56043",
+          "label": "inferential statistics"
+        },
+        "created_at": "2024-05-14T14:18:53.302862088+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C28005",
+          "label": "inferential statistics"
+        }
+      },
+      {
+        "id": "R691438",
+        "label": "Component for template R187817",
+        "placeholder": null,
+        "description": "What is reported about descriptive statistics used for data analysis in the publication?",
+        "order": 2,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P56048",
+          "label": "descriptive statistics"
+        },
+        "created_at": "2024-05-14T14:18:53.369261651+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C20073",
+          "label": "descriptive statistic"
+        }
+      },
+      {
+        "id": "R691439",
+        "label": "Component for template R187817",
+        "placeholder": null,
+        "description": "What is reported about machine learing used for data analysis in the publication?",
+        "order": 3,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P57016",
+          "label": "machine learning"
+        },
+        "created_at": "2024-05-14T14:18:53.432677144+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29012",
+          "label": "machine learning"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-31T11:29:38.89927Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188614",
+    "label": "Research Data",
+    "description": "The template is intended to describe the collected data reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29030",
+      "label": "research data",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691409",
+        "label": "Component for template R188614",
+        "placeholder": null,
+        "description": "What is the type of the collected data reported in the publication?",
+        "order": 0,
+        "min_count": 0,
+        "max_count": 1,
+        "path": {
+          "id": "P7055",
+          "label": "Data type"
+        },
+        "created_at": "2024-05-14T06:20:52.694279589+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29031",
+          "label": "data type"
+        }
+      },
+      {
+        "id": "R691241",
+        "label": "Component for template R188614",
+        "placeholder": null,
+        "description": "Under which URL(s) can the data be found?",
+        "order": 1,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "url",
+          "label": "url"
+        },
+        "created_at": "2024-05-13T17:54:22.204821509+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "URI",
+          "label": "URI",
+          "uri": "http://www.w3.org/2001/XMLSchema#anyURI"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-03T12:12:34.185756Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188008",
+    "label": "Subquestion",
+    "description": "The template is intended to describe the subquestion of research question reported in a publication.",
+    "formatted_label": "{P44139}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29003",
+      "label": "subquestion",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691170",
+        "label": "Component for template R188008",
+        "placeholder": null,
+        "description": "What is the subquestion of the research question reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "pattern": null,
+        "path": {
+          "id": "P44139",
+          "label": "question"
+        },
+        "created_at": "2024-05-13T14:56:09.445482162+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      {
+        "id": "R691171",
+        "label": "Component for template R188008",
+        "placeholder": null,
+        "description": "What is the type of the sub question?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P41928",
+          "label": "question type"
+        },
+        "created_at": "2024-05-13T14:56:09.523202172+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29000",
+          "label": "question type"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:06:15.313443Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R187801",
+    "label": "Inferential Statistics",
+    "description": "The template is intended to describe the inferential statistics reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C28005",
+      "label": "inferential statistics",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691456",
+        "label": "Component for template R187801",
+        "placeholder": null,
+        "description": "What hypothesis is reported in the publication?",
+        "order": 0,
+        "min_count": 0,
+        "max_count": null,
+        "path": {
+          "id": "P30001",
+          "label": "hypothesis"
+        },
+        "created_at": "2024-05-14T14:51:38.794459649+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C28008",
+          "label": "Hypothesis"
+        }
+      },
+      {
+        "id": "R691457",
+        "label": "Component for template R187801",
+        "placeholder": null,
+        "description": "What statistical tests is reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": null,
+        "path": {
+          "id": "P35133",
+          "label": "Statistical tests"
+        },
+        "created_at": "2024-05-14T14:51:38.863207352+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C20072",
+          "label": "Statistical Technique"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-31T11:03:19.336574Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R691422",
+    "label": "Data Collection Method",
+    "description": "This template is intended to describe the data collection method reported in a publication.",
+    "formatted_label": "{P94003}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C89001",
+      "label": "data collection method",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691423",
+        "label": "Property shape",
+        "placeholder": null,
+        "description": "What is the type of method is used for data collection in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P94003",
+          "label": "method type"
+        },
+        "created_at": "2024-05-14T13:41:56.876841741+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C89002",
+          "label": "method type"
+        }
+      },
+      {
+        "id": "R691424",
+        "label": "Property shape",
+        "placeholder": "",
+        "description": "What is the exact name of the method for data collection reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "pattern": null,
+        "path": {
+          "id": "P145012",
+          "label": "method name"
+        },
+        "created_at": "2024-05-14T13:41:57.004698742+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      }
+    ],
+    "is_closed": false,
+    "created_at": "2024-05-14T13:38:34.500423028+02:00",
+    "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188038",
+    "label": "Machine Learning",
+    "description": "The template is intended to describe the machine learning reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29012",
+      "label": "machine learning",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691462",
+        "label": "Component for template R188038",
+        "placeholder": null,
+        "description": "What metrics are reported for the machine learning reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P2006",
+          "label": "metric"
+        },
+        "created_at": "2024-05-14T14:56:26.774967615+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C14024",
+          "label": "Metric"
+        }
+      },
+      {
+        "id": "R691463",
+        "label": "Component for template R188038",
+        "placeholder": null,
+        "description": "What machine learning algorithms are reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": null,
+        "path": {
+          "id": "P2001",
+          "label": "Algorithm"
+        },
+        "created_at": "2024-05-14T14:56:26.844479729+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C17008",
+          "label": "Machine learning algorithm"
+        }
+      }
+    ],
+    "is_closed": false,
+    "created_at": "2022-06-01T11:54:45.046954Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R187815",
+    "label": "Descriptive Statistics",
+    "description": "The template is intended to describe the descriptive statistics reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C20073",
+      "label": "descriptive statistic",
+      "uri": "http://purl.allotrope.org/ontologies/result#AFR_0001212"
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691468",
+        "label": "Component for template R187815",
+        "placeholder": null,
+        "description": "What measures of frequency are reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P56049",
+          "label": "measures of frequency"
+        },
+        "created_at": "2024-05-14T15:15:24.902146488+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C28009",
+          "label": "measures of frequency"
+        }
+      },
+      {
+        "id": "R691469",
+        "label": "Component for template R187815",
+        "placeholder": null,
+        "description": "What measures of central tendency are reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57005",
+          "label": "measures of central tendency"
+        },
+        "created_at": "2024-05-14T15:15:24.988590972+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29006",
+          "label": "measures of central tendency"
+        }
+      },
+      {
+        "id": "R691470",
+        "label": "Component for template R187815",
+        "placeholder": null,
+        "description": "What measures of dispersion or variation are reported in the publication?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57008",
+          "label": "measures of dispersion or variation"
+        },
+        "created_at": "2024-05-14T15:15:25.063046846+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29007",
+          "label": "measures of dispersion or variation"
+        }
+      },
+      {
+        "id": "R691483",
+        "label": "Component for template R187815",
+        "placeholder": null,
+        "description": "What measures of position are reported in the publication?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57010",
+          "label": "measures of position"
+        },
+        "created_at": "2024-05-14T15:31:19.996680567+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29008",
+          "label": "measures of position"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-31T11:29:31.362932Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188042",
+    "label": "Metrics",
+    "description": "The template is intended to describe metrics for machine learning algorithms reported in a publication.",
+    "formatted_label": "Recall: {P5073}, Precision: {P3004}, Accuracy: {P18048}, and F-score: {P59137}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C14024",
+      "label": "Metric",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691464",
+        "label": "Property shape for R188042",
+        "placeholder": null,
+        "description": "Is recall reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P5073",
+          "label": "recall"
+        },
+        "created_at": "2024-05-14T14:59:16.214051615+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691465",
+        "label": "Property shape for R188042",
+        "placeholder": null,
+        "description": "Is precision reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P3004",
+          "label": "precision"
+        },
+        "created_at": "2024-05-14T14:59:16.284370449+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691466",
+        "label": "Property shape for R188042",
+        "placeholder": null,
+        "description": "Is accuracy reported in the publication?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P18048",
+          "label": "accuracy"
+        },
+        "created_at": "2024-05-14T14:59:16.348908888+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691467",
+        "label": "Property shape for R188042",
+        "placeholder": null,
+        "description": "Is f-score reported in the publication?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P59137",
+          "label": "f-score"
+        },
+        "created_at": "2024-05-14T14:59:16.41434236+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:57:00.950272Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188035",
+    "label": "Measures of Position",
+    "description": "The template is intended to describe the measures of position reported in a publication.",
+    "formatted_label": "Boxplot: {P59065}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29008",
+      "label": "measures of position",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691482",
+        "label": "Component for template R188035",
+        "placeholder": null,
+        "description": "Is boxplot reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P59065",
+          "label": "boxplot"
+        },
+        "created_at": "2024-05-14T15:30:53.668789855+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:46:07.346026Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188611",
+    "label": "Data Type",
+    "description": "The template is intended to describe the type of collected data reported in a publication.",
+    "formatted_label": "qualitative: {P57038} and quantitative: {P57039}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29031",
+      "label": "data type",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691407",
+        "label": "Component for template R188611",
+        "placeholder": null,
+        "description": "Is the collected data reported in the publication qualitative?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57038",
+          "label": "qualitative "
+        },
+        "created_at": "2024-05-14T06:18:20.529337126+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691408",
+        "label": "Component for template R188611",
+        "placeholder": null,
+        "description": "Is the collected data reported in the publication quantitative?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57039",
+          "label": "quantitative "
+        },
+        "created_at": "2024-05-14T06:18:20.850044872+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-03T12:11:27.057809Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R187805",
+    "label": "Hypothesis",
+    "description": "The template is intended to describe the hypothesis reported in a publication.",
+    "formatted_label": "{P56046}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C28008",
+      "label": "Hypothesis",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691458",
+        "label": "Component for template R187805",
+        "placeholder": null,
+        "description": "What hypothesis statement is reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "pattern": null,
+        "path": {
+          "id": "P56046",
+          "label": "hypothesis statement"
+        },
+        "created_at": "2024-05-14T14:53:28.532630245+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "String",
+          "label": "Text",
+          "uri": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      {
+        "id": "R691459",
+        "label": "Component for template R187805",
+        "placeholder": null,
+        "description": "What is the type of the hypothesis reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P41703",
+          "label": "Hypothesis type"
+        },
+        "created_at": "2024-05-14T14:53:28.615686094+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "class": {
+          "id": "C29033",
+          "label": "hypothesis type"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-31T11:04:52.254542Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188031",
+    "label": "Measures of Dispersion or Variation",
+    "description": "The template is intended to describe the measures of dispersion or variation reported in a publication.",
+    "formatted_label": "Range: {P4013}, Variance: {P57009}, and Standard deviation: {P44087}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29007",
+      "label": "measures of dispersion or variation",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691479",
+        "label": "Component for template R188031",
+        "placeholder": null,
+        "description": "Is range as a measure of dispersion or variation reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P4013",
+          "label": "range"
+        },
+        "created_at": "2024-05-14T15:21:04.213712974+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691480",
+        "label": "Component for template R188031",
+        "placeholder": null,
+        "description": "Is variance as a measure of dispersion or variation reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57009",
+          "label": "variance"
+        },
+        "created_at": "2024-05-14T15:21:04.284782058+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691481",
+        "label": "Component for template R188031",
+        "placeholder": null,
+        "description": "Is standard deviation as a measure of dispersion or variation reported in the publication?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P44087",
+          "label": "standard deviation"
+        },
+        "created_at": "2024-05-14T15:21:04.372503369+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:41:09.758585Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188027",
+    "label": "Measures of Central Tendency",
+    "description": "The template is intended to describe the measures of central tendency reported in a publication.",
+    "formatted_label": "Mean: {P47000}, Median: {P57006}, Mode: {P57007}, Minimum: {P44107}, and Maximum: {P44108}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29006",
+      "label": "measures of central tendency",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691474",
+        "label": "Component for template R188027",
+        "placeholder": null,
+        "description": "Is mean as a measure of central tendency reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P47000",
+          "label": "mean"
+        },
+        "created_at": "2024-05-14T15:18:55.977937802+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691475",
+        "label": "Component for template R188027",
+        "placeholder": null,
+        "description": "Is median as a measure of central tendency reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57006",
+          "label": "median"
+        },
+        "created_at": "2024-05-14T15:18:56.057655616+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691476",
+        "label": "Component for template R188027",
+        "placeholder": null,
+        "description": "Is mode as a measure of central tendency reported in the publication?",
+        "order": 2,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P57007",
+          "label": "mode"
+        },
+        "created_at": "2024-05-14T15:18:56.121200493+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691477",
+        "label": "Component for template R188027",
+        "placeholder": null,
+        "description": "Is minimum as a measure of central tendency reported in the publication?",
+        "order": 3,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P44107",
+          "label": "minimum"
+        },
+        "created_at": "2024-05-14T15:18:56.190153761+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691478",
+        "label": "Component for template R188027",
+        "placeholder": null,
+        "description": "Is maximum as a measure of central tendency reported in the publication?",
+        "order": 4,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P44108",
+          "label": "maximum"
+        },
+        "created_at": "2024-05-14T15:18:56.258071428+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-01T11:38:02.652479Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R187812",
+    "label": "Measures of Frequency",
+    "description": "The template is intended to describe the measures of frequency reported in a publication.",
+    "formatted_label": "Count: {P55023} and Percent: {P56050}",
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C28009",
+      "label": "measures of frequency",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691472",
+        "label": "Component for template R187812",
+        "placeholder": null,
+        "description": "Is count as a measure of frequency reported in the publication?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P55023",
+          "label": "count"
+        },
+        "created_at": "2024-05-14T15:17:14.268299432+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691473",
+        "label": "Component for template R187812",
+        "placeholder": null,
+        "description": "Is percent as a measure of frequency reported in the publication?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P56050",
+          "label": "percent"
+        },
+        "created_at": "2024-05-14T15:17:14.340992635+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-05-31T11:14:51.360715Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  },
+  {
+    "id": "R188709",
+    "label": "Hypothesis Type",
+    "description": "The template is intended to describe the type of a hypothesis reported in a publication.",
+    "formatted_label": null,
+    "target_class": {
+      "_class": "class_ref",
+      "id": "C29033",
+      "label": "hypothesis type",
+      "uri": null
+    },
+    "relations": {
+      "research_fields": [],
+      "research_problems": [],
+      "predicate": null
+    },
+    "properties": [
+      {
+        "id": "R691460",
+        "label": "Component for template R188709",
+        "placeholder": null,
+        "description": "Is the reported hypothesis the null hypothesis?",
+        "order": 0,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P35106",
+          "label": "Null hypothesis"
+        },
+        "created_at": "2024-05-14T14:55:16.826770278+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      {
+        "id": "R691461",
+        "label": "Component for template R188709",
+        "placeholder": null,
+        "description": "Is the reported hypothesis the alternative hypothesis?",
+        "order": 1,
+        "min_count": 1,
+        "max_count": 1,
+        "path": {
+          "id": "P35107",
+          "label": "Alternative hypothesis"
+        },
+        "created_at": "2024-05-14T14:55:16.906234657+02:00",
+        "created_by": "7adcfc45-b315-4df7-b9a5-010e8f1ca9cb",
+        "datatype": {
+          "_class": "class_ref",
+          "id": "Boolean",
+          "label": "Boolean",
+          "uri": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      }
+    ],
+    "is_closed": true,
+    "created_at": "2022-06-03T12:25:31.340807Z",
+    "created_by": "c38aa896-0aac-497e-9d32-df7d9ea184aa",
+    "observatories": ["ae6d3307-fcda-4d8c-9c24-d1e2d6db91f2"],
+    "organizations": ["edc18168-c4ee-4cb8-a98a-136f748e912e"],
+    "extraction_method": "UNKNOWN",
+    "visibility": "DEFAULT",
+    "_class": "template"
+  }
+]

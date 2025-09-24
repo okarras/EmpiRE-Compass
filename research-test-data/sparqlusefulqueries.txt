@@ -1,0 +1,45 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?prop ?propLabel ?propComment
+WHERE {
+  ?s ?prop ?o .
+  OPTIONAL { ?prop rdfs:label   ?propLabel   . }
+  OPTIONAL { ?prop rdfs:comment ?propComment . }
+}
+ORDER BY ?prop
+
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT DISTINCT ?class ?classLabel ?classComment
+WHERE {
+  ?instance a ?class .
+  OPTIONAL { ?class rdfs:label   ?classLabel   . }
+  OPTIONAL { ?class rdfs:comment ?classComment . }
+}
+ORDER BY ?class
+
+
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX orkgr: <http://orkg.org/orkg/resource/>
+PREFIX orkgc: <http://orkg.org/orkg/class/>
+PREFIX orkgp: <http://orkg.org/orkg/predicate/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?resource ?label
+WHERE {
+  {
+    ?contribution a orkgc:C27001 .
+    ?contribution ?predicate ?resource .
+  }
+  UNION {
+    ?paper orkgp:P31 ?contribution .
+    ?contribution a orkgc:C27001 .
+    ?paper ?predicate ?resource .
+  }
+  OPTIONAL { ?resource rdfs:label ?label . }
+}
+ORDER BY ?resource
+

@@ -18,12 +18,13 @@ import fetchSPARQLData from '../helpers/fetch_query';
 import STATISTICS_SPARQL_QUERIES from '../api/STATISTICS_SPARQL_QUERIES';
 import StatCard from '../components/StatCard';
 import FeedIcon from '@mui/icons-material/Feed';
-// import BubbleChartIcon from '@mui/icons-material/BubbleChart';
-import FlagIcon from '@mui/icons-material/Flag';
-import StorageIcon from '@mui/icons-material/Storage';
-import BarChartIcon from '@mui/icons-material/BarChart';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import BubbleChartIcon from '@mui/icons-material/BubbleChart';
+import LabelIcon from '@mui/icons-material/Label';
+import HubIcon from '@mui/icons-material/Hub';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
 import CRUDStatistics from '../firestore/CRUDStatistics';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 // import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 // import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
@@ -145,34 +146,34 @@ export default function Statistics() {
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={venueCount} label="Venues">
-            <FlagIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <LocationOnIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_resources} label="Resources">
-            <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_literals} label="Literals">
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_predicates} label="Properties">
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={total_statements} label="Total Statements">
-            <StorageIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
             value={global_distinct_resources}
             label="Distinct Resources"
           >
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard value={global_distinct_literals} label="Distinct Literals">
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
           <StatCard
             value={global_distinct_predicates}
             label="Distinct Properties"
           >
-            <BarChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>
         </Stack>
         {/* )} */}
