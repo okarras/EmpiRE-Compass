@@ -1,12 +1,10 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useCallback, useEffect } from 'react';
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
   Node,
   Edge,
-  Handle,
-  Position,
   useNodesState,
   useEdgesState,
   MarkerType,
@@ -14,329 +12,24 @@ import ReactFlow, {
   ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { useRef, useCallback } from 'react';
 import { toPng } from 'html-to-image';
-import { createPortal } from 'react-dom';
-
-// Types representing the JSON schema pieces we use
-type Template = {
-  id: string;
-  label: string;
-  description?: string | null;
-  target_class: {
-    id: string;
-    label: string;
-  };
-  properties?: TemplateProperty[];
-};
-
-type TemplateProperty = {
-  id: string;
-  label: string;
-  description?: string | null;
-  order?: number;
-  min_count: number | null;
-  max_count: number | null;
-  path: { id: string; label: string };
-  class?: { id: string; label: string };
-  datatype?: { id: string; label: string };
-};
-
-// Helper: cardinality formatting [min, max], with * for null max
-function formatCardinality(
-  minCount: number | null,
-  maxCount: number | null
-): string {
-  const min = typeof minCount === 'number' ? minCount : 0;
-  const max = typeof maxCount === 'number' ? String(maxCount) : '*';
-  return `[${min}, ${max}]`;
-}
-
-// Row component for a single property with hover tooltip
-const PropertyRow: React.FC<{
-  nodeId: string;
-  property: TemplateProperty;
-}> = ({ nodeId, property }) => {
-  const [isHover, setIsHover] = React.useState(false);
-  const [tooltipPos, setTooltipPos] = React.useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const liRef = React.useRef<HTMLLIElement | null>(null);
-
-  const handleId = `${nodeId}::prop::${property.id}`;
-  const label = (property.path?.label ?? property.label)?.trim();
-  const propertyId = property.path?.id ?? '—';
-  const descriptionText = property.description ?? '—';
-
-  const showTooltip = () => {
-    const rect = liRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const desiredWidth = 260;
-    const horizontalPadding = 12;
-    const left = Math.max(horizontalPadding, rect.left - desiredWidth - 20);
-    const top = Math.max(8, rect.top - 8);
-    setTooltipPos({ x: left, y: top });
-    setIsHover(true);
-  };
-
-  const hideTooltip = () => {
-    setIsHover(false);
-    setTooltipPos(null);
-  };
-
-  return (
-    <li
-      key={property.id}
-      ref={liRef}
-      style={{
-        position: 'relative',
-        padding: '6px 8px',
-        borderRadius: 6,
-        border: '1px solid #3c414b',
-        marginBottom: 6,
-        background: '#1f2329',
-      }}
-      onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
-    >
-      {/* Source handle on the right for possible outgoing edge from this property */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        id={handleId}
-        style={{
-          width: 10,
-          height: 10,
-          right: -5,
-          background: '#EA7070',
-          border: '2px solid #3c414b',
-        }}
-      />
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          gap: 8,
-        }}
-      >
-        <span>{label}</span>
-        <span style={{ color: '#9ca3af', whiteSpace: 'nowrap' }}>
-          {formatCardinality(
-            property.min_count ?? 0,
-            property.max_count ?? null
-          )}
-        </span>
-      </div>
-      {isHover &&
-        tooltipPos &&
-        createPortal(
-          <div
-            style={{
-              position: 'fixed',
-              top: tooltipPos.y,
-              left: tooltipPos.x,
-              width: 260,
-              zIndex: 9999,
-              background: '#2b2f36',
-              color: '#e5e7eb',
-              border: '1px solid #3c414b',
-              borderRadius: 8,
-              boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
-              padding: '8px 10px',
-              pointerEvents: 'none',
-            }}
-          >
-            <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
-              <div style={{ minWidth: 92, color: '#9ca3af' }}>Property id</div>
-              <div style={{ fontWeight: 600 }}>{propertyId}</div>
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <div style={{ minWidth: 92, color: '#9ca3af' }}>Description</div>
-              <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                {descriptionText}
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-    </li>
-  );
-};
-
-// Custom node that renders the template label and its properties with handles per property
-const TemplateNode: React.FC<{
-  data: { title: string; properties: TemplateProperty[]; nodeId: string };
-}> = ({ data }) => {
-  return (
-    <div
-      style={{
-        background: '#2b2f36',
-        color: '#e5e7eb',
-        borderRadius: 8,
-        border: '1px solid #3c414b',
-        minWidth: 260,
-      }}
-    >
-      {/* General target handle for incoming edges */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        id={`${data.nodeId}::target`}
-        style={{
-          width: 10,
-          height: 10,
-          left: -5,
-          background: '#a78bfa',
-          border: '2px solid #3c414b',
-        }}
-      />
-      <div
-        style={{
-          padding: '8px 12px',
-          borderBottom: '1px solid #3c414b',
-          fontWeight: 600,
-        }}
-      >
-        {data.title}
-      </div>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 8 }}>
-        {data.properties.map((prop) => (
-          <PropertyRow key={prop.id} nodeId={data.nodeId} property={prop} />
-        ))}
-      </ul>
-    </div>
-  );
-};
+import { Template, TemplateGraphProps } from './types';
+import { computeHierarchicalLayout } from './utils';
+import { TemplateNode } from './TemplateNode';
 
 const nodeTypes = { templateNode: TemplateNode } as const;
 
-export type TemplateGraphProps = {
-  data: Template[];
-};
-
-// Hierarchical tree layout algorithm (left-to-right orientation)
-function computeHierarchicalLayout(
-  templates: Template[],
-  targetClassIdToTemplate: Map<string, Template>
-): Record<string, { x: number; y: number }> {
-  const positions: Record<string, { x: number; y: number }> = {};
-  const visited = new Set<string>();
-  const nodeWidth = 300; // Approximate node width
-  const nodeHeight = 200; // Approximate node height
-  const horizontalSpacing = 400; // Horizontal spacing between levels (now x-axis)
-  const verticalSpacing = 300; // Vertical spacing between nodes at same level (now y-axis)
-
-  // Find the root node (Empirical Research Practice)
-  const rootTemplate = templates.find(
-    (t) =>
-      t.target_class?.id === 'C27001' ||
-      t.label === 'Empirical Research Practice'
-  );
-
-  if (!rootTemplate) {
-    // Fallback to first template if root not found
-    const firstTemplate = templates[0];
-    if (firstTemplate) {
-      const nodeId = firstTemplate.target_class?.id ?? firstTemplate.id;
-      positions[nodeId] = { x: 0, y: 0 };
-    }
-    return positions;
-  }
-
-  const rootNodeId = rootTemplate.target_class?.id ?? rootTemplate.id;
-
-  // Build adjacency list for the graph
-  const adjacencyList = new Map<string, string[]>();
-  const reverseAdjacencyList = new Map<string, string[]>();
-
-  // Initialize adjacency lists
-  templates.forEach((t) => {
-    const nodeId = t.target_class?.id ?? t.id;
-    adjacencyList.set(nodeId, []);
-    reverseAdjacencyList.set(nodeId, []);
-  });
-
-  // Build connections
-  templates.forEach((sourceTemplate) => {
-    const sourceNodeId = sourceTemplate.target_class?.id ?? sourceTemplate.id;
-    (sourceTemplate.properties ?? []).forEach((prop) => {
-      if (prop.class?.id) {
-        const targetTemplate = targetClassIdToTemplate.get(prop.class.id);
-        if (targetTemplate) {
-          const targetNodeId =
-            targetTemplate.target_class?.id ?? targetTemplate.id;
-          adjacencyList.get(sourceNodeId)?.push(targetNodeId);
-          reverseAdjacencyList.get(targetNodeId)?.push(sourceNodeId);
-        }
-      }
-    });
-  });
-
-  // BFS to assign levels and positions
-  const queue: Array<{ nodeId: string; level: number; parentY?: number }> = [];
-  const levels = new Map<string, number>();
-  const levelNodes = new Map<number, string[]>();
-
-  // Start with root node
-  queue.push({ nodeId: rootNodeId, level: 0 });
-  levels.set(rootNodeId, 0);
-  levelNodes.set(0, [rootNodeId]);
-  visited.add(rootNodeId);
-
-  // BFS to assign levels
-  while (queue.length > 0) {
-    const { nodeId, level } = queue.shift()!;
-    const children = adjacencyList.get(nodeId) || [];
-
-    children.forEach((childId) => {
-      if (!visited.has(childId)) {
-        visited.add(childId);
-        const childLevel = level + 1;
-        levels.set(childId, childLevel);
-
-        if (!levelNodes.has(childLevel)) {
-          levelNodes.set(childLevel, []);
-        }
-        levelNodes.get(childLevel)!.push(childId);
-
-        queue.push({ nodeId: childId, level: childLevel });
-      }
-    });
-  }
-
-  // Position nodes level by level (left-to-right orientation)
-  levelNodes.forEach((nodes, level) => {
-    const x = level * horizontalSpacing; // x increases with level (left to right)
-    const totalHeight = (nodes.length - 1) * verticalSpacing;
-    const startY = -totalHeight / 2; // center nodes vertically within each level
-
-    nodes.forEach((nodeId, index) => {
-      const y = startY + index * verticalSpacing;
-      positions[nodeId] = { x, y };
-    });
-  });
-
-  // Handle any remaining unvisited nodes (disconnected components)
-  templates.forEach((t) => {
-    const nodeId = t.target_class?.id ?? t.id;
-    if (!visited.has(nodeId)) {
-      // Position disconnected nodes to the right
-      const maxX = Math.max(...Object.values(positions).map((p) => p.x), 0);
-      const maxY = Math.max(...Object.values(positions).map((p) => p.y), 0);
-      positions[nodeId] = { x: maxX + horizontalSpacing, y: maxY };
-    }
-  });
-
-  return positions;
-}
-
-export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
+export const TemplateGraph: React.FC<TemplateGraphProps> = ({
+  data,
+  loading = false,
+  error = null,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const templates = useMemo(
     () => (Array.isArray(data) ? (data as Template[]) : []),
     [data]
   );
+
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
 
   // Map target_class.id -> template for quick lookup when creating edges
@@ -354,7 +47,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
   }, [templates, targetClassIdToTemplate]);
 
   const initialNodes = useMemo<Node[]>(() => {
-    return templates.map((t) => {
+    const templateNodes = templates.map((t) => {
       const nodeId = t.target_class?.id ?? t.id;
       return {
         id: nodeId,
@@ -369,6 +62,8 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
         type: 'templateNode' as const,
       };
     });
+
+    return templateNodes;
   }, [templates, positions]);
 
   const initialEdges = useMemo<Edge[]>(() => {
@@ -390,7 +85,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
             target: targetNodeId,
             sourceHandle,
             animated: true,
-            type: 'bezier',
+            type: 'default', // Changed from 'bezier' to 'default'
             interactionWidth: 40,
             style: { stroke: '#EA7070', strokeWidth: 4 },
             markerEnd: {
@@ -406,14 +101,27 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
     return edges;
   }, [templates, targetClassIdToTemplate]);
 
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // Update the state when initialNodes/initialEdges change
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+
+    // Re-run fitView when nodes change to ensure the layout is visible
+    if (reactFlowInstanceRef.current && initialNodes.length > 0) {
+      setTimeout(() => {
+        reactFlowInstanceRef.current?.fitView({ padding: 0.1, duration: 200 });
+      }, 100);
+    }
+  }, [initialNodes, initialEdges, setNodes, setEdges]);
 
   const defaultEdgeOptions: DefaultEdgeOptions = useMemo(
     () => ({
       animated: true,
       style: { stroke: '#EA7070', strokeWidth: 4 },
-      type: 'bezier',
+      type: 'default', // Changed from 'bezier' to 'default'
       interactionWidth: 40,
       markerEnd: {
         type: MarkerType.ArrowClosed,
@@ -438,7 +146,6 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
         null;
 
       // Compute bounding box of all nodes to size the export image dynamically
-      // Fallback to current viewport if node sizes are not yet measured
       const currentNodes =
         (instance?.getNodes ? instance.getNodes() : null) ||
         (Array.isArray(nodes) ? nodes : []);
@@ -465,7 +172,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
         Number.isFinite(maxY) &&
         maxX > minX &&
         maxY > minY;
-      const padding = 80; // px padding around the graph in the export
+      const padding = 80;
       let cleanupViewportTransform: (() => void) | null = null;
 
       if (instance) {
@@ -544,7 +251,85 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({ data }) => {
     } catch (error) {
       console.error('Failed to export graph image:', error);
     }
-  }, []);
+  }, [nodes]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#1f2329',
+          color: '#e5e7eb',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '18px', marginBottom: '8px' }}>
+            Loading template data...
+          </div>
+          <div style={{ fontSize: '14px', color: '#9ca3af' }}>
+            Fetching template information from ORKG
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#1f2329',
+          color: '#e5e7eb',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}
+          >
+            Error loading templates
+          </div>
+          <div style={{ fontSize: '14px', color: '#9ca3af' }}>{error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!templates || templates.length === 0) {
+    return (
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          minHeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#1f2329',
+          color: '#e5e7eb',
+        }}
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '18px', marginBottom: '8px' }}>
+            No template data available
+          </div>
+          <div style={{ fontSize: '14px', color: '#9ca3af' }}>
+            No templates were found or loaded
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
