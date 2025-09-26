@@ -21,7 +21,7 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
   const liRef = React.useRef<HTMLLIElement | null>(null);
 
   const handleId = `${nodeId}::prop::${property.id}`;
-  const label = (property.path?.label ?? property.label)?.trim();
+  const label = (property.class?.label ?? property.path?.label)?.trim();
   const propertyId = property.path?.id ?? '—';
   const descriptionText = property.description ?? '—';
 
