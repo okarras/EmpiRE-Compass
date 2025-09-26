@@ -13,7 +13,9 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { toPng } from 'html-to-image';
-import { Template, TemplateGraphProps } from './types';
+import { PredicatesMapping, Template, TemplateGraphProps } from './types';
+import { PropertyMapping } from './types';
+
 import { computeHierarchicalLayout } from './utils';
 import { TemplateNode } from './TemplateNode';
 
@@ -133,7 +135,133 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
     []
   );
 
-  const handleDownload = useCallback(async () => {
+  const generateTemplateMapping = useCallback(() => {
+    const predicatesMapping: PredicatesMapping = {};
+
+    // Create a map of templates by their target class ID for quick lookup
+    const templateMap = new Map<string, Template>();
+    templates.forEach((template) => {
+      if (template.target_class?.id) {
+        templateMap.set(template.target_class.id, template);
+      }
+    });
+
+    // Process each template and its properties
+    templates.forEach((template) => {
+      if (!template.properties || template.properties.length === 0) return;
+
+      template.properties.forEach((property) => {
+        const pathId = property.path?.id;
+        if (!pathId) return;
+
+        // Determine cardinality based on min_count and max_count
+        let cardinality = 'one to one';
+        if (property.max_count === null || property.max_count > 1) {
+          cardinality = 'one to many';
+        }
+
+        const propertyMapping: PropertyMapping = {
+          label: property.label,
+          cardinality,
+          description: property.description || property.label,
+          comma_separated: false,
+        };
+
+        // If property has a class (object property), it's a subtemplate
+        if (property.class?.id) {
+          const targetTemplate = templateMap.get(property.class.id);
+          if (targetTemplate) {
+            propertyMapping.subtemplate_id = targetTemplate.id;
+            propertyMapping.class_id = property.class.id;
+
+            // Recursively process subtemplate properties
+            if (
+              targetTemplate.properties &&
+              targetTemplate.properties.length > 0
+            ) {
+              propertyMapping.subtemplate_properties = {};
+
+              targetTemplate.properties.forEach((subProperty) => {
+                const subPathId = subProperty.path?.id;
+                if (!subPathId) return;
+
+                let subCardinality = 'one to one';
+                if (
+                  subProperty.max_count === null ||
+                  subProperty.max_count > 1
+                ) {
+                  subCardinality = 'one to many';
+                }
+
+                const subPropertyMapping: PropertyMapping = {
+                  label: subProperty.label,
+                  cardinality: subCardinality,
+                  description: subProperty.description || subProperty.label,
+                  comma_separated: false,
+                };
+
+                // Check if this sub-property also has a class (nested subtemplate)
+                if (subProperty.class?.id) {
+                  const subTargetTemplate = templateMap.get(
+                    subProperty.class.id
+                  );
+                  if (subTargetTemplate) {
+                    subPropertyMapping.subtemplate_id = subTargetTemplate.id;
+                    subPropertyMapping.class_id = subProperty.class.id;
+
+                    // Process nested subtemplate properties
+                    if (
+                      subTargetTemplate.properties &&
+                      subTargetTemplate.properties.length > 0
+                    ) {
+                      subPropertyMapping.subtemplate_properties = {};
+
+                      subTargetTemplate.properties.forEach((nestedProperty) => {
+                        const nestedPathId = nestedProperty.path?.id;
+                        if (!nestedPathId) return;
+
+                        let nestedCardinality = 'one to one';
+                        if (
+                          nestedProperty.max_count === null ||
+                          nestedProperty.max_count > 1
+                        ) {
+                          nestedCardinality = 'one to many';
+                        }
+
+                        if (subPropertyMapping.subtemplate_properties) {
+                          subPropertyMapping.subtemplate_properties[
+                            nestedPathId
+                          ] = {
+                            label: nestedProperty.label,
+                            cardinality: nestedCardinality,
+                            description:
+                              nestedProperty.description ||
+                              nestedProperty.label,
+                            comma_separated: false,
+                          };
+                        }
+                      });
+                    }
+                  }
+                }
+
+                if (propertyMapping.subtemplate_properties) {
+                  propertyMapping.subtemplate_properties[subPathId] =
+                    subPropertyMapping;
+                }
+              });
+            }
+          }
+        }
+
+        predicatesMapping[pathId] = propertyMapping;
+      });
+    });
+
+    return predicatesMapping;
+  }, [templates]);
+
+  const handleDownloadImage = useCallback(async () => {
     if (!containerRef.current) return;
     try {
       const rfEl = containerRef.current.querySelector(
@@ -253,6 +381,29 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
     }
   }, [nodes]);
 
+  const handleDownloadJSON = useCallback(() => {
+    try {
+      const predicatesMapping = generateTemplateMapping();
+      const jsonString = JSON.stringify(predicatesMapping, null, 2);
+
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      const timestamp = new Date();
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const fileName = `template-mapping-${timestamp.getFullYear()}${pad(timestamp.getMonth() + 1)}${pad(timestamp.getDate())}-${pad(timestamp.getHours())}${pad(timestamp.getMinutes())}${pad(timestamp.getSeconds())}.json`;
+
+      link.download = fileName;
+      link.href = url;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export template mapping:', error);
+    }
+  }, [generateTemplateMapping]);
+
   if (loading) {
     return (
       <div
@@ -357,23 +508,44 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
         <MiniMap nodeColor={() => '#2b2f36'} maskColor="rgba(0,0,0,0.1)" />
         <Controls />
       </ReactFlow>
-      <button
-        data-html2image-exclude
-        onClick={handleDownload}
+      <div
         style={{
           position: 'absolute',
           left: 48,
           bottom: 12,
-          padding: '8px 12px',
-          borderRadius: 6,
-          border: '1px solid #A8A8AF',
-          background: '#EA7070',
-          color: '#e5e7eb',
-          cursor: 'pointer',
+          display: 'flex',
+          gap: '8px',
         }}
       >
-        Download Graph as Image
-      </button>
+        <button
+          data-html2image-exclude
+          onClick={handleDownloadImage}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #A8A8AF',
+            background: '#EA7070',
+            color: '#e5e7eb',
+            cursor: 'pointer',
+          }}
+        >
+          Download Graph as Image
+        </button>
+        <button
+          data-html2image-exclude
+          onClick={handleDownloadJSON}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #A8A8AF',
+            background: '#4CAF50',
+            color: '#e5e7eb',
+            cursor: 'pointer',
+          }}
+        >
+          Download Template Mapping JSON
+        </button>
+      </div>
     </div>
   );
 };

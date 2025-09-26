@@ -27,3 +27,15 @@ export type TemplateGraphProps = {
   loading?: boolean;
   error?: string | null;
 };
+
+export type PropertyMapping = {
+  label: string;
+  cardinality: string;
+  description: string;
+  comma_separated: boolean;
+  subtemplate_id?: string;
+  class_id?: string;
+  subtemplate_properties?: Record<string, PropertyMapping>;
+};
+
+export type PredicatesMapping = Record<string, PropertyMapping>;
