@@ -8,19 +8,28 @@ import { ExternalLinkIcon } from './ExternalLinkIcon';
 interface PropertyRowProps {
   nodeId: string;
   property: TemplateProperty;
+  isTooltipActive: boolean;
+  tooltipPosition?: { x: number; y: number };
+  onShowTooltip: (
+    propertyId: string,
+    position: { x: number; y: number }
+  ) => void;
+  onHideTooltip: () => void;
+  onTooltipMouseEnter: () => void;
+  onTooltipMouseLeave: () => void;
 }
 
 export const PropertyRow: React.FC<PropertyRowProps> = ({
   nodeId,
   property,
+  isTooltipActive,
+  tooltipPosition,
+  onShowTooltip,
+  onHideTooltip,
+  onTooltipMouseEnter,
+  onTooltipMouseLeave,
 }) => {
-  const [isHover, setIsHover] = React.useState(false);
-  const [tooltipPos, setTooltipPos] = React.useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const liRef = React.useRef<HTMLLIElement | null>(null);
-  const hideTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleId = `${nodeId}::prop::${property.id}`;
   const label = (property.class?.label ?? property.path?.label)?.trim();
@@ -34,53 +43,14 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
   };
 
   const showTooltip = () => {
-    // Clear any pending hide timeout
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-
     const rect = liRef.current?.getBoundingClientRect();
     if (!rect) return;
     const desiredWidth = 260;
     const horizontalPadding = 12;
     const left = Math.max(horizontalPadding, rect.left - desiredWidth - 20);
     const top = Math.max(8, rect.top - 8);
-    setTooltipPos({ x: left, y: top });
-    setIsHover(true);
+    onShowTooltip(property.id, { x: left, y: top });
   };
-
-  const hideTooltip = () => {
-    // Set a delay before hiding the tooltip
-    hideTimeoutRef.current = setTimeout(() => {
-      setIsHover(false);
-      setTooltipPos(null);
-      hideTimeoutRef.current = null;
-    }, 150); // 150ms delay
-  };
-
-  const handleTooltipMouseEnter = () => {
-    // Clear any pending hide timeout when mouse enters tooltip
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current);
-      hideTimeoutRef.current = null;
-    }
-  };
-
-  const handleTooltipMouseLeave = () => {
-    // Hide tooltip immediately when mouse leaves tooltip
-    setIsHover(false);
-    setTooltipPos(null);
-  };
-
-  // Cleanup timeout on unmount
-  React.useEffect(() => {
-    return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <li
@@ -95,7 +65,7 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
         background: '#1f2329',
       }}
       onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
+      onMouseLeave={onHideTooltip}
     >
       {/* Source handle on the right for possible outgoing edge from this property */}
       <Handle
@@ -125,14 +95,14 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
           )}
         </span>
       </div>
-      {isHover &&
-        tooltipPos &&
+      {isTooltipActive &&
+        tooltipPosition &&
         createPortal(
           <div
             style={{
               position: 'fixed',
-              top: tooltipPos.y,
-              left: tooltipPos.x,
+              top: tooltipPosition.y,
+              left: tooltipPosition.x,
               width: 260,
               zIndex: 9999,
               background: '#2b2f36',
@@ -143,8 +113,8 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
               padding: '8px 10px',
               pointerEvents: 'auto',
             }}
-            onMouseEnter={handleTooltipMouseEnter}
-            onMouseLeave={handleTooltipMouseLeave}
+            onMouseEnter={onTooltipMouseEnter}
+            onMouseLeave={onTooltipMouseLeave}
           >
             <div
               style={{

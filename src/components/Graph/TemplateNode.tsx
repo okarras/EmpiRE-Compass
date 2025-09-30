@@ -14,11 +14,62 @@ interface TemplateNodeProps {
 }
 
 export const TemplateNode: React.FC<TemplateNodeProps> = ({ data }) => {
+  // Centralized tooltip state management
+  const [activeTooltip, setActiveTooltip] = React.useState<{
+    propertyId: string;
+    position: { x: number; y: number };
+  } | null>(null);
+  const tooltipHideTimerRef = React.useRef<NodeJS.Timeout | null>(null);
+
   const handleTemplateLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `https://orkg.org/templates/${data.templateId}`;
     window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const showTooltip = (
+    propertyId: string,
+    position: { x: number; y: number }
+  ) => {
+    // Clear any pending hide timer
+    if (tooltipHideTimerRef.current) {
+      clearTimeout(tooltipHideTimerRef.current);
+      tooltipHideTimerRef.current = null;
+    }
+
+    // Set the active tooltip
+    setActiveTooltip({ propertyId, position });
+  };
+
+  const hideTooltip = () => {
+    // Set a delay before hiding the tooltip
+    tooltipHideTimerRef.current = setTimeout(() => {
+      setActiveTooltip(null);
+      tooltipHideTimerRef.current = null;
+    }, 150); // 150ms delay
+  };
+
+  const handleTooltipMouseEnter = () => {
+    // Clear any pending hide timeout when mouse enters tooltip
+    if (tooltipHideTimerRef.current) {
+      clearTimeout(tooltipHideTimerRef.current);
+      tooltipHideTimerRef.current = null;
+    }
+  };
+
+  const handleTooltipMouseLeave = () => {
+    // Hide tooltip immediately when mouse leaves tooltip
+    setActiveTooltip(null);
+  };
+
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (tooltipHideTimerRef.current) {
+        clearTimeout(tooltipHideTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div
@@ -81,7 +132,17 @@ export const TemplateNode: React.FC<TemplateNodeProps> = ({ data }) => {
       </div>
       <ul style={{ listStyle: 'none', margin: 0, padding: 8 }}>
         {data.properties.map((prop) => (
-          <PropertyRow key={prop.id} nodeId={data.nodeId} property={prop} />
+          <PropertyRow
+            key={prop.id}
+            nodeId={data.nodeId}
+            property={prop}
+            isTooltipActive={activeTooltip?.propertyId === prop.id}
+            tooltipPosition={activeTooltip?.position}
+            onShowTooltip={showTooltip}
+            onHideTooltip={hideTooltip}
+            onTooltipMouseEnter={handleTooltipMouseEnter}
+            onTooltipMouseLeave={handleTooltipMouseLeave}
+          />
         ))}
       </ul>
     </div>
