@@ -3,6 +3,7 @@ import { Handle, Position } from 'reactflow';
 import { createPortal } from 'react-dom';
 import { TemplateProperty } from './types';
 import { formatCardinality } from './utils';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 interface PropertyRowProps {
   nodeId: string;
@@ -19,13 +20,26 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
     y: number;
   } | null>(null);
   const liRef = React.useRef<HTMLLIElement | null>(null);
+  const hideTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleId = `${nodeId}::prop::${property.id}`;
   const label = (property.class?.label ?? property.path?.label)?.trim();
   const propertyId = property.path?.id ?? '—';
   const descriptionText = property.description ?? '—';
 
+  const handlePropertyLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `https://orkg.org/properties/${propertyId}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const showTooltip = () => {
+    // Clear any pending hide timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+
     const rect = liRef.current?.getBoundingClientRect();
     if (!rect) return;
     const desiredWidth = 260;
@@ -37,9 +51,36 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
   };
 
   const hideTooltip = () => {
+    // Set a delay before hiding the tooltip
+    hideTimeoutRef.current = setTimeout(() => {
+      setIsHover(false);
+      setTooltipPos(null);
+      hideTimeoutRef.current = null;
+    }, 150); // 150ms delay
+  };
+
+  const handleTooltipMouseEnter = () => {
+    // Clear any pending hide timeout when mouse enters tooltip
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+      hideTimeoutRef.current = null;
+    }
+  };
+
+  const handleTooltipMouseLeave = () => {
+    // Hide tooltip immediately when mouse leaves tooltip
     setIsHover(false);
     setTooltipPos(null);
   };
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <li
@@ -100,12 +141,56 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
               borderRadius: 8,
               boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
               padding: '8px 10px',
-              pointerEvents: 'none',
+              pointerEvents: 'auto',
             }}
+            onMouseEnter={handleTooltipMouseEnter}
+            onMouseLeave={handleTooltipMouseLeave}
           >
-            <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                marginBottom: 6,
+                alignItems: 'center',
+              }}
+            >
               <div style={{ minWidth: 92, color: '#9ca3af' }}>Property id</div>
-              <div style={{ fontWeight: 600 }}>{propertyId}</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {propertyId}
+                {propertyId !== '—' && (
+                  <button
+                    onClick={handlePropertyLinkClick}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#9ca3af',
+                      transition: 'color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                    }}
+                    title={`View property on ORKG: ${propertyId}`}
+                  >
+                    <ExternalLinkIcon size={12} />
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ minWidth: 92, color: '#9ca3af' }}>Description</div>

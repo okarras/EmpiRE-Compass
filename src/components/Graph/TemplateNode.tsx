@@ -2,16 +2,24 @@ import React from 'react';
 import { Handle, Position } from 'reactflow';
 import { TemplateProperty } from './types';
 import { PropertyRow } from './PropertyRow';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 interface TemplateNodeProps {
   data: {
     title: string;
     properties: TemplateProperty[];
     nodeId: string;
+    templateId: string;
   };
 }
 
 export const TemplateNode: React.FC<TemplateNodeProps> = ({ data }) => {
+  const handleTemplateLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `https://orkg.org/templates/${data.templateId}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   return (
     <div
       style={{
@@ -40,9 +48,36 @@ export const TemplateNode: React.FC<TemplateNodeProps> = ({ data }) => {
           padding: '8px 12px',
           borderBottom: '1px solid #3c414b',
           fontWeight: 600,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
         }}
       >
-        {data.title}
+        <span>{data.title}</span>
+        <button
+          onClick={handleTemplateLinkClick}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '2px',
+            borderRadius: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#9ca3af',
+            transition: 'color 0.2s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = '#e5e7eb';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = '#9ca3af';
+          }}
+          title={`View template on ORKG: ${data.templateId}`}
+        >
+          <ExternalLinkIcon size={14} />
+        </button>
       </div>
       <ul style={{ listStyle: 'none', margin: 0, padding: 8 }}>
         {data.properties.map((prop) => (

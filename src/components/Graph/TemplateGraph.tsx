@@ -60,6 +60,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
           nodeId,
+          templateId: t.id,
         },
         type: 'templateNode' as const,
       };
