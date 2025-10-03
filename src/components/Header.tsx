@@ -16,6 +16,7 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
@@ -66,6 +67,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       'https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs',
       '_blank'
     );
+  };
+
+  const redirectToArchitecture = () => {
+    // Navigate to the in-app JSON graph view
+    window.location.href = '/graph';
   };
 
   return (
@@ -201,6 +207,19 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               }}
             >
               <BookIcon sx={{ color: 'text.primary' }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Graph Viewer">
+            <IconButton
+              onClick={redirectToArchitecture}
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                },
+              }}
+            >
+              <AccountTreeIcon sx={{ color: 'text.primary' }} />
             </IconButton>
           </Tooltip>
           <Tooltip title={`Check out the source code on GitHub`}>

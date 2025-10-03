@@ -21,9 +21,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import { Query } from '../../constants/queries_chart_info';
-import useAIAssistant from '../../hooks/useAIAssistant';
+// import useBackendAIAssistant from '../../hooks/useBackendAIAssistant';
 import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import AIConfigurationButton from './AIConfigurationButton';
+import useAIAssistant from '../../hooks/useAIAssistant';
 
 // Lazy load components to reduce initial bundle size
 const InitialAnalysis = lazy(() => import('./InitialAnalysis'));

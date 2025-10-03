@@ -50,7 +50,6 @@ PREFIX c: <http://orkg.org/orkg/class/>
 PREFIX p: <http://orkg.org/orkg/predicate/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-#Get papers from KG-EmpiRE with its DOIs (für Andrea)
 SELECT ?paper, ?doi
 WHERE {
     ?paper p:P31 ?contri.

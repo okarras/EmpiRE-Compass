@@ -7,6 +7,7 @@ import Layout from './pages/Layout';
 import QuestionPage from './pages/QuestionPage';
 import QuestionDashboardPage from './pages/QuestionDashboardPage';
 import DynamicQuestionPage from './pages/DynamicQuestionPage';
+import TemplateGraphPage from './pages/TemplateGraphPage';
 
 const Router = () => {
   return (
@@ -37,6 +38,11 @@ const Router = () => {
             <Route
               path="/dynamic-question"
               element={<DynamicQuestionPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/graph"
+              element={<TemplateGraphPage />}
               errorElement={<ErrorFallback />}
             />
           </Route>

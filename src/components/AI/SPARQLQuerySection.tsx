@@ -423,7 +423,7 @@ Modified SPARQL Query:`;
                 ? setEditContent(e.target.value)
                 : onSparqlChange(e.target.value)
             }
-            disabled={loading}
+            disabled={loading || !isEditing}
             sx={{
               mt: 2,
               mb: 2,
@@ -433,6 +433,9 @@ Modified SPARQL Query:`;
                 '& textarea': {
                   fontFamily: 'monospace',
                 },
+              },
+              '& .MuiInputBase-input.Mui-disabled': {
+                WebkitTextFillColor: '#000000',
               },
             }}
           />
