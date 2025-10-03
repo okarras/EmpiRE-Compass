@@ -158,7 +158,7 @@ export default function LoginORKG() {
   }
 
   // User is authenticated - show user info with dropdown menu
-  const displayName = user?.name || user?.email || 'User';
+  const displayName = user?.display_name || user?.email || 'User';
   const userInitials = displayName
     .split(' ')
     .map((n) => n[0])

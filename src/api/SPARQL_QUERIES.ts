@@ -1,4 +1,4 @@
-export const ENDPOINT_URL = 'https://www.orkg.org/triplestore';
+export const ENDPOINT_URL = import.meta.env.VITE_ENDPOINT_URL + '/triplestore';
 
 export const PREFIXES = `
     PREFIX orkgr: <http://orkg.org/orkg/resource/>

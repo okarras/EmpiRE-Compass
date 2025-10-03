@@ -1,9 +1,10 @@
 import { createContext } from 'react';
 
 interface UserData {
-  name: string;
+  display_name: string;
   email: string;
-  uid: string;
+  id: string;
+  created_at: string;
 }
 
 interface AuthContextType {

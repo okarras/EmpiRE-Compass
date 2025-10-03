@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
-import { getUserFromToken } from './authUtils';
-import { AuthContext, type AuthContextType } from './AuthContextTypes';
+import { getUserInfo } from './authUtils';
+import {
+  AuthContext,
+  UserData,
+  type AuthContextType,
+} from './AuthContextTypes';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -13,14 +17,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { keycloak, initialized } = useKeycloak();
   const [error, setError] = useState<string | null>(null);
 
-  // Get user from Keycloak token only
-  const keycloakUser = keycloak?.tokenParsed
-    ? getUserFromToken(keycloak.tokenParsed)
-    : null;
-
-  // Use only Keycloak user, no Redux fallback to avoid circular dependency
-  const user = keycloakUser;
-
+  const [user, setUser] = useState<UserData | null>(null);
   // Derive authentication state from Keycloak only
   const isAuthenticated = keycloak?.authenticated || false;
   const isLoading = !initialized;
@@ -31,12 +28,21 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
-    if (isAuthenticated && user) {
+    if (isAuthenticated && keycloak.token) {
       // Save to Firebase (fire and forget - don't block UI)
       const saveToFirebase = async () => {
         try {
-          const userRef = doc(collection(db, 'users'), user.uid);
-          await setDoc(userRef, user, { merge: true });
+          if (!keycloak.token) {
+            return;
+          }
+          const userInfo = await getUserInfo(keycloak.token);
+          if (!userInfo) {
+            return;
+          }
+          setUser(userInfo);
+          console.log('User info:', userInfo);
+          const userRef = doc(collection(db, 'Users'), userInfo.id);
+          await setDoc(userRef, userInfo, { merge: true });
         } catch (firebaseError) {
           console.error('Failed to save user to Firebase:', firebaseError);
           // Don't set error for Firebase failures - it's not critical for auth
@@ -45,7 +51,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       saveToFirebase();
     }
-  }, [isAuthenticated, user, initialized]);
+  }, [isAuthenticated, initialized, keycloak.token]);
 
   const login = async () => {
     if (!keycloak) {
