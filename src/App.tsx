@@ -15,6 +15,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
 import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
 import './styles/global.css';
+import AuthProvider from './auth/AuthProvider';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -57,13 +58,15 @@ const AppContent = () => {
 function App() {
   return (
     <Provider store={store}>
-      <ThemeProvider>
-        <AIAssistantProvider>
-          <DynamicQuestionProvider>
-            <AppContent />
-          </DynamicQuestionProvider>
-        </AIAssistantProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <AIAssistantProvider>
+            <DynamicQuestionProvider>
+              <AppContent />
+            </DynamicQuestionProvider>
+          </AIAssistantProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </Provider>
   );
 }

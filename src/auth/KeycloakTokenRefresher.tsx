@@ -1,19 +1,32 @@
 import { useKeycloak } from '@react-keycloak/web';
-import React from 'react';
+import { useEffect } from 'react';
 
 function KeycloakTokenRefresher() {
   const { keycloak, initialized } = useKeycloak();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!initialized || !keycloak) return;
-    const id = window.setInterval(() => {
+
+    // Set up token refresh interval
+    const refreshInterval = setInterval(async () => {
       if (keycloak.authenticated) {
-        keycloak.updateToken(30).catch(() => {
-          console.warn('Failed to refresh token — user may need to re-login');
-        });
+        try {
+          const refreshed = await keycloak.updateToken(30);
+          if (refreshed) {
+            console.log('Token refreshed successfully');
+          }
+        } catch (error) {
+          console.warn('Failed to refresh token:', error);
+          // If refresh fails, the user might need to re-authenticate
+          // The Keycloak provider will handle this automatically
+        }
       }
-    }, 30_000); // every 30s
-    return () => clearInterval(id);
+    }, 30_000); // Check every 30 seconds
+
+    // Clean up interval on unmount
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, [initialized, keycloak]);
 
   return null;

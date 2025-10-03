@@ -1,58 +1,299 @@
-import * as React from 'react';
-import { useKeycloak } from '@react-keycloak/web';
-import { Button, Stack, Typography } from '@mui/material';
+import { useState, useEffect } from 'react';
+import {
+  Button,
+  Stack,
+  Typography,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  Avatar,
+  Chip,
+  Box,
+  Tooltip,
+  Menu,
+  MenuItem,
+  Divider,
+  Fade,
+} from '@mui/material';
+import { Login, Logout, CheckCircle, Refresh } from '@mui/icons-material';
+import { useAuthData } from '../auth/useAuthData';
 
 export default function LoginORKG() {
-  const { keycloak, initialized } = useKeycloak();
-  const [timedOut, setTimedOut] = React.useState(false);
+  const { isAuthenticated, isLoading, user, login, logout, error } =
+    useAuthData();
+  const [timedOut, setTimedOut] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [showError, setShowError] = useState(false);
 
   // If silent SSO can't finish (cookies/CSP), show manual button after 2.5s.
-  React.useEffect(() => {
+  useEffect(() => {
     const id = setTimeout(() => setTimedOut(true), 2500);
     return () => clearTimeout(id);
   }, []);
 
-  if (!initialized && !timedOut) {
+  // Show success message when user becomes authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setShowSuccess(true);
+      setIsLoggingIn(false);
+      setShowError(false);
+      const timer = setTimeout(() => setShowSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user]);
+
+  // Handle error display
+  useEffect(() => {
+    if (error) {
+      setShowError(true);
+      setIsLoggingIn(false);
+    }
+  }, [error]);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    setShowError(false);
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login failed:', error);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setAnchorEl(null);
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleRetry = () => {
+    setShowError(false);
+    handleLogin();
+  };
+
+  // Show loading state during initialization
+  if (isLoading && !timedOut) {
     return (
-      <Typography variant="body2" color="text.secondary">
-        Checking sign-in…
-      </Typography>
+      <Fade in={true}>
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1 }}>
+          <CircularProgress size={20} thickness={4} />
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontWeight: 500 }}
+          >
+            Checking authentication...
+          </Typography>
+        </Stack>
+      </Fade>
     );
   }
 
-  if (!initialized && timedOut) {
+  // Show login button if not authenticated or initialization timed out
+  if (!isAuthenticated) {
     return (
-      <Button variant="contained" size="small" onClick={() => keycloak.login()}>
-        Sign in with ORKG
-      </Button>
+      <Fade in={true}>
+        <Stack spacing={1.5} sx={{ minWidth: 200 }}>
+          {showError && (
+            <Alert
+              severity="error"
+              onClose={() => setShowError(false)}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={handleRetry}
+                  startIcon={<Refresh />}
+                >
+                  Retry
+                </Button>
+              }
+              sx={{ borderRadius: 2 }}
+            >
+              {error}
+            </Alert>
+          )}
+
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={handleLogin}
+            disabled={isLoggingIn}
+            startIcon={
+              isLoggingIn ? (
+                <CircularProgress size={18} thickness={4} />
+              ) : (
+                <Login />
+              )
+            }
+            sx={{
+              borderRadius: 2,
+              py: 1,
+              px: 1,
+              fontWeight: 600,
+              textTransform: 'none',
+              transition: 'all 0.2s ease-in-out',
+            }}
+          >
+            {isLoggingIn ? 'Signing in...' : 'Sign in with ORKG'}
+          </Button>
+        </Stack>
+      </Fade>
     );
   }
 
-  if (!keycloak.authenticated) {
-    return (
-      <Button variant="contained" size="small" onClick={() => keycloak.login()}>
-        Sign in with ORKG
-      </Button>
-    );
-  }
-
-  const user =
-    (keycloak.tokenParsed?.email as string) ||
-    (keycloak.tokenParsed?.preferred_username as string) ||
-    'User';
+  // User is authenticated - show user info with dropdown menu
+  const displayName = user?.name || user?.email || 'User';
+  const userInitials = displayName
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
-    <Stack direction="row" spacing={1} alignItems="center">
-      <Typography variant="body2" color="text.secondary">
-        Signed in as <strong>{user}</strong>
-      </Typography>
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={() => keycloak.logout({ redirectUri: window.location.origin })}
-      >
-        Sign out
-      </Button>
-    </Stack>
+    <Fade in={true}>
+      <Box>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          {/* User Avatar */}
+          <Tooltip title={`Signed in as ${displayName}`} arrow>
+            <Chip
+              avatar={
+                <Avatar
+                  sx={{
+                    bgcolor: 'primary.main',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  {userInitials}
+                </Avatar>
+              }
+              label={
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 500, maxWidth: 120 }}
+                >
+                  {displayName.length > 15
+                    ? `${displayName.slice(0, 15)}...`
+                    : displayName}
+                </Typography>
+              }
+              onClick={handleMenuOpen}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                },
+                transition: 'all 0.2s ease-in-out',
+              }}
+            />
+          </Tooltip>
+
+          {/* User Menu */}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                minWidth: 200,
+                borderRadius: 2,
+                boxShadow: 3,
+              },
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.5 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Account
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Avatar
+                  sx={{
+                    bgcolor: 'primary.main',
+                    width: 32,
+                    height: 32,
+                    fontSize: '0.75rem',
+                  }}
+                >
+                  {userInitials}
+                </Avatar>
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    {displayName}
+                  </Typography>
+                  {user?.email && (
+                    <Typography variant="caption" color="text.secondary">
+                      {user.email}
+                    </Typography>
+                  )}
+                </Box>
+              </Stack>
+            </Box>
+
+            <Divider />
+
+            <MenuItem
+              onClick={handleLogout}
+              sx={{
+                color: 'error.main',
+                '&:hover': {
+                  backgroundColor: 'error.light',
+                  color: 'error.contrastText',
+                },
+              }}
+            >
+              <Logout sx={{ mr: 1.5, fontSize: 20 }} />
+              Sign out
+            </MenuItem>
+          </Menu>
+        </Stack>
+
+        {/* Success notification */}
+        <Snackbar
+          open={showSuccess}
+          autoHideDuration={3000}
+          onClose={() => setShowSuccess(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+            severity="success"
+            icon={<CheckCircle />}
+            onClose={() => setShowSuccess(false)}
+            sx={{ borderRadius: 2 }}
+          >
+            Successfully signed in!
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Fade>
   );
 }

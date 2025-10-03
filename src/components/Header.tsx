@@ -116,10 +116,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             EmpiRE-Compass
           </Typography>
         </Box>
+
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <LoginORKG />
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {!isMobile && (
             <Breadcrumbs
               separator={
