@@ -369,6 +369,11 @@ const DynamicQuestionManager: React.FC = () => {
                     <ListItemText
                       primary={savedQuestion.name}
                       secondary={`${savedQuestion.state.question} • ${new Date(savedQuestion.timestamp).toLocaleString()}`}
+                      sx={{
+                        '& p': {
+                          width: '90%',
+                        },
+                      }}
                     />
                     <ListItemSecondaryAction>
                       <Box sx={{ display: 'flex', gap: 1 }}>

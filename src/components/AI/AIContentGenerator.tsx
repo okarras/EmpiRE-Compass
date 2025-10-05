@@ -23,6 +23,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
 }) => {
   const aiService = useAIService();
   const [generating, setGenerating] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   // Helper function to prepare data summary for AI processing
   const prepareDataSummary = (data: Record<string, unknown>[]) => {
@@ -71,7 +72,12 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   };
 
   const generateContent = useCallback(async () => {
+    if (hasGenerated) {
+      return; // Prevent multiple generations
+    }
+
     setGenerating(true);
+    setHasGenerated(true);
     try {
       // Prepare data summary for efficient AI processing
       const dataSummary = prepareDataSummary(data);
@@ -375,14 +381,14 @@ Return ONLY the explanation text.`;
     } finally {
       setGenerating(false);
     }
-  }, [data, question, aiService, onContentGenerated, onError]);
+  }, [data, question, aiService, hasGenerated]); // Add hasGenerated to prevent multiple generations
 
-  // Auto-generate content when data changes
+  // Auto-generate content when component mounts with data
   React.useEffect(() => {
-    if (data.length > 0 && question) {
+    if (data.length > 0 && question && !hasGenerated) {
       generateContent();
     }
-  }, [data, question, generateContent]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Check if AI is configured
   if (!aiService.isConfigured()) {

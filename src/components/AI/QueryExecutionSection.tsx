@@ -4,6 +4,7 @@ import { History } from '@mui/icons-material';
 import AIConfigurationButton from './AIConfigurationButton';
 import DynamicQuestionManager from './DynamicQuestionManager';
 import SPARQLQuerySection from './SPARQLQuerySection';
+import ResourceIdInputButton from './ResourceIdInputButton';
 import { HistoryItem } from './HistoryManager';
 
 interface QueryExecutionSectionProps {
@@ -18,6 +19,8 @@ interface QueryExecutionSectionProps {
   onRunEditedQuery: () => void;
   onOpenHistory: (type: HistoryItem['type']) => void;
   onOpenLlmContextHistory: () => void;
+  currentTemplateId?: string | null;
+  onTemplateIdChange?: (templateId: string) => void;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -32,11 +35,19 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onRunEditedQuery,
   onOpenHistory,
   onOpenLlmContextHistory,
+  currentTemplateId,
+  onTemplateIdChange,
 }) => {
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <AIConfigurationButton />
+        {onTemplateIdChange && (
+          <ResourceIdInputButton
+            currentTemplateId={currentTemplateId || null}
+            onTemplateIdChange={onTemplateIdChange}
+          />
+        )}
         <Typography variant="body2" color="text.secondary">
           Configure AI settings to use OpenAI or Groq models
         </Typography>
