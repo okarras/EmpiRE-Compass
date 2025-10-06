@@ -8,6 +8,7 @@ import {
   UserData,
   type AuthContextType,
 } from './AuthContextTypes';
+import { useLocation } from 'react-router-dom';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ interface AuthProviderProps {
 const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const { keycloak, initialized } = useKeycloak();
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
 
   const [user, setUser] = useState<UserData | null>(null);
   // Derive authentication state from Keycloak only
@@ -24,7 +26,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Save user data to Firebase when authenticated
   useEffect(() => {
-    if (!initialized) {
+    if (!initialized || location.pathname === '/') {
       return;
     }
 

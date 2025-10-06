@@ -43,12 +43,14 @@ const AppContent = () => {
         style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
       >
         <BrowserRouter>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Router />
-          </Suspense>
-          <Suspense fallback={<div>Loading...</div>}>
-            <FloatingAIAssistant />
-          </Suspense>
+          <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Router />
+            </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>
+              <FloatingAIAssistant />
+            </Suspense>
+          </AuthProvider>
         </BrowserRouter>
       </div>
     </MuiThemeProvider>
@@ -58,15 +60,13 @@ const AppContent = () => {
 function App() {
   return (
     <Provider store={store}>
-      <AuthProvider>
-        <ThemeProvider>
-          <AIAssistantProvider>
-            <DynamicQuestionProvider>
-              <AppContent />
-            </DynamicQuestionProvider>
-          </AIAssistantProvider>
-        </ThemeProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AIAssistantProvider>
+          <DynamicQuestionProvider>
+            <AppContent />
+          </DynamicQuestionProvider>
+        </AIAssistantProvider>
+      </ThemeProvider>
     </Provider>
   );
 }
