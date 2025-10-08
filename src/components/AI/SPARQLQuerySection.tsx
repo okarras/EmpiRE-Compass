@@ -27,6 +27,7 @@ import {
   Refresh,
   Restore,
   Close,
+  Translate,
 } from '@mui/icons-material';
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/aiService';
@@ -71,6 +72,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -211,6 +213,133 @@ Modified SPARQL Query:`;
       );
     } finally {
       setIsAIModifying(false);
+    }
+  };
+
+  // Function to fetch ORKG resource details
+  const fetchORKGResourceDetails = async (
+    identifier: string
+  ): Promise<string | null> => {
+    try {
+      const [prefix, id] = identifier.split(':');
+      let endpoint = '';
+
+      switch (prefix) {
+        case 'orkgp':
+          endpoint = `https://orkg.org/api/predicates/${id}/`;
+          break;
+        case 'orkgc':
+          endpoint = `https://orkg.org/api/classes/${id}/`;
+          break;
+        case 'orkgr':
+          endpoint = `https://orkg.org/api/resources/${id}/`;
+          break;
+        default:
+          return null;
+      }
+
+      const response = await fetch(endpoint, {
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(
+          `Failed to fetch details for ${identifier}: ${response.status}`
+        );
+        return null;
+      }
+
+      const data = await response.json();
+      return data.label || data.title || null;
+    } catch (error) {
+      console.warn(`Error fetching details for ${identifier}:`, error);
+      return null;
+    }
+  };
+
+  // Function to translate ORKG identifiers to human-readable labels
+  const handleTranslate = async () => {
+    if (!sparqlQuery.trim()) {
+      setError('No SPARQL query to translate.');
+      return;
+    }
+
+    setIsTranslating(true);
+    setError(null);
+
+    try {
+      // Find all ORKG identifiers in the query
+      const orkgPattern = /(orkg[pcr]:[A-Z0-9]+)/g;
+      const matches = sparqlQuery.match(orkgPattern);
+
+      if (!matches || matches.length === 0) {
+        setError('No ORKG identifiers found in the query.');
+        setIsTranslating(false);
+        return;
+      }
+
+      // Get unique identifiers
+      const uniqueIdentifiers = [...new Set(matches)];
+
+      // Fetch labels for all unique identifiers
+      const labelPromises = uniqueIdentifiers.map(async (identifier) => {
+        const label = await fetchORKGResourceDetails(identifier);
+        return { identifier, label };
+      });
+
+      const labelResults = await Promise.all(labelPromises);
+
+      // Create a map of identifier to label
+      const labelMap = new Map<string, string>();
+      labelResults.forEach(({ identifier, label }) => {
+        if (label) {
+          labelMap.set(identifier, label);
+        }
+      });
+
+      // Replace identifiers with comments + original identifier
+      let translatedQuery = sparqlQuery;
+
+      // Process each line to add comments
+      const lines = translatedQuery.split('\n');
+      const processedLines = lines.map((line) => {
+        let processedLine = line;
+
+        // Check if this line contains any ORKG identifiers
+        const lineMatches = line.match(orkgPattern);
+        if (lineMatches) {
+          // Add comments for each identifier found in this line
+          const comments: string[] = [];
+          lineMatches.forEach((identifier) => {
+            const label = labelMap.get(identifier);
+            if (label) {
+              comments.push(`# ${label}`);
+            }
+          });
+
+          // If we have comments, add them before the line
+          if (comments.length > 0) {
+            processedLine = comments.join('\n') + '\n' + line;
+          }
+        }
+
+        return processedLine;
+      });
+
+      const finalQuery = processedLines.join('\n');
+
+      // Update the query with translated version
+      onSparqlChange(finalQuery);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to translate ORKG identifiers'
+      );
+    } finally {
+      setIsTranslating(false);
     }
   };
 
@@ -380,6 +509,28 @@ Modified SPARQL Query:`;
                       }}
                     >
                       <SmartToy />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Show human-readable labels">
+                    <IconButton
+                      onClick={handleTranslate}
+                      disabled={isTranslating}
+                      size="small"
+                      sx={{
+                        color: '#e86161',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                        '&:disabled': {
+                          color: 'text.disabled',
+                        },
+                      }}
+                    >
+                      {isTranslating ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <Translate />
+                      )}
                     </IconButton>
                   </Tooltip>
                   {getSparqlHistory().length > 0 && (
