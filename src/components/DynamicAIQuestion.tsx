@@ -6,11 +6,13 @@ import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/aiService';
 
-import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 import QueryExecutionSection from './AI/QueryExecutionSection';
 import DataProcessingCodeSection from './AI/DataProcessingCodeSection';
 import ResultsDisplaySection from './AI/ResultsDisplaySection';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
+import { generateDynamicSPARQLPrompt } from '../utils/promptGenerator';
+import { Template } from './Graph/types';
+import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -44,7 +46,13 @@ type DataProcessingFn = (
   data: Record<string, unknown>[] | Record<string, Record<string, unknown>[]>
 ) => Record<string, unknown>[];
 
-const DynamicAIQuestion: React.FC = () => {
+interface DynamicAIQuestionProps {
+  templateId?: string;
+}
+
+const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
+  templateId = 'R186491', // Default to empirical research practice template
+}) => {
   const aiService = useAIService();
   const {
     state,
@@ -56,6 +64,9 @@ const DynamicAIQuestion: React.FC = () => {
     updateDataCollectionInterpretation,
     updateDataAnalysisInterpretation,
     updateProcessingFunctionCode,
+    updateTemplateId,
+    updateTemplateMapping,
+    updateTargetClassId,
   } = useDynamicQuestion();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -72,6 +83,142 @@ const DynamicAIQuestion: React.FC = () => {
   // History management - no longer needed since DynamicQuestionContext handles history
 
   const { setContext } = useAIAssistantContext();
+
+  // Initialize/sync template ID in context, avoid infinite update loops
+  useEffect(() => {
+    if (templateId && state.templateId !== templateId) {
+      updateTemplateId(templateId);
+      try {
+        localStorage.setItem('selected-template-id', templateId);
+      } catch {
+        // ignore storage errors
+      }
+      // Ensure default target class is set when using the default template
+      if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
+        updateTargetClassId('C27001');
+      }
+    }
+    // Intentionally omit updateTemplateId from deps to avoid identity changes causing loops
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId, state.templateId]);
+
+  // On first mount, hydrate template selection from localStorage if present
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('selected-template-id');
+      if (saved && saved !== state.templateId) {
+        // Use the existing handler to load mapping/target class as needed
+        void handleTemplateIdChange(saved);
+        updateTemplateId(saved);
+        localStorage.setItem('selected-template-id', saved);
+      }
+    } catch {
+      // ignore storage errors
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Custom template ID change handler that includes template loading
+  const handleTemplateIdChange = useCallback(
+    async (newTemplateId: string) => {
+      // Update template ID in context
+      updateTemplateId(newTemplateId);
+
+      // Load template data for non-default templates
+      if (newTemplateId !== 'R186491') {
+        try {
+          const { loadTemplateFlowByID } = await import(
+            '../api/get_template_data'
+          );
+          const { generateTemplateMapping } = await import(
+            '../utils/promptGenerator'
+          );
+
+          // Load template flow starting from the provided template ID
+          const templateFlow = await loadTemplateFlowByID(
+            newTemplateId,
+            new Set()
+          );
+
+          // Extract all templates from the flow
+          const allTemplates: Template[] = [];
+
+          // Add the main template
+          if (templateFlow && 'id' in templateFlow && templateFlow.id) {
+            allTemplates.push(templateFlow as Template);
+
+            // Extract and store target class ID
+            if (
+              'target_class' in templateFlow &&
+              templateFlow.target_class &&
+              typeof templateFlow.target_class === 'object' &&
+              'id' in templateFlow.target_class
+            ) {
+              updateTargetClassId(templateFlow.target_class.id as string);
+            }
+          }
+
+          // Add neighbor templates recursively
+          const extractNeighborTemplates = (node: {
+            neighbors?: unknown[];
+          }) => {
+            if (node.neighbors && Array.isArray(node.neighbors)) {
+              node.neighbors.forEach((neighbor) => {
+                if (
+                  neighbor &&
+                  typeof neighbor === 'object' &&
+                  'id' in neighbor &&
+                  neighbor.id
+                ) {
+                  // Only process actual templates (resources starting with 'R')
+                  if (
+                    typeof neighbor.id === 'string' &&
+                    neighbor.id.startsWith('R')
+                  ) {
+                    // Check if we already have this template to avoid duplicates
+                    if (!allTemplates.find((t) => t.id === neighbor.id)) {
+                      allTemplates.push(neighbor as Template);
+                    }
+                    // Recursively extract neighbors of this neighbor
+                    extractNeighborTemplates(
+                      neighbor as { neighbors?: unknown[] }
+                    );
+                  }
+                }
+              });
+            }
+          };
+
+          extractNeighborTemplates(templateFlow);
+
+          // Generate template mapping
+          const templateMapping = generateTemplateMapping(allTemplates);
+
+          // Update template mapping in context
+          updateTemplateMapping(templateMapping);
+        } catch (err) {
+          console.error('Error loading template data:', err);
+          // Continue with static prompt if template loading fails
+        }
+      } else {
+        // Default template: ensure default target class and persist selection
+        if (state.targetClassId !== 'C27001') {
+          updateTargetClassId('C27001');
+        }
+        try {
+          localStorage.setItem('selected-template-id', newTemplateId);
+        } catch {
+          // ignore storage errors
+        }
+      }
+    },
+    [
+      updateTemplateId,
+      updateTemplateMapping,
+      updateTargetClassId,
+      state.targetClassId,
+    ]
+  );
 
   // Update AI Assistant context when data changes
   useEffect(() => {
@@ -445,9 +592,6 @@ const DynamicAIQuestion: React.FC = () => {
       state.processingFunctionCode &&
       state.processingFunctionCode.trim()
     ) {
-      console.log(
-        'Skipping processing function generation - code already exists'
-      );
       return aiProcessingFn;
     }
     try {
@@ -795,10 +939,31 @@ function processData(rows) {
 
     try {
       // Step 1: Generate SPARQL query only (no JavaScript processing function)
-      const sparqlPrompt = promptTemplate.replace(
-        '[Research Question]',
-        state.question
-      );
+      let sparqlPrompt: string;
+
+      if (state.templateMapping && state.templateId) {
+        // Use dynamic prompt based on template information
+        const dynamicPrompt = generateDynamicSPARQLPrompt(
+          //TODO: fix this
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          //@ts-expect-error
+          state.templateMapping,
+          state.templateId,
+          undefined, // templateLabel
+          state.targetClassId || undefined
+        );
+        console.log('Dynamic SPARQL prompt:', dynamicPrompt);
+        sparqlPrompt = dynamicPrompt.replace(
+          '[Research Question]',
+          state.question
+        );
+      } else {
+        // Fallback to static prompt
+        sparqlPrompt = promptTemplate.replace(
+          '[Research Question]',
+          state.question
+        );
+      }
 
       const sparqlResult = await aiService.generateText(sparqlPrompt, {
         temperature: 0.1,
@@ -832,8 +997,6 @@ function processData(rows) {
         return;
       }
 
-      console.log('Raw data from SPARQL:', rawData.slice(0, 3)); // Log first 3 rows for debugging
-
       // Step 3: Generate data processing function based on actual data structure
       const processingFn = await generateDataProcessingFunction(
         rawData,
@@ -845,13 +1008,9 @@ function processData(rows) {
       let transformedData: Record<string, unknown>[] = [];
       try {
         if (processingFn) {
-          console.log('Applying AI-generated processing function to raw data');
           transformedData = processingFn(rawData);
           setAiProcessingFn(processingFn);
         } else {
-          console.log(
-            'No AI processing function generated, using default processing'
-          );
           transformedData = processDynamicData(rawData);
         }
 
@@ -866,8 +1025,6 @@ function processData(rows) {
         console.warn('Processing function failed, falling back to default:', e);
         transformedData = processDynamicData(rawData);
       }
-
-      console.log('Transformed data:', transformedData.slice(0, 3)); // Log first 3 rows for debugging
 
       updateQueryResults(transformedData);
       createDynamicQueryObject(transformedData);
@@ -1114,6 +1271,8 @@ function processData(rows) {
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
         onOpenLlmContextHistory={handleOpenLlmContextHistory}
+        currentTemplateId={state.templateId}
+        onTemplateIdChange={handleTemplateIdChange}
       />
 
       <DataProcessingCodeSection

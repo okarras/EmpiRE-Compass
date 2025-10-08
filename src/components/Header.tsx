@@ -20,6 +20,8 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { useLocation, Link as RouterLink } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 import { useTheme } from '../contexts/ThemeContext';
+import LoginORKG from './LoginORKG';
+
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
@@ -122,6 +124,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <LoginORKG />
           {!isMobile && (
             <Breadcrumbs
               separator={

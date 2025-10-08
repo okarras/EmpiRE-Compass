@@ -15,6 +15,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
 import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
 import './styles/global.css';
+import AuthProvider from './auth/AuthProvider';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -42,12 +43,14 @@ const AppContent = () => {
         style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
       >
         <BrowserRouter>
-          <Suspense fallback={<div>Loading...</div>}>
-            <Router />
-          </Suspense>
-          <Suspense fallback={<div>Loading...</div>}>
-            <FloatingAIAssistant />
-          </Suspense>
+          <AuthProvider>
+            <Suspense fallback={<div>Loading...</div>}>
+              <Router />
+            </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>
+              <FloatingAIAssistant />
+            </Suspense>
+          </AuthProvider>
         </BrowserRouter>
       </div>
     </MuiThemeProvider>

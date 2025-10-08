@@ -3,27 +3,44 @@ import { Handle, Position } from 'reactflow';
 import { createPortal } from 'react-dom';
 import { TemplateProperty } from './types';
 import { formatCardinality } from './utils';
+import { ExternalLinkIcon } from './ExternalLinkIcon';
 
 interface PropertyRowProps {
   nodeId: string;
   property: TemplateProperty;
+  isTooltipActive: boolean;
+  tooltipPosition?: { x: number; y: number };
+  onShowTooltip: (
+    propertyId: string,
+    position: { x: number; y: number }
+  ) => void;
+  onHideTooltip: () => void;
+  onTooltipMouseEnter: () => void;
+  onTooltipMouseLeave: () => void;
 }
 
 export const PropertyRow: React.FC<PropertyRowProps> = ({
   nodeId,
   property,
+  isTooltipActive,
+  tooltipPosition,
+  onShowTooltip,
+  onHideTooltip,
+  onTooltipMouseEnter,
+  onTooltipMouseLeave,
 }) => {
-  const [isHover, setIsHover] = React.useState(false);
-  const [tooltipPos, setTooltipPos] = React.useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const liRef = React.useRef<HTMLLIElement | null>(null);
 
   const handleId = `${nodeId}::prop::${property.id}`;
-  const label = (property.path?.label ?? property.label)?.trim();
+  const label = (property.class?.label ?? property.path?.label)?.trim();
   const propertyId = property.path?.id ?? '—';
   const descriptionText = property.description ?? '—';
+
+  const handlePropertyLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `https://orkg.org/properties/${propertyId}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   const showTooltip = () => {
     const rect = liRef.current?.getBoundingClientRect();
@@ -32,13 +49,7 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
     const horizontalPadding = 12;
     const left = Math.max(horizontalPadding, rect.left - desiredWidth - 20);
     const top = Math.max(8, rect.top - 8);
-    setTooltipPos({ x: left, y: top });
-    setIsHover(true);
-  };
-
-  const hideTooltip = () => {
-    setIsHover(false);
-    setTooltipPos(null);
+    onShowTooltip(property.id, { x: left, y: top });
   };
 
   return (
@@ -54,7 +65,7 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
         background: '#1f2329',
       }}
       onMouseEnter={showTooltip}
-      onMouseLeave={hideTooltip}
+      onMouseLeave={onHideTooltip}
     >
       {/* Source handle on the right for possible outgoing edge from this property */}
       <Handle
@@ -84,14 +95,14 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
           )}
         </span>
       </div>
-      {isHover &&
-        tooltipPos &&
+      {isTooltipActive &&
+        tooltipPosition &&
         createPortal(
           <div
             style={{
               position: 'fixed',
-              top: tooltipPos.y,
-              left: tooltipPos.x,
+              top: tooltipPosition.y,
+              left: tooltipPosition.x,
               width: 260,
               zIndex: 9999,
               background: '#2b2f36',
@@ -100,12 +111,56 @@ export const PropertyRow: React.FC<PropertyRowProps> = ({
               borderRadius: 8,
               boxShadow: '0 8px 24px rgba(0,0,0,0.35)',
               padding: '8px 10px',
-              pointerEvents: 'none',
+              pointerEvents: 'auto',
             }}
+            onMouseEnter={onTooltipMouseEnter}
+            onMouseLeave={onTooltipMouseLeave}
           >
-            <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: 8,
+                marginBottom: 6,
+                alignItems: 'center',
+              }}
+            >
               <div style={{ minWidth: 92, color: '#9ca3af' }}>Property id</div>
-              <div style={{ fontWeight: 600 }}>{propertyId}</div>
+              <div
+                style={{
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {propertyId}
+                {propertyId !== '—' && (
+                  <button
+                    onClick={handlePropertyLinkClick}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '2px',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#9ca3af',
+                      transition: 'color 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#9ca3af';
+                    }}
+                    title={`View property on ORKG: ${propertyId}`}
+                  >
+                    <ExternalLinkIcon size={12} />
+                  </button>
+                )}
+              </div>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <div style={{ minWidth: 92, color: '#9ca3af' }}>Description</div>

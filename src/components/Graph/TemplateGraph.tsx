@@ -60,6 +60,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
             .slice()
             .sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
           nodeId,
+          templateId: t.id,
         },
         type: 'templateNode' as const,
       };
@@ -161,10 +162,9 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
         }
 
         const propertyMapping: PropertyMapping = {
-          label: property.label,
+          label: property.class?.label ?? property.path.label,
           cardinality,
           description: property.description || property.label,
-          comma_separated: false,
         };
 
         // If property has a class (object property), it's a subtemplate
@@ -194,10 +194,9 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                 }
 
                 const subPropertyMapping: PropertyMapping = {
-                  label: subProperty.label,
+                  label: subProperty.class?.label ?? subProperty.path.label,
                   cardinality: subCardinality,
                   description: subProperty.description || subProperty.label,
-                  comma_separated: false,
                 };
 
                 // Check if this sub-property also has a class (nested subtemplate)
@@ -232,12 +231,13 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                           subPropertyMapping.subtemplate_properties[
                             nestedPathId
                           ] = {
-                            label: nestedProperty.label,
+                            label:
+                              nestedProperty.class?.label ??
+                              nestedProperty.path.label,
                             cardinality: nestedCardinality,
                             description:
                               nestedProperty.description ||
                               nestedProperty.label,
-                            comma_separated: false,
                           };
                         }
                       });
