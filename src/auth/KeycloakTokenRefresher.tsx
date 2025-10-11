@@ -11,7 +11,7 @@ function KeycloakTokenRefresher() {
 
     // Set up token refresh interval
     const refreshInterval = setInterval(async () => {
-      if (keycloak.authenticated && location.pathname !== '/statistics') {
+      if (keycloak.authenticated && location.pathname === '/statistics') {
         console.log('Refreshing token');
         try {
           const refreshed = await keycloak.updateToken(30);
