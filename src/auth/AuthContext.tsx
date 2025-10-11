@@ -26,7 +26,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Save user data to Firebase when authenticated
   useEffect(() => {
-    if (!initialized || location.pathname !== '/statistics') {
+    if (!initialized || location.pathname === '/statistics') {
       return;
     }
 
