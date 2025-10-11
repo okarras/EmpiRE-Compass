@@ -30,7 +30,7 @@ function KeycloakTokenRefresher() {
     return () => {
       clearInterval(refreshInterval);
     };
-  }, [initialized, keycloak]);
+  }, [initialized, keycloak, location.pathname]);
 
   return null;
 }

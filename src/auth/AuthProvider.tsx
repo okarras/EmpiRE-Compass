@@ -15,12 +15,8 @@ export default function AuthProvider({
   // Get Keycloak instance (singleton)
 
   useEffect(() => {
-    // Disable Keycloak on the main home page ('/')
-    if (location.pathname === '/statistics') {
-      setUseKeycloak(false);
-    } else {
-      setUseKeycloak(true);
-    }
+    // Only enable Keycloak on the statistics page
+    setUseKeycloak(location.pathname === '/statistics');
   }, [location.pathname]);
   if (!useKeycloak) {
     return <>{children}</>;

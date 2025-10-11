@@ -26,7 +26,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Save user data to Firebase when authenticated
   useEffect(() => {
-    if (!initialized || location.pathname === '/statistics') {
+    if (!initialized || location.pathname !== '/statistics') {
       return;
     }
 
@@ -53,7 +53,7 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       saveToFirebase();
     }
-  }, [isAuthenticated, initialized, keycloak.token]);
+  }, [isAuthenticated, initialized, keycloak.token, location.pathname]);
 
   const login = async () => {
     if (!keycloak) {
