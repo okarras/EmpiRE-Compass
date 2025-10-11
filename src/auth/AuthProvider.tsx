@@ -16,10 +16,7 @@ export default function AuthProvider({
 
   useEffect(() => {
     // Disable Keycloak on the main home page ('/')
-    if (
-      location.pathname === '/dynamic-question' ||
-      location.pathname === '/'
-    ) {
+    if (location.pathname === '/statistics') {
       setUseKeycloak(false);
     } else {
       setUseKeycloak(true);
