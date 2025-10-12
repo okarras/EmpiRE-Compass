@@ -72,6 +72,9 @@ const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
+  const [currentIteration, setCurrentIteration] = useState<number>(0);
+  const [maxIterations] = useState<number>(3);
+  const [iterationFeedback, setIterationFeedback] = useState<string>('');
 
   // Added: state to hold optional AI-provided processing function
   const [aiProcessingFn, setAiProcessingFn] = useState<DataProcessingFn | null>(
@@ -580,6 +583,61 @@ const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
     return firstKey ? datasets[firstKey] : [];
   };
 
+  // Evaluate query results and generate feedback for improvement
+  const evaluateQueryResults = (
+    data: Record<string, unknown>[],
+    question: string,
+    queryError?: string
+  ): { needsImprovement: boolean; feedback: string } => {
+    // If there was an error, definitely needs improvement
+    if (queryError) {
+      return {
+        needsImprovement: true,
+        feedback: `Query execution failed with error: ${queryError}. Please fix the syntax or logic issues.`,
+      };
+    }
+
+    // If no data returned, needs improvement
+    if (!data || data.length === 0) {
+      return {
+        needsImprovement: true,
+        feedback: `Query returned no results. The query may be too restrictive or the data may not exist in the knowledge graph. Consider: 1) Removing optional filters, 2) Checking if the property paths are correct, 3) Verifying the class and predicate URIs are accurate.`,
+      };
+    }
+
+    // If data has very few columns (only 1-2), might need improvement
+    const firstRow = data[0];
+    const columnCount = Object.keys(firstRow).length;
+    if (columnCount <= 2) {
+      return {
+        needsImprovement: true,
+        feedback: `Query returned data with only ${columnCount} column(s). To better answer "${question}", consider selecting more relevant fields that provide context and details.`,
+      };
+    }
+
+    // If data has many null values, might need improvement
+    const nullRatio =
+      data.reduce((acc, row) => {
+        const nullCount = Object.values(row).filter(
+          (val) => val === null || val === undefined || val === ''
+        ).length;
+        return acc + nullCount / Object.keys(row).length;
+      }, 0) / data.length;
+
+    if (nullRatio > 0.5) {
+      return {
+        needsImprovement: true,
+        feedback: `Query returned data but over 50% of values are null/empty. This suggests the query might be selecting fields that don't exist or using incorrect property paths. Review the template structure and ensure all predicates are valid.`,
+      };
+    }
+
+    // Results look good
+    return {
+      needsImprovement: false,
+      feedback: 'Query results look good!',
+    };
+  };
+
   // Generate data processing function based on actual data structure
   const generateDataProcessingFunction = async (
     rawData: Record<string, unknown>[],
@@ -923,6 +981,8 @@ function processData(rows) {
 
     setLoading(true);
     setError(null);
+    setCurrentIteration(0);
+    setIterationFeedback('');
 
     // Immediately clear any previous outputs so UI doesn't show stale content
     updateChartHtml('');
@@ -938,92 +998,209 @@ function processData(rows) {
     updateProcessingFunctionCode('', 'Reset before new generation');
 
     try {
-      // Step 1: Generate SPARQL query only (no JavaScript processing function)
-      let sparqlPrompt: string;
+      // Iterative refinement loop
+      let currentSparqlPrompt: string = '';
+      let previousQuery: string | null = null;
+      let previousFeedback: string | null = null;
+      let bestRawData: Record<string, unknown>[] = [];
+      let bestSparqlBlocks: Array<{ id: string; query: string }> = [];
 
-      if (state.templateMapping && state.templateId) {
-        // Use dynamic prompt based on template information
-        const dynamicPrompt = generateDynamicSPARQLPrompt(
-          //TODO: fix this
+      for (let iteration = 1; iteration <= maxIterations; iteration++) {
+        setCurrentIteration(iteration);
+        setIterationFeedback(
+          `Iteration ${iteration}/${maxIterations}: ${previousFeedback ? 'Refining query based on feedback...' : 'Generating initial query...'}`
+        );
+
+        // Step 1: Generate or refine SPARQL query
+        if (iteration === 1) {
+          // First iteration: generate fresh query
+          if (state.templateMapping && state.templateId) {
+            const dynamicPrompt = generateDynamicSPARQLPrompt(
+              //TODO: fix this
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              //@ts-expect-error
+              state.templateMapping,
+              state.templateId,
+              undefined,
+              state.targetClassId || undefined
+            );
+            currentSparqlPrompt = dynamicPrompt.replace(
+              '[Research Question]',
+              state.question
+            );
+          } else {
+            currentSparqlPrompt = promptTemplate.replace(
+              '[Research Question]',
+              state.question
+            );
+          }
+        } else {
+          // Subsequent iterations: refine based on feedback
+          const refinementPrompt = `You previously generated a SPARQL query that needs improvement.
+
+**Original Question:** ${state.question}
+
+**Previous SPARQL Query (Iteration ${iteration - 1}):**
+\`\`\`sparql
+${previousQuery}
+\`\`\`
+
+**Feedback on Previous Query:**
+${previousFeedback}
+
+**Instructions:**
+1. Carefully analyze the feedback and identify what went wrong
+2. Generate an improved SPARQL query that addresses the issues
+3. Ensure the query follows all the schema rules and best practices
+4. Return ONLY the improved SPARQL query in a code block, no explanations
+
+${
+  state.templateMapping && state.templateId
+    ? `Use the following template schema:\n${
+        generateDynamicSPARQLPrompt(
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-expect-error
           state.templateMapping,
           state.templateId,
-          undefined, // templateLabel
+          undefined,
           state.targetClassId || undefined
+        ).split('[Research Question]')[0]
+      }`
+    : ''
+}
+
+**Improved SPARQL Query:**`;
+
+          currentSparqlPrompt = refinementPrompt;
+        }
+
+        const sparqlResult = await aiService.generateText(currentSparqlPrompt, {
+          temperature: 0.1 + (iteration - 1) * 0.05, // Slightly increase creativity with each iteration
+          maxTokens: 2000,
+        });
+
+        const sparqlText = sparqlResult.text;
+        const { sparqlBlocks } = extractFromMarkdown(sparqlText);
+
+        if (!sparqlBlocks || sparqlBlocks.length === 0) {
+          if (iteration === maxIterations) {
+            throw new Error(
+              'The AI did not return a SPARQL code block after multiple attempts. Please try rephrasing your question.'
+            );
+          }
+          previousFeedback =
+            'No SPARQL code block was generated. Please ensure the response contains a valid SPARQL query in a code block.';
+          continue;
+        }
+
+        // Step 2: Execute SPARQL query to get raw data
+        setIterationFeedback(
+          `Iteration ${iteration}/${maxIterations}: Executing query...`
         );
-        console.log('Dynamic SPARQL prompt:', dynamicPrompt);
-        sparqlPrompt = dynamicPrompt.replace(
-          '[Research Question]',
-          state.question
+
+        let rawData: Record<string, unknown>[] = [];
+        let executionError: string | undefined;
+
+        try {
+          rawData = await executeQueriesRaw(sparqlBlocks);
+        } catch (err: unknown) {
+          executionError =
+            err instanceof Error
+              ? err.message
+              : 'Unknown error during query execution';
+          console.warn(`Iteration ${iteration} execution error:`, err);
+        }
+
+        // Step 3: Evaluate results
+        const evaluation = evaluateQueryResults(
+          rawData,
+          state.question,
+          executionError
         );
-      } else {
-        // Fallback to static prompt
-        sparqlPrompt = promptTemplate.replace(
-          '[Research Question]',
-          state.question
+
+        setIterationFeedback(
+          `Iteration ${iteration}/${maxIterations}: ${evaluation.feedback}`
         );
+
+        // Store the query for potential refinement
+        previousQuery = sparqlBlocks
+          .map((b) => `# id: ${b.id}\n${b.query}`)
+          .join('\n\n');
+
+        // If results are good, stop iterating
+        if (!evaluation.needsImprovement) {
+          bestRawData = rawData;
+          bestSparqlBlocks = sparqlBlocks;
+          setIterationFeedback(
+            `✅ Success after ${iteration} iteration(s): Query returned good results!`
+          );
+          break;
+        }
+
+        // Store best results so far (even if not perfect)
+        if (rawData.length > bestRawData.length) {
+          bestRawData = rawData;
+          bestSparqlBlocks = sparqlBlocks;
+        }
+
+        previousFeedback = evaluation.feedback;
+
+        // If this is the last iteration and we still don't have good results, use what we have
+        if (iteration === maxIterations) {
+          if (bestRawData.length > 0) {
+            setIterationFeedback(
+              `⚠️ Completed ${maxIterations} iterations. Using best results found (${bestRawData.length} rows).`
+            );
+          } else {
+            throw new Error(
+              `After ${maxIterations} iterations, the query still returns no results. ${evaluation.feedback}`
+            );
+          }
+        }
       }
 
-      const sparqlResult = await aiService.generateText(sparqlPrompt, {
-        temperature: 0.1,
-        maxTokens: 2000,
-      });
-
-      const sparqlText = sparqlResult.text;
-      const { sparqlBlocks } = extractFromMarkdown(sparqlText);
-
-      if (!sparqlBlocks || sparqlBlocks.length === 0) {
-        throw new Error(
-          'The AI did not return a SPARQL code block. Please try rephrasing your question.'
-        );
-      }
-
-      // Prepare a combined display string for the editor
-      const combinedQueryForEditor = sparqlBlocks
-        .map((b) => `# id: ${b.id}\n${b.query}`)
-        .join('\n\n');
-      // Mark as AI-generated by passing the prompt
-      updateSparqlQuery(combinedQueryForEditor, sparqlPrompt);
-
-      // Step 2: Execute SPARQL query to get raw data
-      const rawData = await executeQueriesRaw(sparqlBlocks);
-
-      if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
+      // Use the best results we found
+      if (!bestRawData || bestRawData.length === 0) {
         setError(
-          'Query executed successfully but returned no results. Try modifying your research question.'
+          'Query executed successfully but returned no results after multiple refinement attempts. Try modifying your research question.'
         );
         updateQueryResults([]);
+        setCurrentIteration(0);
         return;
       }
 
-      // Step 3: Generate data processing function based on actual data structure
+      // Prepare a combined display string for the editor
+      const combinedQueryForEditor = bestSparqlBlocks
+        .map((b) => `# id: ${b.id}\n${b.query}`)
+        .join('\n\n');
+      updateSparqlQuery(combinedQueryForEditor, currentSparqlPrompt);
+
+      // Step 4: Generate data processing function based on actual data structure
       const processingFn = await generateDataProcessingFunction(
-        rawData,
+        bestRawData,
         state.question,
-        false // Always generate new processing function for new queries
+        false
       );
 
-      // Step 4: Apply processing function to transform data
+      // Step 5: Apply processing function to transform data
       let transformedData: Record<string, unknown>[] = [];
       try {
         if (processingFn) {
-          transformedData = processingFn(rawData);
+          transformedData = processingFn(bestRawData);
           setAiProcessingFn(processingFn);
         } else {
-          transformedData = processDynamicData(rawData);
+          transformedData = processDynamicData(bestRawData);
         }
 
-        // Validate transformed data
         if (!transformedData || !Array.isArray(transformedData)) {
           console.warn(
             'Processing function returned invalid data, falling back to default'
           );
-          transformedData = processDynamicData(rawData);
+          transformedData = processDynamicData(bestRawData);
         }
       } catch (e) {
         console.warn('Processing function failed, falling back to default:', e);
-        transformedData = processDynamicData(rawData);
+        transformedData = processDynamicData(bestRawData);
       }
 
       updateQueryResults(transformedData);
@@ -1038,6 +1215,7 @@ function processData(rows) {
       setError(errorMessage);
     } finally {
       setLoading(false);
+      setCurrentIteration(0);
     }
   };
 
@@ -1273,6 +1451,9 @@ function processData(rows) {
         onOpenLlmContextHistory={handleOpenLlmContextHistory}
         currentTemplateId={state.templateId}
         onTemplateIdChange={handleTemplateIdChange}
+        iterationFeedback={currentIteration > 0 ? iterationFeedback : undefined}
+        currentIteration={currentIteration}
+        maxIterations={maxIterations}
       />
 
       <DataProcessingCodeSection

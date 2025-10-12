@@ -1,6 +1,13 @@
 import React from 'react';
-import { Box, Typography, Button, Tooltip } from '@mui/material';
-import { History } from '@mui/icons-material';
+import {
+  Box,
+  Typography,
+  Button,
+  Tooltip,
+  Alert,
+  LinearProgress,
+} from '@mui/material';
+import { History, AutoFixHigh } from '@mui/icons-material';
 import AIConfigurationButton from './AIConfigurationButton';
 import DynamicQuestionManager from './DynamicQuestionManager';
 import SPARQLQuerySection from './SPARQLQuerySection';
@@ -21,6 +28,9 @@ interface QueryExecutionSectionProps {
   onOpenLlmContextHistory: () => void;
   currentTemplateId?: string | null;
   onTemplateIdChange?: (templateId: string) => void;
+  iterationFeedback?: string;
+  currentIteration?: number;
+  maxIterations?: number;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -37,6 +47,9 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onOpenLlmContextHistory,
   currentTemplateId,
   onTemplateIdChange,
+  iterationFeedback,
+  currentIteration,
+  maxIterations,
 }) => {
   return (
     <>
@@ -74,6 +87,54 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
       </Box>
 
       <DynamicQuestionManager />
+
+      {/* Iteration Feedback Alert */}
+      {iterationFeedback && currentIteration && maxIterations && (
+        <Alert
+          severity="info"
+          icon={<AutoFixHigh />}
+          sx={{
+            mb: 3,
+            backgroundColor: 'rgba(232, 97, 97, 0.08)',
+            borderLeft: '4px solid #e86161',
+            '& .MuiAlert-icon': {
+              color: '#e86161',
+            },
+          }}
+        >
+          <Box>
+            <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>
+              AI Query Refinement in Progress
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              {iterationFeedback}
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 2 }}>
+              <LinearProgress
+                variant="determinate"
+                value={(currentIteration / maxIterations) * 100}
+                sx={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(232, 97, 97, 0.1)',
+                  '& .MuiLinearProgress-bar': {
+                    backgroundColor: '#e86161',
+                    borderRadius: 4,
+                  },
+                }}
+              />
+              <Typography
+                variant="caption"
+                fontWeight="bold"
+                sx={{ minWidth: 60, textAlign: 'right' }}
+              >
+                {currentIteration}/{maxIterations}
+              </Typography>
+            </Box>
+          </Box>
+        </Alert>
+      )}
 
       <SPARQLQuerySection
         question={question}

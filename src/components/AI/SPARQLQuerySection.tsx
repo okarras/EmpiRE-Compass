@@ -28,13 +28,17 @@ import {
   Refresh,
   Restore,
   Close,
+  ContentCopy,
 } from '@mui/icons-material';
+import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/aiService';
 import {
   DynamicQuestionHistory,
   useDynamicQuestion,
 } from '../../context/DynamicQuestionContext';
+import { PREFIXES } from '../../api/SPARQL_QUERIES';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -72,6 +76,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -101,6 +106,17 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const handleRevertHistory = (item: DynamicQuestionHistory) => {
     onSparqlChange(item.content);
     handleCloseHistory();
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(sparqlQuery);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+      setError('Failed to copy to clipboard');
+    }
   };
 
   const formatTimestamp = (timestamp: number) => {
@@ -361,6 +377,24 @@ Modified SPARQL Query:`;
                 </Box>
               ) : (
                 <>
+                  <Button
+                    href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + sparqlQuery)}`}
+                    target="_blank"
+                    sx={{
+                      color: '#e86161',
+                      mt: { xs: 2, sm: 0 },
+                      ml: 2,
+                      '&:hover': {
+                        color: '#b33a3a',
+                      },
+                    }}
+                    variant="outlined"
+                  >
+                    <LiveHelpIcon sx={{ mr: 1 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      Open in ORKG
+                    </Typography>
+                  </Button>
                   <Tooltip title="Edit manually">
                     <IconButton
                       onClick={handleEdit}
@@ -387,6 +421,20 @@ Modified SPARQL Query:`;
                       }}
                     >
                       <SmartToy />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={copySuccess ? 'Copied!' : 'Copy query'}>
+                    <IconButton
+                      onClick={handleCopy}
+                      size="small"
+                      sx={{
+                        color: copySuccess ? 'success.main' : '#e86161',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      <ContentCopy />
                     </IconButton>
                   </Tooltip>
                   {getSparqlHistory().length > 0 && (
