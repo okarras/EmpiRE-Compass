@@ -43,8 +43,12 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('empirical');
-  const currentQueries = templates[selectedTemplate] || [];
-  const handleTemplateChange = (event: SelectChangeEvent<string>) => {
+
+  const currentQueries = templates[selectedTemplate] ?? [];
+
+  const handleTemplateChange = (
+    event: SelectChangeEvent<keyof typeof templates>
+  ) => {
     setSelectedTemplate(event.target.value as keyof typeof templates);
   };
 
@@ -62,9 +66,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleDrawerClose]);
 
   return (
@@ -86,6 +88,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         },
       }}
     >
+      {/* Top header bar */}
       <Box
         sx={{
           display: 'flex',
@@ -104,6 +107,56 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         </IconButton>
       </Box>
 
+      {/* Templates dropdown */}
+      <Box
+        sx={{
+          px: 2,
+          pt: 3, // extra space above
+          pb: 1,
+          backgroundColor: 'transparent',
+        }}
+      >
+        <FormControl
+          fullWidth
+          size="small"
+          sx={{
+            borderRadius: 1,
+            '& .MuiInputLabel-root': {
+              color: '#e86161',
+              fontWeight: 600,
+            },
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: '#e86161',
+              },
+              '&:hover fieldset': {
+                borderColor: '#e86161',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#e86161',
+              },
+              '& .MuiSelect-select': {
+                color: '#e86161',
+                fontWeight: 600,
+              },
+            },
+          }}
+        >
+          <InputLabel id="templates-select-label">Templates</InputLabel>
+          <Select
+            labelId="templates-select-label"
+            value={selectedTemplate}
+            label="Templates"
+            onChange={handleTemplateChange}
+            size="small"
+            id="menu-drawer-templates-select"
+          >
+            <MenuItem value="empirical">Empirical research practice</MenuItem>
+            <MenuItem value="nlp4re">NLP4RE ID Card</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
       <List sx={{ p: 2 }}>
         {/* Home Link */}
         <ListItem
@@ -117,9 +170,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             backgroundColor: isCurrentPath('/')
               ? 'rgba(232, 97, 97, 0.08)'
               : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(232, 97, 97, 0.05)',
-            },
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
           }}
         >
           <ListItemIcon>
@@ -152,9 +203,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             backgroundColor: isCurrentPath('/statistics')
               ? 'rgba(232, 97, 97, 0.08)'
               : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(232, 97, 97, 0.05)',
-            },
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
           }}
         >
           <ListItemIcon>
@@ -187,9 +236,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             backgroundColor: isCurrentPath('/allquestions')
               ? 'rgba(232, 97, 97, 0.08)'
               : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(232, 97, 97, 0.05)',
-            },
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
           }}
         >
           <ListItemIcon>
@@ -222,9 +269,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             backgroundColor: isCurrentPath('/dynamic-question')
               ? 'rgba(232, 97, 97, 0.08)'
               : 'transparent',
-            '&:hover': {
-              backgroundColor: 'rgba(232, 97, 97, 0.05)',
-            },
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
           }}
         >
           <ListItemIcon>
@@ -246,22 +291,6 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         </ListItem>
 
         <Divider sx={{ my: 2 }} />
-
-        {/* --- TEMPLATES DROPDOWN --- */}
-        <Box sx={{ px: 1, pb: 1 }}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="templates-select-label">Templates</InputLabel>
-            <Select
-              labelId="templates-select-label"
-              value={selectedTemplate}
-              label="Templates"
-              onChange={handleTemplateChange}
-            >
-              <MenuItem value="empirical">Empirical research practice</MenuItem>
-              <MenuItem value="nlp4re">NLP4RE ID Card</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
 
         {/* Questions List */}
         <Typography
