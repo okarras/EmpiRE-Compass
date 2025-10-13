@@ -10,14 +10,25 @@ import {
   Tooltip,
   Typography,
   ListItemIcon,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import { queries } from '../constants/queries_chart_info';
+import { queries as empiricalQueries } from '../constants/queries_chart_info';
+import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
+
+export const templates = {
+  empirical: empiricalQueries,
+  nlp4re: nlp4reQueries,
+};
 
 const drawerWidth = 280;
 
@@ -29,6 +40,13 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<keyof typeof templates>('empirical');
+  const currentQueries = templates[selectedTemplate] || [];
+  const handleTemplateChange = (event: SelectChangeEvent<string>) => {
+    setSelectedTemplate(event.target.value as keyof typeof templates);
+  };
 
   const handleListItemClick = (id: number) => {
     navigate(`/questions/${id}`);
@@ -229,6 +247,22 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
         <Divider sx={{ my: 2 }} />
 
+        {/* --- TEMPLATES DROPDOWN --- */}
+        <Box sx={{ px: 1, pb: 1 }}>
+          <FormControl fullWidth size="small">
+            <InputLabel id="templates-select-label">Templates</InputLabel>
+            <Select
+              labelId="templates-select-label"
+              value={selectedTemplate}
+              label="Templates"
+              onChange={handleTemplateChange}
+            >
+              <MenuItem value="empirical">Empirical research practice</MenuItem>
+              <MenuItem value="nlp4re">NLP4RE ID Card</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         {/* Questions List */}
         <Typography
           variant="overline"
@@ -243,7 +277,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           Research Questions
         </Typography>
 
-        {queries.map((query) => (
+        {currentQueries.map((query) => (
           <Tooltip
             title={query.dataAnalysisInformation.question}
             placement="right"
