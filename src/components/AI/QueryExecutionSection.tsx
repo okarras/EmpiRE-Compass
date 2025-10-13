@@ -27,7 +27,7 @@ interface QueryExecutionSectionProps {
   onOpenHistory: (type: HistoryItem['type']) => void;
   onOpenLlmContextHistory: () => void;
   currentTemplateId?: string | null;
-  onTemplateIdChange?: (templateId: string) => void;
+  onTemplateIdChange?: (templateId: string) => void | Promise<void>;
   iterationFeedback?: string;
   currentIteration?: number;
   maxIterations?: number;

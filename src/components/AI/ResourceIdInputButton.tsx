@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   IconButton,
   Tooltip,
@@ -9,12 +9,13 @@ import {
   TextField,
   Button,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { Input } from '@mui/icons-material';
 
 interface ResourceIdInputButtonProps {
   currentTemplateId: string | null;
-  onTemplateIdChange: (templateId: string) => void;
+  onTemplateIdChange: (templateId: string) => void | Promise<void>;
 }
 
 const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
@@ -24,6 +25,12 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [inputValue, setInputValue] = useState(currentTemplateId || '');
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Update input value when currentTemplateId changes
+  useEffect(() => {
+    setInputValue(currentTemplateId || '');
+  }, [currentTemplateId]);
 
   const handleOpenDialog = () => {
     setInputValue(currentTemplateId || '');
@@ -34,9 +41,10 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
   const handleCloseDialog = () => {
     setDialogOpen(false);
     setError(null);
+    setLoading(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const trimmedValue = inputValue.trim();
 
     if (!trimmedValue) {
@@ -52,8 +60,19 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
       return;
     }
 
-    onTemplateIdChange(trimmedValue);
-    handleCloseDialog();
+    try {
+      setLoading(true);
+      setError(null);
+      await onTemplateIdChange(trimmedValue);
+      handleCloseDialog();
+    } catch (err) {
+      setError(
+        'Failed to load template. Please check the template ID and try again.'
+      );
+      console.error('Template change error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,13 +127,16 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button onClick={handleCloseDialog} disabled={loading}>
+            Cancel
+          </Button>
           <Button
             onClick={handleSave}
             variant="contained"
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || loading}
+            startIcon={loading ? <CircularProgress size={20} /> : null}
           >
-            Change Template
+            {loading ? 'Loading...' : 'Change Template'}
           </Button>
         </DialogActions>
       </Dialog>

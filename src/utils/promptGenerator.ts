@@ -177,10 +177,15 @@ The schema is based on the template which describes research practices in public
 | Entity | ORKG Term | Type | Description & Usage |
 |--------|-----------|------|---------------------|
 | **Paper** | - | Resource | The publication resource |
-| Publication Year | \`orkgp:P29\` | Predicate | Year of publication. Usage: \`?paper orkgp:P29 ?year\` |
 | Has Contribution | \`orkgp:P31\` | Predicate | Links Paper to Contribution. Usage: \`?paper orkgp:P31 ?contribution\` |
 | **Contribution** | \`orkgc:${targetClassId || 'C27001'}\` | Class | Research practice within a paper |
-| Venue Serie | \`orkgp:P135046\` | Predicate | Conference venue. Usage: \`?contribution orkgp:P135046 ?venue\` |`;
+
+#### Optional Properties (Use Only When Relevant to the Question)
+
+| Entity | ORKG Term | Type | Description & Usage |
+|--------|-----------|------|---------------------|
+| Publication Year | \`orkgp:P29\` | Predicate | Year of publication. **Only use when the question asks for temporal analysis, trends over time, or specific year ranges.** Usage: \`?paper orkgp:P29 ?year\` |
+| Venue Serie | \`orkgp:P135046\` | Predicate | Conference venue. **Only use when the question asks about venues or conferences.** Usage: \`?contribution orkgp:P135046 ?venue\` |`;
 
   // Generate the schema section based on template mapping
   const schemaSection = generateSchemaSection(templateMapping);
@@ -202,10 +207,12 @@ Every query MUST include the class declaration for contributions. Use the correc
 
 **This is MANDATORY for every query that uses ?contribution.**
 
-### 2. Critical Rule: Publication Year Belongs to Paper
-The publication year (\`orkgp:P29\`) is ALWAYS a property of the \`?paper\` resource, never the \`?contribution\`. Linking it directly to contribution will cause query failure.
+### 2. Critical Rule: Publication Year Belongs to Paper (When Needed)
+**Only include publication year if the research question explicitly asks for temporal analysis, trends, or year-based filtering.**
 
-**Correct Structure:**
+When you do need to use year, remember that the publication year (\`orkgp:P29\`) is ALWAYS a property of the \`?paper\` resource, never the \`?contribution\`. Linking it directly to contribution will cause query failure.
+
+**Correct Structure (when year is needed):**
 \`\`\`sparql
 ?paper orkgp:P29 ?year .
 ?paper orkgp:P31 ?contribution .
@@ -216,6 +223,12 @@ The publication year (\`orkgp:P29\`) is ALWAYS a property of the \`?paper\` reso
 # THIS IS WRONG AND MUST BE AVOIDED
 ?contribution orkgp:P29 ?year .
 \`\`\`
+
+**Important: Do not include year-related patterns unless the question asks for:**
+- Temporal analysis (e.g., "trends over time")
+- Specific year ranges (e.g., "between 2010 and 2020")
+- Year-based grouping (e.g., "by year")
+- Publication year information
 
 ### 2. Critical Rule: Handle Ambiguity with Multiple Queries
 For ambiguous questions, provide separate, clearly-labeled SPARQL queries for each interpretation. Do not combine unrelated concepts in one complex query.
@@ -265,8 +278,9 @@ Before writing any SPARQL:
 1. **Read the question carefully** - What exactly is being asked?
 2. **Identify the key concepts** - What data elements are needed?
 3. **Determine the analysis type** - Counting? Proportions? Trends? Comparisons?
-4. **Plan the query structure** - What variables do you need? What grouping?
-5. **Choose appropriate filters** - What conditions define the subset of interest?
+4. **Check temporal requirements** - Does the question ask for trends over time, specific years, or year-based analysis? If NO, do NOT include year in the query.
+5. **Plan the query structure** - What variables do you need? What grouping?
+6. **Choose appropriate filters** - What conditions define the subset of interest?
 
 ### Output Format
 - Your output must be ONLY the SPARQL query (or queries)
@@ -289,9 +303,16 @@ Before writing any SPARQL:
 ### Common Query Patterns
 - **Counting studies**: Use \`COUNT(?paper)\` or \`COUNT(DISTINCT ?paper)\`
 - **Calculating proportions**: Use conditional counting with \`SUM(IF(condition, 1, 0))\`
-- **Time-based analysis**: Group by \`?year\` and ensure \`?paper orkgp:P29 ?year\`
+- **Time-based analysis** (only when question asks about time/trends): Group by \`?year\` and ensure \`?paper orkgp:P29 ?year\`
 - **Method analysis**: Traverse to method types via the proper schema paths
 - **Boolean conditions**: Check for presence of specific features using boolean predicates
+
+### Analyzing the Question
+Before writing the query, determine what the question is actually asking:
+- Does it ask about trends, changes over time, or specific years? → Include year
+- Does it ask about total counts, proportions, or general statistics? → Do NOT include year
+- Does it ask about specific venues or conferences? → Include venue
+- Does it ask about method types, approaches, or techniques? → Traverse to the relevant template properties
 
 ### MANDATORY Query Structure Template
 Every query MUST follow this basic structure:
