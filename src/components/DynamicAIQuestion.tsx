@@ -88,16 +88,6 @@ const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, state.templateId]);
 
-  // Debug: Log state.templateId changes
-  useEffect(() => {
-    console.log('📋 Current template ID in state:', state.templateId);
-    console.log('📋 Target class ID in state:', state.targetClassId);
-    console.log(
-      '📋 Has template mapping:',
-      state.templateMapping ? 'Yes' : 'No'
-    );
-  }, [state.templateId, state.targetClassId, state.templateMapping]);
-
   // Load saved template from localStorage on mount
   useEffect(() => {
     void loadSavedTemplate(state.templateId ?? '');

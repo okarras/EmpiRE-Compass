@@ -303,19 +303,19 @@ Return ONLY the explanation text.`;
       // Generate Data Collection interpretation
       const dataCollectionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Required Data for Analysis" section.
 
-Data Summary: ${dataSummary}
+        Data Summary: ${dataSummary}
 
-Requirements:
-1. Return a simple, clear explanation (not HTML)
-2. Focus on:
-   - What kind of data is needed to answer this question
-   - What the SPARQL query extracts
-   - How the data supports the research objectives
-3. Keep it to 2-3 sentences maximum
-4. Use professional but accessible language
-5. Don't use HTML tags, just plain text
+        Requirements:
+        1. Return a simple, clear explanation (not HTML)
+        2. Focus on:
+          - What kind of data is needed to answer this question
+          - What the SPARQL query extracts
+          - How the data supports the research objectives
+        3. Keep it to 2-3 sentences maximum
+        4. Use professional but accessible language
+        5. Don't use HTML tags, just plain text
 
-Return ONLY the explanation text.`;
+        Return ONLY the explanation text.`;
 
       const dataCollectionInterpretationResult = await aiService.generateText(
         dataCollectionInterpretationPrompt,
