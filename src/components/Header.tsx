@@ -209,7 +209,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               <BookIcon sx={{ color: 'text.primary' }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Graph Viewer">
+          <Tooltip title="View Graph Schema">
             <IconButton
               onClick={redirectToArchitecture}
               color="inherit"
