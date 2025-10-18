@@ -16,7 +16,7 @@ import {
   InputLabel,
   SelectChangeEvent,
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation, useSearchParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
@@ -25,9 +25,9 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import { queries as empiricalQueries } from '../constants/queries_chart_info';
 import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
 
-export const templates = {
-  empirical: empiricalQueries,
-  nlp4re: nlp4reQueries,
+const templates = {
+  R186491: empiricalQueries,
+  R1544125: nlp4reQueries,
 };
 
 const drawerWidth = 280;
@@ -40,16 +40,29 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedTemplate, setSelectedTemplate] =
-    useState<keyof typeof templates>('empirical');
+    useState<keyof typeof templates>('R186491');
 
   const currentQueries = templates[selectedTemplate] ?? [];
+
+  // Read template from URL on mount
+  useEffect(() => {
+    const templateFromUrl = searchParams.get('template');
+    if (templateFromUrl && templateFromUrl in templates) {
+      setSelectedTemplate(templateFromUrl as keyof typeof templates);
+    }
+  }, [searchParams]);
 
   const handleTemplateChange = (
     event: SelectChangeEvent<keyof typeof templates>
   ) => {
-    setSelectedTemplate(event.target.value as keyof typeof templates);
+    const newTemplate = event.target.value as keyof typeof templates;
+    setSelectedTemplate(newTemplate);
+
+    // Update URL with new template
+    setSearchParams({ template: newTemplate });
   };
 
   const handleListItemClick = (id: number) => {
@@ -151,8 +164,8 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             size="small"
             id="menu-drawer-templates-select"
           >
-            <MenuItem value="empirical">Empirical research practice</MenuItem>
-            <MenuItem value="nlp4re">NLP4RE ID Card</MenuItem>
+            <MenuItem value="R186491">Empirical research practice</MenuItem>
+            <MenuItem value="R1544125">NLP4RE ID Card</MenuItem>
           </Select>
         </FormControl>
       </Box>

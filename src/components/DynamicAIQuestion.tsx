@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
@@ -15,14 +15,9 @@ import { useDataProcessing } from '../hooks/useDataProcessing';
 import { parseSparqlBlocks } from '../utils/queryParser';
 import { processDynamicData } from '../utils/dataTransform';
 import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
+import { useLocation } from 'react-router-dom';
 
-interface DynamicAIQuestionProps {
-  templateId?: string;
-}
-
-const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
-  templateId = localStorage.getItem('selected-template-id') || 'R186491',
-}) => {
+const DynamicAIQuestion = () => {
   const aiService = useAIService();
   const {
     state,
@@ -41,6 +36,10 @@ const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const location = useLocation();
+  const [templateId, setTemplateId] = useState<string>(
+    location.search.split('template=')[1] || 'R186491'
+  );
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
   const [maxIterations] = useState<number>(3);
 
@@ -75,6 +74,10 @@ const DynamicAIQuestion: React.FC<DynamicAIQuestionProps> = ({
   } = useDataProcessing({
     updateProcessingFunctionCode,
   });
+
+  useEffect(() => {
+    setTemplateId(location.search.split('template=')[1] || 'R186491');
+  }, [location.search]);
 
   // Initialize template ID in context
   useEffect(() => {
