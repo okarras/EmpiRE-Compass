@@ -13,6 +13,217 @@ export interface PredicatesMapping {
   [key: string]: PropertyMapping;
 }
 
+export interface TemplateSpecificGuidance {
+  templateId: string;
+  templateLabel: string;
+  domainKnowledge?: string;
+  queryExamples?: string;
+  specificRules?: string;
+  commonPatterns?: string;
+  troubleshooting?: string;
+}
+
+/**
+ * Static object containing template-specific guidance for different ORKG templates
+ * This provides domain-specific knowledge, examples, and best practices for each template
+ */
+export const TEMPLATE_SPECIFIC_GUIDANCE: Record<
+  string,
+  TemplateSpecificGuidance
+> = {
+  // Empirical Research Practice Template (R186491)
+  R186491: {
+    templateId: 'R186491',
+    templateLabel: 'Empirical Research Practice',
+    domainKnowledge: `
+### Domain-Specific Knowledge: Empirical Research Practice Template
+
+**Understanding "Empirical Studies" in this Context:**
+In this domain, an empirical study is a paper that:
+1. Has data collection that is NOT "no collection"
+2. Has data analysis that is NOT "no analysis"
+3. Is typically from the IEEE International Requirements Engineering Conference
+
+**The Standard Pattern for Empirical Research Questions:**
+\`\`\`sparql
+# This is the canonical pattern used in existing queries
+SELECT ?paper ?year ?dc_label ?da_label WHERE {
+  ?paper orkgp:P31 ?contribution .
+  ?paper orkgp:P29 ?year .
+  ?contribution a orkgc:C27001 .
+  ?contribution orkgp:P135046 ?venue .
+  ?venue rdfs:label ?venue_name .
+  
+  OPTIONAL {
+    ?contribution orkgp:P56008 ?data_collection .
+    ?data_collection rdfs:label ?dc_label .
+  }
+  OPTIONAL {
+    ?contribution orkgp:P15124 ?data_analysis .
+    ?data_analysis rdfs:label ?da_label .
+  }
+  
+  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string) 
+}
+\`\`\`
+
+**Handling "Empirical Studies" Questions:**
+When questions ask about "empirical studies," use a simple approach:
+- Return relevant fields including ?dc_label and ?da_label
+- Let the processing function filter based on criteria like:
+  - Exclude "no collection" and "no analysis"
+  - Filter by specific venue
+  - Check for specific methods
+`,
+    queryExamples: '',
+    specificRules: `
+### Empirical Research Practice Specific Rules
+
+**1. Definition of "Empirical Study"**
+An "empirical study" typically refers to research that involves:
+- Data collection from real-world sources (NOT "no collection")
+- Analysis of that data using systematic methods (NOT "no analysis")
+
+**MANDATORY: Always exclude non-empirical studies using these filters:**
+- \`FILTER(?dc_label != "no collection"^^xsd:string)\` - for data collection queries
+- \`FILTER(?da_label != "no analysis"^^xsd:string)\` - for data analysis queries
+
+**2. Venue Filtering**
+Most queries should filter for the IEEE International Requirements Engineering Conference unless otherwise specified:
+\`\`\`sparql
+?contribution orkgp:P135046 ?venue .
+?venue rdfs:label ?venue_name .
+FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+\`\`\`
+
+**3. Method Type Traversal**
+To find specific method types (e.g., 'Case Study'), traverse to the Method Type node:
+
+**Correct Traversal for Data Collection Method Type:**
+\`\`\`sparql
+?contribution orkgp:P56008 ?data_collection_instance .
+?data_collection_instance orkgp:P1005 ?dc_method .
+?dc_method orkgp:P94003 ?dc_method_type .
+?dc_method_type rdfs:label ?method_type_label .
+\`\`\`
+
+**4. Statistical Analysis Patterns**
+For inferential statistics:
+\`\`\`sparql
+?data_analysis orkgp:P56043 ?inferential_stats .
+?inferential_stats orkgp:P30001 ?hypothesis .
+?inferential_stats orkgp:P35133 ?stat_test .
+\`\`\`
+
+For descriptive statistics:
+\`\`\`sparql
+?data_analysis orkgp:P56048 ?descriptive_stats .
+OPTIONAL { ?descriptive_stats orkgp:P56049 ?freq_node . }
+OPTIONAL { ?descriptive_stats orkgp:P57005 ?central_tendency . }
+OPTIONAL { ?descriptive_stats orkgp:P57008 ?dispersion . }
+\`\`\`
+
+**5. Threats to Validity Pattern**
+\`\`\`sparql
+?contribution orkgp:P39099 ?threats_node .
+OPTIONAL { ?threats_node orkgp:P55034 ?external. }
+OPTIONAL { ?threats_node orkgp:P55035 ?internal. }
+OPTIONAL { ?threats_node orkgp:P55037 ?construct. }
+OPTIONAL { ?threats_node orkgp:P55036 ?conclusion. }
+\`\`\`
+
+**6. Always include the venue filter: FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+`,
+    commonPatterns: `
+### Common Query Patterns for Empirical Research
+
+**Pattern 1: Simple Empirical Studies Count**
+\`\`\`sparql
+SELECT ?paper ?year ?dc_label ?da_label WHERE {
+  ?paper orkgp:P29 ?year .
+  ?paper orkgp:P31 ?contribution .
+  ?contribution a orkgc:C27001 .
+  ?contribution orkgp:P135046 ?venue .
+  ?venue rdfs:label ?venue_name .
+  
+  OPTIONAL {
+    ?contribution orkgp:P56008 ?data_collection .
+    ?data_collection rdfs:label ?dc_label .
+  }
+  OPTIONAL {
+    ?contribution orkgp:P15124 ?data_analysis .
+    ?data_analysis rdfs:label ?da_label .
+  }
+  
+  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+}
+\`\`\`
+
+**Pattern 2: Method Type Analysis**
+\`\`\`sparql
+SELECT ?paper ?year ?method_type_label WHERE {
+  ?paper orkgp:P29 ?year .
+  ?paper orkgp:P31 ?contribution .
+  ?contribution a orkgc:C27001 .
+  ?contribution orkgp:P135046 ?venue .
+  ?venue rdfs:label ?venue_name .
+  
+  OPTIONAL {
+    ?contribution orkgp:P56008 ?data_collection .
+    ?data_collection orkgp:P1005 ?method .
+    ?method orkgp:P94003 ?method_type .
+    ?method_type rdfs:label ?method_type_label .
+  }
+  
+  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+}
+\`\`\`
+
+**Pattern 3: Boolean Property Analysis (with SAMPLE)**
+\`\`\`sparql
+SELECT ?paper ?year (SAMPLE(?boolean_prop) AS ?boolean_prop) WHERE {
+  ?paper orkgp:P29 ?year .
+  ?paper orkgp:P31 ?contribution .
+  ?contribution a orkgc:C27001 .
+  ?contribution orkgp:P135046 ?venue .
+  ?venue rdfs:label ?venue_name .
+  
+  OPTIONAL {
+    ?contribution orkgp:SomeProperty ?node .
+    OPTIONAL { ?node orkgp:BooleanProperty ?boolean_prop . }
+  }
+  
+  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+}
+GROUP BY ?paper ?year
+\`\`\`
+`,
+    troubleshooting: `
+### Troubleshooting for Empirical Research Queries
+
+**Problem: Query returns empty results for methods**
+- **Likely cause**: Not traversing to the method type node
+- **Solution**: Use the full path: collection → method → method type → label
+
+**Problem: All papers show as non-empirical**
+- **Likely cause**: Missing OPTIONAL for data collection/analysis
+- **Solution**: Wrap data collection and analysis in OPTIONAL blocks
+
+**Problem: Venue filter not working**
+- **Likely cause**: Comparing URI to string without getting label
+- **Solution**: Always get venue label first: \`?venue rdfs:label ?venue_name\`
+
+**Problem: Duplicate rows for papers**
+- **Likely cause**: Multiple methods or boolean properties per paper
+- **Solution**: Use SAMPLE() with GROUP BY to get one row per paper
+
+**Problem: Statistical analysis fields are empty**
+- **Likely cause**: Not traversing through the analysis structure
+- **Solution**: Check if analysis has the specific type (inferential/descriptive/ML) first
+`,
+  },
+};
+
 /**
  * Generate a template mapping from template data
  */
@@ -146,6 +357,9 @@ export const generateDynamicSPARQLPrompt = (
   templateLabel?: string,
   targetClassId?: string
 ): string => {
+  // Check if we have template-specific guidance for this template
+  const specificGuidance = TEMPLATE_SPECIFIC_GUIDANCE[templateId];
+
   const basePrompt = `# SPARQL Query Generator for ORKG Research Analysis
 
 ## Persona & Objective
@@ -166,7 +380,7 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 \`\`\`
 
 ### 2. Template Information
-You are working with the "${templateLabel || templateId}" template (ID: ${templateId}).
+You are working with the "${templateLabel || specificGuidance?.templateLabel || templateId}" template (ID: ${templateId}).
 
 ### 3. ORKG Research Practice Schema
 
@@ -192,6 +406,32 @@ The schema is based on the template which describes research practices in public
 
   // Generate hierarchy section
   const hierarchySection = generateHierarchySection(templateMapping);
+
+  // Add template-specific guidance if available
+  let templateSpecificSection = '';
+  if (specificGuidance) {
+    templateSpecificSection = '\n\n## Template-Specific Guidance\n';
+
+    if (specificGuidance.domainKnowledge) {
+      templateSpecificSection += specificGuidance.domainKnowledge;
+    }
+
+    if (specificGuidance.queryExamples) {
+      templateSpecificSection += '\n\n' + specificGuidance.queryExamples;
+    }
+
+    if (specificGuidance.specificRules) {
+      templateSpecificSection += '\n\n' + specificGuidance.specificRules;
+    }
+
+    if (specificGuidance.commonPatterns) {
+      templateSpecificSection += '\n\n' + specificGuidance.commonPatterns;
+    }
+
+    if (specificGuidance.troubleshooting) {
+      templateSpecificSection += '\n\n' + specificGuidance.troubleshooting;
+    }
+  }
 
   const rulesSection = `
 
@@ -257,15 +497,58 @@ When calculating proportions or counting subsets, use BIND(IF(...)) to create fl
 BIND(IF(condition, 1, 0) AS ?flagVariable)
 \`\`\`
 
-### 5. Critical SPARQL Syntax Rules
+### 5. CRITICAL RULE: URIs vs Labels (MOST COMMON MISTAKE)
+
+**⚠️ EXTREMELY IMPORTANT: Resources are URIs, NOT Strings**
+
+In ORKG, properties return **resource URIs** (e.g., \`http://orkg.org/orkg/resource/R12345\`), NOT string values. You MUST use \`rdfs:label\` to get the human-readable label before comparing to strings.
+
+**❌ WRONG (Will always fail - comparing URI to string):**
+\`\`\`sparql
+?contribution orkgp:SomeProperty ?resource .
+BIND(IF(?resource = "Expected Value", 1, 0) AS ?flag)
+\`\`\`
+This fails because \`?resource\` is a URI, not a string!
+
+**✅ CORRECT (Get label first, then compare):**
+\`\`\`sparql
+?contribution orkgp:SomeProperty ?resource .
+?resource rdfs:label ?resource_label .
+BIND(IF(?resource_label = "Expected Value"^^xsd:string, 1, 0) AS ?flag)
+\`\`\`
+
+**Critical Pattern for Checking Labels:**
+\`\`\`sparql
+# Step 1: Get the resource
+?subject orkgp:PropertyID ?resource .
+
+# Step 2: Get the resource's label
+?resource rdfs:label ?resource_label .
+
+# Step 3: Compare the LABEL (not the resource)
+FILTER(?resource_label = "expected value"^^xsd:string)
+# OR
+BIND(IF(?resource_label = "expected value"^^xsd:string, 1, 0) AS ?flag)
+\`\`\`
+
+**BIND Statement Ordering (Critical):**
+- BIND that uses a variable MUST come AFTER that variable is defined
+- ❌ Wrong: \`BIND(IF(?label = "X", 1, 0) AS ?flag) ?resource rdfs:label ?label .\`
+- ✅ Correct: \`?resource rdfs:label ?label . BIND(IF(?label = "X", 1, 0) AS ?flag)\`
+
+### 6. Critical SPARQL Syntax Rules
+
+
 **BIND Usage:**
 - BIND must be used in the WHERE clause, NOT in SELECT clause
 - Correct: \`SELECT ?var WHERE { BIND("value" AS ?var) }\`
 - Wrong: \`SELECT (BIND("value" AS ?var)) WHERE { }\`
+- **CRITICAL: All variables used in BIND must be defined BEFORE the BIND statement**
 
 **Division Safety:**
 - Always cast to decimals for ratios: \`(xsd:decimal(?a) / xsd:decimal(?b))\`
 - Compute totals and subsets in separate subqueries, then divide in outer SELECT
+- **For proportions with aggregation, use subquery pattern to avoid IF() in SELECT**
 
 **Filter Conditions:**
 - Use FILTER for complex conditions: \`FILTER(?year >= 2000 && ?year <= 2010)\`
@@ -294,25 +577,21 @@ Before writing any SPARQL:
 ## Query Generation Strategy
 
 ### Approach for Complex Questions
-1. **Analyze the question carefully** - identify what specific data is being requested
-2. **Break down into components** - separate different aspects that need to be measured
-3. **Choose appropriate aggregation** - decide if you need counts, proportions, trends, etc.
-4. **Apply filters correctly** - ensure you're filtering for the right conditions
-5. **Structure logically** - build the query step by step following the schema
+1. **Analyze the question carefully** - identify what DATA FIELDS are needed
+2. **Only use SPARQL features when necessary** - avoid premature optimization
+3. **Use OPTIONAL** - for fields that might not exist for all entities
 
 ### Common Query Patterns
-- **Counting studies**: Use \`COUNT(?paper)\` or \`COUNT(DISTINCT ?paper)\`
-- **Calculating proportions**: Use conditional counting with \`SUM(IF(condition, 1, 0))\`
-- **Time-based analysis** (only when question asks about time/trends): Group by \`?year\` and ensure \`?paper orkgp:P29 ?year\`
-- **Method analysis**: Traverse to method types via the proper schema paths
-- **Boolean conditions**: Check for presence of specific features using boolean predicates
+- **For counting/proportions questions**: Return the relevant data fields, let processing function count/calculate
+- **Time-based analysis**: Include \`?year\` field if needed, let processing function group by year
+- **Method analysis**: Return method labels, let processing function categorize
+- **Boolean conditions**: Return the field values, let processing function check conditions
 
 ### Analyzing the Question
-Before writing the query, determine what the question is actually asking:
-- Does it ask about trends, changes over time, or specific years? → Include year
-- Does it ask about total counts, proportions, or general statistics? → Do NOT include year
-- Does it ask about specific venues or conferences? → Include venue
-- Does it ask about method types, approaches, or techniques? → Traverse to the relevant template properties
+Before writing the query, determine what DATA FIELDS are needed:
+- Does it ask about time/trends? → Include \`?year\` field
+- Does it ask about venues/conferences? → Include venue field
+- Does it ask about methods? → Include method-related fields
 
 ### MANDATORY Query Structure Template
 Every query MUST follow this basic structure:
@@ -345,7 +624,13 @@ You will now be given the research question to process.
 
 **Research Question:** [Research Question]`;
 
-  return basePrompt + schemaSection + hierarchySection + rulesSection;
+  return (
+    basePrompt +
+    schemaSection +
+    hierarchySection +
+    templateSpecificSection +
+    rulesSection
+  );
 };
 
 /**

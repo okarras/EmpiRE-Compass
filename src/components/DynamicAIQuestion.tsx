@@ -58,6 +58,7 @@ const DynamicAIQuestion = () => {
     executeQueriesRaw,
     currentIteration,
     iterationFeedback,
+    iterationHistory,
   } = useQueryGeneration({
     templateMapping: state.templateMapping ?? undefined,
     templateId: state.templateId ?? undefined,
@@ -73,6 +74,7 @@ const DynamicAIQuestion = () => {
     hydrateProcessingFunction,
   } = useDataProcessing({
     updateProcessingFunctionCode,
+    templateId: state.templateId ?? undefined,
   });
 
   useEffect(() => {
@@ -521,6 +523,7 @@ const DynamicAIQuestion = () => {
         iterationFeedback={currentIteration > 0 ? iterationFeedback : undefined}
         currentIteration={currentIteration}
         maxIterations={maxIterations}
+        iterationHistory={iterationHistory}
       />
 
       <DataProcessingCodeSection
