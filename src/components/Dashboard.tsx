@@ -2,11 +2,18 @@ import QuestionAccordion from './QuestionAccordion';
 import { Box } from '@mui/system';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { queries, type Query } from '../constants/queries_chart_info';
+import {
+  queries as empiricalQueries,
+  Query,
+} from '../constants/queries_chart_info';
+import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
 import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
+import { useParams } from 'react-router';
 
 const Dashboard = () => {
+  const params = useParams();
+  const templateId = params.templateId;
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -18,6 +25,13 @@ const Dashboard = () => {
   const sortedFirebaseQuestions = Object.values(firebaseQuestions).sort(
     (a, b) => a.id - b.id
   );
+
+  let queries: Query[];
+  if (templateId === 'empirical') {
+    queries = empiricalQueries;
+  } else if (templateId === 'nlp4re') {
+    queries = nlp4reQueries;
+  }
 
   return (
     <Box
