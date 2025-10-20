@@ -45,6 +45,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('empirical');
 
+  useEffect(() => {
+    if (templateId === 'nlp4re' || templateId === 'empirical') {
+      setSelectedTemplate(templateId);
+    }
+  }, [templateId]);
   const currentQueries = templates[selectedTemplate] ?? [];
 
   const handleTemplateChange = (
