@@ -16,14 +16,14 @@ import {
   InputLabel,
   SelectChangeEvent,
 } from '@mui/material';
-import { useNavigate, useLocation } from 'react-router';
+import { useNavigate, useLocation, useParams } from 'react-router';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
+import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
 
 export const templates = {
   empirical: empiricalQueries,
@@ -40,6 +40,7 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { templateId } = useParams();
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('empirical');
@@ -49,11 +50,13 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const handleTemplateChange = (
     event: SelectChangeEvent<keyof typeof templates>
   ) => {
+    const newPath = `/templates/${event.target.value}/`;
+    navigate(newPath);
     setSelectedTemplate(event.target.value as keyof typeof templates);
   };
 
   const handleListItemClick = (id: number) => {
-    navigate(`/questions/${id}`);
+    navigate(`/templates/${templateId}/questions/${id}`);
     handleDrawerClose();
   };
 
@@ -161,7 +164,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Home Link */}
         <ListItem
           onClick={() => {
-            navigate('/');
+            navigate(`/templates/${templateId}/`);
             handleDrawerClose();
           }}
           sx={{
@@ -194,7 +197,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Statistics Link */}
         <ListItem
           onClick={() => {
-            navigate('/statistics');
+            navigate(`/templates/${templateId}/statistics`);
             handleDrawerClose();
           }}
           sx={{
@@ -227,7 +230,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* All Questions Link */}
         <ListItem
           onClick={() => {
-            navigate('/allquestions');
+            navigate(`/templates/${templateId}/allquestions`);
             handleDrawerClose();
           }}
           sx={{
@@ -260,7 +263,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Dynamic Question Link */}
         <ListItem
           onClick={() => {
-            navigate('/dynamic-question');
+            navigate(`/templates/${templateId}/dynamic-question`);
             handleDrawerClose();
           }}
           sx={{

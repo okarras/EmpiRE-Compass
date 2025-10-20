@@ -8,7 +8,8 @@ import {
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { queries } from '../constants/queries_chart_info';
+import { queries as empiricalQueries } from '../constants/queries_chart_info';
+import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
 import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
@@ -38,6 +39,7 @@ const ErrorState = ({ message }: { message: string }) => (
 const QuestionPage = () => {
   const params = useParams();
   const id = params.id;
+  const templateId = params.templateId;
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -45,8 +47,13 @@ const QuestionPage = () => {
     (state) =>
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
+  let targetQuery;
 
-  const targetQuery = queries.find((query) => query.id == Number(id));
+  if (templateId === 'empirical') {
+    targetQuery = empiricalQueries.find((query) => query.id === Number(id));
+  } else if (templateId === 'nlp4re') {
+    targetQuery = nlp4reQueries.find((query) => query.id === Number(id));
+  }
 
   if (!targetQuery) {
     return <ErrorState message="Question not found" />;
