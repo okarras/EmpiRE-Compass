@@ -24,8 +24,8 @@ const Layout = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    setActiveTemplate(templateId); // globally set
-    dispatch(fetchQuestionsFromFirebase()); // no need to pass anymore
+    setActiveTemplate(templateId);
+    dispatch(fetchQuestionsFromFirebase());
   }, [templateId]);
 
   return (
