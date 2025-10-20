@@ -38,14 +38,15 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
     if (paths.length > 0) {
       paths.forEach((path, index) => {
-        const fullPath = '/' + paths.slice(0, index + 1).join('/');
+        let fullPath = '/' + paths.slice(0, index + 1).join('/');
         let label = path.charAt(0).toUpperCase() + path.slice(1);
 
         if (path === 'questions' && paths[index + 1]) {
           const questionId = parseInt(paths[index + 1]);
           const question = queries.find((q) => q.id === questionId);
           if (question) {
-            label = `Question ${questionId}`;
+            label = `All Questions`;
+            fullPath = '/allquestions';
           }
         }
 
