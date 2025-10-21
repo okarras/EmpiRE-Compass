@@ -72,7 +72,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const redirectToArchitecture = () => {
     // Navigate to the in-app JSON graph view
-    window.location.href = '/graph';
+    const paths = location.pathname.split('/').filter(Boolean);
+    const templateId = paths[0] || 'R186491';
+    window.location.href = `/${templateId}/graph`;
   };
 
   return (

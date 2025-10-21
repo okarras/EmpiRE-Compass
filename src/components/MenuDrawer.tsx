@@ -16,7 +16,7 @@ import {
   InputLabel,
   SelectChangeEvent,
 } from '@mui/material';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
@@ -40,7 +40,6 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('R186491');
@@ -54,11 +53,12 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
   // Read template from URL on mount
   useEffect(() => {
-    const templateFromUrl = searchParams.get('template');
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const templateFromUrl = pathSegments[0];
     if (templateFromUrl && templateFromUrl in templates) {
       setSelectedTemplate(templateFromUrl as keyof typeof templates);
     }
-  }, [searchParams]);
+  }, [location.pathname]);
 
   const handleTemplateChange = (
     event: SelectChangeEvent<keyof typeof templates>
@@ -66,12 +66,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
     const newTemplate = event.target.value as keyof typeof templates;
     setSelectedTemplate(newTemplate);
 
-    // Update URL with new template
-    setSearchParams({ template: newTemplate });
+    // Navigate to new template, preserving the rest of the path
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    pathSegments[0] = newTemplate;
+    navigate(`/${pathSegments.join('/')}`);
   };
 
   const handleListItemClick = (id: number) => {
-    navigate(`/templates/${selectedTemplate}/questions/${id}`);
+    navigate(`/${selectedTemplate}/questions/${id}`);
     handleDrawerClose();
   };
 
@@ -179,7 +181,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Home Link */}
         <ListItem
           onClick={() => {
-            navigate(`/templates/${selectedTemplate}/`);
+            navigate(`/${selectedTemplate}/`);
             handleDrawerClose();
           }}
           sx={{
@@ -212,7 +214,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Statistics Link */}
         <ListItem
           onClick={() => {
-            navigate(`/templates/${selectedTemplate}/statistics`);
+            navigate(`/${selectedTemplate}/statistics`);
             handleDrawerClose();
           }}
           sx={{
@@ -245,7 +247,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* All Questions Link */}
         <ListItem
           onClick={() => {
-            navigate(`/templates/${selectedTemplate}/allquestions`);
+            navigate(`/${selectedTemplate}/allquestions`);
             handleDrawerClose();
           }}
           sx={{
@@ -278,7 +280,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Dynamic Question Link */}
         <ListItem
           onClick={() => {
-            navigate(`/templates/${selectedTemplate}/dynamic-question`);
+            navigate(`/${selectedTemplate}/dynamic-question`);
             handleDrawerClose();
           }}
           sx={{
@@ -337,7 +339,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 mb: 0.5,
                 borderRadius: 2,
                 backgroundColor: isCurrentPath(
-                  `/templates/${selectedTemplate}/questions/${query.id}`
+                  `/${selectedTemplate}/questions/${query.id}`
                 )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
@@ -355,7 +357,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     sx={{
                       color: 'text.primary',
                       fontWeight: isCurrentPath(
-                        `/templates/${selectedTemplate}/questions/${query.id}`
+                        `/${selectedTemplate}/questions/${query.id}`
                       )
                         ? 600
                         : 400,

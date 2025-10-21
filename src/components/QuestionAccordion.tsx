@@ -112,7 +112,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   };
 
   const openQuestionPage = () => {
-    navigate(`/templates/${templateId}/questions/${query.id}`);
+    navigate(`/${templateId}/questions/${query.id}`);
   };
 
   const getProcessedChartData = () => {

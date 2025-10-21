@@ -36,6 +36,10 @@ const ErrorState = ({ message }: { message: string }) => (
   </Paper>
 );
 
+const queries = {
+  R186491: empiricalQueries,
+  R1544125: nlp4reQueries,
+};
 const QuestionPage = () => {
   const params = useParams();
   const id = params.id;
@@ -47,13 +51,9 @@ const QuestionPage = () => {
     (state) =>
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
-  let targetQuery;
-
-  if (templateId === 'empirical') {
-    targetQuery = empiricalQueries.find((query) => query.id === Number(id));
-  } else if (templateId === 'nlp4re') {
-    targetQuery = nlp4reQueries.find((query) => query.id === Number(id));
-  }
+  const targetQuery = queries[templateId as keyof typeof queries].find(
+    (query) => query.id === Number(id)
+  );
 
   if (!targetQuery) {
     return <ErrorState message="Question not found" />;

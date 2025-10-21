@@ -14,7 +14,7 @@ const Router = () => {
     <>
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Routes>
-          <Route path="/templates/:templateId/" element={<Layout />}>
+          <Route path="/:templateId/" element={<Layout />}>
             <Route
               path=""
               element={<Home />}
@@ -47,10 +47,7 @@ const Router = () => {
             />
           </Route>
 
-          <Route
-            path="/"
-            element={<Navigate to="/templates/empirical/" replace />}
-          />
+          <Route path="/" element={<Navigate to="/R186491/" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
