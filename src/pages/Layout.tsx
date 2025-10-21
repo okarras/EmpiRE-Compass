@@ -5,7 +5,6 @@ import Header from '../components/Header';
 import MenuDrawer from '../components/MenuDrawer';
 import ScrollTop from '../components/ScrollTop';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { setActiveTemplate } from '../utils/templateContext';
 import { fetchQuestionsFromFirebase } from '../store/slices/questionSlice';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
@@ -24,9 +23,10 @@ const Layout = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    setActiveTemplate(templateId);
-    dispatch(fetchQuestionsFromFirebase());
-  }, [templateId]);
+    if (templateId) {
+      dispatch(fetchQuestionsFromFirebase(templateId));
+    }
+  }, [templateId, dispatch]);
 
   return (
     <Box

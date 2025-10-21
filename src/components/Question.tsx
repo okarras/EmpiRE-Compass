@@ -15,9 +15,8 @@ import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
 import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { SPARQL_QUERIES as empiricalSPARQL } from '../api/SPARQL_QUERIES';
-import { SPARQL_QUERIES as nlp4reSPARQL } from '../api/SPARQL_QUERIES_NLP4RE';
-import { getActiveTemplate } from '../utils/templateContext';
+import { getTemplateConfig } from '../constants/template_config';
+import { useParams } from 'react-router-dom';
 
 interface QuestionProps {
   query: Query;
@@ -27,6 +26,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   // Tabs state
   const [tab, setTab] = useState(0);
   const { setContext } = useAIAssistantContext();
+  const { templateId } = useParams();
 
   // State for primary data (uid)
   const [dataCollection, setDataCollection] = useState<
@@ -43,11 +43,6 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   const [loading2, setLoading2] = useState(false);
   const [error2, setError2] = useState<string | null>(null);
 
-  const getActiveSparql = () => {
-    const tid = getActiveTemplate();
-    return tid === 'nlp4re' ? nlp4reSPARQL : empiricalSPARQL;
-  };
-
   // Update AI Assistant context when data changes
   useEffect(() => {
     if (!loading1 && !error1) {
@@ -62,7 +57,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       try {
         setLoading1(true);
         setError1(null);
-        const sparqlMap = getActiveSparql();
+        const sparqlMap = getTemplateConfig(templateId as string).sparql;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         const data = await fetchSPARQLData(sparqlMap[query.uid]);
@@ -76,7 +71,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
     };
     setNormalized(true);
     fetchData();
-  }, [query.uid]);
+  }, [query.uid, templateId]);
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -85,7 +80,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getActiveSparql();
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
@@ -103,7 +98,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getActiveSparql();
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2_merge]);
@@ -117,7 +112,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge]);
+  }, [query, query?.uid_2, query?.uid_2_merge, templateId]);
 
   const getProcessedChartData = () => {
     if (query.uid_2_merge) {

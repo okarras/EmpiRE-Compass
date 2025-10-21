@@ -8,8 +8,7 @@ import {
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
+import { getTemplateConfig } from '../constants/template_config';
 import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
@@ -36,14 +35,10 @@ const ErrorState = ({ message }: { message: string }) => (
   </Paper>
 );
 
-const queries = {
-  R186491: empiricalQueries,
-  R1544125: nlp4reQueries,
-};
 const QuestionPage = () => {
   const params = useParams();
   const id = params.id;
-  const templateId = params.templateId;
+  const templateId = params.templateId as string;
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -51,9 +46,9 @@ const QuestionPage = () => {
     (state) =>
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
-  const targetQuery = queries[templateId as keyof typeof queries].find(
-    (query) => query.id === Number(id)
-  );
+
+  const queries = getTemplateConfig(templateId).queries;
+  const targetQuery = queries?.find((query) => query.id === Number(id));
 
   if (!targetQuery) {
     return <ErrorState message="Question not found" />;

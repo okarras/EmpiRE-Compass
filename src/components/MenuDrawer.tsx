@@ -22,13 +22,9 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
+import { templateConfig } from '../constants/template_config';
 
-const templates = {
-  R186491: empiricalQueries,
-  R1544125: nlp4reQueries,
-};
+const templates = templateConfig;
 
 const drawerWidth = 280;
 
@@ -49,7 +45,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
       setSelectedTemplate(selectedTemplate);
     }
   }, [selectedTemplate]);
-  const currentQueries = templates[selectedTemplate] ?? [];
+  const currentQueries = templates[selectedTemplate]?.queries ?? [];
 
   // Read template from URL on mount
   useEffect(() => {
@@ -171,8 +167,8 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             size="small"
             id="menu-drawer-templates-select"
           >
-            <MenuItem value="R186491">Empirical research practice</MenuItem>
-            <MenuItem value="R1544125">NLP4RE ID Card</MenuItem>
+            <MenuItem value="R186491">{templates.R186491.title}</MenuItem>
+            <MenuItem value="R1544125">{templates.R1544125.title}</MenuItem>
           </Select>
         </FormControl>
       </Box>

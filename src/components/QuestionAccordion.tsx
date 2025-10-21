@@ -15,11 +15,9 @@ import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import QuestionChartView from './QuestionChartView';
-import { SPARQL_QUERIES as empiricalSPARQL } from '../api/SPARQL_QUERIES';
-import { SPARQL_QUERIES as nlp4reSPARQL } from '../api/SPARQL_QUERIES_NLP4RE';
-import { getActiveTemplate } from '../utils/templateContext';
+import { getTemplateConfig } from '../constants/template_config';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -36,10 +34,8 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   const [error2, setError2] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
-  const templateId = getActiveTemplate();
-  const getActiveSparql = () => {
-    return templateId === 'nlp4re' ? nlp4reSPARQL : empiricalSPARQL;
-  };
+  const { templateId } = useParams();
+
   // Fetch primary data (uid)
   useEffect(() => {
     const fetchData = async () => {
@@ -47,7 +43,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       try {
         setLoading1(true);
         setError1(null);
-        const sparqlMap = getActiveSparql();
+        const sparqlMap = getTemplateConfig(templateId as string).sparql;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
         const data = await fetchSPARQLData(sparqlMap[query.uid]);
@@ -60,7 +56,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       }
     };
     fetchData();
-  }, [query.uid, expanded]);
+  }, [query.uid, expanded, templateId]);
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -70,7 +66,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getActiveSparql();
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
@@ -88,7 +84,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getActiveSparql();
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2_merge]);
@@ -102,7 +98,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge, expanded]);
+  }, [query, query?.uid_2, query?.uid_2_merge, expanded, templateId]);
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
