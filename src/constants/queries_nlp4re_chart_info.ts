@@ -91,7 +91,6 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    // dataProcessingFunction: sortDataByYear,
     dataProcessingFunction: Query1DataProcessingFunction,
     dataAnalysisInformation: {
       question:
