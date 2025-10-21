@@ -1,5 +1,5 @@
 import { axisClasses } from '@mui/x-charts';
-import { Query1DataProcessingFunction } from './data_processing_helper_functions';
+import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -77,23 +77,24 @@ export const queries: Query[] = [
     chartType: 'bar',
     chartSettings: {
       className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      heading: 'Number of papers with an empirical study per year',
+      xAxis: xAxisSettings('metricLabel', 'Metrics'),
+      heading:
+        'Top-3 Most Frequently Used Evaluation Metrics in NLP Approaches',
       barLabel: 'value',
       yAxis: [
         {
-          label: 'Number of papers with an empirical study',
+          label: 'Number of papers',
+          dataKey: 'count',
         },
       ],
-      series: [{ dataKey: 'normalizedRatio' }],
+      series: [{ dataKey: 'count' }],
       height: chartHeight,
       sx: chartStyles,
     },
-    // dataProcessingFunction: sortDataByYear,
     dataProcessingFunction: Query1DataProcessingFunction,
     dataAnalysisInformation: {
       question:
-        'How has the proportion of empirical studies evolved over time?',
+        'What are top-3 most frequently used evaluation metrics to assess a developed NLP approach?',
     },
   },
 ];

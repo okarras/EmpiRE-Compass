@@ -23,7 +23,7 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
+import { queries as nlp4reQueries } from '../constants/queries_nlp4re_chart_info';
 
 const templates = {
   R186491: empiricalQueries,
@@ -45,6 +45,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('R186491');
 
+  useEffect(() => {
+    if (selectedTemplate === 'R186491' || selectedTemplate === 'R1544125') {
+      setSelectedTemplate(selectedTemplate);
+    }
+  }, [selectedTemplate]);
   const currentQueries = templates[selectedTemplate] ?? [];
 
   // Read template from URL on mount
@@ -66,7 +71,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   };
 
   const handleListItemClick = (id: number) => {
-    navigate(`/questions/${id}`);
+    navigate(`/templates/${selectedTemplate}/questions/${id}`);
     handleDrawerClose();
   };
 
@@ -174,7 +179,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Home Link */}
         <ListItem
           onClick={() => {
-            navigate('/');
+            navigate(`/templates/${selectedTemplate}/`);
             handleDrawerClose();
           }}
           sx={{
@@ -207,7 +212,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Statistics Link */}
         <ListItem
           onClick={() => {
-            navigate('/statistics');
+            navigate(`/templates/${selectedTemplate}/statistics`);
             handleDrawerClose();
           }}
           sx={{
@@ -240,7 +245,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* All Questions Link */}
         <ListItem
           onClick={() => {
-            navigate('/allquestions');
+            navigate(`/templates/${selectedTemplate}/allquestions`);
             handleDrawerClose();
           }}
           sx={{
@@ -273,7 +278,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Dynamic Question Link */}
         <ListItem
           onClick={() => {
-            navigate('/dynamic-question');
+            navigate(`/templates/${selectedTemplate}/dynamic-question`);
             handleDrawerClose();
           }}
           sx={{
@@ -331,7 +336,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
-                backgroundColor: isCurrentPath(`/questions/${query.id}`)
+                backgroundColor: isCurrentPath(
+                  `/templates/${selectedTemplate}/questions/${query.id}`
+                )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
                 transition: 'all 0.2s ease-in-out',
@@ -347,7 +354,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     variant="body2"
                     sx={{
                       color: 'text.primary',
-                      fontWeight: isCurrentPath(`/questions/${query.id}`)
+                      fontWeight: isCurrentPath(
+                        `/templates/${selectedTemplate}/questions/${query.id}`
+                      )
                         ? 600
                         : 400,
                       fontSize: '0.9rem',
