@@ -78,7 +78,8 @@ export const queries: Query[] = [
     chartSettings: {
       className: 'fullWidth',
       xAxis: xAxisSettings('metricLabel', 'Metrics'),
-      heading: 'Number of papers with an empirical study per year',
+      heading:
+        'Top-3 Most Frequently Used Evaluation Metrics in NLP Approaches',
       barLabel: 'value',
       yAxis: [
         {
