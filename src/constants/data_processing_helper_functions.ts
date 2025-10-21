@@ -680,6 +680,7 @@ export const Query14DataProcessingFunction = (
 ): Query14DataProcessingFunctionReturnInterface[] => {
   if (!rawData.length) return [];
 
+  // Get unique papers per year
   const uniquePapers: Record<number, Set<string>> = {};
   rawData.forEach(({ year, paper }) => {
     if (!uniquePapers[year]) uniquePapers[year] = new Set();
@@ -693,6 +694,7 @@ export const Query14DataProcessingFunction = (
     ])
   );
 
+  // Group by year and count each method
   const methodCounts: Record<number, Record<string, number>> = {};
   rawData.forEach(({ year, dc_method_name }) => {
     if (!methodCounts[year]) methodCounts[year] = {};
@@ -701,16 +703,25 @@ export const Query14DataProcessingFunction = (
     methodCounts[year][methodKey] = (methodCounts[year][methodKey] || 0) + 1;
   });
 
-  return Object.entries(methodCounts).map(([year, methods]) => {
-    const normalizedRatio: Record<string, number> = {};
-    Object.entries(methods).forEach(([method, count]) => {
-      normalizedRatio[method] = count;
-      normalizedRatio[`normalized_${method}`] = parseFloat(
-        ((count * 100) / papersPerYear[Number(year)]).toFixed(2)
-      );
-    });
-    return { year: Number(year), ...normalizedRatio };
-  });
+  // Calculate normalized values (percentage between 0 and 100 for better chart visibility)
+  const result = Object.entries(methodCounts)
+    .map(([year, methods]) => {
+      const normalizedRatio: Record<string, number> = {};
+      const totalPapers = papersPerYear[Number(year)];
+
+      Object.entries(methods).forEach(([method, count]) => {
+        normalizedRatio[method] = count;
+        // Normalize to percentage (0-100 range) and round to 2 decimals
+        normalizedRatio[`normalized_${method}`] = parseFloat(
+          (count / totalPapers).toFixed(2)
+        );
+      });
+
+      return { year: Number(year), ...normalizedRatio };
+    })
+    .sort((a, b) => a.year - b.year); // Sort by year ascending
+
+  return result;
 };
 
 export const Query15DataProcessingFunction = (

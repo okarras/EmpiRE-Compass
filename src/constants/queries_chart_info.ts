@@ -631,7 +631,7 @@ export const queries: Query[] = [
   },
   //Query 14
   {
-    title: 'number of papers per year',
+    title: 'Normalized empirical methods for secondary research per year',
     id: 14,
     uid: 'query_14',
     chartSettings: {
@@ -646,11 +646,18 @@ export const queries: Query[] = [
         '#8c8c8c',
         '#ccb974',
         '#64b5cd',
+        '#9467bd',
+        '#8c564b',
+        '#e377c2',
+        '#7f7f7f',
+        '#bcbd22',
+        '#17becf',
+        '#ff7f0e',
       ],
       className: 'fullWidth',
       barCategoryGap: 0.1,
       barGap: 0.05,
-      barWidth: 12,
+      barWidth: 10,
       margin: {
         left: 60,
         right: 20,
@@ -658,47 +665,81 @@ export const queries: Query[] = [
         bottom: 40,
       },
       heading:
-        'number of empirical methods used for secondary research per year',
+        'Normalized number of empirical methods used for secondary research per year',
       xAxis: xAxisSettings(),
       yAxis: [
         {
-          label: 'Proportions of empirical methods used',
+          label: 'Proportion of empirical methods used (%)',
         },
       ],
       series: [
-        { dataKey: 'archive_analysis', label: 'Archive Analysis' },
         {
-          dataKey: 'systematic_literature_review',
-          label: 'Systematic Literature Review',
+          dataKey: 'archive_analysis',
+          label: 'Archive Analysis',
         },
         {
           dataKey: 'literature_review',
           label: 'Literature Review',
         },
         {
-          dataKey: 'systematic_literature_map',
-          label: 'Systematic Literature Map',
+          dataKey: 'systematic_literature_review',
+          label: 'Systematic Literature Review',
+        },
+        {
+          dataKey: 'document_analysis',
+          label: 'Document Analysis',
+        },
+        {
+          dataKey: 'document_inspection',
+          label: 'Document Inspection',
+        },
+        {
+          dataKey: 'literature_survey',
+          label: 'Literature Survey',
         },
         {
           dataKey: 'systematic_review',
           label: 'Systematic Review',
         },
         {
+          dataKey: 'systematic_literature_map',
+          label: 'Systematic Literature Map',
+        },
+        {
           dataKey: 'tertiary_literature_review',
-          label: 'Tertiary literature review',
+          label: 'Tertiary Literature Review',
         },
         {
-          dataKey: 'document_analysis',
-          label: 'Document analysis',
+          dataKey: 'systematic_mapping_study',
+          label: 'Systematic Mapping Study',
         },
         {
-          dataKey: 'document_inspection',
-          label: 'Document Inspection',
+          dataKey: 'DPA_collection',
+          label: 'DPA Collection',
         },
-        { dataKey: 'literature_study', label: 'Literature Study' },
         {
-          dataKey: 'normalized_literature_survey',
-          label: 'Literature Survey',
+          dataKey: 'market_research_and_analysis',
+          label: 'Market Research and Analysis',
+        },
+        {
+          dataKey: 'manual_inspection',
+          label: 'Manual Inspection',
+        },
+        {
+          dataKey: 'literature_study',
+          label: 'Literature Study',
+        },
+        {
+          dataKey: 'grey_literature_review',
+          label: 'Grey Literature Review',
+        },
+        {
+          dataKey: 'dataset_creation',
+          label: 'Dataset Creation',
+        },
+        {
+          dataKey: 'tool_review',
+          label: 'Tool Review',
         },
       ],
       height: chartHeight,
@@ -708,6 +749,10 @@ export const queries: Query[] = [
     dataAnalysisInformation: {
       question:
         'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?',
+      requiredDataForAnalysis:
+        'We need data about papers using secondary research methods (like literature reviews, systematic reviews, etc.) grouped by year, including the method name and paper identifier to properly normalize by total papers per year.',
+      dataInterpretation:
+        'This visualization shows the normalized proportion of different secondary research methods used per year, helping identify trends in which research methods are gaining or losing popularity in empirical software engineering research.',
     },
   },
   // Query 15
