@@ -59,3 +59,39 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
   console.log('query result:', arr);
   return arr.slice(0, 3);
 };
+
+export const Query2DataProcessingFunction = (
+  rawData: Array<{
+    paper: string;
+    year: string;
+    paperLabel: string;
+    guidelineAvailabilityLabel: string;
+  }> = []
+): { year: number; count: number }[] => {
+  if (!rawData.length) return [];
+
+  // 1) Deduplicate by paper (keep last occurrence)
+  const paperMap = new Map<string, (typeof rawData)[0]>();
+  rawData.forEach((item) => paperMap.set(item.paper, item));
+  const uniquePapers = Array.from(paperMap.values());
+
+  // 2) Filter for papers where guideline availability indicates “Yes” / “Available” / URL present
+  const guidelineAvailable = uniquePapers.filter((item) =>
+    /Yes|available|http|url/i.test(item.guidelineAvailabilityLabel)
+  );
+  // 3) Count papers with guidelines per year
+  const counts: Record<string, number> = {};
+  guidelineAvailable.forEach(({ year }) => {
+    if (!year) return;
+    const yearMatch = String(year).match(/(\d{4})/); // matches 2019 or 2019-07-01
+    if (!yearMatch) return;
+    const y = yearMatch[1];
+    counts[y] = (counts[y] || 0) + 1;
+  });
+  // 4) Convert to sorted array (numeric years)
+  return Object.entries(counts)
+    .map(([y, c]) => ({ year: Number(y), count: c }))
+    .sort((a, b) => a.year - b.year);
+};
+
+export default Query2DataProcessingFunction;

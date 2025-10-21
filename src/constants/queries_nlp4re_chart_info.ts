@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axisClasses } from '@mui/x-charts';
 import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -101,13 +102,31 @@ export const queries: Query[] = [
     },
   },
 
-  // Query 2 - Annotation Guidelines
+  // Query 2 - Papers with Annotation Guidelines (yearly counts)
   {
-    title: 'Papers with Annotation Guidelines',
+    title: 'Papers with Annotation Guidelines (by Year)',
     id: 2,
     uid: 'query_2',
+    chartType: 'bar',
+    chartSettings: {
+      className: 'fullWidth',
+      xAxis: xAxisSettings(),
+      heading: 'Papers with Annotation Guidelines — papers per year',
+      barLabel: 'value',
+      yAxis: [
+        {
+          label: 'Number of Papers',
+          dataKey: 'count',
+        },
+      ],
+      series: [{ dataKey: 'count' }],
+      height: chartHeight,
+      sx: chartStyles,
+    },
+    dataProcessingFunction: Query2DataProcessingFunction,
     dataAnalysisInformation: {
-      question: 'Which papers are associated with annotation guidelines?',
+      question:
+        'Which papers are associated with annotation guidelines (distribution by year)?',
       requiredDataForAnalysis:
         'As a researcher, I want to understand the annotation process so that I can reuse it to replicate dataset creation. (Asked by: Sallam Abualhaija, Related ID Card: V.6)',
     },
@@ -117,7 +136,7 @@ export const queries: Query[] = [
   {
     title: 'Input Granularity and RE Tasks',
     id: 3,
-    uid: 'query_4',
+    uid: 'query_3',
     dataAnalysisInformation: {
       question:
         'What are the different levels of granularity at which inputs can be represented and how is this related to the RE task?',
@@ -130,7 +149,7 @@ export const queries: Query[] = [
   {
     title: 'Types of Baselines',
     id: 4,
-    uid: 'query_5',
+    uid: 'query_4',
     dataAnalysisInformation: {
       question: 'What are the types of baselines reported in the papers?',
       requiredDataForAnalysis:
@@ -142,7 +161,7 @@ export const queries: Query[] = [
   {
     title: 'Format of Textual Requirements',
     id: 5,
-    uid: 'query_6',
+    uid: 'query_5',
     dataAnalysisInformation: {
       question: 'What is the most common format of textual requirements?',
       requiredDataForAnalysis:
@@ -154,7 +173,7 @@ export const queries: Query[] = [
   {
     title: 'Dataset Quality Validation',
     id: 6,
-    uid: 'query_7',
+    uid: 'query_6',
     dataAnalysisInformation: {
       question:
         'What is the state of practice for validating the quality of the annotated datasets?',
@@ -167,7 +186,7 @@ export const queries: Query[] = [
   {
     title: 'Available Datasets for NLP4RE Tasks',
     id: 7,
-    uid: 'query_8',
+    uid: 'query_7',
     dataAnalysisInformation: {
       question: 'What datasets exist for a certain NLP4RE task?',
       requiredDataForAnalysis:
@@ -179,7 +198,7 @@ export const queries: Query[] = [
   {
     title: 'RE and NLP Task Combinations',
     id: 8,
-    uid: 'query_9',
+    uid: 'query_8',
     dataAnalysisInformation: {
       question: 'Which combinations of RE and NLP tasks are most (a)typical?',
       requiredDataForAnalysis:
@@ -191,7 +210,7 @@ export const queries: Query[] = [
   {
     title: 'Missing ID Card Information',
     id: 9,
-    uid: 'query_10',
+    uid: 'query_9',
     dataAnalysisInformation: {
       question:
         'Which ID-card informational elements do not provide enough options to respondents?',
@@ -204,7 +223,7 @@ export const queries: Query[] = [
   {
     title: 'Annotator Numbers by Study Type',
     id: 10,
-    uid: 'query_11',
+    uid: 'query_10',
     dataAnalysisInformation: {
       question:
         'What are the usual numbers of annotators for a given type of study?',

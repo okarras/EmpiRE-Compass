@@ -26,43 +26,45 @@ export const SPARQL_QUERIES = {
 `,
 
   query_2: `
-    SELECT DISTINCT ?paper ?paperLabel ?guidelineAvailabilityLabel
-        WHERE {
-        ?paper orkgp:P31 ?contribution .
-        ?contribution rdf:type orkgc:C121001;
-                orkgp:P181031 ?annotationProcess .
-        ?annotationProcess orkgp:P181036 ?annotationScheme .
-        ?annotationScheme orkgp:P181038 ?guidelineAvailability .
+  SELECT DISTINCT ?paper ?year ?paperLabel ?guidelineAvailabilityLabel
+  WHERE {
+      ?paper orkgp:P31 ?contribution .
+      ?contribution rdf:type orkgc:C121001;
+        orkgp:P181031 ?annotationProcess .
+      ?paper orkgp:P29 ?year .
 
-        
-        OPTIONAL {?paper rdfs:label ?paperLabel .}
-        OPTIONAL {?guidelineAvailability rdfs:label ?guidelineAvailabilityLabel .}
-        }ORDER BY ?paperLabel
+      ?annotationProcess orkgp:P181036 ?annotationScheme .
+      ?annotationScheme orkgp:P181038 ?guidelineAvailability .
+
+      
+      OPTIONAL {?paper rdfs:label ?paperLabel .}
+      OPTIONAL {?guidelineAvailability rdfs:label ?guidelineAvailabilityLabel .}
+  }ORDER BY ?paperLabel
 
 `,
+
+  //   query_3: `
+  //         SELECT ?paper, ?year, ?dc_label, ?da_label
+  //                 WHERE {
+  //                         ?paper orkgp:P31 ?contribution;
+  //                         orkgp:P29 ?year.
+  //                         ?contribution a orkgc:C27001;
+  //                                 orkgp:P135046 ?serie.
+  //                         ?serie rdfs:label ?venue_name.
+
+  //                         OPTIONAL{?contribution orkgp:P56008 ?data_collection.
+  //                                 ?data_collection rdfs:label ?dc_label.
+  //                         }
+  //                         OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+  //                                 ?data_analysis rdfs:label ?da_label.
+  //                         }
+
+  //                         #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+  //                         FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+  //                 }
+  // `,
 
   query_3: `
-        SELECT ?paper, ?year, ?dc_label, ?da_label
-                WHERE {
-                        ?paper orkgp:P31 ?contribution;
-                        orkgp:P29 ?year.
-                        ?contribution a orkgc:C27001;
-                                orkgp:P135046 ?serie.
-                        ?serie rdfs:label ?venue_name.
-                        
-                        OPTIONAL{?contribution orkgp:P56008 ?data_collection.
-                                ?data_collection rdfs:label ?dc_label.
-                        }
-                        OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
-                                ?data_analysis rdfs:label ?da_label.
-                        }
-                        
-                        #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                        FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)    
-                }
-`,
-
-  query_4: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?RETaskLabel ?NLPTaskInputLabel
     WHERE {
         ?paper orkgp:P31 ?contribution .
@@ -78,7 +80,7 @@ export const SPARQL_QUERIES = {
     }ORDER BY ?contribution
 `,
 
-  query_5: `
+  query_4: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?baseline_typeLabel
     WHERE {
         ?paper orkgp:P31 ?contribution .
@@ -93,7 +95,7 @@ export const SPARQL_QUERIES = {
     } ORDER BY ?contribution
 `,
 
-  query_6: `
+  query_5: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?NLPdataformatLabel
     WHERE {
         ?paper orkgp:P31 ?contribution .
@@ -108,7 +110,7 @@ export const SPARQL_QUERIES = {
     } ORDER BY ?contribution
 `,
 
-  query_7: `
+  query_6: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?intercoderReliabilityMetricLabel
     WHERE {
         ?paper orkgp:P31 ?contribution .
@@ -123,7 +125,7 @@ export const SPARQL_QUERIES = {
     } ORDER BY ?contribution
 `,
 
-  query_8: `
+  query_7: `
     SELECT DISTINCT
       ?contribution
       ?paper
@@ -191,7 +193,7 @@ export const SPARQL_QUERIES = {
     ORDER BY ?contribution ?NLPTaskTypeLabel
 `,
 
-  query_9: `
+  query_8: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?RETaskLabel ?NLPTaskTypeLabel ?NLPTaskTypeDescription
     WHERE {
         ?paper orkgp:P31 ?contribution .
@@ -209,7 +211,7 @@ export const SPARQL_QUERIES = {
     ORDER BY ?contribution ?paperLabel ?NLPTaskTypeLabel
 `,
 
-  query_10: `
+  query_9: `
     SELECT 
     DISTINCT ?contribution
     ?ratio_missing_eval
@@ -433,7 +435,7 @@ export const SPARQL_QUERIES = {
     ORDER BY ?contribution
 `,
 
-  query_11: `
+  query_10: `
     SELECT DISTINCT ?contribution ?paper ?paperLabel ?numberOfAnnotators ?NLPTaskTypeLabel ?annotatorAssignmentLabel ?levelOfExpertiseLabel ?annotatorIdentityLabel
     WHERE {
         ?paper orkgp:P31 ?contribution .
