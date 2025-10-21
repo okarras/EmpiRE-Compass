@@ -326,7 +326,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
-                backgroundColor: isCurrentPath(`/questions/${query.id}`)
+                backgroundColor: isCurrentPath(
+                  `/templates/${templateId}/questions/${query.id}`
+                )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
                 transition: 'all 0.2s ease-in-out',
@@ -342,7 +344,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     variant="body2"
                     sx={{
                       color: 'text.primary',
-                      fontWeight: isCurrentPath(`/questions/${query.id}`)
+                      fontWeight: isCurrentPath(
+                        `/templates/${templateId}/questions/${query.id}`
+                      )
                         ? 600
                         : 400,
                       fontSize: '0.9rem',

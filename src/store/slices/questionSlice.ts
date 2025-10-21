@@ -62,7 +62,7 @@ const getTemplateResources = () => {
       return {
         queries: nlp4reQueries,
         sparql: nlp4reSPARQL,
-        collectionName: 'questions_nlp4re',
+        collectionName: 'Questions Nlp4re',
       };
     case 'empirical':
     default:
