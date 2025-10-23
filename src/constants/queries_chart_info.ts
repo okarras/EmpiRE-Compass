@@ -83,9 +83,9 @@ export interface Query {
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
-    dataAnalysis?: string;
-    dataInterpretation?: string;
-    requiredDataForAnalysis?: string;
+    dataAnalysis?: string | string[];
+    dataInterpretation?: string | string[];
+    requiredDataForAnalysis?: string | string[];
   };
 }
 

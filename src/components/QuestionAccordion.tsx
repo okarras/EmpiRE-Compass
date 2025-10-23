@@ -117,15 +117,17 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
     return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
   };
 
-  const getDataInterpretation = (tabName: string) => {
-    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+  const getDataInterpretation = (tabName: string): string => {
+    const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
+    if (Array.isArray(dataInterpretation)) {
       if (tabName === 'dataCollection') {
-        return query.dataAnalysisInformation.dataInterpretation[0];
+        return dataInterpretation[0] || '';
       } else if (tabName === 'dataAnalysis') {
-        return query.dataAnalysisInformation.dataInterpretation[1];
+        return dataInterpretation[1] || '';
       }
+      return '';
     }
-    return query.dataAnalysisInformation.dataInterpretation;
+    return dataInterpretation || '';
   };
 
   const renderLoadingState = () => (
@@ -284,6 +286,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         <QuestionInformation
           information={query.dataAnalysisInformation.requiredDataForAnalysis}
           label="Required Data for Analysis"
+          tabIndex={0}
         />
 
         {query.uid_2 && (

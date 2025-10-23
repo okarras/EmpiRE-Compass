@@ -119,15 +119,17 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
     return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
   };
 
-  const getDataInterpretation = (tabName: string) => {
-    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+  const getDataInterpretation = (tabName: string): string => {
+    const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
+    if (Array.isArray(dataInterpretation)) {
       if (tabName === 'dataCollection') {
-        return query.dataAnalysisInformation.dataInterpretation[0];
+        return dataInterpretation[0] || '';
       } else if (tabName === 'dataAnalysis') {
-        return query.dataAnalysisInformation.dataInterpretation[1];
+        return dataInterpretation[1] || '';
       }
+      return '';
     }
-    return query.dataAnalysisInformation.dataInterpretation;
+    return dataInterpretation || '';
   };
 
   const renderLoadingState = () => (
@@ -207,7 +209,11 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           sectionTitle="Question Information"
           query={query}
         />
-        <QuestionInformationView query={query} isInteractive={false} />
+        <QuestionInformationView
+          query={query}
+          isInteractive={false}
+          tabIndex={tab}
+        />
 
         {/* Data Collection View */}
         <Box hidden={tab !== 0}>

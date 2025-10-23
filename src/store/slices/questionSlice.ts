@@ -12,13 +12,13 @@ export interface FirebaseQuestion {
   uid: string;
   dataAnalysisInformation: {
     question: string;
-    dataAnalysis: string;
-    requiredDataForAnalysis: string;
+    dataAnalysis: string | string[];
+    requiredDataForAnalysis: string | string[];
     questionExplanation: string;
-    dataInterpretation: string;
+    dataInterpretation: string | string[];
   };
 }
-  
+
 interface QuestionState {
   questions: Query[];
   firebaseQuestions: Record<string, unknown>;

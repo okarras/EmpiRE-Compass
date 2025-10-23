@@ -9,9 +9,9 @@ export interface DynamicQuery {
   dataAnalysisInformation: {
     question: string;
     questionExplanation: string;
-    requiredDataForAnalysis: string;
-    dataAnalysis: string;
-    dataInterpretation: string;
+    requiredDataForAnalysis: string | string[];
+    dataAnalysis: string | string[];
+    dataInterpretation: string | string[];
   };
   chartSettings?: {
     series: Array<{ dataKey: string; label: string }>;

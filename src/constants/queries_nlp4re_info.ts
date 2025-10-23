@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { axisClasses } from '@mui/x-charts';
 import { Query1DataProcessingFunction } from './data_processing_helper_functions';
 
@@ -62,9 +63,9 @@ export interface Query {
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
-    dataAnalysis?: string;
-    dataInterpretation?: string;
-    requiredDataForAnalysis?: string;
+    dataAnalysis?: string | string[];
+    dataInterpretation?: string | string[];
+    requiredDataForAnalysis?: string | string[];
   };
 }
 
