@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.4.0...v1.5.0) (2025-10-23)
+
+### Features
+
+- add iteration check to dynamic question ([420a727](https://github.com/okarras/EmpiRE-Compass/commit/420a727312442e1739d9209d52623a30196c5f1a))
+- add template id in url ([ab50a25](https://github.com/okarras/EmpiRE-Compass/commit/ab50a2522c1f30b1244d62521c801f5be8370dc4))
+- major updates in dynamic ai question ([37dafb4](https://github.com/okarras/EmpiRE-Compass/commit/37dafb4cbc06be3b5b75fd5305ea54408a390cd3))
+- update query 14 ([7cd69be](https://github.com/okarras/EmpiRE-Compass/commit/7cd69becd1b46dab9a3c24432596ba526eca17ab))
+
+### Bug Fixes
+
+- authentication ([584262b](https://github.com/okarras/EmpiRE-Compass/commit/584262ba6ad6b4078dbd745cefc5173895f42b24))
+- authentication ([417e2aa](https://github.com/okarras/EmpiRE-Compass/commit/417e2aae17c921e75cb35641bd3fc35fd6b6fd53))
+- breadcrubms links ([52a6898](https://github.com/okarras/EmpiRE-Compass/commit/52a689825a57a4a7439a7075b25b56ecd307775d))
+- change keycloak conditions to be initialized ([717a508](https://github.com/okarras/EmpiRE-Compass/commit/717a508aeda264201f680487debf70e4f12aaf30))
+- chart headers ([f0b7872](https://github.com/okarras/EmpiRE-Compass/commit/f0b7872a22c1554a5db91bb0b2a27e7c7bcc20c4))
+- data analysis tabs ([b323e49](https://github.com/okarras/EmpiRE-Compass/commit/b323e4942e0b87ecb32793fbe6e227fb85984dd6))
+- delete additional logs and components ([398c569](https://github.com/okarras/EmpiRE-Compass/commit/398c56943ed26331636e9a7958f8f77e041fb007))
+- detailed chart header ([5fe3f50](https://github.com/okarras/EmpiRE-Compass/commit/5fe3f50eed26767b10e73246de500cb70e520911))
+- dont use keycloak in homepage ([a28ab72](https://github.com/okarras/EmpiRE-Compass/commit/a28ab72c84fd48bca7d10d58ad2d45a4c5640d1f))
+- fixed a small bug in keycloak initialization ([533371c](https://github.com/okarras/EmpiRE-Compass/commit/533371ca6547c0317adbd685882cb2af484854d7))
+- keycloak initializations on product ([ebf0f73](https://github.com/okarras/EmpiRE-Compass/commit/ebf0f735449ac05c76c2531494beb3e8d551b68d))
+- renamed graph button tooltip ([8e4bc63](https://github.com/okarras/EmpiRE-Compass/commit/8e4bc6301b5eff9e8f6525c2c25497893ab6800c))
+- renamed graph download buttons for better readability ([4c579a2](https://github.com/okarras/EmpiRE-Compass/commit/4c579a2511143a8739ed5b8917cc7c6b791e189e))
+- temporary fix for keycloak api problems ([3ee4e8b](https://github.com/okarras/EmpiRE-Compass/commit/3ee4e8b94f214864e130ac1ecb17621dd7727caf))
+
 ## [1.4.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.3.0...v1.4.0) (2025-10-05)
 
 ### Features
