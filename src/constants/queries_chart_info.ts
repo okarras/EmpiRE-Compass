@@ -151,7 +151,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction2: Query2DataProcessingFunctionForDataAnalysis,
     chartSettings: {
@@ -187,7 +187,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction: Query2DataProcessingFunctionForDataCollection,
     dataAnalysisInformation: {
@@ -304,7 +304,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction: Query5DataProcessingFunction,
     dataAnalysisInformation: {
@@ -491,7 +491,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
@@ -547,7 +547,7 @@ export const queries: Query[] = [
       ],
       heading:
         'number of papers with highlighted research question(s) and highlighted answers per year',
-      noHeadingInSeries: true,
+      hideLegend: true,
       yAxis: [
         {
           label: 'numbers of papers',
@@ -748,7 +748,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction: Query14DataProcessingFunction,
     dataAnalysisInformation: {
@@ -881,7 +881,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       sx: chartStyles,
-      noHeadingInSeries: true,
+      hideLegend: true,
     },
     dataProcessingFunction2: Query16DataProcessingFunction,
     dataAnalysisInformation: {
