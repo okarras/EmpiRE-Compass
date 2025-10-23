@@ -16,7 +16,7 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
     {
       scaleType: 'band',
       dataKey: dataKey,
-      valueFormatter: (v: any) => v.toString(),
+      valueFormatter: (v: any) => v?.toString() || '',
       tickPlacement: 'middle',
       label: label,
     },

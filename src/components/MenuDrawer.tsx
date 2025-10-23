@@ -10,11 +10,6 @@ import {
   Tooltip,
   Typography,
   ListItemIcon,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
@@ -55,18 +50,6 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
       setSelectedTemplate(templateFromUrl as keyof typeof templates);
     }
   }, [location.pathname]);
-
-  const handleTemplateChange = (
-    event: SelectChangeEvent<keyof typeof templates>
-  ) => {
-    const newTemplate = event.target.value as keyof typeof templates;
-    setSelectedTemplate(newTemplate);
-
-    // Navigate to new template, preserving the rest of the path
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    pathSegments[0] = newTemplate;
-    navigate(`/${pathSegments.join('/')}`);
-  };
 
   const handleListItemClick = (id: number) => {
     navigate(`/${selectedTemplate}/questions/${id}`);
@@ -121,56 +104,6 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         <IconButton onClick={handleDrawerClose} sx={{ color: 'white' }}>
           <ChevronLeftIcon />
         </IconButton>
-      </Box>
-
-      {/* Templates dropdown */}
-      <Box
-        sx={{
-          px: 2,
-          pt: 3, // extra space above
-          pb: 1,
-          backgroundColor: 'transparent',
-        }}
-      >
-        <FormControl
-          fullWidth
-          size="small"
-          sx={{
-            borderRadius: 1,
-            '& .MuiInputLabel-root': {
-              color: '#e86161',
-              fontWeight: 600,
-            },
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: '#e86161',
-              },
-              '&:hover fieldset': {
-                borderColor: '#e86161',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#e86161',
-              },
-              '& .MuiSelect-select': {
-                color: '#e86161',
-                fontWeight: 600,
-              },
-            },
-          }}
-        >
-          <InputLabel id="templates-select-label">Templates</InputLabel>
-          <Select
-            labelId="templates-select-label"
-            value={selectedTemplate}
-            label="Templates"
-            onChange={handleTemplateChange}
-            size="small"
-            id="menu-drawer-templates-select"
-          >
-            <MenuItem value="R186491">{templates.R186491.title}</MenuItem>
-            <MenuItem value="R1544125">{templates.R1544125.title}</MenuItem>
-          </Select>
-        </FormControl>
       </Box>
 
       <List sx={{ p: 2 }}>
@@ -267,7 +200,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                   fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
                 }}
               >
-                All Questions
+                {templates[selectedTemplate]?.title} Questions
               </Typography>
             }
           />
