@@ -9,11 +9,13 @@ import { HistoryItem } from './HistoryManager';
 interface QueryExecutionSectionProps {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   loading: boolean;
   queryResults: Record<string, unknown>[];
   queryError: string | null;
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
+  onSparqlTranslationChange: (translation: string) => void;
   onGenerateAndRun: () => void;
   onRunEditedQuery: () => void;
   onOpenHistory: (type: HistoryItem['type']) => void;
@@ -23,11 +25,13 @@ interface QueryExecutionSectionProps {
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   question,
   sparqlQuery,
+  sparqlTranslation,
   loading,
   queryResults,
   queryError,
   onQuestionChange,
   onSparqlChange,
+  onSparqlTranslationChange,
   onGenerateAndRun,
   onRunEditedQuery,
   onOpenHistory,
@@ -67,11 +71,13 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
       <SPARQLQuerySection
         question={question}
         sparqlQuery={sparqlQuery}
+        sparqlTranslation={sparqlTranslation}
         loading={loading}
         queryResults={queryResults}
         queryError={queryError}
         onQuestionChange={onQuestionChange}
         onSparqlChange={onSparqlChange}
+        onSparqlTranslationChange={onSparqlTranslationChange}
         onGenerateAndRun={onGenerateAndRun}
         onRunEditedQuery={onRunEditedQuery}
         onOpenHistory={onOpenHistory}

@@ -39,11 +39,13 @@ import {
 interface SPARQLQuerySectionProps {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   loading: boolean;
   queryResults?: Record<string, unknown>[];
   queryError?: string | null;
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
+  onSparqlTranslationChange: (translation: string) => void;
   onGenerateAndRun: () => void;
   onRunEditedQuery: () => void;
   onOpenHistory: (type: 'query' | 'sparql') => void;
@@ -52,11 +54,13 @@ interface SPARQLQuerySectionProps {
 const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   question,
   sparqlQuery,
+  sparqlTranslation,
   loading,
   queryResults = [],
   queryError,
   onQuestionChange,
   onSparqlChange,
+  onSparqlTranslationChange,
   onGenerateAndRun,
   onRunEditedQuery,
   onOpenHistory,
@@ -216,53 +220,15 @@ Modified SPARQL Query:`;
     }
   };
 
-  // Function to fetch ORKG resource details
-  const fetchORKGResourceDetails = async (
-    identifier: string
-  ): Promise<string | null> => {
-    try {
-      const [prefix, id] = identifier.split(':');
-      let endpoint = '';
-
-      switch (prefix) {
-        case 'orkgp':
-          endpoint = `https://orkg.org/api/predicates/${id}/`;
-          break;
-        case 'orkgc':
-          endpoint = `https://orkg.org/api/classes/${id}/`;
-          break;
-        case 'orkgr':
-          endpoint = `https://orkg.org/api/resources/${id}/`;
-          break;
-        default:
-          return null;
-      }
-
-      const response = await fetch(endpoint, {
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        console.warn(
-          `Failed to fetch details for ${identifier}: ${response.status}`
-        );
-        return null;
-      }
-
-      const data = await response.json();
-      return data.label || data.title || null;
-    } catch (error) {
-      console.warn(`Error fetching details for ${identifier}:`, error);
-      return null;
-    }
-  };
-
-  // Function to translate ORKG identifiers to human-readable labels
-  const handleTranslate = async () => {
+  // Function to generate natural language translation of SPARQL query
+  const handleGenerateTranslation = async () => {
     if (!sparqlQuery.trim()) {
       setError('No SPARQL query to translate.');
+      return;
+    }
+
+    if (!aiService.isConfigured()) {
+      setError('Please configure your AI settings first.');
       return;
     }
 
@@ -270,73 +236,22 @@ Modified SPARQL Query:`;
     setError(null);
 
     try {
-      // Find all ORKG identifiers in the query
-      const orkgPattern = /(orkg[pcr]:[A-Z0-9]+)/g;
-      const matches = sparqlQuery.match(orkgPattern);
+      const translationPrompt = `Translate the following SPARQL query into a single, clear, human-readable English paragraph explaining what it does and what data it returns. Do not explain what SPARQL is; just explain what this specific query does:
 
-      if (!matches || matches.length === 0) {
-        setError('No ORKG identifiers found in the query.');
-        setIsTranslating(false);
-        return;
-      }
+${sparqlQuery}
 
-      // Get unique identifiers
-      const uniqueIdentifiers = [...new Set(matches)];
+Translation:`;
 
-      // Fetch labels for all unique identifiers
-      const labelPromises = uniqueIdentifiers.map(async (identifier) => {
-        const label = await fetchORKGResourceDetails(identifier);
-        return { identifier, label };
+      const result = await aiService.generateText(translationPrompt, {
+        temperature: 0.3,
+        maxTokens: 500,
       });
 
-      const labelResults = await Promise.all(labelPromises);
-
-      // Create a map of identifier to label
-      const labelMap = new Map<string, string>();
-      labelResults.forEach(({ identifier, label }) => {
-        if (label) {
-          labelMap.set(identifier, label);
-        }
-      });
-
-      // Replace identifiers with comments + original identifier
-      let translatedQuery = sparqlQuery;
-
-      // Process each line to add comments
-      const lines = translatedQuery.split('\n');
-      const processedLines = lines.map((line) => {
-        let processedLine = line;
-
-        // Check if this line contains any ORKG identifiers
-        const lineMatches = line.match(orkgPattern);
-        if (lineMatches) {
-          // Add comments for each identifier found in this line
-          const comments: string[] = [];
-          lineMatches.forEach((identifier) => {
-            const label = labelMap.get(identifier);
-            if (label) {
-              comments.push(`# ${label}`);
-            }
-          });
-
-          // If we have comments, add them before the line
-          if (comments.length > 0) {
-            processedLine = comments.join('\n') + '\n' + line;
-          }
-        }
-
-        return processedLine;
-      });
-
-      const finalQuery = processedLines.join('\n');
-
-      // Update the query with translated version
-      onSparqlChange(finalQuery);
+      const translation = result.text.trim();
+      onSparqlTranslationChange(translation);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to translate ORKG identifiers'
+        err instanceof Error ? err.message : 'Failed to generate translation'
       );
     } finally {
       setIsTranslating(false);
@@ -415,6 +330,87 @@ Modified SPARQL Query:`;
           </Box>
         </Box>
       </Paper>
+
+      {/* SPARQL Translation Section */}
+      {sparqlQuery && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            mb: 3,
+            backgroundColor: 'rgba(232, 97, 97, 0.05)',
+            borderRadius: 2,
+            border: '1px solid rgba(232, 97, 97, 0.2)',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: '#e86161', fontWeight: 600 }}>
+              Query Explanation
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Tooltip title="Generate natural language explanation">
+                <IconButton
+                  onClick={handleGenerateTranslation}
+                  disabled={isTranslating}
+                  size="small"
+                  sx={{
+                    color: '#e86161',
+                    '&:hover': {
+                      backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                    },
+                    '&:disabled': {
+                      color: 'text.disabled',
+                    },
+                  }}
+                >
+                  {isTranslating ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Translate />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          {sparqlTranslation ? (
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.primary',
+                lineHeight: 1.6,
+                fontStyle: 'italic',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                p: 2,
+                borderRadius: 1,
+                border: '1px solid rgba(232, 97, 97, 0.1)',
+              }}
+            >
+              {sparqlTranslation}
+            </Typography>
+          ) : (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontStyle: 'italic',
+                textAlign: 'center',
+                py: 2,
+              }}
+            >
+              Click the translate button to generate a natural language
+              explanation of this SPARQL query.
+            </Typography>
+          )}
+        </Paper>
+      )}
 
       {/* SPARQL Query Section */}
       {sparqlQuery && (
@@ -509,28 +505,6 @@ Modified SPARQL Query:`;
                       }}
                     >
                       <SmartToy />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Show human-readable labels">
-                    <IconButton
-                      onClick={handleTranslate}
-                      disabled={isTranslating}
-                      size="small"
-                      sx={{
-                        color: '#e86161',
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                        '&:disabled': {
-                          color: 'text.disabled',
-                        },
-                      }}
-                    >
-                      {isTranslating ? (
-                        <CircularProgress size={16} />
-                      ) : (
-                        <Translate />
-                      )}
                     </IconButton>
                   </Tooltip>
                   {getSparqlHistory().length > 0 && (
