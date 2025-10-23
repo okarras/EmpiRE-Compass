@@ -8,6 +8,8 @@ import QuestionPage from './pages/QuestionPage';
 import QuestionDashboardPage from './pages/QuestionDashboardPage';
 import DynamicQuestionPage from './pages/DynamicQuestionPage';
 import TemplateGraphPage from './pages/TemplateGraphPage';
+import CollaboratePage from './pages/CollaboratePage';
+import CollaboratorViewer from './pages/CollaboratorViewer';
 
 const Router = () => {
   return (
@@ -43,6 +45,16 @@ const Router = () => {
             <Route
               path="/graph"
               element={<TemplateGraphPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/collaborate"
+              element={<CollaboratePage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="/collaborate/viewer"
+              element={<CollaboratorViewer />}
               errorElement={<ErrorFallback />}
             />
           </Route>

@@ -24,6 +24,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { queries as empiricalQueries } from '../constants/queries_chart_info';
 import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 const templates = {
   R186491: empiricalQueries,
@@ -298,6 +299,38 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 Dynamic Question
+              </Typography>
+            }
+          />
+        </ListItem>
+        {/* Collaborate Link (NEW) */}
+        <ListItem
+          onClick={() => {
+            navigate('/collaborate');
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/collaborate')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <UploadFileIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/collaborate') ? 600 : 500,
+                }}
+              >
+                Collaborate
               </Typography>
             }
           />
