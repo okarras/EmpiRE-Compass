@@ -2,7 +2,6 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { createKeycloak } from './keycloak';
 import KeycloakTokenRefresher from './KeycloakTokenRefresher';
 import { AuthContextProvider } from './AuthContext';
-import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
 export default function AuthProvider({
@@ -11,13 +10,12 @@ export default function AuthProvider({
   children: React.ReactNode;
 }) {
   const [useKeycloak, setUseKeycloak] = useState(false);
-  const location = useLocation();
   // Get Keycloak instance (singleton)
 
   useEffect(() => {
-    // Only enable Keycloak on the statistics page
-    setUseKeycloak(location.pathname === '/statistics');
-  }, [location.pathname]);
+    setUseKeycloak(true);
+  }, []);
+
   if (!useKeycloak) {
     return <>{children}</>;
   }
