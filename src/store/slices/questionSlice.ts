@@ -84,12 +84,12 @@ const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
 };
 
 // Async thunk for fetching questions from Firebase
+// UPDATED FOR NEW NESTED STRUCTURE
 export const fetchQuestionsFromFirebase = createAsyncThunk(
   'questions/fetchQuestions',
-  async (templateId: string) => {
-    const { collectionName } = getTemplateResources(templateId);
-    const firebaseQuestions = await CRUDQuestions.getQuestions(collectionName);
-    return { firebaseQuestions, templateId };
+  async (templateId: string = 'R186491') => {
+    const firebaseQuestions = await CRUDQuestions.getQuestions(templateId);
+    return { firebaseQuestions, templateId }; // Return both questions and templateId
   }
 );
 

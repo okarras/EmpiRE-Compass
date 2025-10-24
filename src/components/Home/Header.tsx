@@ -1,6 +1,11 @@
 import { Box, Typography } from '@mui/material';
+import { HeaderContent } from '../../firestore/CRUDHomeContent';
 
-const Header = () => {
+interface HeaderProps {
+  content: HeaderContent;
+}
+
+const Header = ({ content }: HeaderProps) => {
   return (
     <Box
       sx={{
@@ -20,7 +25,7 @@ const Header = () => {
           letterSpacing: '-0.02em',
         }}
       >
-        EmpiRE-Compass
+        {content.title}
       </Typography>
       <Typography
         variant="h5"
@@ -32,8 +37,7 @@ const Header = () => {
           mx: 'auto',
         }}
       >
-        A Community-Maintainable Knowledge Graph Dashboard for Empirical
-        Research in Requirements Engineering
+        {content.subtitle}
       </Typography>
     </Box>
   );

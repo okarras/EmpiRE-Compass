@@ -26,6 +26,7 @@ export default function LoginORKG() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [showError, setShowError] = useState(false);
+  const [hasShownSuccess, setHasShownSuccess] = useState(false);
 
   // If silent SSO can't finish (cookies/CSP), show manual button after 2.5s.
   useEffect(() => {
@@ -33,16 +34,17 @@ export default function LoginORKG() {
     return () => clearTimeout(id);
   }, []);
 
-  // Show success message when user becomes authenticated
+  // Show success message ONCE when user first authenticates
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !hasShownSuccess) {
       setShowSuccess(true);
       setIsLoggingIn(false);
       setShowError(false);
+      setHasShownSuccess(true); // Mark as shown
       const timer = setTimeout(() => setShowSuccess(false), 3000);
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, hasShownSuccess]);
 
   // Handle error display
   useEffect(() => {
@@ -66,6 +68,7 @@ export default function LoginORKG() {
 
   const handleLogout = async () => {
     setAnchorEl(null);
+    setHasShownSuccess(false); // Reset so success shows again on next login
     try {
       await logout();
     } catch (error) {

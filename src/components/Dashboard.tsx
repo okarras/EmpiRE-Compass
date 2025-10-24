@@ -122,18 +122,6 @@ const Dashboard = () => {
                 height: 24,
               }}
             />
-            <Chip
-              label={templateConfig.collectionName}
-              size="small"
-              variant="outlined"
-              sx={{
-                borderColor: 'divider',
-                color: 'text.secondary',
-                fontWeight: 400,
-                fontSize: '0.75rem',
-                height: 24,
-              }}
-            />
             <Typography
               variant="caption"
               sx={{

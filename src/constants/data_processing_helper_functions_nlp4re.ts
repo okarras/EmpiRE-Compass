@@ -4,7 +4,6 @@ export interface RawDataItem {
 
 export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
-  console.log('query raw result:', rawData);
 
   const getFirst = (row: RawDataItem, keys: string[]) => {
     for (const k of keys) {
@@ -56,7 +55,6 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
   arr.sort(
     (a, b) => b.count - a.count || a.metricLabel.localeCompare(b.metricLabel)
   );
-  console.log('query result:', arr);
   return arr.slice(0, 3);
 };
 

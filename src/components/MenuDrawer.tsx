@@ -18,6 +18,11 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import { templateConfig } from '../constants/template_config';
+import BackupIcon from '@mui/icons-material/Backup';
+import StorageIcon from '@mui/icons-material/Storage';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EditIcon from '@mui/icons-material/Edit';
+import { useAuthData } from '../auth/useAuthData';
 
 const templates = templateConfig;
 
@@ -31,6 +36,7 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthData();
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('R186491');
@@ -240,6 +246,178 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         </ListItem>
 
         <Divider sx={{ my: 2 }} />
+
+        {/* Admin Section */}
+        {user?.is_admin && (
+          <>
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 600,
+                pl: 2,
+                display: 'block',
+                mb: 1,
+              }}
+            >
+              Admin Tools
+            </Typography>
+
+            {/* Admin Dashboard Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(`/${selectedTemplate}/admin`)
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <AdminPanelSettingsIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(`/${selectedTemplate}/admin`)
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Dashboard
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Data Management Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/data`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/data`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <StorageIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/data`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Data Management
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Admin Backup Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/backup`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/backup`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <BackupIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/backup`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Backup
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Home Content Management Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/home-content`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/home-content`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <EditIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/home-content`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Home Content
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            <Divider sx={{ my: 2 }} />
+          </>
+        )}
 
         {/* Questions List */}
         <Typography
