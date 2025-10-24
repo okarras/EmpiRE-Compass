@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.5.0...v1.6.0) (2025-10-24)
+
+### Features
+
+- add admin control ([ab17df0](https://github.com/okarras/EmpiRE-Compass/commit/ab17df0e7c66b47dcd2ddaffca32aa2ff40389f5))
+- added the queries ([7f4d7c8](https://github.com/okarras/EmpiRE-Compass/commit/7f4d7c88970305951b968ab7d4a4afcd59b34762))
+- change template logic ui ([070e712](https://github.com/okarras/EmpiRE-Compass/commit/070e7126eb1bbd12aef54cff5464bae392fa0d66))
+
+### Bug Fixes
+
+- chart labels ([186759c](https://github.com/okarras/EmpiRE-Compass/commit/186759cf5315c0896a60b6c132bdf6c3007f3603))
+- template change logic ([c040ea9](https://github.com/okarras/EmpiRE-Compass/commit/c040ea95f050a85dcdffa7176c596d772979c2cf))
+
 ## [1.5.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.4.0...v1.5.0) (2025-10-23)
 
 ### Features
