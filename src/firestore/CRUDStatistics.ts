@@ -30,10 +30,15 @@ const getStatistics = async (templateId = 'R186491') => {
     templateId,
     'Statistics'
   );
+  console.log('statisticsCollection', statisticsCollection);
   const querySnapshot = await getDocs(statisticsCollection);
-
+  console.log(
+    'querySnapshot',
+    querySnapshot.docs.map((doc) => doc.data())
+  );
   const snapShotData = querySnapshot.docs.map((doc) => doc.data());
   const statisticsData = snapShotData.find((data) => data.id === statisticId);
+  console.log('statisticsData', statisticsData);
   return statisticsData;
 };
 
