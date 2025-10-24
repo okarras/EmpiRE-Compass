@@ -185,12 +185,8 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           indicatorColor="primary"
           textColor="primary"
         >
-          <Tab
-            label={query.chartSettings2?.tabs?.tab1_name ?? 'Data Collection'}
-          />
-          <Tab
-            label={query.chartSettings2?.tabs?.tab2_name ?? 'Data Analysis'}
-          />
+          <Tab label={query.tabs?.tab1_name ?? 'Data Collection'} />
+          <Tab label={query.tabs?.tab2_name ?? 'Data Analysis'} />
         </Tabs>
       )}
 

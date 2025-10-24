@@ -50,7 +50,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         loading={loading}
         slotProps={{
           legend: {
-            hidden: chartSetting.hideLegend,
+            hidden: isSubChart && chartSetting.hideDetailedChartLegend,
           },
         }}
       />
