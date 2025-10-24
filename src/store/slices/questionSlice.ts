@@ -56,7 +56,6 @@ const getTemplateResources = (templateId: string) => {
   return {
     queries: config.queries,
     sparql: config.sparql,
-    collectionName: config.collectionName,
   };
 };
 

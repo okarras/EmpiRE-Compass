@@ -4,7 +4,6 @@ import {
   AccordionDetails,
   Typography,
   Box,
-  Chip,
   Divider,
 } from '@mui/material';
 import { ExpandMore, Info } from '@mui/icons-material';

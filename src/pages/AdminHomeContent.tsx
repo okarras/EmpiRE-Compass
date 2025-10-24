@@ -18,7 +18,6 @@ import {
   Refresh,
   Add,
   Delete,
-  Edit,
   Home as HomeIcon,
 } from '@mui/icons-material';
 import CRUDHomeContent, {

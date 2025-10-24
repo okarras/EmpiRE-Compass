@@ -64,6 +64,7 @@ const DEFAULT_STATS: StatisticsData = {
 export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
+  console.log('statistics', statistics);
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
@@ -101,7 +102,9 @@ export default function Statistics() {
       const templateId = pathSegments[0] || 'R186491';
 
       CRUDStatistics.getStatistics(templateId).then((statisticsValues) => {
+        console.log('statisticsValues', statisticsValues);
         if (statisticsValues) {
+          console.log('statisticsValues', statisticsValues);
           Object.keys(statisticsValues).forEach((key) => {
             setStatistics((prev) => ({
               ...prev,
