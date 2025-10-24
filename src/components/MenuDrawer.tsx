@@ -10,25 +10,16 @@ import {
   Tooltip,
   Typography,
   ListItemIcon,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent,
 } from '@mui/material';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
+import { templateConfig } from '../constants/template_config';
 
-const templates = {
-  R186491: empiricalQueries,
-  R1544125: nlp4reQueries,
-};
+const templates = templateConfig;
 
 const drawerWidth = 280;
 
@@ -40,33 +31,28 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('R186491');
 
-  const currentQueries = templates[selectedTemplate] ?? [];
+  useEffect(() => {
+    if (selectedTemplate === 'R186491' || selectedTemplate === 'R1544125') {
+      setSelectedTemplate(selectedTemplate);
+    }
+  }, [selectedTemplate]);
+  const currentQueries = templates[selectedTemplate]?.queries ?? [];
 
   // Read template from URL on mount
   useEffect(() => {
-    const templateFromUrl = searchParams.get('template');
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const templateFromUrl = pathSegments[0];
     if (templateFromUrl && templateFromUrl in templates) {
       setSelectedTemplate(templateFromUrl as keyof typeof templates);
     }
-  }, [searchParams]);
-
-  const handleTemplateChange = (
-    event: SelectChangeEvent<keyof typeof templates>
-  ) => {
-    const newTemplate = event.target.value as keyof typeof templates;
-    setSelectedTemplate(newTemplate);
-
-    // Update URL with new template
-    setSearchParams({ template: newTemplate });
-  };
+  }, [location.pathname]);
 
   const handleListItemClick = (id: number) => {
-    navigate(`/questions/${id}`);
+    navigate(`/${selectedTemplate}/questions/${id}`);
     handleDrawerClose();
   };
 
@@ -120,61 +106,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         </IconButton>
       </Box>
 
-      {/* Templates dropdown */}
-      <Box
-        sx={{
-          px: 2,
-          pt: 3, // extra space above
-          pb: 1,
-          backgroundColor: 'transparent',
-        }}
-      >
-        <FormControl
-          fullWidth
-          size="small"
-          sx={{
-            borderRadius: 1,
-            '& .MuiInputLabel-root': {
-              color: '#e86161',
-              fontWeight: 600,
-            },
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: '#e86161',
-              },
-              '&:hover fieldset': {
-                borderColor: '#e86161',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#e86161',
-              },
-              '& .MuiSelect-select': {
-                color: '#e86161',
-                fontWeight: 600,
-              },
-            },
-          }}
-        >
-          <InputLabel id="templates-select-label">Templates</InputLabel>
-          <Select
-            labelId="templates-select-label"
-            value={selectedTemplate}
-            label="Templates"
-            onChange={handleTemplateChange}
-            size="small"
-            id="menu-drawer-templates-select"
-          >
-            <MenuItem value="R186491">Empirical research practice</MenuItem>
-            <MenuItem value="R1544125">NLP4RE ID Card</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
       <List sx={{ p: 2 }}>
         {/* Home Link */}
         <ListItem
           onClick={() => {
-            navigate('/');
+            navigate(`/${selectedTemplate}/`);
             handleDrawerClose();
           }}
           sx={{
@@ -207,7 +143,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Statistics Link */}
         <ListItem
           onClick={() => {
-            navigate('/statistics');
+            navigate(`/${selectedTemplate}/statistics`);
             handleDrawerClose();
           }}
           sx={{
@@ -240,7 +176,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* All Questions Link */}
         <ListItem
           onClick={() => {
-            navigate('/allquestions');
+            navigate(`/${selectedTemplate}/allquestions`);
             handleDrawerClose();
           }}
           sx={{
@@ -264,7 +200,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                   fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
                 }}
               >
-                All Questions
+                {templates[selectedTemplate]?.title} Questions
               </Typography>
             }
           />
@@ -273,7 +209,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Dynamic Question Link */}
         <ListItem
           onClick={() => {
-            navigate('/dynamic-question');
+            navigate(`/${selectedTemplate}/dynamic-question`);
             handleDrawerClose();
           }}
           sx={{
@@ -331,7 +267,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
-                backgroundColor: isCurrentPath(`/questions/${query.id}`)
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/questions/${query.id}`
+                )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
                 transition: 'all 0.2s ease-in-out',
@@ -347,7 +285,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     variant="body2"
                     sx={{
                       color: 'text.primary',
-                      fontWeight: isCurrentPath(`/questions/${query.id}`)
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/questions/${query.id}`
+                      )
                         ? 600
                         : 400,
                       fontSize: '0.9rem',

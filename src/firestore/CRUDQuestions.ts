@@ -21,8 +21,8 @@ const addQuestion = async () => {
     console.error('Error adding document: ', e);
   }
 };
-const getQuestions = async () => {
-  const querySnapshot = await getDocs(collection(db, 'Questions'));
+const getQuestions = async (collectionName: string) => {
+  const querySnapshot = await getDocs(collection(db, collectionName));
   const questions: DocumentData[] = [];
   querySnapshot.forEach((doc) => {
     questions.push(doc.data());

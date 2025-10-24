@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import type { Query } from '../../constants/queries_chart_info';
-import { queries } from '../../constants/queries_chart_info';
 import CRUDQuestions from '../../firestore/CRUDQuestions';
 import fetchSPARQLData from '../../helpers/fetch_query';
-import { SPARQL_QUERIES } from '../../api/SPARQL_QUERIES';
+import { getTemplateConfig } from '../../constants/template_config';
 
 export interface FirebaseQuestion {
   id: number;
@@ -51,9 +50,20 @@ const initialState: QuestionState = {
   normalized: true,
 };
 
+const getTemplateResources = (templateId: string) => {
+  const config = getTemplateConfig(templateId);
+
+  return {
+    queries: config.queries,
+    sparql: config.sparql,
+    collectionName: config.collectionName,
+  };
+};
+
 // Helper function to merge Firebase data with local queries
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mergeQuestionsData = (firebaseQuestions: any[]) => {
+const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
+  const { queries } = getTemplateResources(templateId);
   const questionsMap = new Map(firebaseQuestions.map((q) => [q.uid, q]));
 
   return [...queries]
@@ -76,18 +86,26 @@ const mergeQuestionsData = (firebaseQuestions: any[]) => {
 // Async thunk for fetching questions from Firebase
 export const fetchQuestionsFromFirebase = createAsyncThunk(
   'questions/fetchQuestions',
-  async () => {
-    const firebaseQuestions = await CRUDQuestions.getQuestions();
-    return firebaseQuestions;
+  async (templateId: string) => {
+    const { collectionName } = getTemplateResources(templateId);
+    const firebaseQuestions = await CRUDQuestions.getQuestions(collectionName);
+    return { firebaseQuestions, templateId };
   }
 );
 
 // Async thunk for fetching SPARQL data for a specific question
 export const fetchQuestionData = createAsyncThunk(
   'questions/fetchQuestionData',
-  async (questionId: string) => {
+  async ({
+    questionId,
+    templateId,
+  }: {
+    questionId: string;
+    templateId: string;
+  }) => {
+    const { sparql } = getTemplateResources(templateId);
     //@ts-expect-error
-    const data = await fetchSPARQLData(SPARQL_QUERIES[questionId]);
+    const data = await fetchSPARQLData(sparql[questionId]);
     // Create a new array from the data to avoid read-only issues
     return {
       questionId,
@@ -101,7 +119,8 @@ const questionSlice = createSlice({
   initialState,
   reducers: {
     setCurrentQuestion: (state, action) => {
-      const questionId = action.payload;
+      const { questionId, templateId } = action.payload;
+      const { queries } = getTemplateResources(templateId);
       const targetQuery = queries.find((q) => q.id === questionId);
       if (!targetQuery) return;
 
@@ -128,8 +147,9 @@ const questionSlice = createSlice({
       })
       .addCase(fetchQuestionsFromFirebase.fulfilled, (state, action) => {
         state.loading.questions = false;
+        const { firebaseQuestions, templateId } = action.payload;
         // Store raw Firebase data
-        state.firebaseQuestions = action.payload.reduce(
+        state.firebaseQuestions = firebaseQuestions.reduce(
           (acc, q) => ({
             ...acc,
             [q.uid]: q,
@@ -137,7 +157,7 @@ const questionSlice = createSlice({
           {}
         );
         // Merge with local queries
-        state.questions = mergeQuestionsData(action.payload);
+        state.questions = mergeQuestionsData(firebaseQuestions, templateId);
       })
       .addCase(fetchQuestionsFromFirebase.rejected, (state, action) => {
         state.loading.questions = false;

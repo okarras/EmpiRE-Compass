@@ -10,12 +10,13 @@ import {
   Divider,
 } from '@mui/material';
 import fetchSPARQLData from '../helpers/fetch_query';
-import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
 import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
+import { getTemplateConfig } from '../constants/template_config';
+import { useParams } from 'react-router-dom';
 
 interface QuestionProps {
   query: Query;
@@ -25,6 +26,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   // Tabs state
   const [tab, setTab] = useState(0);
   const { setContext } = useAIAssistantContext();
+  const { templateId } = useParams();
 
   // State for primary data (uid)
   const [dataCollection, setDataCollection] = useState<
@@ -55,9 +57,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       try {
         setLoading1(true);
         setError1(null);
+        const sparqlMap = getTemplateConfig(templateId as string).sparql;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid]);
+        const data = await fetchSPARQLData(sparqlMap[query.uid]);
         setDataCollection(data);
       } catch (err) {
         setError1('Failed to load question data');
@@ -68,7 +71,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
     };
     setNormalized(true);
     fetchData();
-  }, [query.uid]);
+  }, [query.uid, templateId]);
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -77,9 +80,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         try {
           setLoading2(true);
           setError2(null);
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
+          const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -94,9 +98,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
         try {
           setLoading2(true);
           setError2(null);
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2_merge]);
+          const data = await fetchSPARQLData(sparqlMap[query.uid_2_merge]);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -107,7 +112,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge]);
+  }, [query, query?.uid_2, query?.uid_2_merge, templateId]);
 
   const getProcessedChartData = () => {
     if (query.uid_2_merge) {

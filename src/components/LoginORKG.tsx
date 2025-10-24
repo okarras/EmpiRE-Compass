@@ -90,15 +90,8 @@ export default function LoginORKG() {
   if (isLoading && !timedOut) {
     return (
       <Fade in={true}>
-        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ px: 1 }}>
-          <CircularProgress size={20} thickness={4} />
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontWeight: 500 }}
-          >
-            Checking authentication...
-          </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <CircularProgress size={16} thickness={4} />
         </Stack>
       </Fade>
     );
@@ -108,25 +101,31 @@ export default function LoginORKG() {
   if (!isAuthenticated) {
     return (
       <Fade in={true}>
-        <Stack spacing={1.5} sx={{ minWidth: 200 }}>
+        <Box>
           {showError && (
-            <Alert
-              severity="error"
+            <Snackbar
+              open={showError}
+              autoHideDuration={6000}
               onClose={() => setShowError(false)}
-              action={
-                <Button
-                  color="inherit"
-                  size="small"
-                  onClick={handleRetry}
-                  startIcon={<Refresh />}
-                >
-                  Retry
-                </Button>
-              }
-              sx={{ borderRadius: 2 }}
+              anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
-              {error}
-            </Alert>
+              <Alert
+                severity="error"
+                onClose={() => setShowError(false)}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={handleRetry}
+                    startIcon={<Refresh />}
+                  >
+                    Retry
+                  </Button>
+                }
+              >
+                {error}
+              </Alert>
+            </Snackbar>
           )}
 
           <Button
@@ -136,23 +135,31 @@ export default function LoginORKG() {
             disabled={isLoggingIn}
             startIcon={
               isLoggingIn ? (
-                <CircularProgress size={18} thickness={4} />
+                <CircularProgress size={14} thickness={4} />
               ) : (
-                <Login />
+                <Login sx={{ fontSize: '1rem' }} />
               )
             }
             sx={{
-              borderRadius: 2,
-              py: 1,
-              px: 1,
-              fontWeight: 600,
+              borderRadius: 1.5,
+              py: 0.75,
+              px: 1.5,
+              fontWeight: 500,
               textTransform: 'none',
+              fontSize: '0.875rem',
+              minWidth: 'auto',
+              borderColor: 'divider',
+              color: 'text.primary',
+              '&:hover': {
+                borderColor: '#e86161',
+                backgroundColor: 'rgba(232, 97, 97, 0.04)',
+              },
               transition: 'all 0.2s ease-in-out',
             }}
           >
-            {isLoggingIn ? 'Signing in...' : 'Sign in with ORKG'}
+            {isLoggingIn ? 'Signing in...' : 'Sign in'}
           </Button>
-        </Stack>
+        </Box>
       </Fade>
     );
   }

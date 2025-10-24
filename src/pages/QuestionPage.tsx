@@ -8,7 +8,7 @@ import {
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { queries } from '../constants/queries_chart_info';
+import { getTemplateConfig } from '../constants/template_config';
 import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
@@ -38,6 +38,7 @@ const ErrorState = ({ message }: { message: string }) => (
 const QuestionPage = () => {
   const params = useParams();
   const id = params.id;
+  const templateId = params.templateId as string;
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -46,7 +47,8 @@ const QuestionPage = () => {
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
 
-  const targetQuery = queries.find((query) => query.id == Number(id));
+  const queries = getTemplateConfig(templateId).queries;
+  const targetQuery = queries?.find((query) => query.id === Number(id));
 
   if (!targetQuery) {
     return <ErrorState message="Question not found" />;
