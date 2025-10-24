@@ -10,7 +10,6 @@ function KeycloakTokenRefresher() {
     // Set up token refresh interval
     const refreshInterval = setInterval(async () => {
       if (keycloak.authenticated) {
-        console.log('Refreshing token');
         try {
           const refreshed = await keycloak.updateToken(30);
           if (refreshed) {

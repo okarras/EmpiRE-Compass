@@ -249,7 +249,7 @@ export const queries: Query[] = [
         left: 150,
       },
     },
-    dataProcessingFunction2: Query4DataProcessingFunctionForDataCollection,
+    dataProcessingFunction2: Query4DataProcessingFunctionForDataAnalysis,
     chartSettings: {
       layout: 'horizontal',
       className: 'fullWidth fixText',
@@ -271,7 +271,7 @@ export const queries: Query[] = [
       height: chartHeight,
       sx: chartStyles,
     },
-    dataProcessingFunction: Query4DataProcessingFunctionForDataAnalysis,
+    dataProcessingFunction: Query4DataProcessingFunctionForDataCollection,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used?',
     },

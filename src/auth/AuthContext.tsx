@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useKeycloak } from '@react-keycloak/web';
-import { collection, doc, setDoc } from 'firebase/firestore';
-import { db } from '../firebase';
 import { getUserInfo } from './authUtils';
 import {
   AuthContext,
   UserData,
   type AuthContextType,
 } from './AuthContextTypes';
+import UserSync from '../firestore/UserSync';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -29,8 +28,8 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
 
     if (isAuthenticated && keycloak.token) {
-      // Save to Firebase (fire and forget - don't block UI)
-      const saveToFirebase = async () => {
+      // Sync user to Firebase (fire and forget - don't block UI)
+      const syncToFirebase = async () => {
         try {
           if (!keycloak.token) {
             return;
@@ -39,19 +38,38 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (!userInfo) {
             return;
           }
-          setUser(userInfo);
-          console.log('User info:', userInfo);
-          const userRef = doc(collection(db, 'Users'), userInfo.id);
-          await setDoc(userRef, userInfo, { merge: true });
+
+          // Sync to Firebase with admin status check
+          const firebaseUser = await UserSync.syncUserToFirebase({
+            id: userInfo.id,
+            email: userInfo.email,
+            display_name: userInfo.display_name,
+          });
+
+          // Update local state with Firebase user data (includes is_admin)
+          setUser({
+            ...userInfo,
+            is_admin: firebaseUser.is_admin,
+          } as UserData);
+
+          console.log('✅ User authenticated:', {
+            name: firebaseUser.display_name,
+            isAdmin: firebaseUser.is_admin,
+          });
         } catch (firebaseError) {
-          console.error('Failed to save user to Firebase:', firebaseError);
+          console.error('Failed to sync user to Firebase:', firebaseError);
           // Don't set error for Firebase failures - it's not critical for auth
+          // But set user anyway so UI can work
+          const userInfo = await getUserInfo(keycloak.token!);
+          if (userInfo) {
+            setUser(userInfo);
+          }
         }
       };
 
-      saveToFirebase();
+      syncToFirebase();
     }
-  }, [isAuthenticated, initialized, keycloak.token, location.pathname]);
+  }, [isAuthenticated, initialized, keycloak.token]);
 
   const login = async () => {
     if (!keycloak) {

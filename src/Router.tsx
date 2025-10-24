@@ -8,6 +8,11 @@ import QuestionPage from './pages/QuestionPage';
 import QuestionDashboardPage from './pages/QuestionDashboardPage';
 import DynamicQuestionPage from './pages/DynamicQuestionPage';
 import TemplateGraphPage from './pages/TemplateGraphPage';
+import AdminBackup from './pages/AdminBackup';
+import AdminDataManagement from './pages/AdminDataManagement';
+import AdminHomeContent from './pages/AdminHomeContent';
+import AdminDashboard from './pages/AdminDashboard';
+import AdminGuard from './auth/AdminGuard';
 
 const Router = () => {
   return (
@@ -43,6 +48,42 @@ const Router = () => {
             <Route
               path="graph"
               element={<TemplateGraphPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin"
+              element={
+                <AdminGuard>
+                  <AdminDashboard />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/backup"
+              element={
+                <AdminGuard>
+                  <AdminBackup />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/data"
+              element={
+                <AdminGuard>
+                  <AdminDataManagement />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/home-content"
+              element={
+                <AdminGuard>
+                  <AdminHomeContent />
+                </AdminGuard>
+              }
               errorElement={<ErrorFallback />}
             />
           </Route>

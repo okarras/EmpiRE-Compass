@@ -84,7 +84,6 @@ const DynamicAIQuestion = () => {
   // Initialize template ID in context
   useEffect(() => {
     if (templateId && state.templateId !== templateId) {
-      console.log('🔄 Prop templateId changed, initializing:', templateId);
       void handleTemplateChange(templateId);
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');
