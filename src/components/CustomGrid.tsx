@@ -1,5 +1,7 @@
 import React from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Box } from '@mui/material';
+import GridStats from './GridStats';
 
 interface Props {
   questionData: Record<string, unknown>[];
@@ -51,30 +53,35 @@ const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
   }, [questionData]);
 
   return (
-    <div style={{ height: 600, width: '100%', marginTop: 20 }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        pageSizeOptions={[15, 30, 50]}
-        initialState={{
-          pagination: { paginationModel: { pageSize: 15, page: 0 } },
-        }}
-        disableRowSelectionOnClick
-        showToolbar
-        sx={{
-          '& .MuiDataGrid-row:nth-of-type(odd)': {
-            backgroundColor: '#f9f9f9', // light grey for odd rows
-          },
-          '& .MuiDataGrid-row:nth-of-type(even)': {
-            backgroundColor: '#ffffff', // white for even rows
-          },
-          '& .MuiDataGrid-cell': {
-            whiteSpace: 'normal',
-            wordWrap: 'break-word',
-          },
-        }}
-      />
-    </div>
+    <Box sx={{ width: '100%', marginTop: 2 }}>
+      {/* Statistics Section */}
+      <GridStats questionData={questionData} />
+
+      {/* Data Grid */}
+      <div style={{ height: 600, width: '100%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSizeOptions={[15, 30, 50]}
+          initialState={{
+            pagination: { paginationModel: { pageSize: 15, page: 0 } },
+          }}
+          disableRowSelectionOnClick
+          sx={{
+            '& .MuiDataGrid-row:nth-of-type(odd)': {
+              backgroundColor: '#f9f9f9', // light grey for odd rows
+            },
+            '& .MuiDataGrid-row:nth-of-type(even)': {
+              backgroundColor: '#ffffff', // white for even rows
+            },
+            '& .MuiDataGrid-cell': {
+              whiteSpace: 'normal',
+              wordWrap: 'break-word',
+            },
+          }}
+        />
+      </div>
+    </Box>
   );
 };
 

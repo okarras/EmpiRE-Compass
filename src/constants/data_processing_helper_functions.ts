@@ -284,7 +284,7 @@ export const Query4DataProcessingFunctionForDataCollection = (
   };
 
   rawData.forEach((item) => {
-    const labelLower = item.dc_method_type_label.toLowerCase();
+    const labelLower = item.dc_method_type_label?.toLowerCase();
     if (keys_to_count.includes(labelLower)) {
       labelCounts[labelLower]++;
     } else {

@@ -283,40 +283,198 @@ const QuestionEditDialog = ({
                 }
                 helperText="HTML explanation with references - supports <p>, <a>, <strong>, etc."
               />
-              <TextField
-                label="Data Analysis Methodology"
-                fullWidth
-                multiline
-                rows={4}
-                value={form.dataAnalysisInformation.dataAnalysis || ''}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    dataAnalysisInformation: {
-                      ...form.dataAnalysisInformation,
-                      dataAnalysis: e.target.value,
-                    },
-                  })
-                }
-                helperText="Methodology and analysis approach used"
-              />
-              <TextField
-                label="Data Interpretation (HTML)"
-                fullWidth
-                multiline
-                rows={6}
-                value={form.dataAnalysisInformation.dataInterpretation || ''}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    dataAnalysisInformation: {
-                      ...form.dataAnalysisInformation,
-                      dataInterpretation: e.target.value,
-                    },
-                  })
-                }
-                helperText="Interpretation with tables - supports HTML: <table>, <tr>, <td>, etc."
-              />
+              {/* Data Analysis - Single or Dual Mode */}
+              {!isDualQuery ? (
+                <TextField
+                  label="Data Analysis Methodology"
+                  fullWidth
+                  multiline
+                  rows={4}
+                  value={form.dataAnalysisInformation.dataAnalysis || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      dataAnalysisInformation: {
+                        ...form.dataAnalysisInformation,
+                        dataAnalysis: e.target.value,
+                      },
+                    })
+                  }
+                  helperText="Methodology and analysis approach used"
+                />
+              ) : (
+                <Box sx={{ pl: 2, pt: 1, borderLeft: '3px solid #e86161' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 1, display: 'block', fontWeight: 600 }}
+                  >
+                    Data Analysis Methodology (Dual Query)
+                  </Typography>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                  >
+                    <TextField
+                      label="Tab 1: Data Collection Analysis"
+                      fullWidth
+                      multiline
+                      rows={3}
+                      value={
+                        Array.isArray(form.dataAnalysisInformation.dataAnalysis)
+                          ? form.dataAnalysisInformation.dataAnalysis[0] || ''
+                          : form.dataAnalysisInformation.dataAnalysis || ''
+                      }
+                      onChange={(e) => {
+                        const currentAnalysis = Array.isArray(
+                          form.dataAnalysisInformation.dataAnalysis
+                        )
+                          ? form.dataAnalysisInformation.dataAnalysis
+                          : ['', ''];
+                        const newAnalysis = [...currentAnalysis];
+                        newAnalysis[0] = e.target.value;
+                        setForm({
+                          ...form,
+                          dataAnalysisInformation: {
+                            ...form.dataAnalysisInformation,
+                            dataAnalysis: newAnalysis,
+                          },
+                        });
+                      }}
+                      helperText="Analysis methodology for data collection (Tab 1)"
+                      size="small"
+                    />
+                    <TextField
+                      label="Tab 2: Data Analysis Methods Analysis"
+                      fullWidth
+                      multiline
+                      rows={3}
+                      value={
+                        Array.isArray(form.dataAnalysisInformation.dataAnalysis)
+                          ? form.dataAnalysisInformation.dataAnalysis[1] || ''
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const currentAnalysis = Array.isArray(
+                          form.dataAnalysisInformation.dataAnalysis
+                        )
+                          ? form.dataAnalysisInformation.dataAnalysis
+                          : ['', ''];
+                        const newAnalysis = [...currentAnalysis];
+                        newAnalysis[1] = e.target.value;
+                        setForm({
+                          ...form,
+                          dataAnalysisInformation: {
+                            ...form.dataAnalysisInformation,
+                            dataAnalysis: newAnalysis,
+                          },
+                        });
+                      }}
+                      helperText="Analysis methodology for data analysis methods (Tab 2)"
+                      size="small"
+                    />
+                  </Box>
+                </Box>
+              )}
+
+              {/* Data Interpretation - Single or Dual Mode */}
+              {!isDualQuery ? (
+                <TextField
+                  label="Data Interpretation (HTML)"
+                  fullWidth
+                  multiline
+                  rows={6}
+                  value={form.dataAnalysisInformation.dataInterpretation || ''}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      dataAnalysisInformation: {
+                        ...form.dataAnalysisInformation,
+                        dataInterpretation: e.target.value,
+                      },
+                    })
+                  }
+                  helperText="Interpretation with tables - supports HTML: <table>, <tr>, <td>, etc."
+                />
+              ) : (
+                <Box sx={{ pl: 2, pt: 1, borderLeft: '3px solid #e86161' }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ mb: 1, display: 'block', fontWeight: 600 }}
+                  >
+                    Data Interpretation (Dual Query - HTML)
+                  </Typography>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+                  >
+                    <TextField
+                      label="Tab 1: Data Collection Interpretation"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={
+                        Array.isArray(
+                          form.dataAnalysisInformation.dataInterpretation
+                        )
+                          ? form.dataAnalysisInformation
+                              .dataInterpretation[0] || ''
+                          : form.dataAnalysisInformation.dataInterpretation ||
+                            ''
+                      }
+                      onChange={(e) => {
+                        const currentInterpretation = Array.isArray(
+                          form.dataAnalysisInformation.dataInterpretation
+                        )
+                          ? form.dataAnalysisInformation.dataInterpretation
+                          : ['', ''];
+                        const newInterpretation = [...currentInterpretation];
+                        newInterpretation[0] = e.target.value;
+                        setForm({
+                          ...form,
+                          dataAnalysisInformation: {
+                            ...form.dataAnalysisInformation,
+                            dataInterpretation: newInterpretation,
+                          },
+                        });
+                      }}
+                      helperText="Interpretation for data collection (Tab 1) - supports HTML"
+                      size="small"
+                    />
+                    <TextField
+                      label="Tab 2: Data Analysis Methods Interpretation"
+                      fullWidth
+                      multiline
+                      rows={4}
+                      value={
+                        Array.isArray(
+                          form.dataAnalysisInformation.dataInterpretation
+                        )
+                          ? form.dataAnalysisInformation
+                              .dataInterpretation[1] || ''
+                          : ''
+                      }
+                      onChange={(e) => {
+                        const currentInterpretation = Array.isArray(
+                          form.dataAnalysisInformation.dataInterpretation
+                        )
+                          ? form.dataAnalysisInformation.dataInterpretation
+                          : ['', ''];
+                        const newInterpretation = [...currentInterpretation];
+                        newInterpretation[1] = e.target.value;
+                        setForm({
+                          ...form,
+                          dataAnalysisInformation: {
+                            ...form.dataAnalysisInformation,
+                            dataInterpretation: newInterpretation,
+                          },
+                        });
+                      }}
+                      helperText="Interpretation for data analysis methods (Tab 2) - supports HTML"
+                      size="small"
+                    />
+                  </Box>
+                </Box>
+              )}
               <TextField
                 label="Required Data for Analysis"
                 fullWidth
