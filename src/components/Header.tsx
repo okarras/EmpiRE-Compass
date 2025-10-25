@@ -97,7 +97,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           const questionId = parseInt(paths[index + 2]);
           const question = queries.find((q) => q.id === questionId);
           if (question) {
-            label = `Question ${questionId}`;
+            label = `All Questions`;
             fullPath = `/${templateId}/questions/${questionId}`;
           }
         }
