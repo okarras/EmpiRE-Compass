@@ -67,6 +67,10 @@ export interface QuestionData {
     tab1_name: string;
     tab2_name: string;
   };
+  gridOptions?: {
+    defaultColumns?: string[]; // Default columns to show in grid statistics
+    defaultGroupBy?: string; // Default grouping column
+  };
 }
 
 export interface StatisticData {

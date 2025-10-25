@@ -5,9 +5,13 @@ import GridStats from './GridStats';
 
 interface Props {
   questionData: Record<string, unknown>[];
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
-const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
+const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
   // Function to check if a string is a valid URL
   const isValidUrl = (str: string) => {
     try {
@@ -55,7 +59,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData }) => {
   return (
     <Box sx={{ width: '100%', marginTop: 2 }}>
       {/* Statistics Section */}
-      <GridStats questionData={questionData} />
+      <GridStats questionData={questionData} gridOptions={gridOptions} />
 
       {/* Data Grid */}
       <div style={{ height: 600, width: '100%' }}>

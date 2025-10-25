@@ -246,7 +246,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
             query={query}
             data={dataCollection}
           />
-          <QuestionDataGridView questionData={dataCollection} />
+          <QuestionDataGridView
+            questionData={dataCollection}
+            gridOptions={query.gridOptions}
+          />
         </Box>
 
         {/* Data Analysis View */}
@@ -288,7 +291,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                   query={query}
                   data={dataAnalysis}
                 />
-                <QuestionDataGridView questionData={dataAnalysis} />
+                <QuestionDataGridView
+                  questionData={dataAnalysis}
+                  gridOptions={query.gridOptions}
+                />
               </>
             )}
           </Box>
