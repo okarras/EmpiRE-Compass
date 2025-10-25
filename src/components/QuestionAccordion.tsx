@@ -18,8 +18,10 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import { useNavigate, useParams } from 'react-router';
 import QuestionChartView from './QuestionChartView';
 import { getTemplateConfig } from '../constants/template_config';
+import SectionSelector from './SectionSelector';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
+  console.log('query', query);
   const [normalized, setNormalized] = useState(true);
   const [tab, setTab] = useState(0);
   const [dataCollection, setDataCollection] = useState<
@@ -70,6 +72,11 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
+          console.log('query', query);
+          const processedData =
+            query.dataProcessingFunction2?.(data ?? []) ?? [];
+
+          console.log('processedData', processedData);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -301,8 +308,8 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             indicatorColor="primary"
             textColor="primary"
           >
-            <Tab label="Data Collection" />
-            <Tab label="Data Analysis" />
+            <Tab label={query.tabs?.tab1_name ?? 'Data Collection'} />
+            <Tab label={query.tabs?.tab2_name ?? 'Data Analysis'} />
           </Tabs>
         )}
 
@@ -314,8 +321,14 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             renderErrorState(error1)
           ) : (
             <>
-              {query.chartSettings && (
+              {query.chartSettings ? (
                 <>
+                  <SectionSelector
+                    sectionType="chart"
+                    sectionTitle="Chart Visualization"
+                    query={query}
+                    data={dataCollection}
+                  />
                   <QuestionChartView
                     query={query}
                     normalized={normalized}
@@ -328,8 +341,15 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                   />
                   <Divider sx={{ my: 3 }} />
                 </>
+              ) : (
+                <>
+                  <QuestionInformation
+                    information={getDataInterpretation('dataCollection')}
+                    label="Data Interpretation"
+                    tabIndex={tab}
+                  />
+                </>
               )}
-              {/* <QuestionDataGridView questionData={dataCollection} /> */}
             </>
           )}
         </Box>
@@ -343,8 +363,14 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                {query.chartSettings2 && (
+                {query.chartSettings2 ? (
                   <>
+                    <SectionSelector
+                      sectionType="chart"
+                      sectionTitle="Data Analysis Chart"
+                      query={query}
+                      data={dataAnalysis}
+                    />
                     <QuestionChartView
                       query={query}
                       normalized={normalized}
@@ -358,10 +384,17 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
                     />
-                    {/* <Divider sx={{ my: 3 }} /> */}
+                    <Divider sx={{ my: 3 }} />
+                  </>
+                ) : (
+                  <>
+                    <QuestionInformation
+                      information={getDataInterpretation('dataAnalysis')}
+                      label="Data Interpretation"
+                      tabIndex={tab}
+                    />
                   </>
                 )}
-                {/* <QuestionDataGridView questionData={dataAnalysis} /> */}
               </>
             )}
           </Box>

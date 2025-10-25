@@ -2,7 +2,6 @@ import QuestionAccordion from './QuestionAccordion';
 import { Box, Paper, Typography, Chip } from '@mui/material';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
 import { useParams } from 'react-router';
 import { getTemplateConfig, Query } from '../constants/template_config';
@@ -29,6 +28,13 @@ const Dashboard = () => {
   if (!queries) {
     return <div>No queries found</div>;
   }
+
+  const mergedQuestions = sortedFirebaseQuestions.map((question) => {
+    return {
+      ...queries.find((q) => q.id === question.id),
+      ...question,
+    };
+  });
 
   return (
     <Box
@@ -136,7 +142,7 @@ const Dashboard = () => {
           </Box>
         </Paper>
       </Box>
-      {Object.values(sortedFirebaseQuestions).map((query: FirebaseQuestion) => (
+      {Object.values(mergedQuestions).map((query: Query) => (
         <>
           <div
             style={{
@@ -150,16 +156,7 @@ const Dashboard = () => {
             id={`question-${query.id}`}
           >
             {queries.find((q) => q.id === query.id) && (
-              <QuestionAccordion
-                key={`question-${query.uid}`}
-                query={mergeQueryWithFirebase(
-                  queries.find((q) => q.uid === query.uid) as Query,
-                  firebaseQuestions[query.uid] as unknown as Record<
-                    string,
-                    unknown
-                  >
-                )}
-              />
+              <QuestionAccordion key={`question-${query.uid}`} query={query} />
             )}
           </div>
         </>

@@ -74,7 +74,9 @@ const QuestionsTab = ({
                     size="small"
                     color="primary"
                   />
-                  <Typography sx={{ flex: 1 }}>{question.title}</Typography>
+                  <Typography sx={{ flex: 1 }}>
+                    {question.dataAnalysisInformation.question}
+                  </Typography>
                   <Chip label={question.uid} size="small" variant="outlined" />
                 </Box>
               </AccordionSummary>
@@ -86,9 +88,6 @@ const QuestionsTab = ({
                     gutterBottom
                   >
                     Question
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 2 }}>
-                    {question.dataAnalysisInformation.question}
                   </Typography>
 
                   {question.sparqlQuery && (
