@@ -17,6 +17,7 @@ import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { getTemplateConfig } from '../constants/template_config';
 import { useParams } from 'react-router-dom';
+import QuestionInformation from './QuestionInformation';
 
 interface QuestionProps {
   query: Query;
@@ -218,7 +219,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
 
         {/* Data Collection View */}
         <Box hidden={tab !== 0}>
-          {query.chartSettings && (
+          {query.chartSettings ? (
             <>
               <Divider sx={{ my: 3 }} />
               <SectionSelector
@@ -238,6 +239,14 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                 type="dataCollection"
               />
               <Divider sx={{ my: 3 }} />
+            </>
+          ) : (
+            <>
+              <QuestionInformation
+                information={getDataInterpretation('dataCollection')}
+                label="Data Interpretation"
+                tabIndex={tab}
+              />
             </>
           )}
           <SectionSelector
@@ -261,7 +270,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                {query.chartSettings2 && (
+                {query.chartSettings2 ? (
                   <>
                     <SectionSelector
                       sectionType="chart"
@@ -283,6 +292,14 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                       type="dataAnalysis"
                     />
                     <Divider sx={{ my: 3 }} />
+                  </>
+                ) : (
+                  <>
+                    <QuestionInformation
+                      information={getDataInterpretation('dataAnalysis')}
+                      label="Data Interpretation"
+                      tabIndex={tab}
+                    />
                   </>
                 )}
                 <SectionSelector
