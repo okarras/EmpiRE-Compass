@@ -20,7 +20,7 @@ const QuestionDataGridView: React.FC<QuestionDataGridViewProps> = ({
           fontSize: { xs: '1.25rem', sm: '1.5rem' },
         }}
       >
-        Raw Data
+        Explore Data
       </Typography>
       <MuiDataGrid questionData={questionData} />
     </>

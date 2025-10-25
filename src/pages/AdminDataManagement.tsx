@@ -202,7 +202,38 @@ const AdminDataManagement = () => {
         delete cleanedForm.chartSettings2;
       }
 
-      // Remove undefined fields
+      // Clean up undefined and empty values in dataAnalysisInformation
+      if (cleanedForm.dataAnalysisInformation) {
+        const dai = cleanedForm.dataAnalysisInformation;
+
+        // Clean arrays - remove if all elements are empty
+        if (Array.isArray(dai.dataAnalysis)) {
+          const hasContent = dai.dataAnalysis.some(
+            (item: string) => item && item.trim()
+          );
+          if (!hasContent) {
+            delete dai.dataAnalysis;
+          }
+        }
+
+        if (Array.isArray(dai.dataInterpretation)) {
+          const hasContent = dai.dataInterpretation.some(
+            (item: string) => item && item.trim()
+          );
+          if (!hasContent) {
+            delete dai.dataInterpretation;
+          }
+        }
+
+        // Clean empty strings
+        Object.keys(dai).forEach((key) => {
+          if (dai[key] === undefined || dai[key] === null) {
+            delete dai[key];
+          }
+        });
+      }
+
+      // Remove undefined fields at top level
       Object.keys(cleanedForm).forEach((key) => {
         if (cleanedForm[key] === undefined) {
           delete cleanedForm[key];

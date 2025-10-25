@@ -179,45 +179,69 @@ export const SPARQL_QUERIES = {
 `,
 
   query_6_1: `
-    SELECT ?paper, ?da_label, ?Count, ?Percent, ?Mean, ?Median, ?Mode, ?Minimum, ?Maximum, 
-                ?Range, ?Variance, ?STD_deviation, ?Boxplot
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                            orkgp:P29 ?year.
-                            ?contribution a orkgc:C27001;
-                                    orkgp:P135046 ?serie.
-                            ?serie rdfs:label ?venue_name.
+    SELECT ?paper, ?da_label, ?test
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                       orkgp:P29 ?year.
+                ?contribution a orkgc:C27001;
+                              orkgp:P135046 ?serie.
+                ?serie rdfs:label ?venue_name.
 
-                    OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
-                            ?data_analysis rdfs:label ?da_label.
-                            
-                            OPTIONAl{?data_analysis orkgp:P56048 ?descriptive_stats.
-                                    OPTIONAL{?descriptive_stats orkgp:P56049 ?frequency.
-                                            OPTIONAL{?frequency orkgp:P55023 ?Count.}
-                                            OPTIONAL{?frequency orkgp:P56050 ?Percent.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57005 ?central_tendency.
-                                            OPTIONAL{?central_tendency orkgp:P47000 ?Mean.}
-                                            OPTIONAL{?central_tendency orkgp:P57006 ?Median.}
-                                            OPTIONAL{?central_tendency orkgp:P57007 ?Mode.}
-                                            OPTIONAL{?central_tendency orkgp:P44107 ?Minimum.}
-                                            OPTIONAL{?central_tendency orkgp:P44108 ?Maximum.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57008 ?variation.
-                                            OPTIONAL{?variation orkgp:P4013 ?Range.}
-                                            OPTIONAL{?variation orkgp:P57009 ?Variance.}
-                                            OPTIONAL{?variation orkgp:P44087 ?STD_deviation.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57010 ?position.
-                                            OPTIONAL{?position orkgp:P59065 ?Boxplot.}}
-                            }
-                    }
-                    
-                    FILTER(?da_label = 'analysis'^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
+                OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                        ?data_analysis rdfs:label ?da_label.
+                        
+                        OPTIONAl{?data_analysis orkgp:P56043 ?inferential_stats.
+                                OPTIONAL{?inferential_stats orkgp:P35133 ?stats_test.
+                                        ?stats_test rdfs:label ?test}
+                        }
+                }
+                
+                FILTER(?da_label = 'analysis'^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
 `,
 
   query_6_2: `
-    SELECT ?paper, ?da_label, ?test
+    SELECT ?paper, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
+               ?range, ?variance, ?standard_deviation, ?boxplot
+        WHERE {
+                ?paper orkgp:P31 ?contribution;
+                        orkgp:P29 ?year.
+                        ?contribution a orkgc:C27001;
+                                orkgp:P135046 ?serie.
+                        ?serie rdfs:label ?venue_name.
+
+                OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
+                        ?data_analysis rdfs:label ?da_label.
+                        
+                        OPTIONAl{?data_analysis orkgp:P56048 ?descriptive_stats.
+                                OPTIONAL{?descriptive_stats orkgp:P56049 ?frequency.
+                                        OPTIONAL{?frequency orkgp:P55023 ?count.}
+                                        OPTIONAL{?frequency orkgp:P56050 ?percent.}}
+                                OPTIONAL{?descriptive_stats orkgp:P57005 ?central_tendency.
+                                        OPTIONAL{?central_tendency orkgp:P47000 ?mean.}
+                                        OPTIONAL{?central_tendency orkgp:P57006 ?median.}
+                                        OPTIONAL{?central_tendency orkgp:P57007 ?mode.}
+                                        OPTIONAL{?central_tendency orkgp:P44107 ?minimum.}
+                                        OPTIONAL{?central_tendency orkgp:P44108 ?maximum.}}
+                                OPTIONAL{?descriptive_stats orkgp:P57008 ?variation.
+                                        OPTIONAL{?variation orkgp:P4013 ?range.}
+                                        OPTIONAL{?variation orkgp:P57009 ?variance.}
+                                        OPTIONAL{?variation orkgp:P44087 ?standard_deviation.}}
+                                OPTIONAL{?descriptive_stats orkgp:P57010 ?position.
+                                        OPTIONAL{?position orkgp:P59065 ?boxplot.}}
+                        }
+                }
+                
+                FILTER(?da_label = 'analysis'^^xsd:string)
+                #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
+                FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+        }
+`,
+
+  query_7_1: `
+    SELECT ?paper, ?year, ?da_label, ?test
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                         orkgp:P29 ?year.
@@ -234,44 +258,6 @@ export const SPARQL_QUERIES = {
                             }
                     }
                     
-                    FILTER(?da_label = 'analysis'^^xsd:string)
-                    #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
-                    FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-            }
-`,
-
-  query_7_1: `
-    SELECT ?paper, ?year, ?da_label, ?count, ?percent, ?mean, ?median, ?mode, ?minimum, ?maximum, 
-                ?range, ?variance, ?standard_deviation, ?boxplot
-            WHERE {
-                    ?paper orkgp:P31 ?contribution;
-                    orkgp:P29 ?year.
-                    ?contribution a orkgc:C27001;
-                            orkgp:P135046 ?serie.
-                    ?serie rdfs:label ?venue_name.
-
-                    OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
-                            ?data_analysis rdfs:label ?da_label.
-                            
-                            OPTIONAl{?data_analysis orkgp:P56048 ?descriptive_stats.
-                                    OPTIONAL{?descriptive_stats orkgp:P56049 ?frequency.
-                                            OPTIONAL{?frequency orkgp:P55023 ?count.}
-                                            OPTIONAL{?frequency orkgp:P56050 ?percent.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57005 ?central_tendency.
-                                            OPTIONAL{?central_tendency orkgp:P47000 ?mean.}
-                                            OPTIONAL{?central_tendency orkgp:P57006 ?median.}
-                                            OPTIONAL{?central_tendency orkgp:P57007 ?mode.}
-                                            OPTIONAL{?central_tendency orkgp:P44107 ?minimum.}
-                                            OPTIONAL{?central_tendency orkgp:P44108 ?maximum.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57008 ?variation.
-                                            OPTIONAL{?variation orkgp:P4013 ?range.}
-                                            OPTIONAL{?variation orkgp:P57009 ?variance.}
-                                            OPTIONAL{?variation orkgp:P44087 ?standard_deviation.}}
-                                    OPTIONAL{?descriptive_stats orkgp:P57010 ?position.
-                                            OPTIONAL{?position orkgp:P59065 ?boxplot.}}
-                            }
-                    }
-
                     FILTER(?da_label = 'analysis'^^xsd:string)
                     #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
                     FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
