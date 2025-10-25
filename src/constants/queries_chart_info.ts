@@ -87,6 +87,10 @@ export interface Query {
     tab1_name: string;
     tab2_name: string;
   };
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
 export const queries: Query[] = [

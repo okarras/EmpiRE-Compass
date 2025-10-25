@@ -32,6 +32,10 @@ interface DynamicQuery {
   dataProcessingFunction?: (
     data: Record<string, unknown>[]
   ) => Record<string, unknown>[];
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
 interface ResultsDisplaySectionProps {
@@ -142,7 +146,10 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
       )}
 
       {queryResults.length > 0 && (
-        <QuestionDataGridView questionData={queryResults} />
+        <QuestionDataGridView
+          questionData={queryResults}
+          gridOptions={dynamicQuery?.gridOptions}
+        />
       )}
     </>
   );

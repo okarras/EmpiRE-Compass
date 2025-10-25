@@ -1026,6 +1026,107 @@ const QuestionEditDialog = ({
               )}
             </Box>
           </Paper>
+
+          {/* Grid Statistics Options */}
+          <Paper
+            elevation={0}
+            sx={{ p: 2, backgroundColor: 'rgba(33, 150, 243, 0.05)' }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 2,
+              }}
+            >
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, color: '#1976d2' }}
+              >
+                Grid Statistics Default Options
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <TextField
+                label="Default Columns (comma-separated)"
+                fullWidth
+                value={form.gridOptions?.defaultColumns?.join(', ') || ''}
+                onChange={(e) => {
+                  const columns = e.target.value
+                    .split(',')
+                    .map((col) => col.trim())
+                    .filter((col) => col);
+                  setForm({
+                    ...form,
+                    gridOptions: {
+                      ...form.gridOptions,
+                      defaultColumns: columns.length > 0 ? columns : undefined,
+                    },
+                  });
+                }}
+                helperText="Columns to automatically select in grid statistics (e.g., test, da_label, year)"
+                placeholder="test, da_label"
+              />
+
+              <TextField
+                label="Default Group By Column"
+                fullWidth
+                value={form.gridOptions?.defaultGroupBy || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    gridOptions: {
+                      ...form.gridOptions,
+                      defaultGroupBy: e.target.value || undefined,
+                    },
+                  })
+                }
+                helperText="Column to automatically group by in grid statistics (e.g., year)"
+                placeholder="year"
+              />
+
+              <Box
+                sx={{
+                  backgroundColor: 'rgba(33, 150, 243, 0.05)',
+                  p: 1,
+                  borderRadius: 1,
+                  borderLeft: '3px solid #2196f3',
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 600, display: 'block', mb: 0.5 }}
+                >
+                  ℹ️ Info:
+                </Typography>
+                <Typography
+                  variant="caption"
+                  display="block"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  • These options pre-populate the Grid Statistics component
+                  with default selections
+                </Typography>
+                <Typography
+                  variant="caption"
+                  display="block"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  • Users can still change selections manually after the grid
+                  loads
+                </Typography>
+                <Typography
+                  variant="caption"
+                  display="block"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  • Leave empty to require manual column selection
+                </Typography>
+              </Box>
+            </Box>
+          </Paper>
         </Box>
       </DialogContent>
       <DialogActions>

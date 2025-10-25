@@ -38,6 +38,10 @@ import {
 
 interface Props {
   questionData: Record<string, unknown>[];
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
 interface ColumnStats {
@@ -48,7 +52,7 @@ interface ColumnStats {
   groupedStats?: Map<string, Map<string, number>>; // groupValue -> (valueLabel -> count)
 }
 
-const GridStats: React.FC<Props> = ({ questionData }) => {
+const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
   const [showStats, setShowStats] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
   const [useUniquePapers, setUseUniquePapers] = useState(true);
@@ -69,6 +73,29 @@ const GridStats: React.FC<Props> = ({ questionData }) => {
     if (questionData.length === 0) return [];
     return Object.keys(questionData[0]);
   }, [questionData]);
+
+  // Initialize defaults from gridOptions
+  React.useEffect(() => {
+    if (gridOptions && availableColumns.length > 0) {
+      // Set default columns if provided and valid
+      if (gridOptions.defaultColumns && gridOptions.defaultColumns.length > 0) {
+        const validColumns = gridOptions.defaultColumns.filter((col) =>
+          availableColumns.includes(col)
+        );
+        if (validColumns.length > 0) {
+          setSelectedColumns(validColumns);
+        }
+      }
+
+      // Set default group by if provided and valid
+      if (
+        gridOptions.defaultGroupBy &&
+        availableColumns.includes(gridOptions.defaultGroupBy)
+      ) {
+        setGroupByColumn(gridOptions.defaultGroupBy);
+      }
+    }
+  }, [gridOptions, availableColumns]);
 
   // Calculate statistics for selected columns only
   const columnStats: ColumnStats[] = React.useMemo(() => {
@@ -242,6 +269,16 @@ const GridStats: React.FC<Props> = ({ questionData }) => {
           >
             Column Statistics & Distribution
           </Typography>
+
+          {gridOptions && (selectedColumns.length > 0 || groupByColumn) && (
+            <Chip
+              label="Defaults Applied"
+              size="small"
+              color="success"
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+          )}
 
           <Box
             sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}
