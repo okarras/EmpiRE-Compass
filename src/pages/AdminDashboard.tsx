@@ -35,8 +35,16 @@ import {
   Cancel,
   Backup,
   DataObject,
+  MonitorHeart,
 } from '@mui/icons-material';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  Timestamp,
+} from 'firebase/firestore';
 import { db } from '../firebase';
 
 interface FirebaseUser {
@@ -45,8 +53,8 @@ interface FirebaseUser {
   email?: string;
   is_admin?: boolean;
   orcid?: string;
-  created_at?: any;
-  last_login?: any;
+  created_at?: Timestamp;
+  last_login?: Timestamp;
 }
 
 interface TemplateStats {
@@ -160,13 +168,13 @@ const AdminDashboard = () => {
     setTabValue(newValue);
   };
 
-  const formatDate = (timestamp: any) => {
+  const formatDate = (timestamp: Timestamp) => {
     if (!timestamp) return 'N/A';
     try {
       if (timestamp.toDate) {
         return timestamp.toDate().toLocaleString();
       }
-      return new Date(timestamp).toLocaleString();
+      return new Date(timestamp.toDate()).toLocaleString();
     } catch {
       return 'Invalid Date';
     }
@@ -423,6 +431,26 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+              onClick={() => navigate(`/${templateId}/admin/request-monitor`)}
+            >
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <MonitorHeart sx={{ color: '#1976d2' }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Request Monitor
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Track Firebase requests
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
       </Paper>
 
@@ -534,12 +562,12 @@ const AdminDashboard = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.created_at)}
+                          {formatDate(user.created_at ?? new Timestamp(0, 0))}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.last_login)}
+                          {formatDate(user.last_login ?? new Timestamp(0, 0))}
                         </Typography>
                       </TableCell>
                     </TableRow>

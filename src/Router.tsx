@@ -12,6 +12,7 @@ import AdminBackup from './pages/AdminBackup';
 import AdminDataManagement from './pages/AdminDataManagement';
 import AdminHomeContent from './pages/AdminHomeContent';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminRequestMonitor from './pages/AdminRequestMonitor';
 import AdminGuard from './auth/AdminGuard';
 
 const Router = () => {
@@ -82,6 +83,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminHomeContent />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/request-monitor"
+              element={
+                <AdminGuard>
+                  <AdminRequestMonitor />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}

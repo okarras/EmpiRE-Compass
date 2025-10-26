@@ -9,6 +9,7 @@ import {
   updateDoc,
   writeBatch,
 } from 'firebase/firestore';
+import RequestLogger from './RequestLogger';
 
 /**
  * New Firebase Structure:
@@ -135,10 +136,34 @@ export const deleteTemplate = async (templateId: string): Promise<void> => {
 export const createQuestion = async (
   templateId: string,
   questionId: string,
-  questionData: QuestionData
+  questionData: QuestionData,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  await setDoc(questionRef, questionData);
+  try {
+    await setDoc(questionRef, questionData);
+    await RequestLogger.withLogging.logWrite(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      true,
+      userId,
+      userEmail,
+      undefined,
+      questionData
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logWrite(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error',
+      questionData
+    );
+    throw error;
+  }
 };
 
 export const getQuestion = async (
@@ -172,18 +197,63 @@ export const getAllQuestions = async (
 export const updateQuestion = async (
   templateId: string,
   questionId: string,
-  updates: Partial<QuestionData>
+  updates: Partial<QuestionData>,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  await updateDoc(questionRef, updates);
+  try {
+    await updateDoc(questionRef, updates);
+    await RequestLogger.withLogging.logUpdate(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      true,
+      userId,
+      userEmail,
+      undefined,
+      updates
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logUpdate(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error',
+      updates
+    );
+    throw error;
+  }
 };
 
 export const deleteQuestion = async (
   templateId: string,
-  questionId: string
+  questionId: string,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  await deleteDoc(questionRef);
+  try {
+    await deleteDoc(questionRef);
+    await RequestLogger.withLogging.logDelete(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      true,
+      userId,
+      userEmail
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logDelete(
+      `Templates/${templateId}/Questions`,
+      questionId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    throw error;
+  }
 };
 
 /**
@@ -192,7 +262,9 @@ export const deleteQuestion = async (
 export const createStatistic = async (
   templateId: string,
   statisticId: string,
-  statisticData: StatisticData
+  statisticData: StatisticData,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const statisticRef = doc(
     db,
@@ -201,7 +273,29 @@ export const createStatistic = async (
     'Statistics',
     statisticId
   );
-  await setDoc(statisticRef, statisticData);
+  try {
+    await setDoc(statisticRef, statisticData);
+    await RequestLogger.withLogging.logWrite(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      true,
+      userId,
+      userEmail,
+      undefined,
+      statisticData
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logWrite(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error',
+      statisticData
+    );
+    throw error;
+  }
 };
 
 export const getStatistic = async (
@@ -241,7 +335,9 @@ export const getAllStatistics = async (
 export const updateStatistic = async (
   templateId: string,
   statisticId: string,
-  updates: Partial<StatisticData>
+  updates: Partial<StatisticData>,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const statisticRef = doc(
     db,
@@ -250,12 +346,36 @@ export const updateStatistic = async (
     'Statistics',
     statisticId
   );
-  await updateDoc(statisticRef, updates);
+  try {
+    await updateDoc(statisticRef, updates);
+    await RequestLogger.withLogging.logUpdate(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      true,
+      userId,
+      userEmail,
+      undefined,
+      updates
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logUpdate(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error',
+      updates
+    );
+    throw error;
+  }
 };
 
 export const deleteStatistic = async (
   templateId: string,
-  statisticId: string
+  statisticId: string,
+  userId?: string,
+  userEmail?: string
 ): Promise<void> => {
   const statisticRef = doc(
     db,
@@ -264,7 +384,26 @@ export const deleteStatistic = async (
     'Statistics',
     statisticId
   );
-  await deleteDoc(statisticRef);
+  try {
+    await deleteDoc(statisticRef);
+    await RequestLogger.withLogging.logDelete(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      true,
+      userId,
+      userEmail
+    );
+  } catch (error) {
+    await RequestLogger.withLogging.logDelete(
+      `Templates/${templateId}/Statistics`,
+      statisticId,
+      false,
+      userId,
+      userEmail,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+    throw error;
+  }
 };
 
 /**
