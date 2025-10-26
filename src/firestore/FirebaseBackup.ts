@@ -28,12 +28,10 @@ export interface BackupProgress {
  * Add or remove collections as needed
  */
 const COLLECTIONS_TO_BACKUP = [
-  'Questions',
-  'Questions Nlp4re',
-  'Statistics',
   'Templates',
   'Users',
   'HomeContent',
+  'RequestLogs',
 ];
 
 /**
