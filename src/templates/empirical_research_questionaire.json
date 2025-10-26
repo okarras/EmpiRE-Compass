@@ -1,0 +1,877 @@
+{
+  "version": "1.1",
+  "template": "Empirical Research Practice",
+  "template_id": "R186708",
+  "sections": [
+    {
+      "id": "context",
+      "title": "Context",
+      "questions": [
+        {
+          "id": "doi",
+          "label": "What is the paper's DOI?",
+          "type": "url",
+          "required": true,
+          "choice_type": "no",
+          "options": [],
+          "evidence_fields": ["pages", "quote"],
+          "desc": "Digital Object Identifier of the paper (e.g., 10.1145/1234567 or a https://doi.org/… link)."
+        },
+        {
+          "id": "venue_series",
+          "label": "In which venue series was the paper published?",
+          "type": "text",
+          "required": true,
+          "choice_type": "no",
+          "options": [],
+          "evidence_fields": ["pages", "quote"],
+          "maps_to_fields": [
+            {
+              "field": "venue series",
+              "node": "Empirical Research Practice",
+              "property_id": "P135046",
+              "cardinality": "one to one"
+            }
+          ],
+          "desc": "Name of the recurring conference or journal series where the paper appeared (e.g., ESEM, RE, ICSE)."
+        },
+        {
+          "id": "contact_email",
+          "label": "What is your contact email?",
+          "type": "text",
+          "required": false,
+          "choice_type": "no",
+          "options": [],
+          "desc": "Email of the person completing this questionnaire (for clarification if needed; not for publication)."
+        }
+      ]
+    },
+    {
+      "id": "paradigm",
+      "title": "Research Paradigm",
+      "questions": [
+        {
+          "id": "research_paradigm",
+          "label": "Which research paradigm underpins the study you are reviewing?",
+          "type": "text_object",
+          "required": true,
+          "choice_type": "single",
+          "options": [
+            "descriptive",
+            "evaluative",
+            "prescriptive",
+            "explanatory",
+            "comparative",
+            "interpretive",
+            "predictive",
+            "confirmatory",
+            "exploratory"
+          ],
+          "evidence_fields": ["pages", "quote"],
+          "maps_to_fields": [
+            {
+              "field": "research paradigm",
+              "node": "Empirical Research Practice",
+              "property_id": "P57003",
+              "cardinality": "one to one"
+            }
+          ],
+          "desc": "The philosophical worldview guiding the study (e.g., positivist, interpretivist, mixed, pragmatic)."
+        }
+      ]
+    },
+    {
+      "id": "research_questions",
+      "title": "Research Questions & Answers",
+      "questions": [
+        {
+          "id": "research_questions_list",
+          "label": "What are the research questions of the study?",
+          "type": "repeat_group",
+          "required": true,
+          "choice_type": "no",
+          "options": [],
+          "evidence_fields": ["pages", "quote"],
+          "evidence_per_item": true,
+          "property_id": "P37330",
+          "cardinality": "one to many",
+          "class_id": "C27006",
+          "subtemplate_id": "R186763",
+          "item_fields": [
+            {
+              "id": "rq_text",
+              "label": "What is the stated research question in your study?",
+              "type": "text",
+              "required": true,
+              "choice_type": "no",
+              "options": [],
+              "maps_to_fields": [
+                {
+                  "field": "question",
+                  "node": "Research Question",
+                  "property_id": "P44139",
+                  "cardinality": "one to one"
+                }
+              ]
+            },
+            {
+              "id": "rq_highlighted",
+              "label": "Is the research question explicitly highlighted in the paper?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "maps_to_fields": [
+                {
+                  "field": "highlighted in text",
+                  "node": "Research Question",
+                  "property_id": "P55039",
+                  "cardinality": "one to one"
+                }
+              ]
+            },
+            {
+              "id": "rq_hidden",
+              "label": "Is the research question hidden in the running text?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "maps_to_fields": [
+                {
+                  "field": "hidden in text",
+                  "node": "Research Question",
+                  "property_id": "P55038",
+                  "cardinality": "one to one"
+                }
+              ]
+            },
+            {
+              "id": "rq_type",
+              "label": "What is the type of the research question?",
+              "type": "text_object",
+              "required": true,
+              "choice_type": "single",
+              "options": [
+                "comparative",
+                "descriptive",
+                "interpretive",
+                "predictive",
+                "relationship-based",
+                "exploratory"
+              ],
+              "maps_to_fields": [
+                {
+                  "field": "question type",
+                  "node": "Research Question",
+                  "property_id": "P41928",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Classify the RQ type (e.g., exploratory, descriptive, comparative)."
+            },
+            {
+              "id": "subquestions",
+              "label": "What are the sub-questions related to this research question?",
+              "type": "repeat_group",
+              "required": false,
+              "choice_type": "no",
+              "options": [],
+              "evidence_fields": ["pages", "quote"],
+              "evidence_per_item": true,
+              "property_id": "P57000",
+              "cardinality": "one to many",
+              "class_id": "C29003",
+              "subtemplate_id": "R188008",
+              "item_fields": [
+                {
+                  "id": "subq_text",
+                  "label": "What is the stated sub-question in the study?",
+                  "type": "text",
+                  "required": true,
+                  "choice_type": "no",
+                  "options": [],
+                  "maps_to_fields": [
+                    {
+                      "field": "question",
+                      "node": "Subquestion",
+                      "property_id": "P44139",
+                      "cardinality": "one to one"
+                    }
+                  ]
+                },
+                {
+                  "id": "subq_type",
+                  "label": "What is the sub-question type?",
+                  "type": "text_object",
+                  "required": false,
+                  "choice_type": "single",
+                  "options": [
+                    "comparative",
+                    "descriptive",
+                    "interpretive",
+                    "predictive",
+                    "relationship-based",
+                    "exploratory"
+                  ],
+                  "maps_to_fields": [
+                    {
+                      "field": "question type",
+                      "node": "Subquestion",
+                      "property_id": "P41928",
+                      "cardinality": "one to one"
+                    }
+                  ]
+                }
+              ],
+              "desc": "Enter each sub-question exactly as stated in the paper as a separated item."
+            }
+          ],
+          "desc": "Enter each research question exactly as stated in the paper as a separated item."
+        },
+        {
+          "id": "answer_highlighted",
+          "label": "Is the answer to the research question explicitly highlighted in the paper?",
+          "type": "boolean",
+          "required": true,
+          "choice_type": "single",
+          "options": ["yes", "no"],
+          "evidence_fields": ["pages", "quote"],
+          "maps_to_fields": [
+            {
+              "field": "highlighted in text",
+              "node": "Research Question Answer",
+              "property_id": "P55039",
+              "cardinality": "one to one"
+            }
+          ],
+          "parent_property_id": "P57004",
+          "parent_class_id": "C29005",
+          "parent_subtemplate_id": "R188024"
+        },
+        {
+          "id": "answer_hidden",
+          "label": "Is the answer to the research question hidden in the running text?",
+          "type": "boolean",
+          "required": true,
+          "choice_type": "single",
+          "options": ["yes", "no"],
+          "evidence_fields": ["pages", "quote"],
+          "maps_to_fields": [
+            {
+              "field": "hidden in text",
+              "node": "Research Question Answer",
+              "property_id": "P55038",
+              "cardinality": "one to one"
+            }
+          ],
+          "parent_property_id": "P57004",
+          "parent_class_id": "C29005",
+          "parent_subtemplate_id": "R188024"
+        }
+      ]
+    },
+    {
+      "id": "data_collection",
+      "title": "Data Collection",
+      "questions": [
+        {
+          "id": "data_collection_methods",
+          "label": "Which data collection methods did the study use?",
+          "type": "repeat_group",
+          "required": true,
+          "choice_type": "multiple",
+          "options": [],
+          "evidence_fields": ["pages", "quote"],
+          "evidence_per_item": true,
+          "property_id": "P1005",
+          "cardinality": "one to many",
+          "class_id": "C89001",
+          "subtemplate_id": "R691422",
+          "parent_property_id": "P56008",
+          "parent_class_id": "C27004",
+          "parent_subtemplate_id": "R186737",
+          "item_fields": [
+            {
+              "id": "method_type",
+              "label": "What is the type of this data collection method?",
+              "type": "text_object",
+              "required": true,
+              "choice_type": "single",
+              "options": [
+                "study",
+                "action research",
+                "survey",
+                "experiment",
+                "secondary research",
+                "interview",
+                "case study"
+              ],
+              "maps_to_fields": [
+                {
+                  "field": "method type",
+                  "node": "Data Collection Method",
+                  "property_id": "P94003",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Specify the general category of the method (e.g., survey, experiment, case study)."
+            },
+            {
+              "id": "method_name_custom",
+              "label": "How is the data collection method called in the paper?",
+              "type": "text",
+              "required": false,
+              "choice_type": "no",
+              "options": [],
+              "maps_to_fields": [
+                {
+                  "field": "method name",
+                  "node": "Data Collection Method",
+                  "property_id": "P145012",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Provide the name used in the paper."
+            }
+          ],
+          "links_via_field": {
+            "field": "method",
+            "node": "Data Collection"
+          },
+          "desc": "Enter each data collection method used in the paper as a separated item."
+        },
+        {
+          "id": "research_data",
+          "label": "What is reported about the collected data?",
+          "type": "group",
+          "required": true,
+          "choice_type": "no",
+          "options": [],
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "DATA",
+          "cardinality": "one to one",
+          "class_id": "C29030",
+          "subtemplate_id": "R188614",
+          "parent_property_id": "P56008",
+          "parent_class_id": "C27004",
+          "parent_subtemplate_id": "R186737",
+          "item_fields": [
+            {
+              "id": "data_type",
+              "label": "What is the type of the collected data?",
+              "type": "multi_select",
+              "required": true,
+              "choice_type": "multiple",
+              "options": ["qualitative", "quantitative"],
+              "links_via_field": {
+                "field": "Data type",
+                "node": "Research Data",
+                "property_id": "P7055",
+                "cardinality": "one to one",
+                "class_id": "C29031",
+                "subtemplate_id": "R188611"
+              },
+              "maps_to_fields": [
+                {
+                  "field": "qualitative",
+                  "node": "Data Type",
+                  "property_id": "P57038",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "quantitative",
+                  "node": "Data Type",
+                  "property_id": "P57039",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Indicate whether the data are qualitative, quantitative, or both."
+            },
+            {
+              "id": "data_urls",
+              "label": "Where are the data available?",
+              "type": "repeat_text",
+              "required": true,
+              "choice_type": "multiple",
+              "options": [],
+              "maps_to_fields": [
+                {
+                  "field": "url",
+                  "node": "Research Data",
+                  "property_id": "url",
+                  "cardinality": "one to many"
+                }
+              ],
+              "desc": "Provide links or DOIs where the data can be accessed (e.g., repository, dataset DOI, appendix)."
+            }
+          ],
+          "links_via_field": {
+            "field": "data",
+            "node": "Data Collection"
+          },
+          "desc": "Describe the collected data (e.g., commits, issues, participants, responses) and its accessibility."
+        }
+      ]
+    },
+    {
+      "id": "data_analysis",
+      "title": "Data Analysis",
+      "questions": [
+        {
+          "id": "analysis_methods",
+          "label": "Which types of data analysis are described in the study?",
+          "type": "multi_select",
+          "required": true,
+          "choice_type": "multiple",
+          "options": [
+            "descriptive statistics",
+            "inferential statistics",
+            "machine learning"
+          ],
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "P1005",
+          "cardinality": "one to many",
+          "parent_property_id": "P15124",
+          "parent_class_id": "C28004",
+          "parent_subtemplate_id": "R187817",
+          "desc": "Identify all forms of data analysis the study reports."
+        },
+        {
+          "id": "descriptive_stats",
+          "title": "Descriptive Statistics",
+          "type": "group",
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "P56048",
+          "cardinality": "one to many",
+          "class_id": "C20073",
+          "subtemplate_id": "R187815",
+          "parent_property_id": "P15124",
+          "subquestions": [
+            {
+              "id": "descriptive_stats_used",
+              "label": "Does the study report any descriptive statistics?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "desc": "Indicate if descriptive statistics are used to summarize data."
+            },
+            {
+              "id": "measures_frequency",
+              "label": "Which measures of frequency are reported?",
+              "type": "multi_select",
+              "required": false,
+              "choice_type": "multiple",
+              "options": ["count", "percent"],
+              "property_id": "P56049",
+              "cardinality": "one to one",
+              "class_id": "C28009",
+              "subtemplate_id": "R187812",
+              "maps_to_fields": [
+                {
+                  "field": "count",
+                  "property_id": "P55023",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "percent",
+                  "property_id": "P56050",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Identify all frequency measures mentioned in the paper."
+            },
+            {
+              "id": "measures_central",
+              "label": "Which measures of central tendency are reported?",
+              "type": "multi_select",
+              "required": false,
+              "choice_type": "multiple",
+              "options": ["mean", "median", "mode", "minimum", "maximum"],
+              "property_id": "P57005",
+              "cardinality": "one to one",
+              "class_id": "C29006",
+              "subtemplate_id": "R188027",
+              "maps_to_fields": [
+                {
+                  "field": "mean",
+                  "property_id": "P47000",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "median",
+                  "property_id": "P57006",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "mode",
+                  "property_id": "P57007",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "minimum",
+                  "property_id": "P44107",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "maximum",
+                  "property_id": "P44108",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Specify the central tendency measures provided."
+            },
+            {
+              "id": "measures_dispersion",
+              "label": "Which measures of dispersion or variation are reported?",
+              "type": "multi_select",
+              "required": false,
+              "choice_type": "multiple",
+              "options": ["range", "variance", "standard deviation"],
+              "property_id": "P57008",
+              "cardinality": "one to one",
+              "class_id": "C29007",
+              "subtemplate_id": "R188031",
+              "maps_to_fields": [
+                {
+                  "field": "range",
+                  "property_id": "P4013",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "variance",
+                  "property_id": "P57009",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "standard deviation",
+                  "property_id": "P44087",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Select all measures describing variability in the data."
+            },
+            {
+              "id": "measures_position",
+              "label": "Which measures of position are reported?",
+              "type": "multi_select",
+              "required": false,
+              "choice_type": "multiple",
+              "options": ["boxplot"],
+              "property_id": "P57010",
+              "cardinality": "one to one",
+              "class_id": "C29008",
+              "subtemplate_id": "R188035",
+              "maps_to_fields": [
+                {
+                  "field": "boxplot",
+                  "property_id": "P59065",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Indicate position-based measures or plots reported."
+            }
+          ]
+        },
+        {
+          "id": "inferential_stats",
+          "title": "Inferential Statistics",
+          "type": "group",
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "P56043",
+          "cardinality": "one to many",
+          "class_id": "C28005",
+          "subtemplate_id": "R187801",
+          "parent_property_id": "P15124",
+          "subquestions": [
+            {
+              "id": "inferential_stats_used",
+              "label": "Does the study report any inferential statistics?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "desc": "Indicate if inferential statistics are used to generalize results or test hypotheses."
+            },
+            {
+              "id": "hypotheses",
+              "label": "Which hypotheses are tested in the study?",
+              "type": "repeat_group",
+              "required": false,
+              "choice_type": "multiple",
+              "options": [],
+              "evidence_fields": ["pages", "quote"],
+              "evidence_per_item": true,
+              "property_id": "P30001",
+              "cardinality": "one to many",
+              "class_id": "C28008",
+              "subtemplate_id": "R187805",
+              "item_fields": [
+                {
+                  "id": "hypothesis_statement",
+                  "label": "What is the hypothesis statement?",
+                  "type": "text",
+                  "required": true,
+                  "choice_type": "no",
+                  "options": [],
+                  "maps_to_fields": [
+                    {
+                      "field": "hypothesis statement",
+                      "node": "Hypothesis",
+                      "property_id": "P56046",
+                      "cardinality": "one to one"
+                    }
+                  ]
+                },
+                {
+                  "id": "hypothesis_type",
+                  "label": "What is the hypothesis type?",
+                  "type": "single_select",
+                  "required": false,
+                  "choice_type": "single",
+                  "options": ["Null hypothesis", "Alternative hypothesis"],
+                  "property_id": "P41703",
+                  "cardinality": "one to one",
+                  "class_id": "C29033",
+                  "subtemplate_id": "R188709",
+                  "maps_to_fields": [
+                    {
+                      "field": "Hypothesis type",
+                      "node": "Hypothesis",
+                      "property_id": "P35106",
+                      "property_value_mapping": {
+                        "Null hypothesis": "P35106",
+                        "Alternative hypothesis": "P35107"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "desc": "Provide each hypothesis stated in the paper as a separated item."
+            },
+            {
+              "id": "statistical_tests",
+              "label": "Which statistical tests are reported?",
+              "type": "repeat_text",
+              "required": false,
+              "choice_type": "no",
+              "options": [],
+              "maps_to_fields": [
+                {
+                  "field": "Statistical tests",
+                  "node": "Inferential Statistics",
+                  "property_id": "P35133",
+                  "cardinality": "one to many"
+                }
+              ],
+              "desc": "List all statistical tests the study uses to evaluate hypotheses."
+            }
+          ]
+        },
+        {
+          "id": "machine_learning",
+          "title": "Machine Learning Analysis",
+          "type": "group",
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "P57016",
+          "cardinality": "one to many",
+          "class_id": "C29012",
+          "subtemplate_id": "R188038",
+          "parent_property_id": "P15124",
+          "subquestions": [
+            {
+              "id": "ml_used",
+              "label": "Does the study report any machine learning analysis?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "desc": "Specify whether the study applies machine learning techniques."
+            },
+            {
+              "id": "ml_algorithms",
+              "label": "Which algorithms are used in the study?",
+              "type": "repeat_text",
+              "required": false,
+              "choice_type": "no",
+              "options": [],
+              "maps_to_fields": [
+                {
+                  "field": "Algorithm",
+                  "node": "Machine Learning",
+                  "property_id": "P2001",
+                  "cardinality": "one to many"
+                }
+              ],
+              "desc": "List all algorithms or model families trained or evaluated."
+            },
+            {
+              "id": "ml_metrics",
+              "label": "Which evaluation metrics are reported?",
+              "type": "multi_select",
+              "required": false,
+              "choice_type": "multiple",
+              "options": ["accuracy", "precision", "recall", "f-score"],
+              "property_id": "P2006",
+              "cardinality": "one to one",
+              "class_id": "C14024",
+              "subtemplate_id": "R188042",
+              "links_via_field": {
+                "field": "metric",
+                "node": "Machine Learning"
+              },
+              "maps_to_fields": [
+                {
+                  "field": "accuracy",
+                  "property_id": "P18048",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "precision",
+                  "property_id": "P3004",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "recall",
+                  "property_id": "P5073",
+                  "cardinality": "one to one"
+                },
+                {
+                  "field": "f-score",
+                  "property_id": "P59137",
+                  "cardinality": "one to one"
+                }
+              ],
+              "desc": "Identify all performance metrics used to assess models."
+            }
+          ]
+        },
+        {
+          "id": "other_analysis",
+          "title": "Other Data Analysis Methods",
+          "type": "group",
+          "subquestions": [
+            {
+              "id": "other_analysis_used",
+              "label": "Does the study report any other data analysis methods?",
+              "type": "boolean",
+              "required": true,
+              "choice_type": "single",
+              "options": ["yes", "no"],
+              "desc": "Indicate whether the study includes any additional data analysis techniques not covered above."
+            },
+            {
+              "id": "other_analysis_methods",
+              "label": "If yes, please specify the other data analysis methods used.",
+              "type": "repeat_text",
+              "required": false,
+              "choice_type": "multiple",
+              "options": [],
+              "desc": "Describe any additional analysis methods applied in the study (e.g., clustering, qualitative coding, content analysis, etc.)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "threats",
+      "title": "Threats to Validity",
+      "questions": [
+        {
+          "id": "threats_reported",
+          "label": "Which threats to validity are discussed in the study?",
+          "type": "multi_select",
+          "required": true,
+          "choice_type": "multiple",
+          "options": [
+            "construct validity",
+            "internal validity",
+            "external validity",
+            "conclusion validity",
+            "reliability",
+            "generalizability",
+            "repeatability",
+            "content validity",
+            "descriptive validity",
+            "theoretical validity"
+          ],
+          "evidence_fields": ["pages", "quote"],
+          "property_id": "P39099",
+          "cardinality": "one to one",
+          "class_id": "C27003",
+          "subtemplate_id": "R186724",
+          "maps_to_fields": [
+            {
+              "field": "construct validity",
+              "property_id": "P55037",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "internal validity",
+              "property_id": "P55035",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "external validity",
+              "property_id": "P55034",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "conclusion validity",
+              "property_id": "P55036",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "reliability",
+              "property_id": "P59109",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "generalizability",
+              "property_id": "P60006",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "repeatability",
+              "property_id": "P97002",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "content validity",
+              "property_id": "P68005",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "descriptive validity",
+              "property_id": "P97000",
+              "cardinality": "one to one"
+            },
+            {
+              "field": "theoretical validity",
+              "property_id": "P97001",
+              "cardinality": "one to one"
+            }
+          ],
+          "desc": "Select all categories of threats to validity that the authors mention or address."
+        },
+        {
+          "id": "threats_mentioned_uncategorized",
+          "label": "Are threats to validity mentioned but not classified?",
+          "type": "boolean",
+          "required": false,
+          "choice_type": "single",
+          "options": ["yes", "no"],
+          "maps_to_fields": [
+            {
+              "field": "threats mentioned but not classified",
+              "property_id": "P145000",
+              "cardinality": "one to one"
+            }
+          ],
+          "desc": "Indicate if the paper mentions threats to validity without specifying their category."
+        }
+      ]
+    }
+  ]
+}

@@ -25,7 +25,7 @@ import { useNavigate } from 'react-router-dom';
 
 const MAX_SIZE_BYTES = 30 * 1024 * 1024; // 30 MB
 
-const Collaborate: React.FC = () => {
+const ContributePage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -126,7 +126,7 @@ const Collaborate: React.FC = () => {
       setUploading(false);
       setProgress(100);
       const pdfUrl = URL.createObjectURL(file);
-      navigate('/collaborate/viewer', {
+      navigate('/contribute/viewer', {
         state: {
           pdfUrl,
           filename: file.name,
@@ -176,7 +176,7 @@ const Collaborate: React.FC = () => {
                 },
               }}
             >
-              Collaborate
+              Contribute
             </Typography>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -240,14 +240,14 @@ const Collaborate: React.FC = () => {
 
               <input
                 ref={inputRef}
-                id="collaborate-file-input"
+                id="contribute-file-input"
                 type="file"
                 accept="application/pdf"
                 onChange={onFileChange}
                 style={{ display: 'none' }}
               />
 
-              <label htmlFor="collaborate-file-input">
+              <label htmlFor="contribute-file-input">
                 <Button
                   variant="contained"
                   component="span"
@@ -310,11 +310,11 @@ const Collaborate: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Why use Collaborate */}
+            {/* Why use contribute */}
             <Box sx={{ pt: 1 }}>
-              <Typography variant="h6">Why use Collaborate?</Typography>
+              <Typography variant="h6">Why use contribute?</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                The Collaborate workflow helps you extract structured
+                The Contribution workflow helps you extract structured
                 information from research papers according to your chosen
                 template. After uploading, our tools will help locate
                 contributions, datasets, methods, and more — streamlining the
@@ -343,4 +343,4 @@ const Collaborate: React.FC = () => {
   );
 };
 
-export default Collaborate;
+export default ContributePage;

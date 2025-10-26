@@ -303,16 +303,16 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
             }
           />
         </ListItem>
-        {/* Collaborate Link (NEW) */}
+        {/* Contribute Link (NEW) */}
         <ListItem
           onClick={() => {
-            navigate('/collaborate');
+            navigate('/contribute');
             handleDrawerClose();
           }}
           sx={{
             mb: 1,
             borderRadius: 2,
-            backgroundColor: isCurrentPath('/collaborate')
+            backgroundColor: isCurrentPath('/contribute')
               ? 'rgba(232, 97, 97, 0.08)'
               : 'transparent',
             '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
@@ -327,10 +327,10 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 variant="subtitle1"
                 sx={{
                   color: '#e86161',
-                  fontWeight: isCurrentPath('/collaborate') ? 600 : 500,
+                  fontWeight: isCurrentPath('/contribute') ? 600 : 500,
                 }}
               >
-                Collaborate
+                Contribute
               </Typography>
             }
           />
