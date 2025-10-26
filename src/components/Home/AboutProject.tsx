@@ -38,7 +38,28 @@ const AboutProject = ({ content }: AboutProjectProps) => {
       <Box sx={{ pl: { xs: 2, sm: 3, md: 4 } }}>
         <Typography component="ul" sx={{ listStyle: 'none', p: 0 }}>
           {content.themes.map((theme) => (
-            <Box dangerouslySetInnerHTML={{ __html: theme }} />
+            <Typography
+              component="li"
+              key={theme}
+              sx={{
+                mb: 1.5,
+                fontSize: { xs: '1rem', sm: '1.1rem' },
+                display: 'flex',
+                alignItems: 'center',
+                '&:before': {
+                  content: '""',
+                  width: '8px',
+                  height: '8px',
+                  minWidth: '8px',
+                  backgroundColor: '#e86161',
+                  borderRadius: '50%',
+                  display: 'inline-block',
+                  mr: 2,
+                },
+              }}
+            >
+              <Box dangerouslySetInnerHTML={{ __html: theme }} />
+            </Typography>
           ))}
         </Typography>
       </Box>
