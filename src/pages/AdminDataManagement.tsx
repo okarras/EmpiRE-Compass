@@ -27,6 +27,7 @@ import DataMigration from '../firestore/DataMigration';
 import RestoreFromBackup, {
   RestoreProgress,
 } from '../firestore/RestoreFromBackup';
+import { useAuth } from '../auth/useAuth';
 
 // Import subcomponents
 import RestoreSection from '../components/Admin/RestoreSection';
@@ -60,6 +61,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const AdminDataManagement = () => {
+  const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
   const [templates, setTemplates] = useState<Record<string, TemplateData>>({});
   const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
@@ -244,7 +246,9 @@ const AdminDataManagement = () => {
         await TemplateManagement.updateQuestion(
           selectedTemplate,
           cleanedForm.uid,
-          cleanedForm
+          cleanedForm,
+          user?.id,
+          user?.email
         );
         setSuccess('Question updated successfully!');
       } else {
@@ -267,7 +271,12 @@ const AdminDataManagement = () => {
   const handleDeleteQuestion = async (questionId: string) => {
     if (window.confirm('Are you sure you want to delete this question?')) {
       try {
-        await TemplateManagement.deleteQuestion(selectedTemplate, questionId);
+        await TemplateManagement.deleteQuestion(
+          selectedTemplate,
+          questionId,
+          user?.id,
+          user?.email
+        );
         setSuccess('Question deleted successfully!');
         await loadTemplateData(selectedTemplate);
       } catch (err) {
@@ -282,14 +291,18 @@ const AdminDataManagement = () => {
         await TemplateManagement.updateStatistic(
           selectedTemplate,
           statistic.id,
-          statistic
+          statistic,
+          user?.id,
+          user?.email
         );
         setSuccess('Statistic updated successfully!');
       } else {
         await TemplateManagement.createStatistic(
           selectedTemplate,
           statistic.id,
-          statistic
+          statistic,
+          user?.id,
+          user?.email
         );
         setSuccess('Statistic created successfully!');
       }
@@ -305,7 +318,12 @@ const AdminDataManagement = () => {
   const handleDeleteStatistic = async (statisticId: string) => {
     if (window.confirm('Are you sure you want to delete this statistic?')) {
       try {
-        await TemplateManagement.deleteStatistic(selectedTemplate, statisticId);
+        await TemplateManagement.deleteStatistic(
+          selectedTemplate,
+          statisticId,
+          user?.id,
+          user?.email
+        );
         setSuccess('Statistic deleted successfully!');
         await loadTemplateData(selectedTemplate);
       } catch (err) {
