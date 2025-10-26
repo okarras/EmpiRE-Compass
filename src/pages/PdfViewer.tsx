@@ -5,12 +5,17 @@ import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
+import { findMatchesInDocument } from './PdfHighlights';
+
 type Props = {
   refContainer: React.RefObject<HTMLDivElement>;
   pdfUrl?: string | null;
   pageWidth?: number | null;
   registerCommands?: (cmds: { goToPage: (p: number) => void }) => void;
 };
+
+type Rect = { left: number; top: number; width: number; height: number };
+
 const PdfViewer: React.FC<Props> = ({
   refContainer,
   pdfUrl,
@@ -19,6 +24,12 @@ const PdfViewer: React.FC<Props> = ({
 }) => {
   const [numPages, setNumPages] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(false);
+
+  const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
+  const [highlights, setHighlights] = React.useState<Record<number, Rect[]>>(
+    {}
+  );
+
   const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -39,7 +50,52 @@ const PdfViewer: React.FC<Props> = ({
   useEffect(() => {
     setNumPages(null);
     setLoading(false);
+    setPdfDoc(null);
+    setHighlights({});
   }, [pdfUrl]);
+
+  useEffect(() => {
+    if (!pdfDoc || !pageWidth) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const map = await findMatchesInDocument(pdfDoc, pageWidth, 'UGEN-V', {
+          caseInsensitive: true,
+        });
+
+        if (!cancelled) {
+          setHighlights(map);
+        }
+      } catch (err) {
+        console.error('Error generating highlights', err);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pdfDoc, pageWidth]);
+
+  useEffect(() => {
+    const styleId = 'pdf-highlight-flash-style';
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.innerHTML = `
+      .pdf-highlight-flash {
+        animation: pdfFlash 0.8s ease-in-out;
+      }
+      @keyframes pdfFlash {
+        0% { box-shadow: 0 0 0 4px rgba(255,235,59,0.0); }
+        30% { box-shadow: 0 0 8px 8px rgba(255,235,59,0.45); }
+        100% { box-shadow: none; }
+      }
+    `;
+    document.head.appendChild(style);
+  }, []);
 
   if (!pdfUrl) {
     return (
@@ -70,10 +126,12 @@ const PdfViewer: React.FC<Props> = ({
           <CircularProgress size={28} />
         </Box>
       )}
+
       <Document
         file={pdfUrl}
         onLoadSuccess={(pdf: PDFDocumentProxy) => {
           setNumPages(pdf.numPages);
+          setPdfDoc(pdf);
           setLoading(false);
         }}
         onLoadError={(err) => {
@@ -103,9 +161,27 @@ const PdfViewer: React.FC<Props> = ({
                 <Page
                   pageNumber={pageNumber}
                   width={pageWidth}
-                  renderTextLayer={false}
+                  renderTextLayer={true}
                   renderAnnotationLayer={true}
                 />
+
+                {/* Highlight overlays for this page */}
+                {/* {(highlights[pageNumber] || []).map((r, idx) => (
+                  <Box
+                    key={`hl_${pageNumber}_${idx}`}
+                    sx={{
+                      position: 'absolute',
+                      left: r.left,
+                      top: r.top,
+                      width: r.width,
+                      height: r.height,
+                      pointerEvents: 'none',
+                      bgcolor: 'rgba(255,235,59,0.45)', // translucent yellow
+                      borderRadius: '2px',
+                      mixBlendMode: 'multiply',
+                    }}
+                  />
+                ))} */}
               </Box>
             );
           })}
