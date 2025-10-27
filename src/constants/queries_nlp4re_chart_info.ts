@@ -2,6 +2,7 @@
 import { axisClasses } from '@mui/x-charts';
 import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -134,9 +135,32 @@ export const queries: Query[] = [
 
   // Query 3 - Input Granularity
   {
-    title: 'Input Granularity and RE Tasks',
+    title: 'Input Granularity — Distribution of NLP Task Input Types',
     id: 3,
     uid: 'query_3',
+    chartType: 'pie',
+    chartSettings: {
+      className: 'fullWidth',
+      heading: 'Distribution of Input Granularity Levels Used in NLP Tasks',
+      series: [
+        {
+          dataKey: 'count',
+          nameKey: 'inputType',
+          labelKey: 'inputType',
+        },
+      ],
+
+      yAxis: [
+        {
+          label: 'Number of Papers',
+          dataKey: 'count',
+        },
+      ],
+
+      height: chartHeight,
+      sx: chartStyles,
+    },
+    dataProcessingFunction: Query3DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What are the different levels of granularity at which inputs can be represented and how is this related to the RE task?',

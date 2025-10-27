@@ -1,6 +1,7 @@
 import { Box } from '@mui/material';
 import CustomBarChart from './CustomBarChart';
 import { ChartSetting } from '../../constants/queries_chart_info';
+import CustomPieChart from './CustomPieChart';
 
 interface ChartWrapperProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,7 +37,7 @@ const ChartWrapper = ({
   question_id,
   normalized = true,
   loading = false,
-  // defaultChartType = 'bar',
+  defaultChartType = 'bar',
   // availableCharts = ['bar', 'pie'],
   isSubChart = false,
 }: ChartWrapperProps) => {
@@ -93,15 +94,22 @@ const ChartWrapper = ({
           availableCharts={availableCharts}
         />
       </Box> */}
-
-      <CustomBarChart
-        dataset={dataset}
-        chartSetting={chartSetting}
-        question_id={question_id}
-        normalized={normalized}
-        loading={loading}
-        isSubChart={isSubChart}
-      />
+      {defaultChartType === 'pie' ? (
+        <CustomPieChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+        />
+      ) : (
+        <CustomBarChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+          normalized={normalized}
+          loading={loading}
+          isSubChart={isSubChart}
+        />
+      )}
     </Box>
   );
 };

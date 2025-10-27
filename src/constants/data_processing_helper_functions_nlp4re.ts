@@ -95,3 +95,25 @@ export const Query2DataProcessingFunction = (
 };
 
 export default Query2DataProcessingFunction;
+
+export const Query3DataProcessingFunction = (
+  rawData: Array<{ NLPTaskInputLabel?: string }> = []
+): { id: string; label: string; value: number }[] => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  const counts: Record<string, number> = {};
+
+  rawData.forEach((row) => {
+    const label = (row.NLPTaskInputLabel || '').trim();
+    if (!label) return;
+    counts[label] = (counts[label] || 0) + 1;
+  });
+
+  return Object.entries(counts)
+    .map(([label, value], index) => ({
+      id: `slice-${index}`,
+      label,
+      value,
+    }))
+    .sort((a, b) => b.value - a.value);
+};
