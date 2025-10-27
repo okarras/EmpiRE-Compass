@@ -3,6 +3,7 @@ import { axisClasses } from '@mui/x-charts';
 import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query4DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -90,7 +91,7 @@ export const queries: Query[] = [
           dataKey: 'count',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
     },
@@ -117,10 +118,9 @@ export const queries: Query[] = [
       yAxis: [
         {
           label: 'Number of Papers',
-          dataKey: 'count',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
     },
@@ -174,6 +174,33 @@ export const queries: Query[] = [
     title: 'Types of Baselines',
     id: 4,
     uid: 'query_4',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of Reported Baseline Types in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'baseline_typeLabel',
+          label: 'Baseline Type',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query4DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What are the types of baselines reported in the papers?',
       requiredDataForAnalysis:

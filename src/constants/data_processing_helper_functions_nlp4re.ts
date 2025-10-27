@@ -2,9 +2,8 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
+export const Query1DataProcessingFunction = (rawData: RawDataItem[] = []) => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
-  console.log('query raw result:', rawData);
 
   const getFirst = (row: RawDataItem, keys: string[]) => {
     for (const k of keys) {
@@ -15,7 +14,13 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
     return '';
   };
 
-  const PAPER_KEYS = ['paper', 'paperId', 'paper_id', 'paperLabel'];
+  const PAPER_KEYS = [
+    'paper',
+    'paperId',
+    'paper_id',
+    'paperLabel',
+    'paperLabel.value',
+  ];
   const METRIC_KEYS = [
     'evaluation_metricLabel',
     'evaluation_metric_label',
@@ -23,9 +28,10 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
     'metricLabel',
   ];
 
-  const metricMap = new Map<string, Set<string> | number>();
-
   const hasPaperId = rawData.some((r) => getFirst(r, PAPER_KEYS) !== '');
+
+  const metricMap = new Map<string, Set<string> | number>();
+  const uniquePaperIds = new Set<string>();
 
   for (const row of rawData) {
     const metric = getFirst(row, METRIC_KEYS);
@@ -34,6 +40,7 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
     if (hasPaperId) {
       const pid = getFirst(row, PAPER_KEYS);
       if (!pid) continue;
+      uniquePaperIds.add(pid);
       let set = metricMap.get(metric) as Set<string> | undefined;
       if (!set) {
         set = new Set<string>();
@@ -46,18 +53,26 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[]) => {
     }
   }
 
-  // convert to array of { metricLabel, count }
-  const arr = Array.from(metricMap.entries()).map(([metric, val]) => ({
+  const allMetrics = Array.from(metricMap.entries()).map(([metric, val]) => ({
     metricLabel: metric,
     count: val instanceof Set ? val.size : (val as number),
   }));
 
-  // sort by count desc and return top 3
-  arr.sort(
+  allMetrics.sort(
     (a, b) => b.count - a.count || a.metricLabel.localeCompare(b.metricLabel)
   );
-  console.log('query result:', arr);
-  return arr.slice(0, 3);
+  const top3 = allMetrics.slice(0, 3);
+
+  const topSum = top3.reduce((s, it) => s + it.count, 0);
+
+  const result = top3.map((it) => ({
+    metricLabel: it.metricLabel,
+    count: it.count,
+    normalizedRatio:
+      topSum > 0 ? Number(((it.count * 100) / topSum).toFixed(3)) : 0,
+  }));
+
+  return result;
 };
 
 export const Query2DataProcessingFunction = (
@@ -67,7 +82,7 @@ export const Query2DataProcessingFunction = (
     paperLabel: string;
     guidelineAvailabilityLabel: string;
   }> = []
-): { year: number; count: number }[] => {
+): { year: number; count: number; normalizedRatio: number }[] => {
   if (!rawData.length) return [];
 
   // 1) Deduplicate by paper (keep last occurrence)
@@ -89,12 +104,16 @@ export const Query2DataProcessingFunction = (
     counts[y] = (counts[y] || 0) + 1;
   });
   // 4) Convert to sorted array (numeric years)
+  const total = guidelineAvailable.length || 0;
+
   return Object.entries(counts)
-    .map(([y, c]) => ({ year: Number(y), count: c }))
+    .map(([y, c]) => ({
+      year: Number(y),
+      count: c,
+      normalizedRatio: total > 0 ? Number(((c * 100) / total).toFixed(3)) : 0,
+    }))
     .sort((a, b) => a.year - b.year);
 };
-
-export default Query2DataProcessingFunction;
 
 export const Query3DataProcessingFunction = (
   rawData: Array<{ NLPTaskInputLabel?: string }> = []
@@ -116,4 +135,43 @@ export const Query3DataProcessingFunction = (
       value,
     }))
     .sort((a, b) => b.value - a.value);
+};
+
+export const Query4DataProcessingFunction = (
+  rawData: Array<{ baseline_typeLabel?: string; paper?: string }> = []
+): { baseline_typeLabel: string; count: number; normalizedRatio: number }[] => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  const paperMap = new Map<
+    string,
+    { baseline_typeLabel?: string; paper?: string }
+  >();
+  rawData.forEach((item, idx) => {
+    const pid =
+      item.paper && String(item.paper).trim() !== ''
+        ? String(item.paper).trim()
+        : `__nopaper_${idx}`;
+    paperMap.set(pid, { ...item, paper: pid });
+  });
+  const uniquePapers = Array.from(paperMap.values());
+  const counts: Record<string, number> = {};
+  uniquePapers.forEach((row) => {
+    const type = String(row.baseline_typeLabel ?? '').trim();
+    if (!type) return;
+    counts[type] = (counts[type] || 0) + 1;
+  });
+
+  const total = uniquePapers.length || 0;
+  return Object.entries(counts)
+    .map(([baseline_typeLabel, count]) => ({
+      baseline_typeLabel,
+      count,
+      normalizedRatio:
+        total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
+    }))
+    .sort(
+      (a, b) =>
+        b.count - a.count ||
+        a.baseline_typeLabel.localeCompare(b.baseline_typeLabel)
+    );
 };
