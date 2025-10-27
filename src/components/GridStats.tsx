@@ -33,8 +33,8 @@ import {
   BarChart,
   Settings,
   ViewColumn,
-  FilterList,
 } from '@mui/icons-material';
+import GroupWorkIcon from '@mui/icons-material/GroupWork';
 
 interface Props {
   questionData: Record<string, unknown>[];
@@ -327,7 +327,7 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
                   color="secondary"
                   invisible={!groupByColumn}
                 >
-                  <FilterList
+                  <GroupWorkIcon
                     sx={{ color: groupByColumn ? '#9c27b0' : '#757575' }}
                   />
                 </Badge>
@@ -936,7 +936,7 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
               gap: 1,
             }}
           >
-            <FilterList sx={{ color: '#9c27b0' }} />
+            <GroupWorkIcon sx={{ color: '#9c27b0' }} />
             Group By Column
           </Typography>
           <Divider sx={{ mb: 2 }} />

@@ -18,6 +18,7 @@ import {
 import { Info, Code as CodeIcon } from '@mui/icons-material';
 import { QuestionData } from '../../firestore/TemplateManagement';
 import ChartSettingsHelp from './ChartSettingsHelp';
+import { CodeEditor } from '../CodeEditor';
 
 interface QuestionEditDialogProps {
   open: boolean;
@@ -547,32 +548,20 @@ const QuestionEditDialog = ({
                     />
                   )}
                 </Box>
-                <Box
-                  sx={{
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    overflow: 'hidden',
-                  }}
-                >
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={12}
+                <Box sx={{ mt: 1 }}>
+                  <CodeEditor
                     value={form.sparqlQuery || ''}
-                    onChange={(e) =>
-                      setForm({ ...form, sparqlQuery: e.target.value })
+                    onChange={(value) =>
+                      setForm({ ...form, sparqlQuery: value })
                     }
+                    language="sparql"
+                    height="400px"
+                    showLineNumbers={true}
+                    showMinimap={false}
+                    copyable={true}
+                    formattable={true}
+                    fullscreenable={true}
                     placeholder="SELECT ?variable WHERE { ... }"
-                    sx={{
-                      '& .MuiInputBase-root': {
-                        fontFamily: 'Monaco, Menlo, "Courier New", monospace',
-                        fontSize: '0.8125rem',
-                        backgroundColor: '#f8f9fa',
-                        lineHeight: 1.6,
-                      },
-                      '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                    }}
                   />
                 </Box>
                 <Typography
@@ -611,34 +600,20 @@ const QuestionEditDialog = ({
                       sx={{ height: 18, fontSize: '0.65rem' }}
                     />
                   </Box>
-                  <Box
-                    sx={{
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={12}
+                  <Box sx={{ mt: 1 }}>
+                    <CodeEditor
                       value={form.sparqlQuery2 || ''}
-                      onChange={(e) =>
-                        setForm({ ...form, sparqlQuery2: e.target.value })
+                      onChange={(value) =>
+                        setForm({ ...form, sparqlQuery2: value })
                       }
+                      language="sparql"
+                      height="400px"
+                      showLineNumbers={true}
+                      showMinimap={false}
+                      copyable={true}
+                      formattable={true}
+                      fullscreenable={true}
                       placeholder="SELECT ?variable WHERE { ... }"
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          fontFamily: 'Monaco, Menlo, "Courier New", monospace',
-                          fontSize: '0.8125rem',
-                          backgroundColor: '#f8f9fa',
-                          lineHeight: 1.6,
-                        },
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          border: 'none',
-                        },
-                      }}
                     />
                   </Box>
                   <Typography

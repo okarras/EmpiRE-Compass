@@ -28,7 +28,6 @@ import {
   Refresh,
   Restore,
   Close,
-  ContentCopy,
 } from '@mui/icons-material';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 
@@ -39,6 +38,7 @@ import {
   useDynamicQuestion,
 } from '../../context/DynamicQuestionContext';
 import { PREFIXES } from '../../api/SPARQL_QUERIES';
+import { CodeEditor } from '../CodeEditor';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -76,7 +76,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
-  const [copySuccess, setCopySuccess] = useState(false);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -106,17 +105,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const handleRevertHistory = (item: DynamicQuestionHistory) => {
     onSparqlChange(item.content);
     handleCloseHistory();
-  };
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(sparqlQuery);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
-      setError('Failed to copy to clipboard');
-    }
   };
 
   const formatTimestamp = (timestamp: number) => {
@@ -423,20 +411,6 @@ Modified SPARQL Query:`;
                       <SmartToy />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={copySuccess ? 'Copied!' : 'Copy query'}>
-                    <IconButton
-                      onClick={handleCopy}
-                      size="small"
-                      sx={{
-                        color: copySuccess ? 'success.main' : '#e86161',
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      <ContentCopy />
-                    </IconButton>
-                  </Tooltip>
                   {getSparqlHistory().length > 0 && (
                     <Tooltip
                       title={`View ${getSparqlHistory().length} previous versions`}
@@ -467,33 +441,32 @@ Modified SPARQL Query:`;
             </Alert>
           )}
 
-          <TextField
-            fullWidth
-            multiline
-            minRows={6}
-            variant="outlined"
-            value={isEditing ? editContent : sparqlQuery}
-            onChange={(e) =>
-              isEditing
-                ? setEditContent(e.target.value)
-                : onSparqlChange(e.target.value)
-            }
-            disabled={loading || !isEditing}
-            sx={{
-              mt: 2,
-              mb: 2,
-              fontFamily: 'monospace',
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                '& textarea': {
-                  fontFamily: 'monospace',
-                },
-              },
-              '& .MuiInputBase-input.Mui-disabled': {
-                WebkitTextFillColor: '#000000',
-              },
-            }}
-          />
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <CodeEditor
+              value={isEditing ? editContent : sparqlQuery}
+              onChange={(value) =>
+                isEditing ? setEditContent(value) : onSparqlChange(value)
+              }
+              language="sparql"
+              height="400px"
+              readOnly={loading || !isEditing}
+              label="SPARQL Query"
+              copyable={true}
+              formattable={!isEditing}
+              fullscreenable={true}
+              showMinimap={false}
+              placeholder={`PREFIX orkgp: <http://orkg.org/orkg/predicate/>
+PREFIX orkgc: <http://orkg.org/orkg/class/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?paper ?title
+WHERE {
+  ?paper orkgp:P31 ?contribution .
+  ?paper rdfs:label ?title .
+}
+LIMIT 10`}
+            />
+          </Box>
 
           {/* Query Results Status */}
           {!loading && sparqlQuery && !queryError && (

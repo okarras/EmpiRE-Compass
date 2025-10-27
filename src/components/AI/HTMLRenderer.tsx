@@ -32,6 +32,7 @@ import DOMPurify from 'dompurify';
 import { useAIService } from '../../services/aiService';
 import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 import { HistoryItem } from './HistoryManager';
+import { CodeEditor } from '../CodeEditor';
 
 interface HTMLRendererProps {
   html: string;
@@ -543,15 +544,20 @@ ${bodyMatch[0]}
       )}
 
       {isEditing && type === 'chart' && (
-        <TextField
-          fullWidth
-          multiline
-          rows={8}
-          value={editContent}
-          onChange={(e) => setEditContent(e.target.value)}
-          variant="outlined"
-          sx={{ mb: 2, fontFamily: 'monospace' }}
-        />
+        <Box sx={{ mb: 2 }}>
+          <CodeEditor
+            value={editContent}
+            onChange={(value) => setEditContent(value)}
+            language="html"
+            height="400px"
+            label="HTML Content"
+            copyable={true}
+            formattable={true}
+            fullscreenable={true}
+            showMinimap={false}
+            placeholder="<p>Enter your HTML content here...</p>"
+          />
+        </Box>
       )}
 
       {isEditing && type === 'chart' && (
