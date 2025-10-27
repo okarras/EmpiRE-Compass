@@ -117,7 +117,7 @@ export const Query2DataProcessingFunction = (
 
 export const Query3DataProcessingFunction = (
   rawData: Array<{ NLPTaskInputLabel?: string }> = []
-): { id: string; label: string; value: number }[] => {
+): { label: string; value: number }[] => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
   const counts: Record<string, number> = {};
@@ -127,12 +127,14 @@ export const Query3DataProcessingFunction = (
     if (!label) return;
     counts[label] = (counts[label] || 0) + 1;
   });
+  const total = Object.values(counts).reduce((sum, v) => sum + v, 0);
 
   return Object.entries(counts)
-    .map(([label, value], index) => ({
-      id: `slice-${index}`,
+    .map(([label, value]) => ({
       label,
       value,
+      normalizedRatio:
+        total > 0 ? Number(((value * 100) / total).toFixed(3)) : 0,
     }))
     .sort((a, b) => b.value - a.value);
 };

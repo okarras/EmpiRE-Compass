@@ -142,18 +142,10 @@ export const queries: Query[] = [
     chartSettings: {
       className: 'fullWidth',
       heading: 'Distribution of Input Granularity Levels Used in NLP Tasks',
-      series: [
-        {
-          dataKey: 'count',
-          nameKey: 'inputType',
-          labelKey: 'inputType',
-        },
-      ],
-
+      series: [{ dataKey: 'normalizedRatio' }],
       yAxis: [
         {
           label: 'Number of Papers',
-          dataKey: 'count',
         },
       ],
 
