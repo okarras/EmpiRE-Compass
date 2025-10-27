@@ -83,6 +83,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
               wordWrap: 'break-word',
             },
           }}
+          showToolbar
         />
       </div>
     </Box>

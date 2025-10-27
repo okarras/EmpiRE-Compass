@@ -6,10 +6,15 @@ import { FirebaseQuestion } from '../store/slices/questionSlice';
 import { useParams } from 'react-router';
 import { getTemplateConfig, Query } from '../constants/template_config';
 import InfoIcon from '@mui/icons-material/Info';
+import { useState, useEffect } from 'react';
+import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 
+//* Dashboard component that displays the questions for a given template
 const Dashboard = () => {
   const params = useParams();
   const templateId = params.templateId;
+  const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
+
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -17,6 +22,14 @@ const Dashboard = () => {
     (state) =>
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
+
+  useEffect(() => {
+    const loadHomeContent = async () => {
+      const content = await CRUDHomeContent.getHomeContent();
+      setHomeContent(content);
+    };
+    loadHomeContent();
+  }, []);
 
   const sortedFirebaseQuestions = Object.values(firebaseQuestions).sort(
     (a, b) => a.id - b.id
@@ -35,6 +48,14 @@ const Dashboard = () => {
       ...question,
     };
   });
+
+  // Get template info box content from home content or use fallback
+  const templateInfoBox = homeContent?.templateInfoBoxes?.[
+    templateId as string
+  ] || {
+    title: templateConfig.title,
+    description: `This template contains ${queries.length} research questions designed to help you explore and analyze data related to ${templateConfig.title.toLowerCase()}. Each question is carefully crafted to provide insights into different aspects of your research domain.`,
+  };
 
   return (
     <Box
@@ -89,7 +110,7 @@ const Dashboard = () => {
                 fontSize: '1rem',
               }}
             >
-              {templateConfig.title}
+              {templateInfoBox.title}
             </Typography>
           </Box>
 
@@ -102,11 +123,7 @@ const Dashboard = () => {
               lineHeight: 1.6,
             }}
           >
-            This template contains {queries.length} research questions designed
-            to help you explore and analyze data related to{' '}
-            {templateConfig.title.toLowerCase()}. Each question is carefully
-            crafted to provide insights into different aspects of your research
-            domain.
+            {templateInfoBox.description}
           </Typography>
 
           <Box

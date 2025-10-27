@@ -73,6 +73,20 @@ export interface PartnersContent {
   partners: Partner[];
 }
 
+export interface TemplateInfoBox {
+  title: string;
+  description: string;
+}
+
+export interface TemplateInfoBoxes {
+  [templateId: string]: TemplateInfoBox;
+}
+
+export interface Template {
+  id: string;
+  title: string;
+}
+
 export interface HomeContentData {
   header: HeaderContent;
   aboutProject: AboutProjectContent;
@@ -80,6 +94,8 @@ export interface HomeContentData {
   futureDevelopment: FutureDevelopmentContent;
   contact: ContactContent;
   partners: PartnersContent;
+  templateInfoBoxes: TemplateInfoBoxes;
+  templates: Template[];
   updatedAt?: string;
 }
 
@@ -182,6 +198,28 @@ export const defaultHomeContent: HomeContentData = {
       },
     ],
   },
+  templateInfoBoxes: {
+    R186491: {
+      title: 'Empirical Research Practice',
+      description:
+        'This template contains research questions designed to help you explore and analyze data related to empirical research practices. Each question is carefully crafted to provide insights into different aspects of your research domain.',
+    },
+    C121001: {
+      title: 'NLP for Requirements Engineering (NLP4RE)',
+      description:
+        'This template contains research questions designed to help you explore and analyze data related to NLP for requirements engineering. Each question is carefully crafted to provide insights into different aspects of your research domain.',
+    },
+  },
+  templates: [
+    {
+      id: 'R186491',
+      title: 'Empirical Research Practice',
+    },
+    {
+      id: 'R1544125',
+      title: 'NLP4RE ID Card',
+    },
+  ],
 };
 
 /**

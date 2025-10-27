@@ -25,6 +25,8 @@ import CRUDHomeContent, {
   Feature,
   Phase,
   Partner,
+  TemplateInfoBox,
+  Template,
 } from '../firestore/CRUDHomeContent';
 
 const AdminHomeContent = () => {
@@ -42,6 +44,15 @@ const AdminHomeContent = () => {
     try {
       setLoading(true);
       const data = await CRUDHomeContent.getHomeContent();
+      // Ensure templateInfoBoxes exists for backward compatibility
+      if (!data.templateInfoBoxes) {
+        data.templateInfoBoxes =
+          CRUDHomeContent.defaultHomeContent.templateInfoBoxes;
+      }
+      // Ensure templates exists for backward compatibility
+      if (!data.templates || data.templates.length === 0) {
+        data.templates = CRUDHomeContent.defaultHomeContent.templates;
+      }
       setContent(data);
     } catch (err) {
       console.error('Error loading home content:', err);
@@ -269,6 +280,86 @@ const AdminHomeContent = () => {
     setContent({
       ...content,
       partners: { ...content.partners, partners: newPartners },
+    });
+  };
+
+  const updateTemplateInfoBox = (
+    templateId: string,
+    field: keyof TemplateInfoBox,
+    value: string
+  ) => {
+    if (!content) return;
+    setContent({
+      ...content,
+      templateInfoBoxes: {
+        ...content.templateInfoBoxes,
+        [templateId]: {
+          ...content.templateInfoBoxes[templateId],
+          [field]: value,
+        },
+      },
+    });
+  };
+
+  const addTemplateInfoBox = () => {
+    if (!content) return;
+    const newTemplateId = prompt('Enter Template ID (e.g., R186491):');
+    if (!newTemplateId) return;
+    setContent({
+      ...content,
+      templateInfoBoxes: {
+        ...content.templateInfoBoxes,
+        [newTemplateId]: {
+          title: 'New Template',
+          description: 'Template description',
+        },
+      },
+    });
+  };
+
+  const deleteTemplateInfoBox = (templateId: string) => {
+    if (!content) return;
+    const { [templateId]: _, ...rest } = content.templateInfoBoxes;
+    setContent({
+      ...content,
+      templateInfoBoxes: rest,
+    });
+  };
+
+  const addTemplate = () => {
+    if (!content) return;
+    setContent({
+      ...content,
+      templates: [
+        ...content.templates,
+        {
+          id: 'NEW_ID',
+          title: 'New Template',
+        },
+      ],
+    });
+  };
+
+  const updateTemplate = (
+    index: number,
+    field: keyof Template,
+    value: string
+  ) => {
+    if (!content) return;
+    const newTemplates = [...content.templates];
+    newTemplates[index] = { ...newTemplates[index], [field]: value };
+    setContent({
+      ...content,
+      templates: newTemplates,
+    });
+  };
+
+  const deleteTemplate = (index: number) => {
+    if (!content) return;
+    const newTemplates = content.templates.filter((_, i) => i !== index);
+    setContent({
+      ...content,
+      templates: newTemplates,
     });
   };
 
@@ -741,6 +832,173 @@ const AdminHomeContent = () => {
                 />
               </Paper>
             ))}
+          </Box>
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
+        {/* Templates List Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h5"
+            sx={{ mb: 2, color: '#e86161', fontWeight: 600 }}
+          >
+            Templates List
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Manage the templates shown in the header dropdown. Template IDs must
+            match the template IDs in your ORKG database.
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={600}>
+                Available Templates
+              </Typography>
+              <Button startIcon={<Add />} size="small" onClick={addTemplate}>
+                Add Template
+              </Button>
+            </Box>
+            {content.templates.map((template, index) => (
+              <Paper key={index} elevation={1} sx={{ p: 2, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 1,
+                  }}
+                >
+                  <Chip label={`Template ${index + 1}`} size="small" />
+                  <IconButton
+                    onClick={() => deleteTemplate(index)}
+                    color="error"
+                    size="small"
+                  >
+                    <Delete />
+                  </IconButton>
+                </Box>
+                <TextField
+                  fullWidth
+                  label="Template ID"
+                  value={template.id}
+                  onChange={(e) => updateTemplate(index, 'id', e.target.value)}
+                  sx={{ mb: 1 }}
+                  size="small"
+                  helperText="Must match the template ID in ORKG (e.g., R186491)"
+                />
+                <TextField
+                  fullWidth
+                  label="Display Title"
+                  value={template.title}
+                  onChange={(e) =>
+                    updateTemplate(index, 'title', e.target.value)
+                  }
+                  size="small"
+                  helperText="The title shown in the header dropdown"
+                />
+              </Paper>
+            ))}
+          </Box>
+        </Box>
+
+        <Divider sx={{ mb: 4 }} />
+
+        {/* Template Info Boxes Section */}
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h5"
+            sx={{ mb: 2, color: '#e86161', fontWeight: 600 }}
+          >
+            Template Info Boxes
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Edit the information boxes shown at the top of each template
+            dashboard.
+          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 1,
+              }}
+            >
+              <Typography variant="subtitle1" fontWeight={600}>
+                Templates
+              </Typography>
+              <Button
+                startIcon={<Add />}
+                size="small"
+                onClick={addTemplateInfoBox}
+              >
+                Add Template
+              </Button>
+            </Box>
+            {Object.entries(content.templateInfoBoxes || {}).map(
+              ([templateId, infoBox]) => (
+                <Paper key={templateId} elevation={1} sx={{ p: 2, mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      mb: 1,
+                    }}
+                  >
+                    <Chip
+                      label={`Template ID: ${templateId}`}
+                      size="small"
+                      sx={{
+                        backgroundColor: 'rgba(232, 97, 97, 0.1)',
+                        color: '#e86161',
+                        fontFamily: 'monospace',
+                      }}
+                    />
+                    <IconButton
+                      onClick={() => deleteTemplateInfoBox(templateId)}
+                      color="error"
+                      size="small"
+                    >
+                      <Delete />
+                    </IconButton>
+                  </Box>
+                  <TextField
+                    fullWidth
+                    label="Title"
+                    value={infoBox.title}
+                    onChange={(e) =>
+                      updateTemplateInfoBox(templateId, 'title', e.target.value)
+                    }
+                    sx={{ mb: 1 }}
+                    size="small"
+                  />
+                  <TextField
+                    fullWidth
+                    label="Description"
+                    value={infoBox.description}
+                    onChange={(e) =>
+                      updateTemplateInfoBox(
+                        templateId,
+                        'description',
+                        e.target.value
+                      )
+                    }
+                    multiline
+                    rows={3}
+                    size="small"
+                    helperText="This text will be displayed in the info box at the top of the template dashboard"
+                  />
+                </Paper>
+              )
+            )}
           </Box>
         </Box>
 
