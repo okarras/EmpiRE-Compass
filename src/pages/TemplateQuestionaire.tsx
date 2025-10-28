@@ -3,18 +3,13 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  Avatar,
   Box,
   Button,
   Checkbox,
   Chip,
-  Divider,
-  Drawer,
-  Fab,
   FormControl,
   Grid,
   IconButton,
-  InputLabel,
   MenuItem,
   OutlinedInput,
   Paper,
@@ -26,15 +21,10 @@ import {
   useTheme,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import FileUploadIcon from '@mui/icons-material/FileUpload';
-import SaveIcon from '@mui/icons-material/Save';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 type TemplateSpec = any;
@@ -66,12 +56,8 @@ const TemplateQuestionaire: React.FC<Props> = ({
 }) => {
   const theme = useTheme();
 
-  const [expandedSections, setExpandedSections] = useState<
-    Record<string, boolean>
-  >({});
-  const [importing, setImporting] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  // only a single expanded section at a time
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
     if (!templateSpec) return;
@@ -81,7 +67,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
     const save = debounce((payload: any) => {
       try {
         localStorage.setItem(key, JSON.stringify(payload));
-        setLastSavedAt(new Date().toISOString());
       } catch (e) {
         // ignore
       }
@@ -102,7 +87,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
         if (parsed && parsed.answers) {
           const hasAny = Object.keys(answers || {}).length > 0;
           if (!hasAny) setAnswers(parsed.answers);
-          if (parsed?.exported_at) setLastSavedAt(parsed.exported_at);
         }
       }
     } catch (e) {
@@ -165,88 +149,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
     [answers, overwriteAnswers]
   );
 
-  const addRepeatItem = useCallback(
-    (question: any) => {
-      const qid = question.id;
-      const arr = Array.isArray(answers[qid]) ? [...answers[qid]] : [];
-      // build default
-      if (question.item_fields && Array.isArray(question.item_fields)) {
-        const item: Record<string, any> = {};
-        question.item_fields.forEach((f: any) => {
-          if (f.type === 'multi_select') item[f.id] = [];
-          else if (f.type === 'repeat_group' || f.type === 'repeat_text')
-            item[f.id] = [];
-          else item[f.id] = '';
-        });
-        arr.push(item);
-      } else {
-        arr.push('');
-      }
-      overwriteAnswers({ ...answers, [qid]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const removeRepeatItem = useCallback(
-    (questionId: string, idx: number) => {
-      const arr = Array.isArray(answers[questionId])
-        ? [...answers[questionId]]
-        : [];
-      arr.splice(idx, 1);
-      overwriteAnswers({ ...answers, [questionId]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const setRepeatItemField = useCallback(
-    (questionId: string, idx: number, fieldId: string, value: any) => {
-      const arr = Array.isArray(answers[questionId])
-        ? [...answers[questionId]]
-        : [];
-      const item = { ...(arr[idx] ?? {}) };
-      item[fieldId] = value;
-      arr[idx] = item;
-      overwriteAnswers({ ...answers, [questionId]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const addRepeatText = useCallback(
-    (qid: string) => {
-      const arr = Array.isArray(answers[qid]) ? [...answers[qid]] : [];
-      arr.push('');
-      overwriteAnswers({ ...answers, [qid]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const setRepeatTextValue = useCallback(
-    (qid: string, idx: number, val: string) => {
-      const arr = Array.isArray(answers[qid]) ? [...answers[qid]] : [];
-      arr[idx] = val;
-      overwriteAnswers({ ...answers, [qid]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const removeRepeatText = useCallback(
-    (qid: string, idx: number) => {
-      const arr = Array.isArray(answers[qid]) ? [...answers[qid]] : [];
-      arr.splice(idx, 1);
-      overwriteAnswers({ ...answers, [qid]: arr });
-    },
-    [answers, overwriteAnswers]
-  );
-
-  const renderSelectOptions = (options: string[] | undefined) => {
-    if (!options || options.length === 0) return null;
-    return options.map((opt) => (
-      <MenuItem key={opt} value={opt}>
-        {opt}
-      </MenuItem>
-    ));
-  };
-
   const exportAnswers = useCallback(() => {
     const payload = { answers, exported_at: new Date().toISOString() };
     const b = new Blob([JSON.stringify(payload, null, 2)], {
@@ -259,29 +161,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
     a.click();
     URL.revokeObjectURL(url);
   }, [answers, templateSpec]);
-
-  const importAnswersFromFile = useCallback(
-    (file: File | null) => {
-      if (!file) return;
-      const fr = new FileReader();
-      fr.onload = () => {
-        try {
-          const parsed = JSON.parse(String(fr.result));
-          if (parsed && parsed.answers) {
-            overwriteAnswers(parsed.answers);
-          } else if (parsed && typeof parsed === 'object') {
-            overwriteAnswers(parsed);
-          }
-        } catch (e) {
-          console.error('Invalid import file', e);
-        } finally {
-          setImporting(false);
-        }
-      };
-      fr.readAsText(file);
-    },
-    [overwriteAnswers]
-  );
 
   const GroupBlock: React.FC<{
     q: any;
@@ -468,14 +347,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
     const commonLabelText = q.label + (q.required ? ' *' : '');
     const desc = q.desc ?? q.description ?? '';
 
-    // compact label node (plain text — tooltip is separate iconbutton)
     const LabelNodeText = (
       <Box component="span" sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}>
         {commonLabelText}
       </Box>
     );
 
-    // Tooltip props for better UX on desktop & touch
     const tooltipProps = {
       enterDelay: 300,
       leaveDelay: 50,
@@ -520,7 +397,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
             fullWidth
             value={value ?? ''}
             onChange={(e) => onChange(e.target.value)}
-            error={!!error}
           />
         </Box>
       );
@@ -548,7 +424,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
             {InfoIconButton}
           </Box>
 
-          <FormControl fullWidth size="small" error={!!error}>
+          <FormControl fullWidth size="small">
             <Select
               value={value ?? ''}
               onChange={(e) => onChange(e.target.value)}
@@ -579,7 +455,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
             {InfoIconButton}
           </Box>
 
-          <FormControl fullWidth size="small" error={!!error}>
+          <FormControl fullWidth size="small">
             <Select
               multiple
               value={Array.isArray(value) ? value : []}
@@ -717,7 +593,8 @@ const TemplateQuestionaire: React.FC<Props> = ({
   };
 
   const toggleSection = (secId: string) => {
-    setExpandedSections((s) => ({ ...s, [secId]: !s[secId] }));
+    // make sure only one section expanded at a time
+    setExpandedSection((cur) => (cur === secId ? null : secId));
   };
 
   const renderSection = (sec: any, si: number) => {
@@ -727,9 +604,15 @@ const TemplateQuestionaire: React.FC<Props> = ({
     return (
       <Accordion
         key={secKey}
-        expanded={!!expandedSections[secKey]}
+        expanded={expandedSection === secKey}
         onChange={() => toggleSection(secKey)}
-        sx={{ mb: 2, borderRadius: 2 }}
+        sx={{
+          mb: 3,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
+          boxShadow: 'none',
+          '&:before': { display: 'none' },
+        }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box
@@ -790,35 +673,16 @@ const TemplateQuestionaire: React.FC<Props> = ({
               {(sec.questions || []).map((q: any, qi: number) => {
                 const val = answers[q.id];
                 const onChange = (v: any) => setSingleAnswer(q.id, v);
-                const err =
-                  q.required &&
-                  (val === undefined ||
-                    val === null ||
-                    (typeof val === 'string' && val.trim() === '') ||
-                    (Array.isArray(val) && val.length === 0));
                 const qDomId = `q-${q.id}`;
 
                 return (
                   <Box key={q.id ?? qi}>
-                    <Box
-                      sx={
-                        err
-                          ? {
-                              boxShadow: `inset 0 0 0 1px ${theme.palette.error.main}33`,
-                              borderRadius: 1,
-                              p: 0.5,
-                            }
-                          : undefined
-                      }
-                    >
-                      <QuestionRenderer
-                        q={q}
-                        value={val}
-                        onChange={onChange}
-                        error={!!err}
-                        idAttr={qDomId}
-                      />
-                    </Box>
+                    <QuestionRenderer
+                      q={q}
+                      value={val}
+                      onChange={onChange}
+                      idAttr={qDomId}
+                    />
                   </Box>
                 );
               })}
@@ -874,34 +738,15 @@ const TemplateQuestionaire: React.FC<Props> = ({
                           const v = entry?.[q.id];
                           const setter = (nv: any) =>
                             setSectionEntryValue(sec.id, idx, q.id, nv);
-                          const err =
-                            q.required &&
-                            (v === undefined ||
-                              v === null ||
-                              (typeof v === 'string' && v.trim() === '') ||
-                              (Array.isArray(v) && v.length === 0));
                           const qDomId = `sec-${sec.id}-entry-${idx}-q-${q.id}`;
                           return (
                             <Grid item xs={12} key={q.id ?? qi}>
-                              <Box
-                                sx={
-                                  err
-                                    ? {
-                                        boxShadow: `inset 0 0 0 1px ${theme.palette.error.main}33`,
-                                        borderRadius: 1,
-                                        p: 0.5,
-                                      }
-                                    : undefined
-                                }
-                              >
-                                <QuestionRenderer
-                                  q={q}
-                                  value={v}
-                                  onChange={setter}
-                                  error={!!err}
-                                  idAttr={qDomId}
-                                />
-                              </Box>
+                              <QuestionRenderer
+                                q={q}
+                                value={v}
+                                onChange={setter}
+                                idAttr={qDomId}
+                              />
                             </Grid>
                           );
                         })}
@@ -1007,171 +852,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
     return { totalRequired: total, answeredRequired: answered, perSection };
   }, [templateSpec, answers]);
 
-  const renderDrawerContent = () => (
-    <Box sx={{ width: 360, p: 2 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 2,
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ bgcolor: 'primary.main' }}>
-            <UploadFileIcon />
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-              {templateSpec?.template ?? 'Template'}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              v{templateSpec?.version ?? '—'}
-            </Typography>
-          </Box>
-        </Box>
-        <IconButton onClick={() => setDrawerOpen(false)}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
-
-      <Divider sx={{ mb: 1 }} />
-
-      <Stack spacing={1}>
-        {(templateSpec?.sections || []).map((s: any, idx: number) => {
-          const per = requiredSummary.perSection.find(
-            (p: any) => p.sectionId === s.id
-          ) ?? { total: 0, answered: 0 };
-          return (
-            <Button
-              key={s.id ?? idx}
-              variant={
-                expandedSections[s.id ?? String(idx)] ? 'contained' : 'text'
-              }
-              onClick={() => {
-                setDrawerOpen(false);
-                setExpandedSections((x) => ({
-                  ...x,
-                  [s.id ?? String(idx)]: !(x[s.id ?? String(idx)] ?? false),
-                }));
-                setTimeout(() => {
-                  const el = document.getElementById(`section-${idx}`);
-                  if (el)
-                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
-              }}
-              sx={{ justifyContent: 'space-between' }}
-            >
-              <Box
-                sx={{
-                  textAlign: 'left',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                }}
-              >
-                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {s.title}
-                  </Typography>
-                  {s.desc ? (
-                    <Tooltip
-                      title={
-                        <Typography variant="body2" sx={{ maxWidth: 320 }}>
-                          {s.desc}
-                        </Typography>
-                      }
-                      arrow
-                    >
-                      <IconButton
-                        size="small"
-                        sx={{ p: 0.3, minWidth: 30 }}
-                        aria-label={`Info for ${s.title}`}
-                      >
-                        <InfoOutlinedIcon fontSize="small" color="action" />
-                      </IconButton>
-                    </Tooltip>
-                  ) : null}
-                </Box>
-                <Typography variant="caption" color="text.secondary">
-                  {}
-                </Typography>
-              </Box>
-              <Box>
-                <Chip size="small" label={`${per.answered}/${per.total}`} />
-              </Box>
-            </Button>
-          );
-        })}
-      </Stack>
-
-      <Divider sx={{ my: 1 }} />
-
-      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-        <Button
-          size="small"
-          startIcon={<SaveIcon />}
-          onClick={() => {
-            const k =
-              STORAGE_PREFIX +
-              (templateSpec?.template_id ??
-                templateSpec?.template ??
-                'default');
-            localStorage.setItem(
-              k,
-              JSON.stringify({ answers, exported_at: new Date().toISOString() })
-            );
-            setLastSavedAt(new Date().toISOString());
-          }}
-        >
-          Save
-        </Button>
-
-        <Button
-          size="small"
-          startIcon={<DownloadIcon />}
-          onClick={exportAnswers}
-        >
-          Export
-        </Button>
-
-        <label style={{ display: 'inline-block' }}>
-          <input
-            style={{ display: 'none' }}
-            type="file"
-            accept="application/json"
-            onChange={(e) => {
-              setImporting(true);
-              importAnswersFromFile(e.target.files?.[0] ?? null);
-            }}
-          />
-          <Tooltip title="Import answers (JSON)">
-            <IconButton size="small">
-              <FileUploadIcon />
-            </IconButton>
-          </Tooltip>
-        </label>
-      </Box>
-
-      <Divider sx={{ my: 1 }} />
-
-      <Box>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-          Summary
-        </Typography>
-        <Typography variant="body2">
-          Required answered: {requiredSummary.answeredRequired}/
-          {requiredSummary.totalRequired}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          {lastSavedAt
-            ? `Last saved: ${new Date(lastSavedAt).toLocaleString()}`
-            : 'Not saved yet'}
-        </Typography>
-      </Box>
-    </Box>
-  );
-
+  // compute missing
   const computeMissing = useCallback(() => {
     const missing: Array<{ id: string; label: string }> = [];
     if (!templateSpec) return missing;
@@ -1293,7 +974,10 @@ const TemplateQuestionaire: React.FC<Props> = ({
           newExpanded[sec.id ?? String(sec.title)] = true;
       });
     });
-    setExpandedSections((s) => ({ ...s, ...newExpanded }));
+    // open only first matching missing section
+    const firstKey = Object.keys(newExpanded)[0] ?? null;
+    setExpandedSection(firstKey);
+
     if (m.length === 0) {
       alert('All required fields are filled.');
     } else {
@@ -1317,21 +1001,17 @@ const TemplateQuestionaire: React.FC<Props> = ({
 
   return (
     <Box sx={{ position: 'relative' }}>
+      {/* Top sticky summary bar */}
       <Box sx={{ position: 'sticky', top: 8, zIndex: 1400 }}>
         <Paper variant="outlined" sx={{ p: 1, mx: 0, mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main' }}>
-              <UploadFileIcon />
-            </Avatar>
             <Box sx={{ flex: 1 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                 {templateSpec?.template ?? 'Template'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {templateSpec?.version ? `v${templateSpec.version}` : ''}{' '}
-                {templateSpec?.template_id
-                  ? ` • ${templateSpec.template_id}`
-                  : ''}
+                {/* {templateSpec?.template_id ? ` • ${templateSpec.template_id}` : ''} */}
               </Typography>
             </Box>
 
@@ -1358,21 +1038,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
               >
                 Validate {missing.length > 0 ? `(${missing.length})` : ''}
               </Button>
-              <Button
-                size="small"
-                onClick={() => setDrawerOpen(true)}
-                startIcon={<MenuIcon />}
-              >
-                Summary
-              </Button>
-            </Box>
-
-            <Box sx={{ ml: 2, minWidth: 160, textAlign: 'right' }}>
-              <Typography variant="caption" color="text.secondary">
-                {lastSavedAt
-                  ? `Saved ${new Date(lastSavedAt).toLocaleString()}`
-                  : 'Not saved yet'}
-              </Typography>
             </Box>
           </Box>
         </Paper>
@@ -1382,7 +1047,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
         <Box sx={{ flex: 1 }}>
           <Box>
             {(templateSpec?.sections || []).map((sec: any, si: number) => (
-              <Box id={`section-${si}`} key={sec.id ?? si} sx={{ mb: 2 }}>
+              <Box id={`section-${si}`} key={sec.id ?? si} sx={{ mb: 3 }}>
                 {renderSection(sec, si)}
               </Box>
             ))}
@@ -1396,23 +1061,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
           </Box>
         </Box>
       </Box>
-
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      >
-        {renderDrawerContent()}
-      </Drawer>
-
-      <Fab
-        color="primary"
-        onClick={() => setDrawerOpen(true)}
-        sx={{ position: 'fixed', right: 20, bottom: 24, zIndex: 1500 }}
-        aria-label="Open summary"
-      >
-        <MenuIcon />
-      </Fab>
 
       <style>{`
         .validation-flash {

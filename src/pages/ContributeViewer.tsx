@@ -27,7 +27,6 @@ const ContributeViewer: React.FC = () => {
   const locState = (location.state || {}) as ViewerState;
   const [templateSpec, setTemplateSpec] = useState<any | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [evidence, setEvidence] = useState<Record<string, any>>({});
 
   // layout
   const [leftWidthPx, setLeftWidthPx] = useState<number | null>(null);
@@ -152,9 +151,6 @@ const ContributeViewer: React.FC = () => {
           templateSpec={templateSpec}
           answers={answers}
           setAnswers={setAnswers}
-          evidence={evidence}
-          setEvidence={setEvidence}
-          onGoToPage={handleGoToPage}
         />
       </Box>
 
