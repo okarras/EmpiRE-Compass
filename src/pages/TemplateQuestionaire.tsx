@@ -19,6 +19,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material';
+import { darken } from '@mui/material/styles';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -120,6 +121,39 @@ const isManySection = (sec: any) =>
   sec?.cardinality === 'many' ||
   sec?.cardinality === 'multiple' ||
   sec?.cardinality === 'one to many';
+
+const INDENT_PX = 20; // horizontal indent per level
+const DARKEN_STEP = 0.04; // amount to darken per level (0.0 - 1.0)
+const MAX_DARKEN = 0.24; // clamp maximum darkening so it never becomes too dark
+
+const NodeWrapper: React.FC<{
+  level?: number;
+  children?: React.ReactNode;
+  sx?: any;
+}> = ({ level = 0, children, sx }) => {
+  const theme = useTheme();
+
+  const base = theme.palette.background.paper;
+
+  const rawAmount = level <= 0 ? 0 : Math.min(MAX_DARKEN, level * DARKEN_STEP);
+  const bg = rawAmount > 0 ? darken(base, rawAmount) : 'transparent';
+
+  const left = level * INDENT_PX;
+
+  return (
+    <Box sx={{ position: 'relative', pl: `${left}px`, ...sx }}>
+      <Box
+        sx={{
+          backgroundColor: bg,
+          borderRadius: 1,
+          p: level === 0 ? 0 : 1,
+        }}
+      >
+        {children}
+      </Box>
+    </Box>
+  );
+};
 
 const TemplateQuestionaire: React.FC<Props> = ({
   templateSpec,
@@ -256,24 +290,27 @@ const TemplateQuestionaire: React.FC<Props> = ({
     value: any;
     onChange: (v: any) => void;
     idAttr?: string;
-  }> = ({ q, value, onChange, idAttr }) => {
+    level?: number;
+  }> = ({ q, value, onChange, idAttr, level = 0 }) => {
     const commonLabel = q.label ?? q.title ?? '';
     const desc = q.desc ?? q.description ?? '';
 
     // TEXT / URL / default
     if (q.type === 'text' || q.type === 'url' || !q.type) {
       return (
-        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
-          <BufferedTextField
-            id={idAttr}
-            value={String(value ?? '')}
-            onCommit={(v) => onChange(v)}
-            size="small"
-            fullWidth
-            commitOnBlurOnly
-            placeholder={q.placeholder ?? ''}
-          />
-        </FieldRow>
+        <NodeWrapper level={level}>
+          <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
+            <BufferedTextField
+              id={idAttr}
+              value={String(value ?? '')}
+              onCommit={(v) => onChange(v)}
+              size="small"
+              fullWidth
+              commitOnBlurOnly
+              placeholder={q.placeholder ?? ''}
+            />
+          </FieldRow>
+        </NodeWrapper>
       );
     }
 
@@ -290,22 +327,24 @@ const TemplateQuestionaire: React.FC<Props> = ({
             ? ['yes', 'no']
             : [];
       return (
-        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
-          <FormControl fullWidth size="small">
-            <Select
-              value={value ?? ''}
-              onChange={(e) => onChange(e.target.value)}
-              displayEmpty
-              input={<OutlinedInput />}
-            >
-              {opts.map((opt: string) => (
-                <MenuItem key={opt} value={opt}>
-                  {opt}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </FieldRow>
+        <NodeWrapper level={level}>
+          <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
+            <FormControl fullWidth size="small">
+              <Select
+                value={value ?? ''}
+                onChange={(e) => onChange(e.target.value)}
+                displayEmpty
+                input={<OutlinedInput />}
+              >
+                {opts.map((opt: string) => (
+                  <MenuItem key={opt} value={opt}>
+                    {opt}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </FieldRow>
+        </NodeWrapper>
       );
     }
 
@@ -313,40 +352,42 @@ const TemplateQuestionaire: React.FC<Props> = ({
     if (q.type === 'multi_select') {
       const opts = q.options ?? [];
       return (
-        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
-          <FormControl fullWidth size="small">
-            <Select
-              multiple
-              value={Array.isArray(value) ? value : []}
-              onChange={(e) =>
-                onChange(
-                  typeof e.target.value === 'string'
-                    ? e.target.value.split(',')
-                    : e.target.value
-                )
-              }
-              input={<OutlinedInput />}
-              renderValue={(selected) => (
-                <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                  {(selected as string[]).map((s) => (
-                    <Chip key={s} label={s} size="small" />
-                  ))}
-                </Box>
-              )}
-            >
-              {opts.map((opt: string) => (
-                <MenuItem key={opt} value={opt}>
-                  <Checkbox
-                    checked={
-                      Array.isArray(value) ? value.indexOf(opt) > -1 : false
-                    }
-                  />
-                  {opt}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </FieldRow>
+        <NodeWrapper level={level}>
+          <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
+            <FormControl fullWidth size="small">
+              <Select
+                multiple
+                value={Array.isArray(value) ? value : []}
+                onChange={(e) =>
+                  onChange(
+                    typeof e.target.value === 'string'
+                      ? e.target.value.split(',')
+                      : e.target.value
+                  )
+                }
+                input={<OutlinedInput />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {(selected as string[]).map((s) => (
+                      <Chip key={s} label={s} size="small" />
+                    ))}
+                  </Box>
+                )}
+              >
+                {opts.map((opt: string) => (
+                  <MenuItem key={opt} value={opt}>
+                    <Checkbox
+                      checked={
+                        Array.isArray(value) ? value.indexOf(opt) > -1 : false
+                      }
+                    />
+                    {opt}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </FieldRow>
+        </NodeWrapper>
       );
     }
 
@@ -354,66 +395,67 @@ const TemplateQuestionaire: React.FC<Props> = ({
     if (q.type === 'repeat_text') {
       const arr: string[] = Array.isArray(value) ? value : [];
       return (
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Typography variant="subtitle2">
-              {q.label}
-              {q.required ? ' *' : ''}
-            </Typography>
-            <Info desc={desc} />
-          </Box>
-          <Stack spacing={1}>
-            {arr.map((v, i) => (
-              <Box key={i} sx={{ display: 'flex', gap: 1 }}>
-                <BufferedTextField
-                  id={`${idAttr ?? 'repeat_text'}-${i}`}
-                  value={String(v ?? '')}
-                  onCommit={(val) => {
-                    const copy = [...arr];
-                    copy[i] = val;
-                    onChange(copy);
-                  }}
-                  size="small"
-                  fullWidth
-                  commitOnBlurOnly
-                />
-                <IconButton
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    const copy = [...arr];
-                    copy.splice(i, 1);
-                    onChange(copy);
-                  }}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  <DeleteOutlineIcon />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              size="small"
-              startIcon={<AddCircleOutlineIcon />}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onChange([...arr, '']);
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
+        <NodeWrapper level={level}>
+          <Box>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}
             >
-              Add
-            </Button>
-          </Stack>
-        </Box>
+              <Typography variant="subtitle2">
+                {q.label}
+                {q.required ? ' *' : ''}
+              </Typography>
+              <Info desc={desc} />
+            </Box>
+            <Stack spacing={1}>
+              {arr.map((v, i) => (
+                <Box key={i} sx={{ display: 'flex', gap: 1 }}>
+                  <BufferedTextField
+                    id={`${idAttr ?? 'repeat_text'}-${i}`}
+                    value={String(v ?? '')}
+                    onCommit={(val) => {
+                      const copy = [...arr];
+                      copy[i] = val;
+                      onChange(copy);
+                    }}
+                    size="small"
+                    fullWidth
+                    commitOnBlurOnly
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const copy = [...arr];
+                      copy.splice(i, 1);
+                      onChange(copy);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </Box>
+              ))}
+              <Button
+                size="small"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onChange([...arr, '']);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                Add
+              </Button>
+            </Stack>
+          </Box>
+        </NodeWrapper>
       );
     }
 
     // repeat_group
     if (q.type === 'repeat_group') {
       const arr = Array.isArray(value) ? value : [];
-
-      // Auto-initialize a single empty item so the user doesn't have to click "Add" for the first one.
-      // This runs once per question id. We intentionally only depend on q.id to avoid loops.
       useEffect(() => {
         if (Array.isArray(value) && value.length === 0) {
           const initEntry = q.item_fields
@@ -428,96 +470,102 @@ const TemplateQuestionaire: React.FC<Props> = ({
       }, [q.id]);
 
       return (
-        <Box sx={{ pl: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="subtitle2" sx={{ ml: 0 }}>
-              {q.label}
-              {q.required ? ' *' : ''}
-            </Typography>
-            <Info desc={desc} />
-          </Box>
+        <NodeWrapper level={level}>
+          <Box sx={{ pl: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ ml: 0 }}>
+                {q.label}
+                {q.required ? ' *' : ''}
+              </Typography>
+              <Info desc={desc} />
+            </Box>
 
-          <Stack spacing={1}>
-            {arr.map((item: any, idx: number) => {
-              const key = `${idAttr ?? q.id}-entry-${idx}`;
-              return (
-                <Accordion
-                  key={idx}
-                  expanded={isExpandedKey(key)}
-                  onChange={(_e, val) => setExpandedKey(key, val)}
-                  sx={{ boxShadow: 'none' }}
-                >
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                      }}
-                    >
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        {q.item_label ?? `Entry #${idx + 1}`}
-                      </Typography>
-                      <Box>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const copy = [...arr];
-                            copy.splice(idx, 1);
-                            onChange(copy);
-                          }}
-                          onMouseDown={(e) => e.stopPropagation()}
+            <Stack spacing={1}>
+              {arr.map((item: any, idx: number) => {
+                const key = `${idAttr ?? q.id}-entry-${idx}`;
+                return (
+                  <Accordion
+                    key={idx}
+                    expanded={isExpandedKey(key)}
+                    onChange={(_e, val) => setExpandedKey(key, val)}
+                    sx={{ boxShadow: 'none' }}
+                  >
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          width: '100%',
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 700 }}
                         >
-                          <DeleteOutlineIcon />
-                        </IconButton>
+                          {q.item_label ?? `Entry #${idx + 1}`}
+                        </Typography>
+                        <Box>
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const copy = [...arr];
+                              copy.splice(idx, 1);
+                              onChange(copy);
+                            }}
+                            onMouseDown={(e) => e.stopPropagation()}
+                          >
+                            <DeleteOutlineIcon />
+                          </IconButton>
+                        </Box>
                       </Box>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Box sx={{ display: 'grid', gap: 1 }}>
-                      {(q.item_fields || []).map((f: any) => (
-                        <QuestionRenderer
-                          key={f.id}
-                          q={f}
-                          value={item[f.id]}
-                          onChange={(nv) => {
-                            const copy = [...arr];
-                            copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
-                            onChange(copy);
-                          }}
-                          idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
-                        />
-                      ))}
-                    </Box>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box sx={{ display: 'grid', gap: 1 }}>
+                        {(q.item_fields || []).map((f: any) => (
+                          <QuestionRenderer
+                            key={f.id}
+                            q={f}
+                            value={item[f.id]}
+                            onChange={(nv) => {
+                              const copy = [...arr];
+                              copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
+                              onChange(copy);
+                            }}
+                            idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
+                            level={level + 1}
+                          />
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
 
-            <Button
-              size="small"
-              startIcon={<AddCircleOutlineIcon />}
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onChange([
-                  ...(arr || []),
-                  q.item_fields
-                    ? q.item_fields.reduce((acc: any, f: any) => {
-                        acc[f.id] = f.type === 'multi_select' ? [] : '';
-                        return acc;
-                      }, {})
-                    : '',
-                ]);
-              }}
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              Add {q.item_label ?? 'item'}
-            </Button>
-          </Stack>
-        </Box>
+              <Button
+                size="small"
+                startIcon={<AddCircleOutlineIcon />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onChange([
+                    ...(arr || []),
+                    q.item_fields
+                      ? q.item_fields.reduce((acc: any, f: any) => {
+                          acc[f.id] = f.type === 'multi_select' ? [] : '';
+                          return acc;
+                        }, {})
+                      : '',
+                  ]);
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+              >
+                Add {q.item_label ?? 'item'}
+              </Button>
+            </Stack>
+          </Box>
+        </NodeWrapper>
       );
     }
 
@@ -526,53 +574,57 @@ const TemplateQuestionaire: React.FC<Props> = ({
       const obj = value ?? {};
       const key = `${idAttr ?? q.id}-group`;
       return (
-        <Accordion
-          expanded={isExpandedKey(key)}
-          onChange={(_e, val) => setExpandedKey(key, val)}
-          sx={{ boxShadow: 'none', borderRadius: 1 }}
-        >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box
-              sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: -1.5 }}
-            >
-              {/* match other field label styles: not bold, same size and line-height */}
-              <Typography
-                variant="body2"
-                sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}
+        <NodeWrapper level={level}>
+          <Accordion
+            expanded={isExpandedKey(key)}
+            onChange={(_e, val) => setExpandedKey(key, val)}
+            sx={{ boxShadow: 'none', borderRadius: 1 }}
+          >
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: -1.5 }}
               >
-                {q.label ?? q.title}
-                {q.required ? ' *' : ''}
-              </Typography>
-              <Info desc={desc} />
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box sx={{ display: 'grid', gap: 1, pl: 1 }}>
-              {(q.item_fields || q.subquestions || []).map((f: any) => (
-                <QuestionRenderer
-                  key={f.id}
-                  q={f}
-                  value={obj[f.id]}
-                  onChange={(nv) => onChange({ ...(obj ?? {}), [f.id]: nv })}
-                  idAttr={`${idAttr ?? q.id}-g-${f.id}`}
-                />
-              ))}
-            </Box>
-          </AccordionDetails>
-        </Accordion>
+                <Typography
+                  variant="body2"
+                  sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}
+                >
+                  {q.label ?? q.title}
+                  {q.required ? ' *' : ''}
+                </Typography>
+                <Info desc={desc} />
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: 'grid', gap: 1, pl: 1 }}>
+                {(q.item_fields || q.subquestions || []).map((f: any) => (
+                  <QuestionRenderer
+                    key={f.id}
+                    q={f}
+                    value={obj[f.id]}
+                    onChange={(nv) => onChange({ ...(obj ?? {}), [f.id]: nv })}
+                    idAttr={`${idAttr ?? q.id}-g-${f.id}`}
+                    level={level + 1}
+                  />
+                ))}
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+        </NodeWrapper>
       );
     }
 
     // fallback
     return (
-      <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
-        <TextField
-          size="small"
-          fullWidth
-          value={value ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      </FieldRow>
+      <NodeWrapper level={level}>
+        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
+          <TextField
+            size="small"
+            fullWidth
+            value={value ?? ''}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        </FieldRow>
+      </NodeWrapper>
     );
   };
 
@@ -668,6 +720,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                     value={val}
                     onChange={(v) => setSingleAnswer(q.id, v)}
                     idAttr={`q-${q.id}`}
+                    level={1}
                   />
                 );
               })}
@@ -735,6 +788,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                                   setSectionEntryValue(sec.id, idx, q.id, nv)
                                 }
                                 idAttr={`sec-${sec.id}-entry-${idx}-q-${q.id}`}
+                                level={1}
                               />
                             );
                           })}
