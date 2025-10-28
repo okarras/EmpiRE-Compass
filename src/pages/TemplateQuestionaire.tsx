@@ -180,7 +180,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-              {q.label}
+              {q.label ?? q.title}
               {q.required ? ' *' : ''}
             </Typography>
             {q.desc ? (
