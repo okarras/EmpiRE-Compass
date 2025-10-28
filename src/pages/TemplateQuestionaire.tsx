@@ -49,13 +49,65 @@ const isManySection = (sec: any) =>
   sec?.cardinality === 'multiple' ||
   sec?.cardinality === 'one to many';
 
+const BufferedTextField: React.FC<{
+  value: string;
+  onCommit: (v: string) => void;
+  size?: 'small' | 'medium';
+  fullWidth?: boolean;
+  id?: string;
+  placeholder?: string;
+  debounceMs?: number;
+  commitOnBlurOnly?: boolean;
+}> = ({
+  value,
+  onCommit,
+  size = 'small',
+  fullWidth = true,
+  id,
+  placeholder,
+  debounceMs = 500,
+  commitOnBlurOnly = false,
+}) => {
+  const [local, setLocal] = useState<string>(value ?? '');
+
+  useEffect(() => {
+    setLocal(value ?? '');
+  }, [value]);
+
+  useEffect(() => {
+    if (commitOnBlurOnly) return;
+    const t = setTimeout(() => {
+      if ((value ?? '') !== local) onCommit(local);
+    }, debounceMs);
+    return () => clearTimeout(t);
+  }, [local, onCommit, debounceMs, value, commitOnBlurOnly]);
+
+  return (
+    <TextField
+      id={id}
+      size={size}
+      fullWidth={fullWidth}
+      value={local}
+      placeholder={placeholder}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={() => {
+        if ((value ?? '') !== local) onCommit(local);
+      }}
+      inputProps={{ 'aria-label': id }}
+    />
+  );
+};
+
 const TemplateQuestionaire: React.FC<Props> = ({
   templateSpec,
   answers,
   setAnswers,
 }) => {
   const theme = useTheme();
-
+  const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+  const setExpandedKey = (key: string, value: boolean) =>
+    setExpandedMap((s) => ({ ...s, [key]: value }));
+  const isExpandedKey = (key: string) => !!expandedMap[key];
   // only a single expanded section at a time
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -168,13 +220,19 @@ const TemplateQuestionaire: React.FC<Props> = ({
     onChange: (v: any) => void;
     idAttr?: string;
   }> = ({ q, value, onChange, idAttr }) => {
-    const [expanded, setExpanded] = useState<boolean>(false);
+    // use shared expandedMap keyed by idAttr or q.id so expansion survives re-renders
+    const key = `${idAttr ?? q.id}-group`;
+    const expanded = isExpandedKey(key);
+
     const obj = value ?? {};
     const fields = q.item_fields || q.subquestions || [];
+
     return (
       <Accordion
         expanded={expanded}
-        onChange={() => setExpanded((s) => !s)}
+        onChange={(_e: any, isExpanded: boolean) =>
+          setExpandedKey(key, isExpanded)
+        }
         sx={{ boxShadow: 'none', borderRadius: 1 }}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -196,6 +254,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   size="small"
                   sx={{ p: 0.4, minWidth: 30 }}
                   aria-label={`Info for ${q.label}`}
+                  onMouseDown={(e) => e.stopPropagation()}
                 >
                   <InfoOutlinedIcon fontSize="small" color="action" />
                 </IconButton>
@@ -227,10 +286,9 @@ const TemplateQuestionaire: React.FC<Props> = ({
     onChange: (v: any) => void;
     idAttr?: string;
   }> = ({ q, value, onChange, idAttr }) => {
-    const [expandedIndex, setExpandedIndex] = useState<Record<number, boolean>>(
-      {}
-    );
     const arr = Array.isArray(value) ? value : [];
+    const keyBase = idAttr ?? q.id;
+
     return (
       <Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -251,6 +309,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                 aria-label={`Info for ${q.label}`}
                 size="small"
                 sx={{ p: 0.4, minWidth: 30 }}
+                onMouseDown={(e) => e.stopPropagation()}
               >
                 <InfoOutlinedIcon fontSize="small" color="action" />
               </IconButton>
@@ -259,66 +318,73 @@ const TemplateQuestionaire: React.FC<Props> = ({
         </Box>
 
         <Stack spacing={1}>
-          {arr.map((item: any, idx: number) => (
-            <Accordion
-              key={idx}
-              expanded={!!expandedIndex[idx]}
-              onChange={() =>
-                setExpandedIndex((s) => ({ ...s, [idx]: !s[idx] }))
-              }
-              sx={{ boxShadow: 'none' }}
-            >
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                  }}
-                >
-                  <Typography variant="subtitle2">
-                    {q.label} #{idx + 1}
-                  </Typography>
-                  <Box>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const copy = [...arr];
-                        copy.splice(idx, 1);
-                        onChange(copy);
-                      }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </Box>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={1}>
-                  {(q.item_fields || []).map((f: any) => (
-                    <Grid item xs={12} key={f.id}>
-                      <QuestionRenderer
-                        q={f}
-                        value={item[f.id]}
-                        onChange={(nv) => {
+          {arr.map((item: any, idx: number) => {
+            const entryKey = `${keyBase}-entry-${idx}`;
+            return (
+              <Accordion
+                key={idx}
+                expanded={isExpandedKey(entryKey)}
+                onChange={(_e: any, isExpanded: boolean) =>
+                  setExpandedKey(entryKey, isExpanded)
+                }
+                sx={{ boxShadow: 'none' }}
+              >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      width: '100%',
+                    }}
+                  >
+                    <Typography variant="subtitle2">
+                      {q.label} #{idx + 1}
+                    </Typography>
+                    <Box>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           const copy = [...arr];
-                          copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
+                          copy.splice(idx, 1);
                           onChange(copy);
                         }}
-                        idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
-          ))}
+                        onMouseDown={(e) => e.stopPropagation()}
+                      >
+                        <DeleteOutlineIcon />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Grid container spacing={1}>
+                    {(q.item_fields || []).map((f: any) => (
+                      <Grid item xs={12} key={f.id}>
+                        <QuestionRenderer
+                          q={f}
+                          value={item[f.id]}
+                          onChange={(nv) => {
+                            const copy = [...arr];
+                            copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
+                            onChange(copy);
+                          }}
+                          idAttr={`${keyBase}-item-${idx}-f-${f.id}`}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+            );
+          })}
+
           <Button
             size="small"
             startIcon={<AddCircleOutlineIcon />}
-            onClick={() =>
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              e.preventDefault();
               onChange([
                 ...(arr || []),
                 q.item_fields
@@ -327,8 +393,9 @@ const TemplateQuestionaire: React.FC<Props> = ({
                       return acc;
                     }, {})
                   : '',
-              ])
-            }
+              ]);
+            }}
+            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
           >
             Add {q.item_label ?? 'item'}
           </Button>
@@ -374,6 +441,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
           aria-label={`Info for ${q.label}`}
           size="small"
           sx={{ ml: 0.5, p: 0.5, minWidth: 30 }}
+          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
         >
           <InfoOutlinedIcon fontSize="small" color="action" />
         </IconButton>
@@ -392,11 +460,14 @@ const TemplateQuestionaire: React.FC<Props> = ({
             {InfoIconButton}
           </Box>
 
-          <TextField
+          <BufferedTextField
+            id={idAttr}
+            value={String(value ?? '')}
+            onCommit={(v) => onChange(v)}
             size="small"
             fullWidth
-            value={value ?? ''}
-            onChange={(e) => onChange(e.target.value)}
+            commitOnBlurOnly={true}
+            placeholder={q.placeholder ?? ''}
           />
         </Box>
       );
@@ -525,22 +596,28 @@ const TemplateQuestionaire: React.FC<Props> = ({
           <Stack spacing={1}>
             {arr.map((v, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1 }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  value={v}
-                  onChange={(e) => {
+                <BufferedTextField
+                  id={`${idAttr ?? 'repeat_text'}-${i}`}
+                  value={String(v ?? '')}
+                  onCommit={(val) => {
                     const copy = [...arr];
-                    copy[i] = e.target.value;
+                    copy[i] = val;
                     onChange(copy);
                   }}
+                  size="small"
+                  fullWidth
+                  commitOnBlurOnly={true}
                 />
                 <IconButton
                   size="small"
-                  onClick={() => {
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
                     const copy = [...arr];
                     copy.splice(i, 1);
                     onChange(copy);
+                  }}
+                  onMouseDown={(e: React.MouseEvent) => {
+                    e.stopPropagation();
                   }}
                 >
                   <DeleteOutlineIcon />
@@ -550,7 +627,14 @@ const TemplateQuestionaire: React.FC<Props> = ({
             <Button
               size="small"
               startIcon={<AddCircleOutlineIcon />}
-              onClick={() => onChange([...arr, ''])}
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onChange([...arr, '']);
+              }}
+              onMouseDown={(e: React.MouseEvent) => {
+                e.stopPropagation();
+              }}
             >
               Add
             </Button>
@@ -593,7 +677,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
   };
 
   const toggleSection = (secId: string) => {
-    // make sure only one section expanded at a time
     setExpandedSection((cur) => (cur === secId ? null : secId));
   };
 
@@ -641,6 +724,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                     size="small"
                     sx={{ p: 0.4, minWidth: 30 }}
                     aria-label={`Info for section ${sec.title}`}
+                    onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
                   >
                     <InfoOutlinedIcon fontSize="small" color="action" />
                   </IconButton>
@@ -655,9 +739,13 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   size="small"
                   variant="outlined"
                   startIcon={<AddCircleOutlineIcon />}
-                  onClick={(e) => {
+                  onClick={(e: React.MouseEvent) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     addSectionEntry(sec);
+                  }}
+                  onMouseDown={(e: React.MouseEvent) => {
+                    e.stopPropagation();
                   }}
                 >
                   Add
@@ -699,61 +787,71 @@ const TemplateQuestionaire: React.FC<Props> = ({
                 )}
 
               {(Array.isArray(answers[sec.id]) ? answers[sec.id] : []).map(
-                (entry: any, idx: number) => (
-                  <Accordion
-                    key={`${sec.id}-${idx}`}
-                    sx={{ boxShadow: 'none' }}
-                  >
-                    <AccordionSummary>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          width: '100%',
-                        }}
-                      >
-                        <Typography
-                          variant="subtitle2"
-                          sx={{ fontWeight: 700 }}
+                (entry: any, idx: number) => {
+                  const entryKey = `${sec.id}-entry-${idx}`;
+                  return (
+                    <Accordion
+                      key={`${sec.id}-${idx}`}
+                      expanded={isExpandedKey(entryKey)}
+                      onChange={(_e: any, isExpanded: boolean) =>
+                        setExpandedKey(entryKey, isExpanded)
+                      }
+                      sx={{ boxShadow: 'none' }}
+                    >
+                      <AccordionSummary>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            width: '100%',
+                          }}
                         >
-                          {sec.title} #{idx + 1}
-                        </Typography>
-                        <Box>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeSectionEntry(sec.id, idx);
-                            }}
+                          <Typography
+                            variant="subtitle2"
+                            sx={{ fontWeight: 700 }}
                           >
-                            <DeleteOutlineIcon />
-                          </IconButton>
+                            {sec.title} #{idx + 1}
+                          </Typography>
+                          <Box>
+                            <IconButton
+                              size="small"
+                              onClick={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                removeSectionEntry(sec.id, idx);
+                              }}
+                              onMouseDown={(e: React.MouseEvent) => {
+                                e.stopPropagation();
+                              }}
+                            >
+                              <DeleteOutlineIcon />
+                            </IconButton>
+                          </Box>
                         </Box>
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Grid container spacing={1}>
-                        {(sec.questions || []).map((q: any, qi: number) => {
-                          const v = entry?.[q.id];
-                          const setter = (nv: any) =>
-                            setSectionEntryValue(sec.id, idx, q.id, nv);
-                          const qDomId = `sec-${sec.id}-entry-${idx}-q-${q.id}`;
-                          return (
-                            <Grid item xs={12} key={q.id ?? qi}>
-                              <QuestionRenderer
-                                q={q}
-                                value={v}
-                                onChange={setter}
-                                idAttr={qDomId}
-                              />
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </AccordionDetails>
-                  </Accordion>
-                )
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Grid container spacing={1}>
+                          {(sec.questions || []).map((q: any, qi: number) => {
+                            const v = entry?.[q.id];
+                            const setter = (nv: any) =>
+                              setSectionEntryValue(sec.id, idx, q.id, nv);
+                            const qDomId = `sec-${sec.id}-entry-${idx}-q-${q.id}`;
+                            return (
+                              <Grid item xs={12} key={q.id ?? qi}>
+                                <QuestionRenderer
+                                  q={q}
+                                  value={v}
+                                  onChange={setter}
+                                  idAttr={qDomId}
+                                />
+                              </Grid>
+                            );
+                          })}
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
+                  );
+                }
               )}
             </Stack>
           )}
