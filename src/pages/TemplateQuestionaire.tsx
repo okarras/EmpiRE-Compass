@@ -8,7 +8,6 @@ import {
   Checkbox,
   Chip,
   FormControl,
-  Grid,
   IconButton,
   MenuItem,
   OutlinedInput,
@@ -28,7 +27,6 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 type TemplateSpec = any;
-
 type Props = {
   templateSpec: TemplateSpec | null;
   answers: Record<string, any>;
@@ -36,7 +34,7 @@ type Props = {
 };
 
 const STORAGE_PREFIX = 'template_answers_v1_';
-const debounce = (fn: (...args: any[]) => void, wait = 500) => {
+const debounce = (fn: (...a: any[]) => void, wait = 500) => {
   let t: any = 0;
   return (...args: any[]) => {
     clearTimeout(t);
@@ -44,11 +42,7 @@ const debounce = (fn: (...args: any[]) => void, wait = 500) => {
   };
 };
 
-const isManySection = (sec: any) =>
-  sec?.cardinality === 'many' ||
-  sec?.cardinality === 'multiple' ||
-  sec?.cardinality === 'one to many';
-
+/* Buffered text field kept largely the same as yours */
 const BufferedTextField: React.FC<{
   value: string;
   onCommit: (v: string) => void;
@@ -98,17 +92,47 @@ const BufferedTextField: React.FC<{
   );
 };
 
+const Info: React.FC<{ desc?: string; label?: string }> = ({ desc, label }) =>
+  desc ? (
+    <Tooltip
+      title={
+        <Typography variant="body2" sx={{ maxWidth: 420 }}>
+          {desc}
+        </Typography>
+      }
+      arrow
+      enterDelay={300}
+      leaveDelay={50}
+      enterTouchDelay={0}
+      followCursor
+    >
+      <IconButton
+        size="small"
+        sx={{ ml: 0.5, p: 0.5, minWidth: 30 }}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <InfoOutlinedIcon fontSize="small" color="action" />
+      </IconButton>
+    </Tooltip>
+  ) : null;
+
+const isManySection = (sec: any) =>
+  sec?.cardinality === 'many' ||
+  sec?.cardinality === 'multiple' ||
+  sec?.cardinality === 'one to many';
+
 const TemplateQuestionaire: React.FC<Props> = ({
   templateSpec,
   answers,
   setAnswers,
 }) => {
   const theme = useTheme();
+
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
   const setExpandedKey = (key: string, value: boolean) =>
     setExpandedMap((s) => ({ ...s, [key]: value }));
   const isExpandedKey = (key: string) => !!expandedMap[key];
-  // only a single expanded section at a time
+
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   useEffect(() => {
@@ -120,10 +144,9 @@ const TemplateQuestionaire: React.FC<Props> = ({
       try {
         localStorage.setItem(key, JSON.stringify(payload));
       } catch (e) {
-        // ignore
+        /* ignore */
       }
     }, 700);
-
     save({ answers });
   }, [answers, templateSpec]);
 
@@ -142,14 +165,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
         }
       }
     } catch (e) {
-      // ignore
+      /* ignore */
     }
   }, [templateSpec]);
 
   const overwriteAnswers = useCallback(
-    (next: Record<string, any>) => {
-      setAnswers(next);
-    },
+    (next: Record<string, any>) => setAnswers(next),
     [setAnswers]
   );
 
@@ -214,287 +235,62 @@ const TemplateQuestionaire: React.FC<Props> = ({
     URL.revokeObjectURL(url);
   }, [answers, templateSpec]);
 
-  const GroupBlock: React.FC<{
-    q: any;
-    value: any;
-    onChange: (v: any) => void;
-    idAttr?: string;
-  }> = ({ q, value, onChange, idAttr }) => {
-    // use shared expandedMap keyed by idAttr or q.id so expansion survives re-renders
-    const key = `${idAttr ?? q.id}-group`;
-    const expanded = isExpandedKey(key);
-
-    const obj = value ?? {};
-    const fields = q.item_fields || q.subquestions || [];
-
-    return (
-      <Accordion
-        expanded={expanded}
-        onChange={(_e: any, isExpanded: boolean) =>
-          setExpandedKey(key, isExpanded)
-        }
-        sx={{ boxShadow: 'none', borderRadius: 1 }}
-      >
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-              {q.label ?? q.title}
-              {q.required ? ' *' : ''}
-            </Typography>
-            {q.desc ? (
-              <Tooltip
-                title={
-                  <Typography variant="body2" sx={{ maxWidth: 420 }}>
-                    {q.desc}
-                  </Typography>
-                }
-                arrow
-              >
-                <IconButton
-                  size="small"
-                  sx={{ p: 0.4, minWidth: 30 }}
-                  aria-label={`Info for ${q.label}`}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
-                  <InfoOutlinedIcon fontSize="small" color="action" />
-                </IconButton>
-              </Tooltip>
-            ) : null}
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={1}>
-            {fields.map((f: any) => (
-              <Grid item xs={12} key={f.id}>
-                <QuestionRenderer
-                  q={f}
-                  value={obj[f.id]}
-                  onChange={(nv) => onChange({ ...(obj ?? {}), [f.id]: nv })}
-                  idAttr={`${idAttr ?? q.id}-g-${f.id}`}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-    );
-  };
-
-  const RepeatGroupBlock: React.FC<{
-    q: any;
-    value: any;
-    onChange: (v: any) => void;
-    idAttr?: string;
-  }> = ({ q, value, onChange, idAttr }) => {
-    const arr = Array.isArray(value) ? value : [];
-    const keyBase = idAttr ?? q.id;
-
-    return (
-      <Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          <Typography variant="subtitle2">
-            {q.label}
-            {q.required ? ' *' : ''}
-          </Typography>
-          {q.desc ? (
-            <Tooltip
-              title={
-                <Typography variant="body2" sx={{ maxWidth: 420 }}>
-                  {q.desc}
-                </Typography>
-              }
-              arrow
-            >
-              <IconButton
-                aria-label={`Info for ${q.label}`}
-                size="small"
-                sx={{ p: 0.4, minWidth: 30 }}
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                <InfoOutlinedIcon fontSize="small" color="action" />
-              </IconButton>
-            </Tooltip>
-          ) : null}
+  const FieldRow: React.FC<{
+    children: React.ReactNode;
+    label?: string;
+    desc?: string;
+  }> = ({ children, label, desc }) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box component="span" sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}>
+          {label}
         </Box>
-
-        <Stack spacing={1}>
-          {arr.map((item: any, idx: number) => {
-            const entryKey = `${keyBase}-entry-${idx}`;
-            return (
-              <Accordion
-                key={idx}
-                expanded={isExpandedKey(entryKey)}
-                onChange={(_e: any, isExpanded: boolean) =>
-                  setExpandedKey(entryKey, isExpanded)
-                }
-                sx={{ boxShadow: 'none' }}
-              >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      width: '100%',
-                    }}
-                  >
-                    <Typography variant="subtitle2">
-                      {q.label} #{idx + 1}
-                    </Typography>
-                    <Box>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const copy = [...arr];
-                          copy.splice(idx, 1);
-                          onChange(copy);
-                        }}
-                        onMouseDown={(e) => e.stopPropagation()}
-                      >
-                        <DeleteOutlineIcon />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <Grid container spacing={1}>
-                    {(q.item_fields || []).map((f: any) => (
-                      <Grid item xs={12} key={f.id}>
-                        <QuestionRenderer
-                          q={f}
-                          value={item[f.id]}
-                          onChange={(nv) => {
-                            const copy = [...arr];
-                            copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
-                            onChange(copy);
-                          }}
-                          idAttr={`${keyBase}-item-${idx}-f-${f.id}`}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </AccordionDetails>
-              </Accordion>
-            );
-          })}
-
-          <Button
-            size="small"
-            startIcon={<AddCircleOutlineIcon />}
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              e.preventDefault();
-              onChange([
-                ...(arr || []),
-                q.item_fields
-                  ? q.item_fields.reduce((acc: any, f: any) => {
-                      acc[f.id] = f.type === 'multi_select' ? [] : '';
-                      return acc;
-                    }, {})
-                  : '',
-              ]);
-            }}
-            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-          >
-            Add {q.item_label ?? 'item'}
-          </Button>
-        </Stack>
+        <Info desc={desc} />
       </Box>
-    );
-  };
+      <Box>{children}</Box>
+    </Box>
+  );
 
   const QuestionRenderer: React.FC<{
     q: any;
     value: any;
     onChange: (v: any) => void;
-    error?: boolean;
     idAttr?: string;
-  }> = ({ q, value, onChange, error, idAttr }) => {
-    const commonLabelText = q.label + (q.required ? ' *' : '');
+  }> = ({ q, value, onChange, idAttr }) => {
+    const commonLabel = q.label ?? q.title ?? '';
     const desc = q.desc ?? q.description ?? '';
-
-    const LabelNodeText = (
-      <Box component="span" sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}>
-        {commonLabelText}
-      </Box>
-    );
-
-    const tooltipProps = {
-      enterDelay: 300,
-      leaveDelay: 50,
-      enterTouchDelay: 0,
-      followCursor: true as const,
-    };
-
-    const InfoIconButton = desc ? (
-      <Tooltip
-        title={
-          <Typography variant="body2" sx={{ maxWidth: 420 }}>
-            {desc}
-          </Typography>
-        }
-        arrow
-        {...tooltipProps}
-      >
-        <IconButton
-          aria-label={`Info for ${q.label}`}
-          size="small"
-          sx={{ ml: 0.5, p: 0.5, minWidth: 30 }}
-          onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
-        >
-          <InfoOutlinedIcon fontSize="small" color="action" />
-        </IconButton>
-      </Tooltip>
-    ) : null;
 
     // TEXT / URL / default
     if (q.type === 'text' || q.type === 'url' || !q.type) {
       return (
-        <Box
-          id={idAttr}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {LabelNodeText}
-            {InfoIconButton}
-          </Box>
-
+        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
           <BufferedTextField
             id={idAttr}
             value={String(value ?? '')}
             onCommit={(v) => onChange(v)}
             size="small"
             fullWidth
-            commitOnBlurOnly={true}
+            commitOnBlurOnly
             placeholder={q.placeholder ?? ''}
           />
-        </Box>
+        </FieldRow>
       );
     }
 
-    // text_object / single-select / boolean
+    // single-select / boolean / text_object
     if (
       q.type === 'text_object' ||
       q.type === 'single_select' ||
       q.type === 'boolean'
     ) {
       const opts =
-        q.options && q.options.length > 0
+        q.options && q.options.length
           ? q.options
           : q.type === 'boolean'
             ? ['yes', 'no']
             : [];
       return (
-        <Box
-          id={idAttr}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {LabelNodeText}
-            {InfoIconButton}
-          </Box>
-
+        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
           <FormControl fullWidth size="small">
             <Select
               value={value ?? ''}
@@ -509,7 +305,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
               ))}
             </Select>
           </FormControl>
-        </Box>
+        </FieldRow>
       );
     }
 
@@ -517,15 +313,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
     if (q.type === 'multi_select') {
       const opts = q.options ?? [];
       return (
-        <Box
-          id={idAttr}
-          sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            {LabelNodeText}
-            {InfoIconButton}
-          </Box>
-
+        <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
           <FormControl fullWidth size="small">
             <Select
               multiple
@@ -558,7 +346,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
               ))}
             </Select>
           </FormControl>
-        </Box>
+        </FieldRow>
       );
     }
 
@@ -566,33 +354,14 @@ const TemplateQuestionaire: React.FC<Props> = ({
     if (q.type === 'repeat_text') {
       const arr: string[] = Array.isArray(value) ? value : [];
       return (
-        <Box id={idAttr}>
+        <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
             <Typography variant="subtitle2">
               {q.label}
               {q.required ? ' *' : ''}
             </Typography>
-            {desc ? (
-              <Tooltip
-                title={
-                  <Typography variant="body2" sx={{ maxWidth: 420 }}>
-                    {desc}
-                  </Typography>
-                }
-                arrow
-                {...tooltipProps}
-              >
-                <IconButton
-                  aria-label={`Info for ${q.label}`}
-                  size="small"
-                  sx={{ p: 0.5, minWidth: 30 }}
-                >
-                  <InfoOutlinedIcon fontSize="small" color="action" />
-                </IconButton>
-              </Tooltip>
-            ) : null}
+            <Info desc={desc} />
           </Box>
-
           <Stack spacing={1}>
             {arr.map((v, i) => (
               <Box key={i} sx={{ display: 'flex', gap: 1 }}>
@@ -606,19 +375,17 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   }}
                   size="small"
                   fullWidth
-                  commitOnBlurOnly={true}
+                  commitOnBlurOnly
                 />
                 <IconButton
                   size="small"
-                  onClick={(e: React.MouseEvent) => {
+                  onClick={(e) => {
                     e.stopPropagation();
                     const copy = [...arr];
                     copy.splice(i, 1);
                     onChange(copy);
                   }}
-                  onMouseDown={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
                 >
                   <DeleteOutlineIcon />
                 </IconButton>
@@ -627,14 +394,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
             <Button
               size="small"
               startIcon={<AddCircleOutlineIcon />}
-              onClick={(e: React.MouseEvent) => {
+              onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 onChange([...arr, '']);
               }}
-              onMouseDown={(e: React.MouseEvent) => {
-                e.stopPropagation();
-              }}
+              onMouseDown={(e) => e.stopPropagation()}
             >
               Add
             </Button>
@@ -643,46 +408,179 @@ const TemplateQuestionaire: React.FC<Props> = ({
       );
     }
 
+    // repeat_group
     if (q.type === 'repeat_group') {
+      const arr = Array.isArray(value) ? value : [];
       return (
-        <RepeatGroupBlock
-          q={q}
-          value={value}
-          onChange={onChange}
-          idAttr={idAttr}
-        />
-      );
-    }
+        <Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+            <Typography variant="subtitle2">
+              {q.label}
+              {q.required ? ' *' : ''}
+            </Typography>
+            <Info desc={desc} />
+          </Box>
 
-    if (q.type === 'group') {
-      return (
-        <GroupBlock q={q} value={value} onChange={onChange} idAttr={idAttr} />
-      );
-    }
+          <Stack spacing={1}>
+            {arr.map((item: any, idx: number) => {
+              const key = `${idAttr ?? q.id}-entry-${idx}`;
+              return (
+                <Accordion
+                  key={idx}
+                  expanded={isExpandedKey(key)}
+                  onChange={(_e, val) => setExpandedKey(key, val)}
+                  sx={{ boxShadow: 'none' }}
+                >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}
+                    >
+                      <Typography variant="subtitle2">
+                        {q.label} #{idx + 1}
+                      </Typography>
+                      <Box>
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const copy = [...arr];
+                            copy.splice(idx, 1);
+                            onChange(copy);
+                          }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                        >
+                          <DeleteOutlineIcon />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Box sx={{ display: 'grid', gap: 1 }}>
+                      {(q.item_fields || []).map((f: any) => (
+                        <QuestionRenderer
+                          key={f.id}
+                          q={f}
+                          value={item[f.id]}
+                          onChange={(nv) => {
+                            const copy = [...arr];
+                            copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
+                            onChange(copy);
+                          }}
+                          idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
+                        />
+                      ))}
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+              );
+            })}
 
-    return (
-      <Box id={idAttr}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {LabelNodeText}
-          {InfoIconButton}
+            <Button
+              size="small"
+              startIcon={<AddCircleOutlineIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                onChange([
+                  ...(arr || []),
+                  q.item_fields
+                    ? q.item_fields.reduce((acc: any, f: any) => {
+                        acc[f.id] = f.type === 'multi_select' ? [] : '';
+                        return acc;
+                      }, {})
+                    : '',
+                ]);
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              Add {q.item_label ?? 'item'}
+            </Button>
+          </Stack>
         </Box>
+      );
+    }
+
+    // group (collapsible subfields)
+    if (q.type === 'group') {
+      const obj = value ?? {};
+      const key = `${idAttr ?? q.id}-group`;
+      return (
+        <Accordion
+          expanded={isExpandedKey(key)}
+          onChange={(_e, val) => setExpandedKey(key, val)}
+          sx={{ boxShadow: 'none', borderRadius: 1 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                {q.label ?? q.title}
+                {q.required ? ' *' : ''}
+              </Typography>
+              <Info desc={desc} />
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box sx={{ display: 'grid', gap: 1 }}>
+              {(q.item_fields || q.subquestions || []).map((f: any) => (
+                <QuestionRenderer
+                  key={f.id}
+                  q={f}
+                  value={obj[f.id]}
+                  onChange={(nv) => onChange({ ...(obj ?? {}), [f.id]: nv })}
+                  idAttr={`${idAttr ?? q.id}-g-${f.id}`}
+                />
+              ))}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      );
+    }
+
+    // fallback
+    return (
+      <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
         <TextField
           size="small"
           fullWidth
           value={value ?? ''}
           onChange={(e) => onChange(e.target.value)}
         />
-      </Box>
+      </FieldRow>
     );
   };
 
-  const toggleSection = (secId: string) => {
+  const toggleSection = (secId: string) =>
     setExpandedSection((cur) => (cur === secId ? null : secId));
-  };
 
   const renderSection = (sec: any, si: number) => {
     const many = isManySection(sec);
     const secKey = sec.id ?? String(si);
+
+    const SectionHeaderRight = (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Chip size="small" label={`${computeSectionProgress(sec)}`} />
+        {many && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              addSectionEntry(sec);
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            Add
+          </Button>
+        )}
+      </Box>
+    );
 
     return (
       <Accordion
@@ -724,7 +622,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                     size="small"
                     sx={{ p: 0.4, minWidth: 30 }}
                     aria-label={`Info for section ${sec.title}`}
-                    onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
                   >
                     <InfoOutlinedIcon fontSize="small" color="action" />
                   </IconButton>
@@ -732,46 +630,23 @@ const TemplateQuestionaire: React.FC<Props> = ({
               ) : null}
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Chip size="small" label={`${computeSectionProgress(sec)}`} />
-              {many && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<AddCircleOutlineIcon />}
-                  onClick={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    addSectionEntry(sec);
-                  }}
-                  onMouseDown={(e: React.MouseEvent) => {
-                    e.stopPropagation();
-                  }}
-                >
-                  Add
-                </Button>
-              )}
-            </Box>
+            {SectionHeaderRight}
           </Box>
         </AccordionSummary>
 
         <AccordionDetails>
           {!many && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'grid', gap: 2 }}>
               {(sec.questions || []).map((q: any, qi: number) => {
                 const val = answers[q.id];
-                const onChange = (v: any) => setSingleAnswer(q.id, v);
-                const qDomId = `q-${q.id}`;
-
                 return (
-                  <Box key={q.id ?? qi}>
-                    <QuestionRenderer
-                      q={q}
-                      value={val}
-                      onChange={onChange}
-                      idAttr={qDomId}
-                    />
-                  </Box>
+                  <QuestionRenderer
+                    key={q.id ?? qi}
+                    q={q}
+                    value={val}
+                    onChange={(v) => setSingleAnswer(q.id, v)}
+                    idAttr={`q-${q.id}`}
+                  />
                 );
               })}
             </Box>
@@ -793,9 +668,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                     <Accordion
                       key={`${sec.id}-${idx}`}
                       expanded={isExpandedKey(entryKey)}
-                      onChange={(_e: any, isExpanded: boolean) =>
-                        setExpandedKey(entryKey, isExpanded)
-                      }
+                      onChange={(_e, val) => setExpandedKey(entryKey, val)}
                       sx={{ boxShadow: 'none' }}
                     >
                       <AccordionSummary>
@@ -816,13 +689,11 @@ const TemplateQuestionaire: React.FC<Props> = ({
                           <Box>
                             <IconButton
                               size="small"
-                              onClick={(e: React.MouseEvent) => {
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 removeSectionEntry(sec.id, idx);
                               }}
-                              onMouseDown={(e: React.MouseEvent) => {
-                                e.stopPropagation();
-                              }}
+                              onMouseDown={(e) => e.stopPropagation()}
                             >
                               <DeleteOutlineIcon />
                             </IconButton>
@@ -830,24 +701,22 @@ const TemplateQuestionaire: React.FC<Props> = ({
                         </Box>
                       </AccordionSummary>
                       <AccordionDetails>
-                        <Grid container spacing={1}>
+                        <Box sx={{ display: 'grid', gap: 1 }}>
                           {(sec.questions || []).map((q: any, qi: number) => {
                             const v = entry?.[q.id];
-                            const setter = (nv: any) =>
-                              setSectionEntryValue(sec.id, idx, q.id, nv);
-                            const qDomId = `sec-${sec.id}-entry-${idx}-q-${q.id}`;
                             return (
-                              <Grid item xs={12} key={q.id ?? qi}>
-                                <QuestionRenderer
-                                  q={q}
-                                  value={v}
-                                  onChange={setter}
-                                  idAttr={qDomId}
-                                />
-                              </Grid>
+                              <QuestionRenderer
+                                key={q.id ?? qi}
+                                q={q}
+                                value={v}
+                                onChange={(nv) =>
+                                  setSectionEntryValue(sec.id, idx, q.id, nv)
+                                }
+                                idAttr={`sec-${sec.id}-entry-${idx}-q-${q.id}`}
+                              />
                             );
                           })}
-                        </Grid>
+                        </Box>
                       </AccordionDetails>
                     </Accordion>
                   );
@@ -901,8 +770,8 @@ const TemplateQuestionaire: React.FC<Props> = ({
     (templateSpec.sections || []).forEach((sec: any) => {
       let sTotal = 0;
       let sAnswered = 0;
-
       const many = isManySection(sec);
+
       const countQuestion = (q: any, value: any) => {
         if (!q?.required) return { t: 0, a: 0 };
         const t = 1;
@@ -950,7 +819,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
     return { totalRequired: total, answeredRequired: answered, perSection };
   }, [templateSpec, answers]);
 
-  // compute missing
   const computeMissing = useCallback(() => {
     const missing: Array<{ id: string; label: string }> = [];
     if (!templateSpec) return missing;
@@ -974,12 +842,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
           }
           if (q.type === 'repeat_group' && q.required) {
             const arr = Array.isArray(answers[q.id]) ? answers[q.id] : [];
-            if (arr.length === 0) {
+            if (arr.length === 0)
               missing.push({
                 id: `q-${q.id}`,
                 label: `${sec.title} → ${q.label} (at least 1 item)`,
               });
-            } else {
+            else {
               arr.forEach((item: any, idx: number) => {
                 (q.item_fields || []).forEach((f: any) => {
                   if (f.required) {
@@ -989,12 +857,11 @@ const TemplateQuestionaire: React.FC<Props> = ({
                       fv === null ||
                       (typeof fv === 'string' && fv.trim() === '') ||
                       (Array.isArray(fv) && fv.length === 0);
-                    if (fEmpty) {
+                    if (fEmpty)
                       missing.push({
                         id: `q-${q.id}-item-${idx}-f-${f.id}`,
                         label: `${sec.title} → ${q.label} #${idx + 1} → ${f.label}`,
                       });
-                    }
                   }
                 });
               });
@@ -1072,7 +939,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
           newExpanded[sec.id ?? String(sec.title)] = true;
       });
     });
-    // open only first matching missing section
     const firstKey = Object.keys(newExpanded)[0] ?? null;
     setExpandedSection(firstKey);
 
@@ -1108,8 +974,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                 {templateSpec?.template ?? 'Template'}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {templateSpec?.version ? `v${templateSpec.version}` : ''}{' '}
-                {/* {templateSpec?.template_id ? ` • ${templateSpec.template_id}` : ''} */}
+                {templateSpec?.version ? `v${templateSpec.version}` : ''}
               </Typography>
             </Box>
 
