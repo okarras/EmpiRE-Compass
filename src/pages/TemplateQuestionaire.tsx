@@ -411,10 +411,26 @@ const TemplateQuestionaire: React.FC<Props> = ({
     // repeat_group
     if (q.type === 'repeat_group') {
       const arr = Array.isArray(value) ? value : [];
+
+      // Auto-initialize a single empty item so the user doesn't have to click "Add" for the first one.
+      // This runs once per question id. We intentionally only depend on q.id to avoid loops.
+      useEffect(() => {
+        if (Array.isArray(value) && value.length === 0) {
+          const initEntry = q.item_fields
+            ? q.item_fields.reduce((acc: any, f: any) => {
+                acc[f.id] = f.type === 'multi_select' ? [] : '';
+                return acc;
+              }, {})
+            : {};
+          onChange([initEntry]);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [q.id]);
+
       return (
-        <Box>
+        <Box sx={{ pl: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="subtitle2">
+            <Typography variant="subtitle2" sx={{ ml: 0 }}>
               {q.label}
               {q.required ? ' *' : ''}
             </Typography>
@@ -440,8 +456,8 @@ const TemplateQuestionaire: React.FC<Props> = ({
                         width: '100%',
                       }}
                     >
-                      <Typography variant="subtitle2">
-                        {q.label} #{idx + 1}
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                        {q.item_label ?? `Entry #${idx + 1}`}
                       </Typography>
                       <Box>
                         <IconButton
@@ -516,8 +532,14 @@ const TemplateQuestionaire: React.FC<Props> = ({
           sx={{ boxShadow: 'none', borderRadius: 1 }}
         >
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: -1.5 }}
+            >
+              {/* match other field label styles: not bold, same size and line-height */}
+              <Typography
+                variant="body2"
+                sx={{ fontSize: '0.875rem', lineHeight: 1.2 }}
+              >
                 {q.label ?? q.title}
                 {q.required ? ' *' : ''}
               </Typography>
@@ -525,7 +547,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
             </Box>
           </AccordionSummary>
           <AccordionDetails>
-            <Box sx={{ display: 'grid', gap: 1 }}>
+            <Box sx={{ display: 'grid', gap: 1, pl: 1 }}>
               {(q.item_fields || q.subquestions || []).map((f: any) => (
                 <QuestionRenderer
                   key={f.id}
