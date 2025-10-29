@@ -806,23 +806,101 @@ const TemplateQuestionaire: React.FC<Props> = ({
   };
 
   const computeSectionProgress = (sec: any) => {
-    const many = isManySection(sec);
     if (!sec) return '';
+
+    const isEmptyPrimitive = (v: any) =>
+      v === undefined ||
+      v === null ||
+      (typeof v === 'string' && v.trim() === '') ||
+      (Array.isArray(v) && v.length === 0);
+    const countQuestion = (q: any, value: any): { t: number; a: number } => {
+      if (!q) return { t: 0, a: 0 };
+
+      const isStructural =
+        q.type === 'group' ||
+        q.type === 'repeat_group' ||
+        q.type === 'repeat_text';
+      if (isStructural && q.required === false) {
+        return { t: 0, a: 0 };
+      }
+
+      // repeat_text
+      if (q.type === 'repeat_text') {
+        if (!q.required) return { t: 0, a: 0 };
+        const t = 1;
+        const a = Array.isArray(value) && value.length > 0 ? 1 : 0;
+        return { t, a };
+      }
+
+      // repeat_group
+      if (q.type === 'repeat_group') {
+        let t = 0;
+        let a = 0;
+        const arr = Array.isArray(value) ? value : [];
+        if (arr.length > 0 && Array.isArray(q.item_fields)) {
+          q.item_fields.forEach((f: any) => {
+            if (f?.required) {
+              arr.forEach((item: any) => {
+                if (
+                  f.type === 'group' ||
+                  f.type === 'repeat_group' ||
+                  f.type === 'repeat_text'
+                ) {
+                  const { t: nt, a: na } = countQuestion(f, item?.[f.id]);
+                  t += nt;
+                  a += na;
+                } else {
+                  t += 1;
+                  const fv = item?.[f.id];
+                  if (!isEmptyPrimitive(fv)) a += 1;
+                }
+              });
+            } else {
+              if (f.type === 'group' || f.type === 'repeat_group') {
+                arr.forEach((item: any) => {
+                  const { t: nt, a: na } = countQuestion(f, item?.[f.id]);
+                  t += nt;
+                  a += na;
+                });
+              }
+            }
+          });
+        }
+        return { t, a };
+      }
+
+      if (q.type === 'group') {
+        const fields = q.item_fields ?? q.subquestions ?? [];
+        let t = 0;
+        let a = 0;
+        fields.forEach((f: any) => {
+          const fv = value ? value[f.id] : undefined;
+          const { t: ft, a: fa } = countQuestion(f, fv);
+          t += ft;
+          a += fa;
+        });
+        return { t, a };
+      }
+
+      if (q.required) {
+        const t = 1;
+        const a = !isEmptyPrimitive(value) ? 1 : 0;
+        return { t, a };
+      }
+
+      return { t: 0, a: 0 };
+    };
+
+    const many = isManySection(sec);
     let total = 0;
     let answered = 0;
+
     if (!many) {
       (sec.questions || []).forEach((q: any) => {
-        if (q.required) {
-          total += 1;
-          const v = answers[q.id];
-          if (
-            v !== undefined &&
-            v !== null &&
-            String(v).trim() !== '' &&
-            !(Array.isArray(v) && v.length === 0)
-          )
-            answered += 1;
-        }
+        const v = answers[q.id];
+        const { t, a } = countQuestion(q, v);
+        total += t;
+        answered += a;
       });
     } else {
       const arr = Array.isArray(answers[sec.id]) ? answers[sec.id] : [];
@@ -831,13 +909,110 @@ const TemplateQuestionaire: React.FC<Props> = ({
       );
       total = sectionHasRequired ? 1 : 0;
       if (sectionHasRequired && arr.length > 0) answered = 1;
+
+      if (arr.length > 0) {
+        arr.forEach((entry: any) => {
+          (sec.questions || []).forEach((q: any) => {
+            const entryValue = entry?.[q.id];
+            const { t, a } = countQuestion(q, entryValue);
+            total += t;
+            answered += a;
+          });
+        });
+      }
     }
+
     return `${answered}/${total}`;
   };
 
   const requiredSummary = useMemo(() => {
     if (!templateSpec)
       return { totalRequired: 0, answeredRequired: 0, perSection: [] as any[] };
+
+    // helper: check if a primitive value is answered
+    const isAnsweredPrimitive = (val: any) => {
+      if (val === undefined || val === null) return false;
+      if (Array.isArray(val)) return val.length > 0;
+      return String(val).trim() !== '';
+    };
+
+    const countQuestion = (q: any, value: any): { t: number; a: number } => {
+      if (!q) return { t: 0, a: 0 };
+
+      const isStructural =
+        q.type === 'group' ||
+        q.type === 'repeat_group' ||
+        q.type === 'repeat_text';
+      if (isStructural && q.required === false) {
+        return { t: 0, a: 0 };
+      }
+
+      if (q.type === 'repeat_text') {
+        if (!q.required) return { t: 0, a: 0 };
+        const t = 1;
+        const a = Array.isArray(value) && value.length > 0 ? 1 : 0;
+        return { t, a };
+      }
+
+      if (q.type === 'repeat_group') {
+        let t = 0;
+        let a = 0;
+        const arr = Array.isArray(value) ? value : [];
+
+        if (arr.length > 0 && Array.isArray(q.item_fields)) {
+          q.item_fields.forEach((f: any) => {
+            if (f?.required) {
+              arr.forEach((item: any) => {
+                if (
+                  f.type === 'group' ||
+                  f.type === 'repeat_group' ||
+                  f.type === 'repeat_text'
+                ) {
+                  const { t: nt, a: na } = countQuestion(f, item?.[f.id]);
+                  t += nt;
+                  a += na;
+                } else {
+                  t += 1;
+                  const fv = item?.[f.id];
+                  if (isAnsweredPrimitive(fv)) a += 1;
+                }
+              });
+            } else {
+              if (f.type === 'group' || f.type === 'repeat_group') {
+                arr.forEach((item: any) => {
+                  const { t: nt, a: na } = countQuestion(f, item?.[f.id]);
+                  t += nt;
+                  a += na;
+                });
+              }
+            }
+          });
+        }
+
+        return { t, a };
+      }
+
+      if (q.type === 'group') {
+        const fields = q.item_fields ?? q.subquestions ?? [];
+        let t = 0;
+        let a = 0;
+        fields.forEach((f: any) => {
+          const fv = value ? value[f.id] : undefined;
+          const { t: ft, a: fa } = countQuestion(f, fv);
+          t += ft;
+          a += fa;
+        });
+        return { t, a };
+      }
+
+      if (q.required) {
+        const t = 1;
+        const a = isAnsweredPrimitive(value) ? 1 : 0;
+        return { t, a };
+      }
+      return { t: 0, a: 0 };
+    };
+
     let total = 0;
     let answered = 0;
     const perSection: { sectionId: string; total: number; answered: number }[] =
@@ -847,23 +1022,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
       let sTotal = 0;
       let sAnswered = 0;
       const many = isManySection(sec);
-
-      const countQuestion = (q: any, value: any) => {
-        if (!q?.required) return { t: 0, a: 0 };
-        const t = 1;
-        let a = 0;
-        if (q.type === 'repeat_group' || q.type === 'repeat_text') {
-          if (Array.isArray(value) && value.length > 0) a = 1;
-        } else {
-          if (
-            value !== undefined &&
-            value !== null &&
-            String(value).trim() !== ''
-          )
-            a = 1;
-        }
-        return { t, a };
-      };
 
       if (!many) {
         (sec.questions || []).forEach((q: any) => {
@@ -879,7 +1037,18 @@ const TemplateQuestionaire: React.FC<Props> = ({
         );
         if (sectionHasRequired) {
           sTotal += 1;
-          if (arr && arr.length > 0) sAnswered += 1;
+          if (arr.length > 0) sAnswered += 1;
+        }
+
+        if (arr.length > 0) {
+          arr.forEach((entry: any) => {
+            (sec.questions || []).forEach((q: any) => {
+              const entryValue = entry?.[q.id];
+              const { t, a } = countQuestion(q, entryValue);
+              sTotal += t;
+              sAnswered += a;
+            });
+          });
         }
       }
 
@@ -899,103 +1068,135 @@ const TemplateQuestionaire: React.FC<Props> = ({
     const missing: Array<{ id: string; label: string }> = [];
     if (!templateSpec) return missing;
 
+    const isEmptyPrimitive = (v: any) =>
+      v === undefined ||
+      v === null ||
+      (typeof v === 'string' && v.trim() === '') ||
+      (Array.isArray(v) && v.length === 0);
+
+    const collectMissing = (
+      q: any,
+      value: any,
+      pathLabel: string,
+      idPrefix: string
+    ): Array<{ id: string; label: string }> => {
+      const out: Array<{ id: string; label: string }> = [];
+      if (!q) return out;
+
+      const isStructural =
+        q.type === 'group' ||
+        q.type === 'repeat_group' ||
+        q.type === 'repeat_text';
+      if (isStructural && q.required === false) return out;
+
+      if (q.type === 'repeat_text') {
+        if (q.required) {
+          if (!Array.isArray(value) || value.length === 0) {
+            out.push({
+              id: `${idPrefix}-${q.id}`,
+              label: `${pathLabel} → ${q.label}`,
+            });
+          }
+        }
+        return out;
+      }
+
+      if (q.type === 'group') {
+        const fields = q.item_fields ?? q.subquestions ?? [];
+        fields.forEach((f: any) => {
+          const fv = value ? value[f.id] : undefined;
+          out.push(
+            ...collectMissing(
+              f,
+              fv,
+              `${pathLabel} → ${q.label}`,
+              `${idPrefix}-${q.id}`
+            )
+          );
+        });
+        return out;
+      }
+      if (q.type === 'repeat_group') {
+        const arr = Array.isArray(value) ? value : [];
+        if (arr.length === 0) {
+          return out;
+        }
+        arr.forEach((item: any, idx: number) => {
+          (q.item_fields || []).forEach((f: any) => {
+            if (!f) return;
+            if (
+              f.type === 'group' ||
+              f.type === 'repeat_group' ||
+              f.type === 'repeat_text'
+            ) {
+              const nestedValue = item?.[f.id];
+              out.push(
+                ...collectMissing(
+                  f,
+                  nestedValue,
+                  `${pathLabel} → ${q.label} #${idx + 1}`,
+                  `${idPrefix}-${q.id}-item-${idx}`
+                )
+              );
+            } else {
+              if (f.required) {
+                const fv = item?.[f.id];
+                if (isEmptyPrimitive(fv)) {
+                  out.push({
+                    id: `${idPrefix}-${q.id}-item-${idx}-f-${f.id}`,
+                    label: `${pathLabel} → ${q.label} #${idx + 1} → ${f.label}`,
+                  });
+                }
+              }
+            }
+          });
+        });
+        return out;
+      }
+
+      if (q.required) {
+        if (isEmptyPrimitive(value)) {
+          out.push({
+            id: `${idPrefix}-${q.id}`,
+            label: `${pathLabel} → ${q.label}`,
+          });
+        }
+      }
+
+      return out;
+    };
+
     (templateSpec.sections || []).forEach((sec: any) => {
       const many = isManySection(sec);
 
       if (!many) {
         (sec.questions || []).forEach((q: any) => {
-          const val = answers[q.id];
-          const empty =
-            val === undefined ||
-            val === null ||
-            (typeof val === 'string' && val.trim() === '') ||
-            (Array.isArray(val) && val.length === 0);
-          if (q.required && empty) {
-            missing.push({
-              id: `q-${q.id}`,
-              label: `${sec.title} → ${q.label}`,
-            });
-          }
-          if (q.type === 'repeat_group' && q.required) {
-            const arr = Array.isArray(answers[q.id]) ? answers[q.id] : [];
-            if (arr.length === 0)
-              missing.push({
-                id: `q-${q.id}`,
-                label: `${sec.title} → ${q.label} (at least 1 item)`,
-              });
-            else {
-              arr.forEach((item: any, idx: number) => {
-                (q.item_fields || []).forEach((f: any) => {
-                  if (f.required) {
-                    const fv = item?.[f.id];
-                    const fEmpty =
-                      fv === undefined ||
-                      fv === null ||
-                      (typeof fv === 'string' && fv.trim() === '') ||
-                      (Array.isArray(fv) && fv.length === 0);
-                    if (fEmpty)
-                      missing.push({
-                        id: `q-${q.id}-item-${idx}-f-${f.id}`,
-                        label: `${sec.title} → ${q.label} #${idx + 1} → ${f.label}`,
-                      });
-                  }
-                });
-              });
-            }
-          }
+          const v = answers[q.id];
+          missing.push(...collectMissing(q, v, `${sec.title}`, `q-${q.id}`));
         });
       } else {
         const arr = Array.isArray(answers[sec.id]) ? answers[sec.id] : [];
         const sectionHasRequired = (sec.questions || []).some(
           (q: any) => q.required
         );
-        if (sectionHasRequired && arr.length === 0)
+        if (sectionHasRequired && arr.length === 0) {
           missing.push({
             id: `sec-${sec.id}`,
             label: `${sec.title} → at least one entry required`,
           });
+        }
+
         arr.forEach((entry: any, idx: number) => {
           (sec.questions || []).forEach((q: any) => {
-            if (q.required) {
-              const v = entry?.[q.id];
-              const empty =
-                v === undefined ||
-                v === null ||
-                (typeof v === 'string' && v.trim() === '') ||
-                (Array.isArray(v) && v.length === 0);
-              if (empty)
-                missing.push({
-                  id: `sec-${sec.id}-entry-${idx}-q-${q.id}`,
-                  label: `${sec.title} #${idx + 1} → ${q.label}`,
-                });
-            }
-            if (q.type === 'repeat_group' && q.required) {
-              const arr2 = Array.isArray(entry?.[q.id]) ? entry[q.id] : [];
-              if (arr2.length === 0)
-                missing.push({
-                  id: `sec-${sec.id}-entry-${idx}-q-${q.id}`,
-                  label: `${sec.title} #${idx + 1} → ${q.label} (at least 1)`,
-                });
-              else {
-                arr2.forEach((it: any, j: number) => {
-                  (q.item_fields || []).forEach((f: any) => {
-                    if (f.required) {
-                      const fv = it?.[f.id];
-                      const fEmpty =
-                        fv === undefined ||
-                        fv === null ||
-                        (typeof fv === 'string' && fv.trim() === '') ||
-                        (Array.isArray(fv) && fv.length === 0);
-                      if (fEmpty)
-                        missing.push({
-                          id: `sec-${sec.id}-entry-${idx}-q-${q.id}-item-${j}-f-${f.id}`,
-                          label: `${sec.title} #${idx + 1} → ${q.label} #${j + 1} → ${f.label}`,
-                        });
-                    }
-                  });
-                });
-              }
-            }
+            const entryValue = entry?.[q.id];
+            missing.push(
+              ...collectMissing(
+                q,
+                entryValue,
+                `${sec.title} #${idx + 1}`,
+                `sec-${sec.id}-entry-${idx}-q-${q.id}`
+              )
+            );
           });
         });
       }

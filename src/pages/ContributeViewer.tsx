@@ -46,7 +46,7 @@ const ContributeViewer: React.FC = () => {
       const total = root.clientWidth;
       const defaultPx = isSm
         ? Math.max(MIN_LEFT_PX, total)
-        : Math.max(MIN_LEFT_PX, Math.round(total * 0.4));
+        : Math.max(MIN_LEFT_PX, Math.round(total * 0.45));
       setLeftWidthPx(defaultPx);
     };
     calcInitial();
