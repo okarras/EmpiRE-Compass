@@ -1309,30 +1309,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
           </DialogContent>
 
           <DialogActions>
-            {validateList.length > 0 && (
-              <Button
-                onClick={() => {
-                  const first = validateList[0];
-                  if (first) {
-                    const matched = (templateSpec.sections || []).find(
-                      (sec: any) => first.label.startsWith(sec.title)
-                    );
-                    if (matched) {
-                      const id = `section-${(templateSpec.sections || []).indexOf(matched)}`;
-                      const el = document.getElementById(id);
-                      if (el)
-                        el.scrollIntoView({
-                          behavior: 'smooth',
-                          block: 'start',
-                        });
-                    }
-                  }
-                  setValidateDialogOpen(false);
-                }}
-              >
-                Go to first
-              </Button>
-            )}
             <Button onClick={() => setValidateDialogOpen(false)}>Close</Button>
           </DialogActions>
         </Dialog>
@@ -1346,13 +1322,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
                 {renderSection(sec, si)}
               </Box>
             ))}
-          </Box>
-
-          <Box sx={{ mt: 2 }}>
-            <Typography variant="caption" color="text.secondary">
-              Required answered: {requiredSummary.answeredRequired}/
-              {requiredSummary.totalRequired}
-            </Typography>
           </Box>
         </Box>
       </Box>
