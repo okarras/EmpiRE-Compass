@@ -26,6 +26,13 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 
 type TemplateSpec = any;
 type Props = {
@@ -166,6 +173,10 @@ const TemplateQuestionaire: React.FC<Props> = ({
   const setExpandedKey = (key: string, value: boolean) =>
     setExpandedMap((s) => ({ ...s, [key]: value }));
   const isExpandedKey = (key: string) => !!expandedMap[key];
+  const [validateDialogOpen, setValidateDialogOpen] = useState(false);
+  const [validateList, setValidateList] = useState<
+    Array<{ id: string; label: string }>
+  >([]);
 
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -1209,27 +1220,8 @@ const TemplateQuestionaire: React.FC<Props> = ({
 
   const handleValidate = () => {
     const m = computeMissing();
-    const newExpanded: Record<string, boolean> = {};
-    m.forEach((mm) => {
-      (templateSpec.sections || []).forEach((sec: any) => {
-        if ((mm.label ?? '').startsWith(sec.title))
-          newExpanded[sec.id ?? String(sec.title)] = true;
-      });
-    });
-    const firstKey = Object.keys(newExpanded)[0] ?? null;
-    setExpandedSection(firstKey);
-
-    if (m.length === 0) {
-      alert('All required fields are filled.');
-    } else {
-      const list = m
-        .slice(0, 30)
-        .map((x) => `• ${x.label}`)
-        .join('\n');
-      alert(
-        `Missing required fields:\n\n${list}${m.length > 30 ? `\n\n...and ${m.length - 30} more` : ''}`
-      );
-    }
+    setValidateList(m);
+    setValidateDialogOpen(true);
   };
 
   if (!templateSpec) {
@@ -1281,6 +1273,69 @@ const TemplateQuestionaire: React.FC<Props> = ({
             </Box>
           </Box>
         </Paper>
+        {/* Validate dialog — single centered box */}
+        <Dialog
+          open={validateDialogOpen}
+          onClose={() => setValidateDialogOpen(false)}
+          fullWidth
+          maxWidth="sm"
+          aria-labelledby="validate-dialog-title"
+        >
+          <DialogTitle id="validate-dialog-title">
+            {validateList.length === 0
+              ? 'All set'
+              : `Missing required fields (${validateList.length})`}
+          </DialogTitle>
+
+          <DialogContent dividers>
+            {validateList.length === 0 ? (
+              <Typography>All required fields are filled.</Typography>
+            ) : (
+              <List dense sx={{ maxHeight: 300, overflow: 'auto' }}>
+                {validateList.slice(0, 200).map((it) => (
+                  <ListItem key={it.id} divider>
+                    <ListItemText primary={it.label} />
+                  </ListItem>
+                ))}
+                {validateList.length > 200 && (
+                  <ListItem>
+                    <ListItemText
+                      primary={`...and ${validateList.length - 200} more`}
+                    />
+                  </ListItem>
+                )}
+              </List>
+            )}
+          </DialogContent>
+
+          <DialogActions>
+            {validateList.length > 0 && (
+              <Button
+                onClick={() => {
+                  const first = validateList[0];
+                  if (first) {
+                    const matched = (templateSpec.sections || []).find(
+                      (sec: any) => first.label.startsWith(sec.title)
+                    );
+                    if (matched) {
+                      const id = `section-${(templateSpec.sections || []).indexOf(matched)}`;
+                      const el = document.getElementById(id);
+                      if (el)
+                        el.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
+                    }
+                  }
+                  setValidateDialogOpen(false);
+                }}
+              >
+                Go to first
+              </Button>
+            )}
+            <Button onClick={() => setValidateDialogOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Box>
 
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
