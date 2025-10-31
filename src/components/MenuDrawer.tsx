@@ -17,6 +17,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
+import PeopleIcon from '@mui/icons-material/People';
 import { templateConfig } from '../constants/template_config';
 import BackupIcon from '@mui/icons-material/Backup';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -62,7 +63,21 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
     handleDrawerClose();
   };
 
-  const isCurrentPath = (path: string) => location.pathname === path;
+  const isCurrentPath = (path: string) => {
+    // Handle home route
+    if (path === '/') {
+      const homePath = `/${selectedTemplate}/`;
+      return (
+        location.pathname === homePath ||
+        location.pathname === `/${selectedTemplate}`
+      );
+    }
+    const fullPath = `/${selectedTemplate}${path}`;
+    return (
+      location.pathname === fullPath ||
+      location.pathname.startsWith(fullPath + '/')
+    );
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -174,6 +189,39 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 Statistics
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* Team Link */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/team`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/team')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <PeopleIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/team') ? 600 : 500,
+                }}
+              >
+                Team
               </Typography>
             }
           />

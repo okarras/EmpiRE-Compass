@@ -102,6 +102,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = `${templateName} Questions`;
         } else if (path === 'statistics') {
           label = 'Statistics';
+        } else if (path === 'team') {
+          label = 'Team';
         } else if (path === 'dynamic-question') {
           label = 'Dynamic Question';
         } else if (path === 'graph') {
