@@ -8,6 +8,7 @@ import QuestionPage from './pages/QuestionPage';
 import QuestionDashboardPage from './pages/QuestionDashboardPage';
 import DynamicQuestionPage from './pages/DynamicQuestionPage';
 import TemplateGraphPage from './pages/TemplateGraphPage';
+import Team from './pages/Team';
 import AdminBackup from './pages/AdminBackup';
 import AdminDataManagement from './pages/AdminDataManagement';
 import AdminHomeContent from './pages/AdminHomeContent';
@@ -49,6 +50,11 @@ const Router = () => {
             <Route
               path="graph"
               element={<TemplateGraphPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="team"
+              element={<Team />}
               errorElement={<ErrorFallback />}
             />
             <Route
