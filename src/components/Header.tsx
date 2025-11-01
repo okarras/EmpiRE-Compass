@@ -99,7 +99,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
         // Handle specific route names
         if (path === 'allquestions') {
-          label = `${templateName} Questions`;
+          label = `All Questions`;
         } else if (path === 'statistics') {
           label = 'Statistics';
         } else if (path === 'team') {
