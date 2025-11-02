@@ -9,17 +9,27 @@ import {
   useTheme as useMuiTheme,
   useMediaQuery,
   Tooltip,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  SelectChangeEvent,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+// import LightModeIcon from '@mui/icons-material/LightMode';
+// import DarkModeIcon from '@mui/icons-material/DarkMode';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
-import { useLocation, Link as RouterLink } from 'react-router-dom';
+import { useLocation, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
-import { useTheme } from '../contexts/ThemeContext';
+// import { useTheme } from '../contexts/ThemeContext';
+import LoginORKG from './LoginORKG';
+import { templateConfig } from '../constants/template_config';
+import { useState, useEffect } from 'react';
+import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
+
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
@@ -28,22 +38,82 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const location = useLocation();
-  const { mode, toggleColorMode } = useTheme();
+  const navigate = useNavigate();
+  // const { mode, toggleColorMode } = useTheme();
+
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+
+  // Load templates from Firebase
+  useEffect(() => {
+    const loadTemplates = async () => {
+      const content = await CRUDHomeContent.getHomeContent();
+      if (content.templates && content.templates.length > 0) {
+        setTemplates(content.templates);
+      } else {
+        // Fallback to default templates
+        setTemplates(CRUDHomeContent.defaultHomeContent.templates);
+      }
+    };
+    loadTemplates();
+  }, []);
+
+  // Read template from URL on mount
+  useEffect(() => {
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const templateFromUrl = pathSegments[0];
+    if (templateFromUrl && templates.some((t) => t.id === templateFromUrl)) {
+      setSelectedTemplate(templateFromUrl);
+    }
+  }, [location.pathname, templates]);
+
+  const handleTemplateChange = (event: SelectChangeEvent<string>) => {
+    const newTemplate = event.target.value;
+    setSelectedTemplate(newTemplate);
+
+    // Navigate to new template, preserving the rest of the path
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    pathSegments[0] = newTemplate;
+    navigate(`/${pathSegments.join('/')}`);
+  };
 
   const getBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [{ path: '/', label: 'Home' }];
+    const breadcrumbs = [];
 
     if (paths.length > 0) {
-      paths.forEach((path, index) => {
-        const fullPath = '/' + paths.slice(0, index + 1).join('/');
+      // Add template name as first breadcrumb
+      const templateId = paths[0];
+      const template = templates.find((t) => t.id === templateId);
+      const templateName =
+        template?.title || templateConfig[templateId]?.title || 'Template';
+      breadcrumbs.push({
+        path: `/${templateId}/`,
+        label: templateName,
+      });
+
+      // Add remaining path segments
+      paths.slice(1).forEach((path, index) => {
+        let fullPath = '/' + paths.slice(0, index + 2).join('/');
         let label = path.charAt(0).toUpperCase() + path.slice(1);
 
-        if (path === 'questions' && paths[index + 1]) {
-          const questionId = parseInt(paths[index + 1]);
+        // Handle specific route names
+        if (path === 'allquestions') {
+          label = `All Questions`;
+        } else if (path === 'statistics') {
+          label = 'Statistics';
+        } else if (path === 'team') {
+          label = 'Team';
+        } else if (path === 'dynamic-question') {
+          label = 'Dynamic Question';
+        } else if (path === 'graph') {
+          label = 'Graph Schema';
+        } else if (path === 'questions' && paths[index + 2]) {
+          const questionId = parseInt(paths[index + 2]);
           const question = queries.find((q) => q.id === questionId);
           if (question) {
-            label = `Question ${questionId}`;
+            label = `All Questions`;
+            fullPath = `/${templateId}/allquestions`;
           }
         }
 
@@ -69,7 +139,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const redirectToArchitecture = () => {
     // Navigate to the in-app JSON graph view
-    window.location.href = '/graph';
+    const paths = location.pathname.split('/').filter(Boolean);
+    const templateId = paths[0] || 'R186491';
+    window.location.href = `/${templateId}/graph`;
   };
 
   return (
@@ -83,21 +155,29 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
         color: 'text.primary',
       }}
     >
-      <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+      <Toolbar
+        sx={{
+          justifyContent: 'space-between',
+          minHeight: { xs: 56, sm: 64 },
+          px: { xs: 2, sm: 3 },
+          py: 1,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerOpen}
             edge="start"
+            size="small"
             sx={{
-              mr: 2,
+              color: 'text.primary',
               '&:hover': {
-                backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                backgroundColor: 'action.hover',
               },
             }}
           >
-            <MenuIcon sx={{ color: '#e86161' }} />
+            <MenuIcon sx={{ fontSize: '1.5rem' }} />
           </IconButton>
 
           <Typography
@@ -107,21 +187,20 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             sx={{
               textDecoration: 'none',
               color: '#e86161',
-              fontWeight: 700,
-              fontSize: { xs: '1.1rem', sm: '1.3rem' },
-              mr: 3,
+              fontWeight: 600,
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
               display: 'flex',
               alignItems: 'center',
+              letterSpacing: '-0.02em',
               '&:hover': {
-                opacity: 0.9,
+                opacity: 0.85,
               },
+              transition: 'opacity 0.2s ease-in-out',
             }}
           >
             EmpiRE-Compass
           </Typography>
-        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {!isMobile && (
             <Breadcrumbs
               separator={
@@ -136,6 +215,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
                   display: 'flex',
                   alignItems: 'center',
                 },
+                maxWidth: { sm: 300, md: 400 },
+                overflow: 'hidden',
+                ml: 2,
               }}
             >
               {getBreadcrumbs().map((breadcrumb, index) => {
@@ -172,78 +254,116 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               })}
             </Breadcrumbs>
           )}
+        </Box>
 
-          <Tooltip
-            title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}
+        >
+          <LoginORKG />
+
+          {/* Templates dropdown */}
+          <FormControl
+            size="small"
+            sx={{
+              minWidth: { xs: 140, sm: 180 },
+              '& .MuiInputLabel-root': {
+                fontSize: '0.8125rem',
+                fontWeight: 500,
+              },
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 1.5,
+                '& fieldset': {
+                  borderColor: 'divider',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'text.secondary',
+                },
+                '&.Mui-focused fieldset': {
+                  borderColor: '#e86161',
+                  borderWidth: 1.5,
+                },
+                '& .MuiSelect-select': {
+                  fontWeight: 500,
+                  fontSize: '0.8125rem',
+                  py: 1,
+                },
+              },
+            }}
           >
-            <IconButton
-              onClick={toggleColorMode}
-              color="inherit"
-              sx={{
-                ml: 2,
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                },
-              }}
+            <InputLabel id="header-templates-select-label">Template</InputLabel>
+            <Select
+              labelId="header-templates-select-label"
+              value={selectedTemplate}
+              label="Template"
+              onChange={handleTemplateChange}
+              size="small"
+              id="header-templates-select"
             >
-              {mode === 'light' ? (
-                <DarkModeIcon sx={{ color: 'text.primary' }} />
-              ) : (
-                <LightModeIcon sx={{ color: 'text.primary' }} />
-              )}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="View Design System & Components">
-            <IconButton
-              onClick={redirectToStorybook}
-              color="inherit"
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                },
-              }}
-            >
-              <BookIcon sx={{ color: 'text.primary' }} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Graph Viewer">
-            <IconButton
-              onClick={redirectToArchitecture}
-              color="inherit"
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                },
-              }}
-            >
-              <AccountTreeIcon sx={{ color: 'text.primary' }} />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={`Check out the source code on GitHub`}>
-            <IconButton
-              onClick={redirectToGitHub}
-              color="inherit"
-              sx={{
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                },
-              }}
-            >
-              <GitHubIcon sx={{ color: 'text.primary' }} />
-              <Typography
-                variant="caption"
+              {templates.map((template) => (
+                <MenuItem
+                  key={template.id}
+                  value={template.id}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  {template.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Box
+            sx={{
+              display: { xs: 'none', md: 'flex' },
+              alignItems: 'center',
+              gap: 0.5,
+            }}
+          >
+            <Tooltip title="Components">
+              <IconButton
+                onClick={redirectToStorybook}
+                size="small"
                 sx={{
                   color: 'text.secondary',
-                  textAlign: 'right',
-                  display: 'block',
-                  mt: 1,
-                  opacity: 0.7,
+                  '&:hover': {
+                    color: 'text.primary',
+                    backgroundColor: 'action.hover',
+                  },
                 }}
               >
-                v{import.meta.env.VITE_APP_VERSION}
-              </Typography>
-            </IconButton>
-          </Tooltip>
+                <BookIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Graph">
+              <IconButton
+                onClick={redirectToArchitecture}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'text.primary',
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <AccountTreeIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="GitHub">
+              <IconButton
+                onClick={redirectToGitHub}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'text.primary',
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <GitHubIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
       </Toolbar>
     </AppBar>

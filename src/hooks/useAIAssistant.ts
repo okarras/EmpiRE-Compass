@@ -130,12 +130,19 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
             : ''
         }
         */
+    // Helper function to safely convert to string
+    const safeString = (value: string | string[] | undefined): string => {
+      if (!value) return '';
+      if (Array.isArray(value)) return value.join(' ');
+      return value;
+    };
+
     return `You are analyzing a research question in Requirements Engineering. Please provide your response in HTML format.
       Question: ${query.dataAnalysisInformation.question}
       Question Explanation: ${query.dataAnalysisInformation.questionExplanation}
-      Required Data: ${query.dataAnalysisInformation.requiredDataForAnalysis}
-      Data Analysis Method: ${query.dataAnalysisInformation.dataAnalysis}
-      Data Interpretation: ${query.dataAnalysisInformation.dataInterpretation}
+      Required Data: ${safeString(query.dataAnalysisInformation.requiredDataForAnalysis)}
+      Data Analysis Method: ${safeString(query.dataAnalysisInformation.dataAnalysis)}
+      Data Interpretation: ${safeString(query.dataAnalysisInformation.dataInterpretation)}
 
        Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
       Your role is to:
