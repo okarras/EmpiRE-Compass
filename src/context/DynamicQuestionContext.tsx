@@ -37,6 +37,7 @@ export interface DynamicQuestionHistory {
 const initialState: DynamicQuestionState = {
   question: '',
   sparqlQuery: '',
+  sparqlTranslation: '',
   queryResults: [],
   chartHtml: '',
   questionInterpretation: '',
