@@ -1,9 +1,9 @@
 import React, {
-  createContext,
-  useContext,
   useState,
   useEffect,
   ReactNode,
+  useContext,
+  createContext,
 } from 'react';
 
 export interface DynamicQuestionState {
@@ -18,6 +18,10 @@ export interface DynamicQuestionState {
   // Stores the latest AI-generated JavaScript data processing function code
   processingFunctionCode: string;
   history: DynamicQuestionHistory[];
+  // Template information
+  templateId: string | null;
+  templateMapping: Record<string, unknown> | null;
+  targetClassId: string | null;
 }
 
 export interface DynamicQuestionHistory {
@@ -29,6 +33,21 @@ export interface DynamicQuestionHistory {
   prompt?: string; // The prompt that led to this change
   previousContent?: string; // Content before the change
 }
+
+const initialState: DynamicQuestionState = {
+  question: '',
+  sparqlQuery: '',
+  queryResults: [],
+  chartHtml: '',
+  questionInterpretation: '',
+  dataCollectionInterpretation: '',
+  dataAnalysisInterpretation: '',
+  processingFunctionCode: '',
+  history: [],
+  templateId: null,
+  templateMapping: null,
+  targetClassId: null,
+};
 
 interface DynamicQuestionContextType {
   state: DynamicQuestionState;
@@ -50,6 +69,9 @@ interface DynamicQuestionContextType {
     prompt?: string
   ) => void;
   updateProcessingFunctionCode: (code: string, prompt?: string) => void;
+  updateTemplateId: (templateId: string) => void;
+  updateTemplateMapping: (mapping: Record<string, unknown>) => void;
+  updateTargetClassId: (targetClassId: string) => void;
   addToHistory: (
     entry: Omit<DynamicQuestionHistory, 'id' | 'timestamp'>
   ) => void;
@@ -63,22 +85,9 @@ interface DynamicQuestionContextType {
   loadSavedState: (savedState: DynamicQuestionState) => void;
 }
 
-const DynamicQuestionContext = createContext<
+export const DynamicQuestionContext = createContext<
   DynamicQuestionContextType | undefined
 >(undefined);
-
-const initialState: DynamicQuestionState = {
-  question: '',
-  sparqlQuery: '',
-  sparqlTranslation: '',
-  queryResults: [],
-  chartHtml: '',
-  questionInterpretation: '',
-  dataCollectionInterpretation: '',
-  dataAnalysisInterpretation: '',
-  processingFunctionCode: '',
-  history: [],
-};
 
 export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -255,6 +264,27 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const updateTemplateId = (templateId: string) => {
+    setState((prev) => ({
+      ...prev,
+      templateId,
+    }));
+  };
+
+  const updateTemplateMapping = (mapping: Record<string, unknown>) => {
+    setState((prev) => ({
+      ...prev,
+      templateMapping: mapping,
+    }));
+  };
+
+  const updateTargetClassId = (targetClassId: string) => {
+    setState((prev) => ({
+      ...prev,
+      targetClassId,
+    }));
+  };
+
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -308,6 +338,9 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         updateDataCollectionInterpretation,
         updateDataAnalysisInterpretation,
         updateProcessingFunctionCode,
+        updateTemplateId,
+        updateTemplateMapping,
+        updateTargetClassId,
         addToHistory,
         getHistoryByType,
         clearHistory,
@@ -331,3 +364,5 @@ export const useDynamicQuestion = () => {
   }
   return context;
 };
+
+export default useDynamicQuestion;

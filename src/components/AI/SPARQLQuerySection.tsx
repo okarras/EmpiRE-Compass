@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
 import {
   Box,
@@ -29,12 +30,16 @@ import {
   Close,
   Translate,
 } from '@mui/icons-material';
+import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/aiService';
 import {
-  useDynamicQuestion,
   DynamicQuestionHistory,
+  useDynamicQuestion,
 } from '../../context/DynamicQuestionContext';
+import { PREFIXES } from '../../api/SPARQL_QUERIES';
+import { CodeEditor } from '../CodeEditor';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -131,7 +136,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     // Filter history items that are different from current content and not duplicates
     const seenContents = new Set();
     return allHistory
-      .filter((item) => {
+      .filter((item: { content: string }) => {
         // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
         const trimmedContent = item.content.trim();
         if (
@@ -144,7 +149,10 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
         seenContents.add(trimmedContent);
         return true;
       })
-      .sort((a, b) => b.timestamp - a.timestamp); // Sort by newest first
+      .sort(
+        (a: { timestamp: number }, b: { timestamp: number }) =>
+          b.timestamp - a.timestamp
+      ); // Sort by newest first
   };
 
   const handleAIModify = async () => {
@@ -177,7 +185,10 @@ ${sparqlQuery}
 Recent History:
 ${recentHistory
   .map(
-    (entry) =>
+    //TODO: fix this
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-expect-error
+    (entry: { action: any; timestamp: string | number | Date; prompt: any }) =>
       `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
   )
   .join('\n')}
@@ -479,6 +490,24 @@ Translation:`;
                 </Box>
               ) : (
                 <>
+                  <Button
+                    href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + sparqlQuery)}`}
+                    target="_blank"
+                    sx={{
+                      color: '#e86161',
+                      mt: { xs: 2, sm: 0 },
+                      ml: 2,
+                      '&:hover': {
+                        color: '#b33a3a',
+                      },
+                    }}
+                    variant="outlined"
+                  >
+                    <LiveHelpIcon sx={{ mr: 1 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      Open in ORKG
+                    </Typography>
+                  </Button>
                   <Tooltip title="Edit manually">
                     <IconButton
                       onClick={handleEdit}
@@ -537,33 +566,32 @@ Translation:`;
             </Alert>
           )}
 
-          <TextField
-            fullWidth
-            multiline
-            minRows={6}
-            variant="outlined"
-            value={isEditing ? editContent : sparqlQuery}
-            onChange={(e) =>
-              isEditing
-                ? setEditContent(e.target.value)
-                : onSparqlChange(e.target.value)
-            }
-            disabled={loading || !isEditing}
-            sx={{
-              mt: 2,
-              mb: 2,
-              fontFamily: 'monospace',
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: 'rgba(0, 0, 0, 0.03)',
-                '& textarea': {
-                  fontFamily: 'monospace',
-                },
-              },
-              '& .MuiInputBase-input.Mui-disabled': {
-                WebkitTextFillColor: '#000000',
-              },
-            }}
-          />
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <CodeEditor
+              value={isEditing ? editContent : sparqlQuery}
+              onChange={(value) =>
+                isEditing ? setEditContent(value) : onSparqlChange(value)
+              }
+              language="sparql"
+              height="400px"
+              readOnly={loading || !isEditing}
+              label="SPARQL Query"
+              copyable={true}
+              formattable={!isEditing}
+              fullscreenable={true}
+              showMinimap={false}
+              placeholder={`PREFIX orkgp: <http://orkg.org/orkg/predicate/>
+PREFIX orkgc: <http://orkg.org/orkg/class/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?paper ?title
+WHERE {
+  ?paper orkgp:P31 ?contribution .
+  ?paper rdfs:label ?title .
+}
+LIMIT 10`}
+            />
+          </Box>
 
           {/* Query Results Status */}
           {!loading && sparqlQuery && !queryError && (
@@ -714,124 +742,126 @@ Translation:`;
             </Box>
           ) : (
             <List sx={{ p: 0 }}>
-              {getSparqlHistory().map((item, index) => (
-                <React.Fragment key={item.id}>
-                  <ListItem
-                    sx={{
-                      flexDirection: 'column',
-                      alignItems: 'stretch',
-                      p: 2,
-                      '&:hover': {
-                        backgroundColor: 'rgba(232, 97, 97, 0.04)',
-                      },
-                    }}
-                  >
-                    <Box
+              {getSparqlHistory().map(
+                (item: DynamicQuestionHistory, index: number) => (
+                  <React.Fragment key={item.id}>
+                    <ListItem
                       sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        mb: 1,
-                      }}
-                    >
-                      <Box sx={{ flex: 1 }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            mb: 0.5,
-                          }}
-                        >
-                          <Typography
-                            variant="subtitle2"
-                            fontWeight="bold"
-                            color="text.primary"
-                          >
-                            {item.action === 'ai_modified'
-                              ? 'AI Modified SPARQL'
-                              : 'Manual Edit SPARQL'}
-                          </Typography>
-                          <Chip
-                            label={
-                              item.action === 'ai_modified'
-                                ? 'LLM Context'
-                                : 'Manual'
-                            }
-                            size="small"
-                            color={
-                              item.action === 'ai_modified'
-                                ? 'primary'
-                                : 'default'
-                            }
-                            variant="outlined"
-                          />
-                        </Box>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatTimestamp(item.timestamp)}
-                        </Typography>
-                        {item.prompt && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: 'block', mt: 0.5 }}
-                          >
-                            <strong>LLM Prompt:</strong> {item.prompt}
-                          </Typography>
-                        )}
-                        {item.previousContent && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ display: 'block', mt: 0.5 }}
-                          >
-                            <strong>Previous Content:</strong>{' '}
-                            {item.previousContent.substring(0, 100)}...
-                          </Typography>
-                        )}
-                      </Box>
-                      <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<Restore />}
-                          onClick={() => handleRevertHistory(item)}
-                          sx={{
-                            backgroundColor: '#e86161',
-                            '&:hover': { backgroundColor: '#d45151' },
-                          }}
-                        >
-                          Restore
-                        </Button>
-                      </Box>
-                    </Box>
-                    <Paper
-                      elevation={0}
-                      sx={{
+                        flexDirection: 'column',
+                        alignItems: 'stretch',
                         p: 2,
-                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                        borderRadius: 1,
-                        border: '1px solid rgba(0, 0, 0, 0.05)',
-                        fontFamily: 'monospace',
-                        fontSize: '0.875rem',
-                        maxHeight: '120px',
-                        overflowY: 'auto',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                        },
                       }}
                     >
-                      <Typography
-                        variant="body2"
-                        component="pre"
-                        sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                          mb: 1,
+                        }}
                       >
-                        {item.content.length > 200
-                          ? `${item.content.substring(0, 200)}...`
-                          : item.content}
-                      </Typography>
-                    </Paper>
-                  </ListItem>
-                  {index < getSparqlHistory().length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
+                        <Box sx={{ flex: 1 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 1,
+                              mb: 0.5,
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle2"
+                              fontWeight="bold"
+                              color="text.primary"
+                            >
+                              {item.action === 'ai_modified'
+                                ? 'AI Modified SPARQL'
+                                : 'Manual Edit SPARQL'}
+                            </Typography>
+                            <Chip
+                              label={
+                                item.action === 'ai_modified'
+                                  ? 'LLM Context'
+                                  : 'Manual'
+                              }
+                              size="small"
+                              color={
+                                item.action === 'ai_modified'
+                                  ? 'primary'
+                                  : 'default'
+                              }
+                              variant="outlined"
+                            />
+                          </Box>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatTimestamp(item.timestamp)}
+                          </Typography>
+                          {item.prompt && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: 'block', mt: 0.5 }}
+                            >
+                              <strong>LLM Prompt:</strong> {item.prompt}
+                            </Typography>
+                          )}
+                          {item.previousContent && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ display: 'block', mt: 0.5 }}
+                            >
+                              <strong>Previous Content:</strong>{' '}
+                              {item.previousContent.substring(0, 100)}...
+                            </Typography>
+                          )}
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
+                          <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<Restore />}
+                            onClick={() => handleRevertHistory(item)}
+                            sx={{
+                              backgroundColor: '#e86161',
+                              '&:hover': { backgroundColor: '#d45151' },
+                            }}
+                          >
+                            Restore
+                          </Button>
+                        </Box>
+                      </Box>
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          p: 2,
+                          backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                          borderRadius: 1,
+                          border: '1px solid rgba(0, 0, 0, 0.05)',
+                          fontFamily: 'monospace',
+                          fontSize: '0.875rem',
+                          maxHeight: '120px',
+                          overflowY: 'auto',
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          component="pre"
+                          sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
+                        >
+                          {item.content.length > 200
+                            ? `${item.content.substring(0, 200)}...`
+                            : item.content}
+                        </Typography>
+                      </Paper>
+                    </ListItem>
+                    {index < getSparqlHistory().length - 1 && <Divider />}
+                  </React.Fragment>
+                )
+              )}
             </List>
           )}
         </DialogContent>

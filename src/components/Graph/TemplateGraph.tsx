@@ -529,7 +529,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
             cursor: 'pointer',
           }}
         >
-          Download Graph as Image
+          Download as Image
         </button>
         <button
           data-html2image-exclude
@@ -543,7 +543,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
             cursor: 'pointer',
           }}
         >
-          Download Template Mapping JSON
+          Download as JSON
         </button>
       </div>
     </div>

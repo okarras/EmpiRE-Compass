@@ -4,10 +4,15 @@ import MuiDataGrid from './CustomGrid';
 
 interface QuestionDataGridViewProps {
   questionData: Record<string, unknown>[];
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
 const QuestionDataGridView: React.FC<QuestionDataGridViewProps> = ({
   questionData,
+  gridOptions,
 }) => {
   return (
     <>
@@ -20,9 +25,9 @@ const QuestionDataGridView: React.FC<QuestionDataGridViewProps> = ({
           fontSize: { xs: '1.25rem', sm: '1.5rem' },
         }}
       >
-        Raw Data
+        Explore Data
       </Typography>
-      <MuiDataGrid questionData={questionData} />
+      <MuiDataGrid questionData={questionData} gridOptions={gridOptions} />
     </>
   );
 };

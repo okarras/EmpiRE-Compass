@@ -2,6 +2,90 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.6.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.5.0...v1.6.0) (2025-10-24)
+
+### Features
+
+- add admin control ([ab17df0](https://github.com/okarras/EmpiRE-Compass/commit/ab17df0e7c66b47dcd2ddaffca32aa2ff40389f5))
+- added the queries ([7f4d7c8](https://github.com/okarras/EmpiRE-Compass/commit/7f4d7c88970305951b968ab7d4a4afcd59b34762))
+- change template logic ui ([070e712](https://github.com/okarras/EmpiRE-Compass/commit/070e7126eb1bbd12aef54cff5464bae392fa0d66))
+
+### Bug Fixes
+
+- chart labels ([186759c](https://github.com/okarras/EmpiRE-Compass/commit/186759cf5315c0896a60b6c132bdf6c3007f3603))
+- template change logic ([c040ea9](https://github.com/okarras/EmpiRE-Compass/commit/c040ea95f050a85dcdffa7176c596d772979c2cf))
+
+## [1.5.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.4.0...v1.5.0) (2025-10-23)
+
+### Features
+
+- add iteration check to dynamic question ([420a727](https://github.com/okarras/EmpiRE-Compass/commit/420a727312442e1739d9209d52623a30196c5f1a))
+- add template id in url ([ab50a25](https://github.com/okarras/EmpiRE-Compass/commit/ab50a2522c1f30b1244d62521c801f5be8370dc4))
+- major updates in dynamic ai question ([37dafb4](https://github.com/okarras/EmpiRE-Compass/commit/37dafb4cbc06be3b5b75fd5305ea54408a390cd3))
+- update query 14 ([7cd69be](https://github.com/okarras/EmpiRE-Compass/commit/7cd69becd1b46dab9a3c24432596ba526eca17ab))
+
+### Bug Fixes
+
+- authentication ([584262b](https://github.com/okarras/EmpiRE-Compass/commit/584262ba6ad6b4078dbd745cefc5173895f42b24))
+- authentication ([417e2aa](https://github.com/okarras/EmpiRE-Compass/commit/417e2aae17c921e75cb35641bd3fc35fd6b6fd53))
+- breadcrubms links ([52a6898](https://github.com/okarras/EmpiRE-Compass/commit/52a689825a57a4a7439a7075b25b56ecd307775d))
+- change keycloak conditions to be initialized ([717a508](https://github.com/okarras/EmpiRE-Compass/commit/717a508aeda264201f680487debf70e4f12aaf30))
+- chart headers ([f0b7872](https://github.com/okarras/EmpiRE-Compass/commit/f0b7872a22c1554a5db91bb0b2a27e7c7bcc20c4))
+- data analysis tabs ([b323e49](https://github.com/okarras/EmpiRE-Compass/commit/b323e4942e0b87ecb32793fbe6e227fb85984dd6))
+- delete additional logs and components ([398c569](https://github.com/okarras/EmpiRE-Compass/commit/398c56943ed26331636e9a7958f8f77e041fb007))
+- detailed chart header ([5fe3f50](https://github.com/okarras/EmpiRE-Compass/commit/5fe3f50eed26767b10e73246de500cb70e520911))
+- dont use keycloak in homepage ([a28ab72](https://github.com/okarras/EmpiRE-Compass/commit/a28ab72c84fd48bca7d10d58ad2d45a4c5640d1f))
+- fixed a small bug in keycloak initialization ([533371c](https://github.com/okarras/EmpiRE-Compass/commit/533371ca6547c0317adbd685882cb2af484854d7))
+- keycloak initializations on product ([ebf0f73](https://github.com/okarras/EmpiRE-Compass/commit/ebf0f735449ac05c76c2531494beb3e8d551b68d))
+- renamed graph button tooltip ([8e4bc63](https://github.com/okarras/EmpiRE-Compass/commit/8e4bc6301b5eff9e8f6525c2c25497893ab6800c))
+- renamed graph download buttons for better readability ([4c579a2](https://github.com/okarras/EmpiRE-Compass/commit/4c579a2511143a8739ed5b8917cc7c6b791e189e))
+- temporary fix for keycloak api problems ([3ee4e8b](https://github.com/okarras/EmpiRE-Compass/commit/3ee4e8b94f214864e130ac1ecb17621dd7727caf))
+
+## [1.4.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.3.0...v1.4.0) (2025-10-05)
+
+### Features
+
+- added centralized tooltip timer management ([093a567](https://github.com/okarras/EmpiRE-Compass/commit/093a567b3d067a00c525090932ade4d9c988e2f2))
+- added graph export as image with dynamic boundary regarding nodes positioning and number ([0a31cd2](https://github.com/okarras/EmpiRE-Compass/commit/0a31cd2951285bfce813374ec73028c1ab34927f))
+- added hover over tooltip for nodes with propert id and description information ([6e705e3](https://github.com/okarras/EmpiRE-Compass/commit/6e705e3c751a375dfda4718eae4968bf6f666ea6))
+- added hyper links to nodes and properties and added tooltip transition times ([9e9b925](https://github.com/okarras/EmpiRE-Compass/commit/9e9b925509cd59d25e8ba82b0749a764f9f7e3ad))
+- added JSON download ([cd65a26](https://github.com/okarras/EmpiRE-Compass/commit/cd65a26ef58692336c1d4bb9058b13e534a84ef9))
+- added keycloak config ([9a5f0c6](https://github.com/okarras/EmpiRE-Compass/commit/9a5f0c6eb9d5a2c1540e808b6dc3695a3b178c93))
+- added left to right node tree hierarchical structuring using BFS traversing algorithm ([8c595f5](https://github.com/okarras/EmpiRE-Compass/commit/8c595f507d37583d0c2dfff14f5b5aabcbc8970f))
+- added login ([ca4a873](https://github.com/okarras/EmpiRE-Compass/commit/ca4a8739aca9a27342a95ad8c2409bd6ce3066fa))
+- **auth:** enable login via ORKG ([98dbb02](https://github.com/okarras/EmpiRE-Compass/commit/98dbb02e5fd58ebf8118341b8fc7667b01bc0d6a))
+- dynamic json graph implementation with zoom, moveable nodes, locking and minimap ([b6a2000](https://github.com/okarras/EmpiRE-Compass/commit/b6a20002e95c9514f053faba1fa83191e26fbe82))
+- generalize dynamic question for every template ([a218af5](https://github.com/okarras/EmpiRE-Compass/commit/a218af56530dca46176fa6c0e4e4840edb358769))
+- get template info from API ([790466a](https://github.com/okarras/EmpiRE-Compass/commit/790466abf28aefd9c49d326388e81cc26a636021))
+- implement secure backend microservice for AI assistant API ([90e25e7](https://github.com/okarras/EmpiRE-Compass/commit/90e25e780b653d8ec27bdbe726c071239b7b4b0e))
+- improve API config dialog ([97e3089](https://github.com/okarras/EmpiRE-Compass/commit/97e3089aaa15846517f9625567e79a0cea11387f))
+- improve dynamic question llm reasoning ([3ed969a](https://github.com/okarras/EmpiRE-Compass/commit/3ed969afb03e4f797429c637f9ac0b617daa4f75))
+- improve history management UI UX ([847ab41](https://github.com/okarras/EmpiRE-Compass/commit/847ab41da4243f2fa44a6836f369b60daff7b8e6))
+- improve LLM prompt ([4e1ce5b](https://github.com/okarras/EmpiRE-Compass/commit/4e1ce5ba7da7d5c2033ae27d64090816c977e2dc))
+- include code in json output ([59e2e25](https://github.com/okarras/EmpiRE-Compass/commit/59e2e25b6c057cd538246caba987db7f3bcb1e0a))
+
+### Bug Fixes
+
+- edit prompt ([54e2b4e](https://github.com/okarras/EmpiRE-Compass/commit/54e2b4e12177b9931f5a508865d5a411b7d13009))
+- fix save cancel button duplicate in dynamic question ([b4692ff](https://github.com/okarras/EmpiRE-Compass/commit/b4692ff977df80ea75e67442eb339b50f610c390))
+- fixed labels ([94f85fc](https://github.com/okarras/EmpiRE-Compass/commit/94f85fc59e148f1c14890c4adea06196c08dd1ed))
+- fixed number of papers sparql query ([b8107de](https://github.com/okarras/EmpiRE-Compass/commit/b8107de0c423ac899920a05b0d832f066d7fe109))
+- fixed packages ([bf13293](https://github.com/okarras/EmpiRE-Compass/commit/bf132935e9593a87f79abd83f64ed3371a7636f0))
+- fixed some bugs in chart generation ([ffbd3e5](https://github.com/okarras/EmpiRE-Compass/commit/ffbd3e5e05eb12fff45f0ae43b78b52d4b407a3f))
+- fixed some bugs in dynamic ai question ([a379c6b](https://github.com/okarras/EmpiRE-Compass/commit/a379c6b1a2fe57e1167b55443853ff793b0ddafc))
+- fixed some keys in the JSON export ([df0f647](https://github.com/okarras/EmpiRE-Compass/commit/df0f6477e2ec36a676d789df3599c6ecd09e7449))
+- fixed some types ([2456b21](https://github.com/okarras/EmpiRE-Compass/commit/2456b2104c1cab8c4c282858e927c267ba59339c))
+- fixed sparql textfield ([4bcc1f1](https://github.com/okarras/EmpiRE-Compass/commit/4bcc1f15b29fe6ad84d2e0c412e7f59df1992c3c))
+- fixed statistics icons ([ea7abb9](https://github.com/okarras/EmpiRE-Compass/commit/ea7abb97b964ecd58d0156d61fc7431d528d6418))
+- fixed statistics page icons ([1cb3f21](https://github.com/okarras/EmpiRE-Compass/commit/1cb3f2161c8974959d5b230e3cd4897736193d34))
+- fixed the ai assistant functionallity ([81f80aa](https://github.com/okarras/EmpiRE-Compass/commit/81f80aa64262c9347dcf690d8bb8f07320e815da))
+- graph viewer button tooltip ([ddb0e3b](https://github.com/okarras/EmpiRE-Compass/commit/ddb0e3b8412c6d49f1ebe85509ab69c20faab009))
+- improve auth code ([73093e8](https://github.com/okarras/EmpiRE-Compass/commit/73093e8ad7667ad0083eacda8deac6af8fb35aef))
+- improve the dynamic question prompt ([40fd90f](https://github.com/okarras/EmpiRE-Compass/commit/40fd90f17f8d0fbce8d074d59ded66b9189d8e58))
+- improve the prompt ([b5e4a7f](https://github.com/okarras/EmpiRE-Compass/commit/b5e4a7fb6e83a9fc7efc626e31f2a3341d6bcd0c))
+- typescript problems ([9a49f21](https://github.com/okarras/EmpiRE-Compass/commit/9a49f2137fb4f1dd7af24e70efb91107bdde3e72))
+- update sparql query in statistics script ([2f32e28](https://github.com/okarras/EmpiRE-Compass/commit/2f32e287320d36f0d80f7fd4cb0fd57e73a3e24e))
+
 ## [1.3.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.2.1...v1.3.0) (2025-08-11)
 
 ### Features

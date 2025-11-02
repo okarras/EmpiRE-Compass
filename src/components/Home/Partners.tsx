@@ -1,11 +1,35 @@
 import { Box, Typography } from '@mui/material';
 import StatCard from '../StatCard';
+import { PartnersContent } from '../../firestore/CRUDHomeContent';
+
+// Import logos for fallback/mapping
 import tibLogo from '../../assets/TIB.png';
 import orkgLogo from '../../assets/ORKG.png';
 import orkgaskLogo from '../../assets/ORKGask.png';
 import KGEmpireLogo from '../../assets/KGEmpire.png';
 
-const Partners = () => {
+interface PartnersProps {
+  content: PartnersContent;
+}
+
+// Map logo URLs to actual imports (for static assets)
+const logoMap: Record<string, string> = {
+  '/src/assets/TIB.png': tibLogo,
+  '/src/assets/ORKG.png': orkgLogo,
+  '/src/assets/ORKGask.png': orkgaskLogo,
+  '/src/assets/KGEmpire.png': KGEmpireLogo,
+};
+
+const Partners = ({ content }: PartnersProps) => {
+  const getLogoSrc = (logoUrl: string) => {
+    // If it's a mapped static asset, use the import
+    if (logoMap[logoUrl]) {
+      return logoMap[logoUrl];
+    }
+    // Otherwise, use the URL directly (for external URLs or uploaded images)
+    return logoUrl;
+  };
+
   return (
     <Box sx={{ mt: 8 }}>
       <Typography
@@ -17,7 +41,7 @@ const Partners = () => {
           fontSize: { xs: '1.1rem', sm: '1.2rem' },
         }}
       >
-        Project Partners & Resources
+        {content.title}
       </Typography>
       <Box
         sx={{
@@ -28,107 +52,31 @@ const Partners = () => {
           flexWrap: 'wrap',
         }}
       >
-        <StatCard
-          label="TIB"
-          link="https://www.tib.eu/de/forschung-entwicklung/open-research-knowledge-graph"
-        >
-          <Box
-            sx={{
-              backgroundColor: 'white',
-              borderRadius: '50%',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            }}
-          >
-            <img
-              src={tibLogo}
-              alt="TIB Logo"
-              style={{
-                width: '45px',
-                height: '45px',
-                objectFit: 'contain',
+        {content.partners.map((partner, index) => (
+          <StatCard key={index} label={partner.label} link={partner.link}>
+            <Box
+              sx={{
+                backgroundColor: 'white',
+                borderRadius: '50%',
+                p: 1.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
               }}
-            />
-          </Box>
-        </StatCard>
-        <StatCard label="ORKG" link="https://orkg.org/class/C27001">
-          <Box
-            sx={{
-              backgroundColor: 'white',
-              borderRadius: '50%',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            }}
-          >
-            <img
-              src={orkgLogo}
-              alt="ORKG Logo"
-              style={{
-                width: '45px',
-                height: '45px',
-                objectFit: 'contain',
-              }}
-            />
-          </Box>
-        </StatCard>
-        <StatCard
-          label="ORKG Ask"
-          link="https://ask.orkg.org/search?query=what%20is%20empirical%20research"
-        >
-          <Box
-            sx={{
-              backgroundColor: 'white',
-              borderRadius: '50%',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            }}
-          >
-            <img
-              src={orkgaskLogo}
-              alt="ORKGask Logo"
-              style={{
-                width: '45px',
-                height: '45px',
-                objectFit: 'contain',
-              }}
-            />
-          </Box>
-        </StatCard>
-        <StatCard
-          label="KG-EmpiRE"
-          link="https://github.com/okarras/EmpiRE-Analysis"
-        >
-          <Box
-            sx={{
-              backgroundColor: 'white',
-              borderRadius: '50%',
-              p: 1.5,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-            }}
-          >
-            <img
-              src={KGEmpireLogo}
-              alt="KG Empire Logo"
-              style={{
-                width: '45px',
-                height: '45px',
-                objectFit: 'contain',
-              }}
-            />
-          </Box>
-        </StatCard>
+            >
+              <img
+                src={getLogoSrc(partner.logoUrl)}
+                alt={`${partner.label} Logo`}
+                style={{
+                  width: '45px',
+                  height: '45px',
+                  objectFit: 'contain',
+                }}
+              />
+            </Box>
+          </StatCard>
+        ))}
       </Box>
     </Box>
   );

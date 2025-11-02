@@ -64,6 +64,7 @@ const DEFAULT_STATS: StatisticsData = {
 export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
+  console.log('statistics', statistics);
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
@@ -77,8 +78,8 @@ export default function Statistics() {
 
         const [paperData, , , , , perVenueData, venuesData] = results;
 
-        setStatistics({
-          ...statistics,
+        setStatistics((prev) => ({
+          ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
 
           perVenueData: perVenueData.map((row: VenueData) => ({
@@ -86,7 +87,7 @@ export default function Statistics() {
             paperCount: Number(row.paperCount ?? 0),
           })),
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
-        });
+        }));
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
       } finally {
@@ -95,13 +96,22 @@ export default function Statistics() {
     };
 
     fetchData().then(() => {
-      CRUDStatistics.getStatistics().then((statisticsValues) => {
-        Object.keys(statisticsValues[0]).forEach((key) => {
-          setStatistics((prev) => ({
-            ...prev,
-            [key]: statisticsValues[0][key],
-          }));
-        });
+      // UPDATED FOR NEW NESTED STRUCTURE
+      // Get template ID from URL (e.g., /R186491/statistics)
+      const pathSegments = window.location.pathname.split('/').filter(Boolean);
+      const templateId = pathSegments[0] || 'R186491';
+
+      CRUDStatistics.getStatistics(templateId).then((statisticsValues) => {
+        console.log('statisticsValues', statisticsValues);
+        if (statisticsValues) {
+          console.log('statisticsValues', statisticsValues);
+          Object.keys(statisticsValues).forEach((key) => {
+            setStatistics((prev) => ({
+              ...prev,
+              [key]: statisticsValues[key],
+            }));
+          });
+        }
       });
     });
   }, []);

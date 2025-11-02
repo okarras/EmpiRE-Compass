@@ -1,26 +1,32 @@
 import { Divider, Typography, Box } from '@mui/material';
 
 interface Props {
-  information?: string;
+  information?: string | string[];
   label: string;
+  tabIndex?: number; // 0 for data collection, 1 for data analysis
 }
 
 const QuestionInformation = (props: Props) => {
-  const { information, label } = props;
-  
+  const { information, label, tabIndex = 0 } = props;
+
   if (!information) {
     return null;
   }
 
+  // Convert array to string if needed, selecting the correct index based on tab
+  const informationStr = Array.isArray(information)
+    ? information[tabIndex] || ''
+    : information;
+
   return (
     <Box sx={{ mb: 3 }}>
-      <Typography 
-        variant="h6" 
-        sx={{ 
+      <Typography
+        variant="h6"
+        sx={{
           color: '#e86161',
           fontWeight: 600,
           mb: 2,
-          fontSize: { xs: '1.1rem', sm: '1.2rem' }
+          fontSize: { xs: '1.1rem', sm: '1.2rem' },
         }}
       >
         {label}
@@ -46,7 +52,7 @@ const QuestionInformation = (props: Props) => {
             fontWeight: 600,
           },
         }}
-        dangerouslySetInnerHTML={{ __html: information }}
+        dangerouslySetInnerHTML={{ __html: informationStr }}
       />
       <Divider sx={{ mt: 3 }} />
     </Box>
