@@ -46,10 +46,10 @@ export const validateGenerateTextRequest = (
       .json({ error: 'Prompt is required and must be a string' });
   }
 
-  if (prompt.length > 10000) {
+  if (prompt.length > 100000) {
     return res
       .status(400)
-      .json({ error: 'Prompt too long (max 10000 characters)' });
+      .json({ error: 'Prompt too long (max 100000 characters)' });
   }
 
   if (provider && !['openai', 'groq'].includes(provider)) {

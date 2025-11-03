@@ -28,6 +28,9 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
+  // Optional: User-provided API keys (preferred over environment variables)
+  openaiApiKey?: string;
+  groqApiKey?: string;
 }
 
 export interface GenerateTextResponse {
@@ -47,14 +50,18 @@ export class AIService {
     this.config = config;
   }
 
-  private getApiKey(provider: AIProvider): string {
+  private getApiKey(provider: AIProvider, userProvidedKey?: string): string {
+    // Use user-provided key if available, otherwise use config/environment key
+    if (userProvidedKey) {
+      return userProvidedKey;
+    }
     return provider === 'openai'
       ? this.config.openaiApiKey
       : this.config.groqApiKey;
   }
 
-  private createProvider(provider: AIProvider) {
-    const apiKey = this.getApiKey(provider);
+  private createProvider(provider: AIProvider, userProvidedKey?: string) {
+    const apiKey = this.getApiKey(provider, userProvidedKey);
 
     if (!apiKey) {
       throw new Error(`${provider.toUpperCase()} API key is not configured`);
@@ -65,8 +72,12 @@ export class AIService {
       : createGroq({ apiKey });
   }
 
-  private getModel(provider: AIProvider, modelName?: string) {
-    const aiProvider = this.createProvider(provider);
+  private getModel(
+    provider: AIProvider,
+    modelName?: string,
+    userProvidedKey?: string
+  ) {
+    const aiProvider = this.createProvider(provider, userProvidedKey);
     const defaultModel =
       provider === 'openai' ? this.config.openaiModel : this.config.groqModel;
     const model = modelName || defaultModel;
@@ -74,9 +85,13 @@ export class AIService {
     return aiProvider.languageModel(model);
   }
 
-  public getEnhancedModel(provider?: AIProvider, modelName?: string) {
+  public getEnhancedModel(
+    provider?: AIProvider,
+    modelName?: string,
+    userProvidedKey?: string
+  ) {
     const targetProvider = provider || this.config.provider;
-    const baseModel = this.getModel(targetProvider, modelName);
+    const baseModel = this.getModel(targetProvider, modelName, userProvidedKey);
 
     // Add reasoning middleware for better AI responses
     return wrapLanguageModel({
@@ -89,7 +104,15 @@ export class AIService {
     request: GenerateTextRequest
   ): Promise<GenerateTextResponse> {
     const targetProvider = request.provider || this.config.provider;
-    const model = this.getEnhancedModel(targetProvider, request.model);
+    // Use user-provided API key if available
+    const userApiKey =
+      targetProvider === 'openai' ? request.openaiApiKey : request.groqApiKey;
+
+    const model = this.getEnhancedModel(
+      targetProvider,
+      request.model,
+      userApiKey
+    );
 
     const result = await generateText({
       model,

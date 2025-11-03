@@ -48,7 +48,7 @@ const loadAIConfig = (): Partial<InitialState> => {
         useEnvironmentKeys:
           parsed.useEnvironmentKeys !== undefined
             ? parsed.useEnvironmentKeys
-            : true,
+            : false,
       };
     }
   } catch (error) {
@@ -73,7 +73,7 @@ const defaultConfig: InitialState = {
   openaiApiKey: '',
   groqApiKey: '',
   isConfigured: false,
-  useEnvironmentKeys: true,
+  useEnvironmentKeys: false,
 };
 
 const initialState: InitialState = {
