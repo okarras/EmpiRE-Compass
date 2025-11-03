@@ -1,4 +1,5 @@
-import { generateText, wrapLanguageModel } from 'ai';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { useAppSelector } from '../store/hooks';
@@ -57,9 +58,8 @@ export class AIService {
 
   public getEnhancedModel(provider?: AIProvider) {
     const targetProvider = provider || this.config.provider;
-    const baseModel = this.getModel(targetProvider);
-    // Wrap to satisfy LanguageModelV2 typing without extra middleware
-    return wrapLanguageModel({ model: baseModel });
+    // Return the provider model directly; cast to satisfy SDK typings
+    return this.getModel(targetProvider) as unknown as any;
   }
 
   public async generateText(
