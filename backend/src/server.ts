@@ -1,0 +1,65 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
+import dotenv from 'dotenv';
+import { AIService, type AIConfig } from './aiService.js';
+import { createRateLimiter, corsOptions, errorHandler } from './middleware.js';
+import usersRouter from './routes/users.js';
+import teamRouter from './routes/team.js';
+import homeContentRouter from './routes/homeContent.js';
+import templatesRouter from './routes/templates.js';
+import requestLogsRouter from './routes/requestLogs.js';
+import aiRouter, { initializeAIService } from './routes/ai.js';
+import healthRouter, { setAIServiceForHealth } from './routes/health.js';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+// security middleware
+app.use(helmet());
+app.use(compression());
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '10mb' }));
+
+// rate limiter
+app.use('/api/', createRateLimiter());
+
+// Initialize AI service
+const aiConfig: AIConfig = {
+  provider: (process.env.AI_PROVIDER as 'openai' | 'groq') || 'groq',
+  openaiModel:
+    (process.env.OPENAI_MODEL as 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo') ||
+    'gpt-4o-mini',
+  groqModel:
+    (process.env.GROQ_MODEL as
+      | 'deepseek-r1-distill-llama-70b'
+      | 'llama-3-70b-8192'
+      | 'mixtral-8x7b-32768') || 'deepseek-r1-distill-llama-70b',
+  openaiApiKey: process.env.OPENAI_API_KEY || '',
+  groqApiKey: process.env.GROQ_API_KEY || '',
+};
+
+const aiService = new AIService(aiConfig);
+initializeAIService(aiConfig);
+setAIServiceForHealth(aiService);
+
+// API routes
+app.use('/api/users', usersRouter);
+app.use('/api/team', teamRouter);
+app.use('/api/home-content', homeContentRouter);
+app.use('/api/templates', templatesRouter);
+app.use('/api/request-logs', requestLogsRouter);
+app.use('/api/ai', aiRouter);
+app.use('/api/health', healthRouter);
+
+// error handling middleware
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`AI Service configured: ${aiService.isConfigured()}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});

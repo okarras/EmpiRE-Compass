@@ -3,7 +3,6 @@ import {
   collection,
   doc,
   getDoc,
-  setDoc,
   getDocs,
   DocumentData,
 } from 'firebase/firestore';
@@ -243,17 +242,27 @@ export const getHomeContent = async (): Promise<HomeContentData> => {
 };
 
 /**
- * Set/update home content in Firebase
+ * Set/update home content in Firebase via backend API
+ * Note: This function now requires userId and userEmail parameters
+ * Use updateHomeContent from backendApi directly if you have user context
  */
 export const setHomeContent = async (
-  content: HomeContentData
+  content: HomeContentData,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
 ): Promise<void> => {
   try {
-    const docRef = doc(db, 'HomeContent', 'sections');
-    await setDoc(docRef, {
-      ...content,
-      updatedAt: new Date().toISOString(),
-    });
+    // Import here to avoid circular dependencies
+    const { updateHomeContent } = await import('../services/backendApi');
+
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for updating home content'
+      );
+    }
+
+    await updateHomeContent(content, userId, userEmail, keycloakToken);
     console.log('Home content updated successfully');
   } catch (error) {
     console.error('Error updating home content:', error);
@@ -263,14 +272,24 @@ export const setHomeContent = async (
 
 /**
  * Initialize home content with default values (for first-time setup)
+ * Note: This function now requires userId and userEmail parameters
  */
-export const initializeHomeContent = async (): Promise<void> => {
+export const initializeHomeContent = async (
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+): Promise<void> => {
   try {
     const docRef = doc(db, 'HomeContent', 'sections');
     const docSnap = await getDoc(docRef);
 
     if (!docSnap.exists()) {
-      await setHomeContent(defaultHomeContent);
+      await setHomeContent(
+        defaultHomeContent,
+        userId,
+        userEmail,
+        keycloakToken
+      );
       console.log('Home content initialized with defaults');
     } else {
       console.log('Home content already exists');
