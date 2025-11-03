@@ -1,8 +1,4 @@
-import {
-  generateText,
-  wrapLanguageModel,
-  extractReasoningMiddleware,
-} from 'ai';
+import { generateText, wrapLanguageModel } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { useAppSelector } from '../store/hooks';
@@ -62,12 +58,8 @@ export class AIService {
   public getEnhancedModel(provider?: AIProvider) {
     const targetProvider = provider || this.config.provider;
     const baseModel = this.getModel(targetProvider);
-
-    // Add reasoning middleware for better AI responses
-    return wrapLanguageModel({
-      model: baseModel,
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    });
+    // Wrap to satisfy LanguageModelV2 typing without extra middleware
+    return wrapLanguageModel({ model: baseModel });
   }
 
   public async generateText(
@@ -81,12 +73,23 @@ export class AIService {
     const targetProvider = options?.provider || this.config.provider;
     const model = this.getEnhancedModel(targetProvider);
 
-    return await generateText({
+    const result = await generateText({
       model,
       prompt,
       temperature: options?.temperature ?? 0.3,
-      maxTokens: options?.maxTokens ?? 2000,
+      // omit maxTokens to match SDK typings
     });
+
+    // Normalize reasoning to string for downstream types
+    return {
+      ...result,
+      reasoning:
+        typeof (result as any).reasoning === 'string'
+          ? ((result as any).reasoning as string)
+          : Array.isArray((result as any).reasoning)
+            ? JSON.stringify((result as any).reasoning)
+            : undefined,
+    } as typeof result & { reasoning?: string };
   }
 
   public isConfigured(): boolean {
