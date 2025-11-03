@@ -21,7 +21,6 @@ import { getTemplateConfig } from '../constants/template_config';
 import SectionSelector from './SectionSelector';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
-  console.log('query', query);
   const [normalized, setNormalized] = useState(true);
   const [tab, setTab] = useState(0);
   const [dataCollection, setDataCollection] = useState<
@@ -72,11 +71,6 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
           const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
-          console.log('query', query);
-          const processedData =
-            query.dataProcessingFunction2?.(data ?? []) ?? [];
-
-          console.log('processedData', processedData);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');

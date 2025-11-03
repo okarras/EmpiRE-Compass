@@ -87,7 +87,6 @@ const backupCollection = async (
 
     // If collection is empty, return empty array (not an error)
     if (querySnapshot.empty) {
-      console.log(`Collection ${collectionName} is empty`);
       return documents;
     }
 
@@ -155,11 +154,6 @@ export const backupAllCollections = async (
 
         if (documents.length > 0) {
           successfulCollections.push(collectionName);
-          console.log(
-            `✓ Backed up ${collectionName}: ${documents.length} documents`
-          );
-        } else {
-          console.log(`✓ ${collectionName} is empty (0 documents)`);
         }
       } catch (collectionError) {
         console.error(`✗ Failed to backup ${collectionName}:`, collectionError);
@@ -176,8 +170,6 @@ export const backupAllCollections = async (
     if (skippedCollections.length > 0) {
       resultMessage += `. Skipped: ${skippedCollections.join(', ')}`;
     }
-
-    console.log(`Backup completed: ${totalDocuments} total documents`);
 
     return {
       success: true,

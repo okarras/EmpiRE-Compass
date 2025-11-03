@@ -37,7 +37,6 @@ const Team = () => {
           const priorityB = b.priority ?? 999;
           return priorityA - priorityB;
         });
-        console.log('members', sortedMembers);
         setTeamMembers(sortedMembers);
       } catch (err) {
         console.error('Error fetching team members:', err);
