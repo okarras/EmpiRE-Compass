@@ -72,8 +72,8 @@ router.post(
         temperature,
         maxTokens,
         systemContext,
-        openaiApiKey,
-        groqApiKey,
+        // NOTE: API keys from request body are IGNORED for security
+        // Backend always uses its own environment keys
       } = req.body;
 
       const result = await getAIService().generateText({
@@ -83,9 +83,7 @@ router.post(
         temperature,
         maxTokens,
         systemContext,
-        // Include user-provided API keys if available
-        openaiApiKey,
-        groqApiKey,
+        // Backend uses environment keys only - never accepts user keys
       });
 
       res.json(result);

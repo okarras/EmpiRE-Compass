@@ -1,6 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
+// cors config helper - defined early so it can be used by other middleware
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
+
+  // Always allow localhost for development
+  origins.push('http://localhost:5173');
+  origins.push('http://localhost:3000');
+
+  // Add production frontend URL from environment variable
+  if (process.env.FRONTEND_URL) {
+    origins.push(process.env.FRONTEND_URL);
+  }
+
+  // Add Vercel frontend URL (hardcoded for your production deployment)
+  origins.push('https://empire-compass.vercel.app');
+
+  return origins;
+};
+
 // rate limit
 export const createRateLimiter = (
   windowMs: number = 15 * 60 * 1000,
@@ -23,12 +42,34 @@ export const validateApiKey = (
   next: NextFunction
 ) => {
   const apiKey = req.headers['x-api-key'] || req.headers['authorization'];
+  const origin = req.headers.origin;
 
-  // todo: implement proper api key validation
-  if (!apiKey && process.env.NODE_ENV === 'production') {
-    return res.status(401).json({ error: 'API key required' });
+  // Allow requests from trusted frontend origins without API key
+  const allowedOrigins = getAllowedOrigins();
+  // Case-insensitive origin matching
+  const isTrustedOrigin =
+    origin &&
+    allowedOrigins.some(
+      (allowedOrigin) => allowedOrigin.toLowerCase() === origin.toLowerCase()
+    );
+
+  // In production, require API key OR trusted origin
+  if (process.env.NODE_ENV === 'production') {
+    if (!apiKey && !isTrustedOrigin) {
+      // Log for debugging (remove in production if needed)
+      console.log('API key validation failed:', {
+        hasApiKey: !!apiKey,
+        origin,
+        allowedOrigins,
+        isTrustedOrigin,
+      });
+      return res.status(401).json({
+        error: 'API key required or request must come from trusted origin',
+      });
+    }
   }
 
+  // In development, allow all requests
   next();
 };
 
@@ -80,24 +121,6 @@ export const validateGenerateTextRequest = (
 };
 
 // cors config
-const getAllowedOrigins = (): string[] => {
-  const origins: string[] = [];
-
-  // Always allow localhost for development
-  origins.push('http://localhost:5173');
-  origins.push('http://localhost:3000');
-
-  // Add production frontend URL from environment variable
-  if (process.env.FRONTEND_URL) {
-    origins.push(process.env.FRONTEND_URL);
-  }
-
-  // Add Vercel frontend URL (hardcoded for your production deployment)
-  origins.push('https://empire-compass.vercel.app');
-
-  return origins;
-};
-
 export const corsOptions = {
   origin: (
     origin: string | undefined,
@@ -110,7 +133,12 @@ export const corsOptions = {
       return callback(null, true);
     }
 
-    if (allowedOrigins.includes(origin)) {
+    // Case-insensitive origin matching
+    const isAllowed = allowedOrigins.some(
+      (allowedOrigin) => allowedOrigin.toLowerCase() === origin.toLowerCase()
+    );
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       // In development, be more permissive

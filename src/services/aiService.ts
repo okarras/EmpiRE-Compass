@@ -68,6 +68,7 @@ export class AIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      systemContext?: string;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
@@ -76,6 +77,7 @@ export class AIService {
     const result = await generateText({
       model,
       prompt,
+      system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
       // omit maxTokens to match SDK typings
     });

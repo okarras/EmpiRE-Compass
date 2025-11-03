@@ -24,9 +24,8 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
-  // Optional: User-provided API keys (preferred over environment variables)
-  openaiApiKey?: string;
-  groqApiKey?: string;
+  // NOTE: API keys from request are IGNORED - backend uses environment keys only
+  // This is for security - user API keys should never be sent to backend
 }
 
 export interface GenerateTextResponse {
@@ -47,10 +46,8 @@ export class AIService {
   }
 
   private getApiKey(provider: AIProvider, userProvidedKey?: string): string {
-    // Use user-provided key if available, otherwise use config/environment key
-    if (userProvidedKey) {
-      return userProvidedKey;
-    }
+    // SECURITY: Always ignore user-provided keys - only use environment keys
+    // User API keys should never be sent to backend for security reasons
     return provider === 'openai'
       ? this.config.openaiApiKey
       : this.config.groqApiKey;
@@ -95,14 +92,13 @@ export class AIService {
     request: GenerateTextRequest
   ): Promise<GenerateTextResponse> {
     const targetProvider = request.provider || this.config.provider;
-    // Use user-provided API key if available
-    const userApiKey =
-      targetProvider === 'openai' ? request.openaiApiKey : request.groqApiKey;
+    // SECURITY: Never use API keys from request - always use environment keys
+    // This ensures user API keys are never processed by the backend
 
     const model = this.getEnhancedModel(
       targetProvider,
       request.model,
-      userApiKey
+      undefined // Never pass user API keys
     );
 
     const result = await generateText({
