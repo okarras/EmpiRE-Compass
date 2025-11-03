@@ -80,8 +80,49 @@ export const validateGenerateTextRequest = (
 };
 
 // cors config
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
+
+  // Always allow localhost for development
+  origins.push('http://localhost:5173');
+  origins.push('http://localhost:3000');
+
+  // Add production frontend URL from environment variable
+  if (process.env.FRONTEND_URL) {
+    origins.push(process.env.FRONTEND_URL);
+  }
+
+  // Add Vercel frontend URL (hardcoded for your production deployment)
+  origins.push('https://empire-compass.vercel.app');
+
+  return origins;
+};
+
 export const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    const allowedOrigins = getAllowedOrigins();
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      // In development, be more permissive
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`CORS: Allowing origin ${origin} in development mode`);
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Blocked origin ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
