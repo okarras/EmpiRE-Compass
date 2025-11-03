@@ -29,7 +29,7 @@ import {
   Close,
 } from '@mui/icons-material';
 import DOMPurify from 'dompurify';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 import { HistoryItem } from './HistoryManager';
 import { CodeEditor } from '../CodeEditor';

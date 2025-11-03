@@ -28,6 +28,7 @@ import RestoreFromBackup, {
   RestoreProgress,
 } from '../firestore/RestoreFromBackup';
 import { useAuth } from '../auth/useAuth';
+import { useKeycloak } from '@react-keycloak/web';
 
 // Import subcomponents
 import RestoreSection from '../components/Admin/RestoreSection';
@@ -62,6 +63,7 @@ function TabPanel(props: TabPanelProps) {
 
 const AdminDataManagement = () => {
   const { user } = useAuth();
+  const { keycloak } = useKeycloak();
   const [currentTab, setCurrentTab] = useState(0);
   const [templates, setTemplates] = useState<Record<string, TemplateData>>({});
   const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
@@ -242,20 +244,29 @@ const AdminDataManagement = () => {
         }
       });
 
+      if (!user) {
+        setError('User not authenticated');
+        return;
+      }
+
       if (editingQuestion) {
         await TemplateManagement.updateQuestion(
           selectedTemplate,
           cleanedForm.uid,
           cleanedForm,
-          user?.id,
-          user?.email
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Question updated successfully!');
       } else {
         await TemplateManagement.createQuestion(
           selectedTemplate,
           cleanedForm.uid,
-          cleanedForm
+          cleanedForm,
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Question created successfully!');
       }
@@ -269,13 +280,17 @@ const AdminDataManagement = () => {
   };
 
   const handleDeleteQuestion = async (questionId: string) => {
-    if (window.confirm('Are you sure you want to delete this question?')) {
+    if (
+      window.confirm('Are you sure you want to delete this question?') &&
+      user
+    ) {
       try {
         await TemplateManagement.deleteQuestion(
           selectedTemplate,
           questionId,
-          user?.id,
-          user?.email
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Question deleted successfully!');
         await loadTemplateData(selectedTemplate);
@@ -286,14 +301,20 @@ const AdminDataManagement = () => {
   };
 
   const handleSaveStatistic = async (statistic: StatisticData) => {
+    if (!user) {
+      setError('User not authenticated');
+      return;
+    }
+
     try {
       if (editingStatistic) {
         await TemplateManagement.updateStatistic(
           selectedTemplate,
           statistic.id,
           statistic,
-          user?.id,
-          user?.email
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Statistic updated successfully!');
       } else {
@@ -301,8 +322,9 @@ const AdminDataManagement = () => {
           selectedTemplate,
           statistic.id,
           statistic,
-          user?.id,
-          user?.email
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Statistic created successfully!');
       }
@@ -311,18 +333,22 @@ const AdminDataManagement = () => {
       setEditingStatistic(null);
       await loadTemplateData(selectedTemplate);
     } catch (err) {
-      setError('Failed to save statistic');
+      setError(err instanceof Error ? err.message : 'Failed to save statistic');
     }
   };
 
   const handleDeleteStatistic = async (statisticId: string) => {
-    if (window.confirm('Are you sure you want to delete this statistic?')) {
+    if (
+      window.confirm('Are you sure you want to delete this statistic?') &&
+      user
+    ) {
       try {
         await TemplateManagement.deleteStatistic(
           selectedTemplate,
           statisticId,
-          user?.id,
-          user?.email
+          user.id,
+          user.email,
+          keycloak?.token
         );
         setSuccess('Statistic deleted successfully!');
         await loadTemplateData(selectedTemplate);
@@ -333,8 +359,18 @@ const AdminDataManagement = () => {
   };
 
   const handleImportTemplate = async (jsonData: any) => {
+    if (!user) {
+      setError('User not authenticated');
+      return;
+    }
+
     try {
-      await DataMigration.importTemplateFromJSON(jsonData);
+      await DataMigration.importTemplateFromJSONWithAuth(
+        jsonData,
+        user.id,
+        user.email,
+        keycloak?.token
+      );
       setSuccess('Template imported successfully!');
       await loadTemplates();
       await loadTemplateData(selectedTemplate);

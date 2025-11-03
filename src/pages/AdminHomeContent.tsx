@@ -28,8 +28,12 @@ import CRUDHomeContent, {
   TemplateInfoBox,
   Template,
 } from '../firestore/CRUDHomeContent';
+import { useAuth } from '../auth/useAuth';
+import { useKeycloak } from '@react-keycloak/web';
 
 const AdminHomeContent = () => {
+  const { user } = useAuth();
+  const { keycloak } = useKeycloak();
   const [content, setContent] = useState<HomeContentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,15 +69,22 @@ const AdminHomeContent = () => {
   };
 
   const handleSave = async () => {
-    if (!content) return;
+    if (!content || !user) return;
 
     try {
       setSaving(true);
-      await CRUDHomeContent.setHomeContent(content);
+      await CRUDHomeContent.setHomeContent(
+        content,
+        user.id,
+        user.email,
+        keycloak?.token
+      );
       setSuccess('Home content saved successfully!');
     } catch (err) {
       console.error('Error saving home content:', err);
-      setError('Failed to save home content');
+      setError(
+        err instanceof Error ? err.message : 'Failed to save home content'
+      );
     } finally {
       setSaving(false);
     }
@@ -90,15 +101,27 @@ const AdminHomeContent = () => {
   };
 
   const handleInitialize = async () => {
-    if (confirm('Are you sure you want to initialize with default content?')) {
+    if (
+      confirm('Are you sure you want to initialize with default content?') &&
+      user
+    ) {
       try {
         setSaving(true);
-        await CRUDHomeContent.initializeHomeContent();
+        await CRUDHomeContent.setHomeContent(
+          CRUDHomeContent.defaultHomeContent,
+          user.id,
+          user.email,
+          keycloak?.token
+        );
         await loadContent();
         setSuccess('Home content initialized with defaults');
       } catch (err) {
         console.error('Error initializing home content:', err);
-        setError('Failed to initialize home content');
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to initialize home content'
+        );
       } finally {
         setSaving(false);
       }

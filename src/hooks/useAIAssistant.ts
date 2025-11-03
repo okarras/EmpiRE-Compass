@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 
 interface UseAIAssistantProps {
   query: Query;
