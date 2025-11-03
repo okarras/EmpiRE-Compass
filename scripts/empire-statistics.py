@@ -38,7 +38,7 @@ except Exception as e:
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
 SPARQL_ENDPOINT = "https://www.orkg.org/triplestore"
-CACHE_DIR = "scripts/orkg-cache"
+CACHE_DIR = "./orkg-cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Initialize ORKG client
@@ -171,7 +171,44 @@ def analyze_paper(statements):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 4) Main processing loop
+# 4) Global distinct count calculation
+# ──────────────────────────────────────────────────────────────────────────────
+def calculate_global_distinct_counts(all_statements):
+    """Calculate global distinct counts across all papers.
+
+    Args:
+        all_statements: Dictionary mapping paper_id to list of statements
+
+    Returns:
+        Tuple of (global_distinct_resources, global_distinct_literals, global_distinct_predicates)
+    """
+    all_res_ids = set()
+    all_lit_ids = set()
+    all_pred_ids = set()
+
+    for paper_id, statements in all_statements.items():
+        for stmt in statements:
+            s = stmt.get("subject", {})
+            if s.get("_class") == "resource":
+                all_res_ids.add(s.get("id"))
+            else:
+                all_lit_ids.add(s.get("id"))
+
+            o = stmt.get("object", {})
+            if o.get("_class") == "resource":
+                all_res_ids.add(o.get("id"))
+            else:
+                all_lit_ids.add(o.get("id"))
+
+            p = stmt.get("predicate", {}).get("id")
+            if p:
+                all_pred_ids.add(p)
+
+    return len(all_res_ids), len(all_lit_ids), len(all_pred_ids)
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# 5) Main processing loop
 # ──────────────────────────────────────────────────────────────────────────────
 def process_papers(papers, reload_data=False):
     """Process all papers and return results with global distinct counts."""
@@ -207,7 +244,7 @@ def process_papers(papers, reload_data=False):
                 print(f"  Fetching fresh data for {paper_id}")
                 try:
                     # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
-                    bundle = orkg.statements.bundle(thing_id=paper_id, maxLevel=15)
+                    bundle = orkg.statements.bundle(thing_id=paper_id)
                     statements = bundle.content["statements"]
                     save_cache(
                         cache_key, statements
@@ -219,7 +256,7 @@ def process_papers(papers, reload_data=False):
             print(f"  Fetching fresh data for {paper_id}")
             try:
                 # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
-                bundle = orkg.statements.bundle(thing_id=paper_id, maxLevel=15)
+                bundle = orkg.statements.bundle(thing_id=paper_id)
                 statements = bundle.content["statements"]
                 save_cache(
                     cache_key, statements
@@ -293,7 +330,7 @@ def fetch_bundle(resource_id, reload_data=False):
 
     try:
         # Use ORKG library to fetch statements bundle
-        bundle = orkg.statements.bundle(thing_id=resource_id, maxLevel=15)
+        bundle = orkg.statements.bundle(thing_id=resource_id)
         stmts = bundle.content["statements"]
         save_cache(resource_id, stmts)
         return resource_id, stmts
@@ -304,7 +341,7 @@ def fetch_bundle(resource_id, reload_data=False):
 
 def process_all(papers, reload_data=False):
     results = []
-    results_file = "scripts/daily_results_incremental.csv"
+    results_file = "./daily_results_incremental.csv"
     all_statements = {}  # Store all statements for global distinct calculation
 
     # Check for already processed papers
@@ -464,7 +501,7 @@ def main():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     df["timestamp"] = timestamp
 
-    csv_path = "scripts/daily_results_incremental.csv"
+    csv_path = "./daily_results_incremental.csv"
     df.to_csv(csv_path, index=False)
     print(f"💾 Results saved to {csv_path}")
 
@@ -506,11 +543,41 @@ def main():
     if FIREBASE_AVAILABLE and not args.no_firebase:
         print("\n🔥 Updating Firebase...")
         try:
-            # Use the service account file
-            service_account_path = "scripts/firebase-service-account.json"
+            # Try multiple possible locations for service account file
+            possible_paths = [
+                "./firebase-service-account.json",
+                os.path.join(
+                    os.path.dirname(__file__), "firebase-service-account.json"
+                ),
+                "firebase-service-account.json",
+            ]
+
+            service_account_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    service_account_path = path
+                    break
+
+            if not service_account_path:
+                print("Service account file not found, trying environment variable...")
+
             firebase_manager = FirebaseManager(service_account_path)
-            firebase_manager.update_statistics(global_stats)
-            print("✅ Firebase updated successfully")
+
+            # Add paperCount to the stats (frontend expects this)
+            stats_for_firebase = global_stats.copy()
+            stats_for_firebase["paperCount"] = len(results)
+
+            # Use new nested path structure: Templates/R186491/Statistics/empire-statistics
+            success = firebase_manager.update_statistics(
+                stats_for_firebase,
+                template_id="R186491",
+                statistic_id="empire-statistics",
+            )
+
+            if success:
+                print("✅ Firebase updated successfully")
+            else:
+                print("❌ Firebase update failed - check error messages above")
         except Exception as e:
             print(f"❌ Firebase update failed: {e}")
     elif not FIREBASE_AVAILABLE:

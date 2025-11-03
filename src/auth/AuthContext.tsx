@@ -39,12 +39,15 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
 
-          // Sync to Firebase with admin status check
-          const firebaseUser = await UserSync.syncUserToFirebase({
-            id: userInfo.id,
-            email: userInfo.email,
-            display_name: userInfo.display_name,
-          });
+          // Sync to Firebase with admin status check via backend API
+          const firebaseUser = await UserSync.syncUserToFirebase(
+            {
+              id: userInfo.id,
+              email: userInfo.email,
+              display_name: userInfo.display_name,
+            },
+            keycloak.token
+          );
 
           // Update local state with Firebase user data (includes is_admin)
           setUser({
