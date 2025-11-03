@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.6.0...v1.7.0) (2025-11-03)
+
+### Features
+
+- add first version of the backend ([c64233d](https://github.com/okarras/EmpiRE-Compass/commit/c64233de83b2a3e49973e520e68856f270f06718))
+- added firebase logs pannel ([02f3cd9](https://github.com/okarras/EmpiRE-Compass/commit/02f3cd9369717bcaa4fadd6eb7c4107e06441147))
+- added team page ([3ee5e27](https://github.com/okarras/EmpiRE-Compass/commit/3ee5e27ac676440536b8a9b4f843238bd98ab69d))
+- backend ([3141e86](https://github.com/okarras/EmpiRE-Compass/commit/3141e869a30fe712c8ff4177021d0e5327fedc34))
+- choose default settings for grid ([d821dc6](https://github.com/okarras/EmpiRE-Compass/commit/d821dc66ecbd94447ef1304f3920b7b235f563cc))
+- fix AI logic in frontend and backend ([9f4972a](https://github.com/okarras/EmpiRE-Compass/commit/9f4972a7197b4d676ca588b2a2de4fbf015bf130))
+- grid analytics ([16635cf](https://github.com/okarras/EmpiRE-Compass/commit/16635cfcad1d7aabc749d24186c2d5fb9236fd35))
+- new input ([e022bf5](https://github.com/okarras/EmpiRE-Compass/commit/e022bf5a6e0f1fb281b8131e175ae07995c6857f))
+- process html in home ([1a94990](https://github.com/okarras/EmpiRE-Compass/commit/1a9499053dff7e0e85681f3cf0136b6923a9a3cc))
+
+### Bug Fixes
+
+- added red bullet points ([a9ece36](https://github.com/okarras/EmpiRE-Compass/commit/a9ece369b98f19915670751c1e2fa8fa536dc62d))
+- all questions link ([72b9e10](https://github.com/okarras/EmpiRE-Compass/commit/72b9e10de4fa053722c5ee427f5e15d783ccd4cb))
+- backend ai bug ([0456fe7](https://github.com/okarras/EmpiRE-Compass/commit/0456fe73ed4effae1c70d23b31c46ef65756d972))
+- backend cors error ([57295e7](https://github.com/okarras/EmpiRE-Compass/commit/57295e73a0db54c24f352e7c802b72c70b90446c))
+- backups ([f5b28bc](https://github.com/okarras/EmpiRE-Compass/commit/f5b28bc9016d98f31193d843617efc547081eb9a))
+- breadcrumbs ([5ee685b](https://github.com/okarras/EmpiRE-Compass/commit/5ee685bfbb4a5966a54a4886946f24253c018649))
+- build problems ([b5d3c31](https://github.com/okarras/EmpiRE-Compass/commit/b5d3c31017c2d4f71b7fbc603db97833d11d6757))
+- data interpretation when chart dont exists ([6dd46d2](https://github.com/okarras/EmpiRE-Compass/commit/6dd46d20a6e14a2bb3a5131ad638e08dd4b65bb7))
+- delete additional logs and production bugs ([bde1b65](https://github.com/okarras/EmpiRE-Compass/commit/bde1b650f95e01d190ba8694a9d94a44553c1292))
+- deploy bugs ([ccb410c](https://github.com/okarras/EmpiRE-Compass/commit/ccb410c35be90d5078432b6446c0ee87e6e339de))
+- deploy bugs ([b2730e1](https://github.com/okarras/EmpiRE-Compass/commit/b2730e1154ae7f5fb5d53a62c04610dab50f8748))
+- deploy problems ([e059ce4](https://github.com/okarras/EmpiRE-Compass/commit/e059ce4f5cbedf16e65d921b3a3115eccc8689db))
+- fixed production bugs ([1a4e4fb](https://github.com/okarras/EmpiRE-Compass/commit/1a4e4fbbfb8330542c8e25049ee7560a5f2b2b45))
+- header label ([894c2ee](https://github.com/okarras/EmpiRE-Compass/commit/894c2ee95ef4d8e3c6e0ed8b66c2c253e6ca2aa9))
+- question accordion ([e02f2f0](https://github.com/okarras/EmpiRE-Compass/commit/e02f2f0fe3d102ad346fbe63bb1eb60daf47a45c))
+- teams page and template change ([0fd1396](https://github.com/okarras/EmpiRE-Compass/commit/0fd1396ab1fcf80e915df13e56754b92996cbaba))
+
 ## [1.6.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.5.0...v1.6.0) (2025-10-24)
 
 ### Features
