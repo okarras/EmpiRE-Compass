@@ -65,6 +65,11 @@ export class AIService {
       : createGroq({ apiKey });
   }
 
+  private sanitizeModelName(modelName: string): string {
+    // Remove surrounding quotes if present
+    return modelName.trim().replace(/^["']|["']$/g, '');
+  }
+
   private getModel(
     provider: AIProvider,
     modelName?: string,
@@ -73,7 +78,10 @@ export class AIService {
     const aiProvider = this.createProvider(provider, userProvidedKey);
     const defaultModel =
       provider === 'openai' ? this.config.openaiModel : this.config.groqModel;
-    const model = modelName || defaultModel;
+    const rawModel = modelName || defaultModel;
+
+    // Sanitize model name to remove any quotes
+    const model = this.sanitizeModelName(rawModel);
 
     return aiProvider.languageModel(model);
   }

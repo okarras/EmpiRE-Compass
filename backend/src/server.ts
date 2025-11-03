@@ -27,19 +27,33 @@ app.use(express.json({ limit: '10mb' }));
 // rate limiter
 app.use('/api/', createRateLimiter());
 
+// Helper function to sanitize environment variables (remove quotes)
+const sanitizeEnvVar = (
+  value: string | undefined,
+  defaultValue: string
+): string => {
+  if (!value) return defaultValue;
+  // Remove surrounding quotes if present
+  return value.trim().replace(/^["']|["']$/g, '');
+};
+
 // Initialize AI service
 const aiConfig: AIConfig = {
-  provider: (process.env.AI_PROVIDER as 'openai' | 'groq') || 'groq',
+  provider:
+    (sanitizeEnvVar(process.env.AI_PROVIDER, 'groq') as 'openai' | 'groq') ||
+    'groq',
   openaiModel:
-    (process.env.OPENAI_MODEL as 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo') ||
-    'gpt-4o-mini',
+    (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
+      | 'gpt-4o-mini'
+      | 'gpt-4o'
+      | 'gpt-4-turbo') || 'gpt-4o-mini',
   groqModel:
-    (process.env.GROQ_MODEL as
+    (sanitizeEnvVar(process.env.GROQ_MODEL, 'deepseek-r1-distill-llama-70b') as
       | 'deepseek-r1-distill-llama-70b'
       | 'llama-3-70b-8192'
       | 'mixtral-8x7b-32768') || 'deepseek-r1-distill-llama-70b',
-  openaiApiKey: process.env.OPENAI_API_KEY || '',
-  groqApiKey: process.env.GROQ_API_KEY || '',
+  openaiApiKey: sanitizeEnvVar(process.env.OPENAI_API_KEY, ''),
+  groqApiKey: sanitizeEnvVar(process.env.GROQ_API_KEY, ''),
 };
 
 const aiService = new AIService(aiConfig);
