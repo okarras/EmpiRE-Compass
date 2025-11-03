@@ -96,17 +96,6 @@ const Team = () => {
             >
               Our Team
             </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'text.secondary',
-                maxWidth: '600px',
-                mx: 'auto',
-                fontSize: { xs: '0.95rem', sm: '1.1rem' },
-              }}
-            >
-              Meet the talented individuals behind EmpirE-Compass
-            </Typography>
           </Box>
 
           {error && (

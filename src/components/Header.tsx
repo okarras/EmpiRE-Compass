@@ -29,6 +29,7 @@ import LoginORKG from './LoginORKG';
 import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
+import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -70,6 +71,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const handleTemplateChange = (event: SelectChangeEvent<string>) => {
     const newTemplate = event.target.value;
     setSelectedTemplate(newTemplate);
+    toast.success(`Template changed to ${templateConfig[newTemplate]?.title}`);
 
     // Navigate to new template, preserving the rest of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
