@@ -82,16 +82,28 @@ export class AIService {
       // omit maxTokens to match SDK typings
     });
 
+    // Normalize text to string (handle different response formats)
+    const normalizedText =
+      typeof result.text === 'string'
+        ? result.text
+        : result.text
+          ? String(result.text)
+          : '';
+
     // Normalize reasoning to string for downstream types
+    const reasoningVal = (result as any).reasoning;
+    const normalizedReasoning =
+      typeof reasoningVal === 'string'
+        ? reasoningVal
+        : Array.isArray(reasoningVal)
+          ? JSON.stringify(reasoningVal)
+          : undefined;
+
     return {
-      ...result,
-      reasoning:
-        typeof (result as any).reasoning === 'string'
-          ? ((result as any).reasoning as string)
-          : Array.isArray((result as any).reasoning)
-            ? JSON.stringify((result as any).reasoning)
-            : undefined,
-    } as typeof result & { reasoning?: string };
+      text: normalizedText,
+      reasoning: normalizedReasoning,
+      usage: result.usage,
+    };
   }
 
   public isConfigured(): boolean {

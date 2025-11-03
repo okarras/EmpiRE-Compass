@@ -88,20 +88,60 @@ router.post(
 
       res.json(result);
     } catch (error) {
-      console.error('Error generating text:', error);
+      console.error('Error generating text:', {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        body: req.body,
+      });
 
       if (error instanceof Error) {
-        if (error.message.includes('API key is not configured')) {
+        const errorMessage = error.message.toLowerCase();
+
+        if (
+          errorMessage.includes('api key') ||
+          errorMessage.includes('not configured')
+        ) {
           return res
             .status(500)
-            .json({ error: 'AI service not properly configured' });
+            .json({
+              error:
+                'AI service not properly configured. Please check environment variables.',
+            });
         }
-        if (error.message.includes('rate limit')) {
-          return res.status(429).json({ error: 'Rate limit exceeded' });
+
+        if (
+          errorMessage.includes('rate limit') ||
+          errorMessage.includes('429')
+        ) {
+          return res
+            .status(429)
+            .json({ error: 'Rate limit exceeded. Please try again later.' });
+        }
+
+        if (
+          errorMessage.includes('invalid api key') ||
+          errorMessage.includes('authentication')
+        ) {
+          return res
+            .status(500)
+            .json({
+              error: 'Invalid API key. Please check backend configuration.',
+            });
+        }
+
+        // Return more detailed error in development
+        if (process.env.NODE_ENV !== 'production') {
+          return res.status(500).json({
+            error: 'Failed to generate text',
+            details: error.message,
+          });
         }
       }
 
-      res.status(500).json({ error: 'Failed to generate text' });
+      res
+        .status(500)
+        .json({ error: 'Failed to generate text. Please try again later.' });
     }
   }
 );
