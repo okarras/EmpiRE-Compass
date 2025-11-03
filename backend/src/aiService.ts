@@ -1,8 +1,4 @@
-import {
-  generateText,
-  wrapLanguageModel,
-  extractReasoningMiddleware,
-} from 'ai';
+import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 
@@ -91,13 +87,8 @@ export class AIService {
     userProvidedKey?: string
   ) {
     const targetProvider = provider || this.config.provider;
-    const baseModel = this.getModel(targetProvider, modelName, userProvidedKey);
-
-    // Add reasoning middleware for better AI responses
-    return wrapLanguageModel({
-      model: baseModel,
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    });
+    // Return base model directly; compatible with SDK v5 providers
+    return this.getModel(targetProvider, modelName, userProvidedKey) as any;
   }
 
   public async generateText(
@@ -118,13 +109,22 @@ export class AIService {
       model,
       prompt: request.prompt,
       temperature: request.temperature ?? 0.3,
-      maxTokens: request.maxTokens ?? 2000,
+      // omit maxTokens for SDK v5 typings
       system: request.systemContext,
     });
 
+    const reasoningVal = (result as any).reasoning;
+    const normalizedReasoning = Array.isArray(reasoningVal)
+      ? JSON.stringify(reasoningVal)
+      : typeof reasoningVal === 'string'
+        ? reasoningVal
+        : undefined;
+
+    const normalizedText = (result.text || '').trim();
+
     return {
-      text: result.text,
-      reasoning: result.reasoning,
+      text: normalizedText !== '' ? normalizedText : normalizedReasoning || '',
+      reasoning: normalizedReasoning,
       usage: result.usage,
     };
   }

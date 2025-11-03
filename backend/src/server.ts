@@ -58,8 +58,14 @@ app.use('/api/health', healthRouter);
 // error handling middleware
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`AI Service configured: ${aiService.isConfigured()}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// Export the Express app for Vercel (default export)
+export default app;
+
+// For local development, listen on a port
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`AI Service configured: ${aiService.isConfigured()}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
