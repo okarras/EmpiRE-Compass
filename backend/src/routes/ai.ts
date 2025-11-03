@@ -47,11 +47,26 @@ const getAIService = (): AIService => {
  */
 router.get('/config', validateApiKey, (req: Request, res: Response) => {
   try {
-    const config = getAIService().getCurrentConfig();
-    res.json(config);
+    const service = getAIService();
+    const config = service.getCurrentConfig();
+    const isConfigured = service.isConfigured();
+
+    res.json({
+      ...config,
+      apiKeyConfigured: isConfigured,
+      // Include diagnostic info in development
+      ...(process.env.NODE_ENV !== 'production' && {
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        hasGroqKey: !!process.env.GROQ_API_KEY,
+        provider: process.env.AI_PROVIDER || 'groq',
+      }),
+    });
   } catch (error) {
     console.error('Error getting AI config:', error);
-    res.status(500).json({ error: 'Failed to get AI configuration' });
+    res.status(500).json({
+      error: 'Failed to get AI configuration',
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
 });
 
@@ -102,12 +117,10 @@ router.post(
           errorMessage.includes('api key') ||
           errorMessage.includes('not configured')
         ) {
-          return res
-            .status(500)
-            .json({
-              error:
-                'AI service not properly configured. Please check environment variables.',
-            });
+          return res.status(500).json({
+            error:
+              'AI service not properly configured. Please check environment variables.',
+          });
         }
 
         if (
@@ -123,11 +136,9 @@ router.post(
           errorMessage.includes('invalid api key') ||
           errorMessage.includes('authentication')
         ) {
-          return res
-            .status(500)
-            .json({
-              error: 'Invalid API key. Please check backend configuration.',
-            });
+          return res.status(500).json({
+            error: 'Invalid API key. Please check backend configuration.',
+          });
         }
 
         // Return more detailed error in development
@@ -139,9 +150,16 @@ router.post(
         }
       }
 
-      res
-        .status(500)
-        .json({ error: 'Failed to generate text. Please try again later.' });
+      // Return error message even in production for debugging
+      // TODO: Remove error details in production after fixing the issue
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      res.status(500).json({
+        error: 'Failed to generate text. Please try again later.',
+        // Temporarily include error details for debugging
+        details: errorMessage,
+      });
     }
   }
 );

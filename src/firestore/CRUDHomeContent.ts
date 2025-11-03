@@ -232,7 +232,6 @@ export const getHomeContent = async (): Promise<HomeContentData> => {
     if (docSnap.exists()) {
       return docSnap.data() as HomeContentData;
     } else {
-      console.log('No home content found, using default');
       return defaultHomeContent;
     }
   } catch (error) {
@@ -263,7 +262,6 @@ export const setHomeContent = async (
     }
 
     await updateHomeContent(content, userId, userEmail, keycloakToken);
-    console.log('Home content updated successfully');
   } catch (error) {
     console.error('Error updating home content:', error);
     throw error;

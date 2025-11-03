@@ -32,7 +32,6 @@ const getStatistics = async (templateId = 'R186491') => {
       ? statisticsList.find((stat: DocumentData) => stat.id === statisticId)
       : null;
 
-    console.log('statisticsData', statisticsData);
     return statisticsData || null;
   } catch (error) {
     console.error('Error fetching statistics from backend:', error);

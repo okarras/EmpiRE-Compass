@@ -54,11 +54,6 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
             ...userInfo,
             is_admin: firebaseUser.is_admin,
           } as UserData);
-
-          console.log('✅ User authenticated:', {
-            name: firebaseUser.display_name,
-            isAdmin: firebaseUser.is_admin,
-          });
         } catch (firebaseError) {
           console.error('Failed to sync user to Firebase:', firebaseError);
           // Don't set error for Firebase failures - it's not critical for auth
