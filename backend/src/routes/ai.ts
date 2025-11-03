@@ -1,6 +1,20 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { AIService, type AIConfig } from '../aiService.js';
-import { validateApiKey, validateGenerateTextRequest } from '../middleware.js';
+import { validateGenerateTextRequest } from '../middleware.js';
+import {
+  validateKeycloakToken,
+  type AuthenticatedRequest,
+} from '../middleware/auth.js';
+import { createUserRateLimiter } from '../middleware/aiRateLimit.js';
+import { db } from '../config/firebase.js';
+import { Timestamp } from 'firebase-admin/firestore';
+import { isAdminEmail } from '../config/constants.js';
+
+interface UserRateLimit {
+  userId: string;
+  count: number;
+  resetAt: Timestamp;
+}
 
 const router = Router();
 
@@ -59,42 +73,137 @@ const getAIService = (): AIService => {
 
 /**
  * GET /api/ai/config
- * Get current AI configuration
+ * Get current AI configuration (requires authentication)
  */
-router.get('/config', validateApiKey, (req: Request, res: Response) => {
-  try {
-    const service = getAIService();
-    const config = service.getCurrentConfig();
-    const isConfigured = service.isConfigured();
+router.get(
+  '/config',
+  validateKeycloakToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const service = getAIService();
+      const config = service.getCurrentConfig();
+      const isConfigured = service.isConfigured();
 
-    res.json({
-      ...config,
-      apiKeyConfigured: isConfigured,
-      // Include diagnostic info in development
-      ...(process.env.NODE_ENV !== 'production' && {
-        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-        hasGroqKey: !!process.env.GROQ_API_KEY,
-        provider: process.env.AI_PROVIDER || 'groq',
-      }),
-    });
-  } catch (error) {
-    console.error('Error getting AI config:', error);
-    res.status(500).json({
-      error: 'Failed to get AI configuration',
-      details: error instanceof Error ? error.message : String(error),
-    });
+      res.json({
+        ...config,
+        apiKeyConfigured: isConfigured,
+        // Include diagnostic info in development
+        ...(process.env.NODE_ENV !== 'production' && {
+          hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+          hasGroqKey: !!process.env.GROQ_API_KEY,
+          provider: process.env.AI_PROVIDER || 'groq',
+        }),
+      });
+    } catch (error) {
+      console.error('Error getting AI config:', error);
+      res.status(500).json({
+        error: 'Failed to get AI configuration',
+        details: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
-});
+);
+
+/**
+ * GET /api/ai/rate-limit
+ * Get current user's rate limit status
+ */
+router.get(
+  '/rate-limit',
+  validateKeycloakToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      // Check admin status
+      let isAdmin = req.isAdmin;
+      if (!isAdmin) {
+        // Check email-based admin first
+        if (req.userEmail && isAdminEmail(req.userEmail)) {
+          isAdmin = true;
+        } else {
+          // Check Firebase
+          try {
+            const userDoc = await db.collection('Users').doc(req.userId).get();
+            const userData = userDoc.data();
+            isAdmin =
+              userData?.is_admin === true ||
+              (req.userEmail && isAdminEmail(req.userEmail)) ||
+              false;
+          } catch (error) {
+            console.error('Error checking admin status:', error);
+          }
+        }
+      }
+
+      // Admin users have unlimited requests
+      if (isAdmin) {
+        return res.json({
+          limit: -1, // -1 means unlimited
+          remaining: -1,
+          isAdmin: true,
+        });
+      }
+
+      const userId = req.userId;
+      const rateLimitRef = db.collection('AIRateLimits').doc(userId);
+      const rateLimitDoc = await rateLimitRef.get();
+
+      const MAX_REQUESTS = 5;
+      const now = Timestamp.now();
+
+      if (!rateLimitDoc.exists) {
+        return res.json({
+          limit: MAX_REQUESTS,
+          remaining: MAX_REQUESTS,
+          resetAt: null,
+        });
+      }
+
+      const rateLimitData = rateLimitDoc.data() as UserRateLimit;
+      const resetTime = rateLimitData.resetAt.toMillis();
+
+      // Check if window has expired
+      if (now.toMillis() >= resetTime) {
+        return res.json({
+          limit: MAX_REQUESTS,
+          remaining: MAX_REQUESTS,
+          resetAt: null,
+        });
+      }
+
+      const remaining = Math.max(0, MAX_REQUESTS - rateLimitData.count);
+      const resetIn = Math.ceil((resetTime - now.toMillis()) / 1000);
+
+      return res.json({
+        limit: MAX_REQUESTS,
+        remaining,
+        count: rateLimitData.count,
+        resetAt: new Date(resetTime).toISOString(),
+        resetIn,
+      });
+    } catch (error) {
+      console.error('Error getting rate limit status:', error);
+      res.status(500).json({
+        error: 'Failed to get rate limit status',
+        details: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+);
 
 /**
  * POST /api/ai/generate
- * Generate text using AI
+ * Generate text using AI (requires authentication, rate limited per user)
  */
 router.post(
   '/generate',
-  validateApiKey,
+  validateKeycloakToken,
+  createUserRateLimiter(),
   validateGenerateTextRequest,
-  async (req: Request, res: Response) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         prompt,
