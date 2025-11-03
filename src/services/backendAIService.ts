@@ -40,6 +40,25 @@ export interface AIConfigResponse {
   apiKeyConfigured: boolean;
 }
 
+/**
+ * Get Keycloak token if available
+ */
+const getKeycloakToken = (): string | null => {
+  try {
+    // Try to get token from window.keycloak if available
+    if (typeof window !== 'undefined' && (window as any).keycloak) {
+      const keycloak = (window as any).keycloak;
+      if (keycloak.token) {
+        return keycloak.token;
+      }
+    }
+    return null;
+  } catch (error) {
+    console.warn('Failed to get Keycloak token:', error);
+    return null;
+  }
+};
+
 export class BackendAIService {
   private baseUrl: string;
   private config: BackendAIConfig;
@@ -55,18 +74,70 @@ export class BackendAIService {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
+    // Get authentication token
+    const token = getKeycloakToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+
+    // Add Authorization header if token is available
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // In development, also add user headers if available (for testing)
+    const isDev = import.meta.env.DEV;
+    if (isDev && typeof window !== 'undefined') {
+      // Try to get user info from auth context or localStorage
+      try {
+        const authData = localStorage.getItem('auth-data');
+        if (authData) {
+          const parsed = JSON.parse(authData);
+          if (parsed.userId) {
+            headers['x-user-id'] = parsed.userId;
+          }
+          if (parsed.userEmail) {
+            headers['x-user-email'] = parsed.userEmail;
+          }
+        }
+      } catch (error) {
+        console.error('Error getting user info:', error);
+        // Ignore errors getting user info
+      }
+    }
+
     const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
       ...options,
+      headers,
     });
 
     if (!response.ok) {
       const errorData = await response
         .json()
         .catch(() => ({ error: 'Unknown error' }));
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        const error = new Error(
+          errorData.error || 'Authentication required. Please log in.'
+        ) as Error & { status: number; requiresAuth: boolean };
+        error.status = 401;
+        error.requiresAuth = true;
+        throw error;
+      }
+
+      // Handle rate limit errors
+      if (response.status === 429) {
+        const error = new Error(
+          errorData.message || errorData.error || 'Rate limit exceeded'
+        ) as Error & { status: number; resetIn?: number; resetAt?: string };
+        error.status = 429;
+        if (errorData.resetIn) error.resetIn = errorData.resetIn;
+        if (errorData.resetAt) error.resetAt = errorData.resetAt;
+        throw error;
+      }
+
       throw new Error(
         errorData.error || `HTTP ${response.status}: ${response.statusText}`
       );
