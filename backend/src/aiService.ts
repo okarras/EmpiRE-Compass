@@ -91,38 +91,82 @@ export class AIService {
   public async generateText(
     request: GenerateTextRequest
   ): Promise<GenerateTextResponse> {
-    const targetProvider = request.provider || this.config.provider;
-    // SECURITY: Never use API keys from request - always use environment keys
-    // This ensures user API keys are never processed by the backend
+    try {
+      const targetProvider = request.provider || this.config.provider;
+      // SECURITY: Never use API keys from request - always use environment keys
+      // This ensures user API keys are never processed by the backend
 
-    const model = this.getEnhancedModel(
-      targetProvider,
-      request.model,
-      undefined // Never pass user API keys
-    );
+      // Check if API key is configured
+      const apiKey = this.getApiKey(targetProvider);
+      if (!apiKey || apiKey.trim().length === 0) {
+        throw new Error(
+          `${targetProvider.toUpperCase()} API key is not configured`
+        );
+      }
 
-    const result = await generateText({
-      model,
-      prompt: request.prompt,
-      temperature: request.temperature ?? 0.3,
-      // omit maxTokens for SDK v5 typings
-      system: request.systemContext,
-    });
+      const model = this.getEnhancedModel(
+        targetProvider,
+        request.model,
+        undefined // Never pass user API keys
+      );
 
-    const reasoningVal = (result as any).reasoning;
-    const normalizedReasoning = Array.isArray(reasoningVal)
-      ? JSON.stringify(reasoningVal)
-      : typeof reasoningVal === 'string'
-        ? reasoningVal
-        : undefined;
+      const result = await generateText({
+        model,
+        prompt: request.prompt,
+        temperature: request.temperature ?? 0.3,
+        // omit maxTokens for SDK v5 typings
+        system: request.systemContext,
+      });
 
-    const normalizedText = (result.text || '').trim();
+      // Handle different response formats safely
+      if (!result) {
+        throw new Error('AI service returned empty result');
+      }
 
-    return {
-      text: normalizedText !== '' ? normalizedText : normalizedReasoning || '',
-      reasoning: normalizedReasoning,
-      usage: result.usage,
-    };
+      // Normalize text response
+      let normalizedText = '';
+      if (result.text) {
+        normalizedText =
+          typeof result.text === 'string' ? result.text : String(result.text);
+      }
+
+      // Handle reasoning
+      const reasoningVal = (result as any).reasoning;
+      let normalizedReasoning: string | undefined = undefined;
+
+      if (reasoningVal !== undefined && reasoningVal !== null) {
+        if (Array.isArray(reasoningVal)) {
+          normalizedReasoning = JSON.stringify(reasoningVal);
+        } else if (typeof reasoningVal === 'string') {
+          normalizedReasoning = reasoningVal;
+        } else {
+          normalizedReasoning = String(reasoningVal);
+        }
+      }
+
+      // Use reasoning as fallback if text is empty
+      const finalText = normalizedText.trim() || normalizedReasoning || '';
+
+      return {
+        text: finalText,
+        reasoning: normalizedReasoning,
+        usage: result.usage,
+      };
+    } catch (error) {
+      // Enhanced error logging
+      console.error('Error in generateText:', {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        provider: request.provider || this.config.provider,
+      });
+
+      // Re-throw with more context
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`AI generation failed: ${String(error)}`);
+    }
   }
 
   public isConfigured(provider?: AIProvider): boolean {
