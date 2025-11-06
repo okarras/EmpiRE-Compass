@@ -21,10 +21,8 @@ interface ApiTemplate {
     min_count: number | null;
     max_count: number | null;
     path: {
-      id: {
-        id: string;
-        label: string;
-      };
+      id: string;
+      label: string;
     };
     class?: {
       id: string;
@@ -79,25 +77,14 @@ const adaptTemplate = (apiTemplate: ApiTemplate): GraphTemplate => ({
   },
   properties: apiTemplate.properties?.map((prop) => ({
     id: prop.id || '',
-    label:
-      prop.description ||
-      (typeof prop.path?.id === 'object'
-        ? prop.path.id.label
-        : prop.path?.id) ||
-      'Unnamed Property',
+    label: prop.description || prop.path?.label || 'Unnamed Property',
     description: prop.description,
     order: prop.order,
     min_count: prop.min_count || 0,
     max_count: prop.max_count || null,
     path: {
-      id:
-        typeof prop.path?.id === 'object'
-          ? prop.path.id.id
-          : prop.path?.id || '',
-      label:
-        typeof prop.path?.id === 'object'
-          ? prop.path.id.label
-          : prop.path?.id || 'Unknown Path',
+      id: prop.path?.id || '',
+      label: prop.path?.label || 'Unknown Path',
     },
     class: prop.class
       ? {
