@@ -36,6 +36,7 @@ import {
   DeleteSweep as DeleteSweepIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
+import { CodeEditor } from '../CodeEditor';
 
 export interface HistoryItem {
   id: string;
@@ -711,32 +712,32 @@ const HistoryManager: React.FC<HistoryManagerProps> = ({
           </Box>
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={10}
-            variant="outlined"
-            label="Content"
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            sx={{
-              mt: 2,
-              fontFamily:
-                editingItem &&
-                ['sparql', 'chart_html'].includes(editingItem.type)
-                  ? 'monospace'
-                  : 'inherit',
-              '& .MuiOutlinedInput-root': {
-                '& textarea': {
-                  fontFamily:
-                    editingItem &&
-                    ['sparql', 'chart_html'].includes(editingItem.type)
-                      ? 'monospace'
-                      : 'inherit',
-                },
-              },
-            }}
-          />
+          <Box sx={{ mt: 2 }}>
+            {editingItem &&
+            ['sparql', 'chart_html'].includes(editingItem.type) ? (
+              <CodeEditor
+                value={editContent}
+                onChange={(value) => setEditContent(value)}
+                language={editingItem.type === 'sparql' ? 'sparql' : 'html'}
+                height="400px"
+                label="Content"
+                copyable={true}
+                formattable={true}
+                fullscreenable={true}
+                showMinimap={false}
+              />
+            ) : (
+              <TextField
+                fullWidth
+                multiline
+                rows={10}
+                variant="outlined"
+                label="Content"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+              />
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditDialog}>Cancel</Button>
@@ -1108,32 +1109,32 @@ export const SectionHistoryDialog: React.FC<SectionHistoryDialogProps> = ({
           </Box>
         </DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            multiline
-            rows={10}
-            variant="outlined"
-            label="Content"
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            sx={{
-              mt: 2,
-              fontFamily:
-                editingItem &&
-                ['sparql', 'chart_html'].includes(editingItem.type)
-                  ? 'monospace'
-                  : 'inherit',
-              '& .MuiOutlinedInput-root': {
-                '& textarea': {
-                  fontFamily:
-                    editingItem &&
-                    ['sparql', 'chart_html'].includes(editingItem.type)
-                      ? 'monospace'
-                      : 'inherit',
-                },
-              },
-            }}
-          />
+          <Box sx={{ mt: 2 }}>
+            {editingItem &&
+            ['sparql', 'chart_html'].includes(editingItem.type) ? (
+              <CodeEditor
+                value={editContent}
+                onChange={(value) => setEditContent(value)}
+                language={editingItem.type === 'sparql' ? 'sparql' : 'html'}
+                height="400px"
+                label="Content"
+                copyable={true}
+                formattable={true}
+                fullscreenable={true}
+                showMinimap={false}
+              />
+            ) : (
+              <TextField
+                fullWidth
+                multiline
+                rows={10}
+                variant="outlined"
+                label="Content"
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+              />
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditDialog}>Cancel</Button>

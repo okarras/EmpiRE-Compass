@@ -11,13 +11,14 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
-import { SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import QuestionChartView from './QuestionChartView';
+import { getTemplateConfig } from '../constants/template_config';
+import SectionSelector from './SectionSelector';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -34,6 +35,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   const [error2, setError2] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
+  const { templateId } = useParams();
 
   // Fetch primary data (uid)
   useEffect(() => {
@@ -42,9 +44,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       try {
         setLoading1(true);
         setError1(null);
+        const sparqlMap = getTemplateConfig(templateId as string).sparql;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         //@ts-ignore
-        const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid]);
+        const data = await fetchSPARQLData(sparqlMap[query.uid]);
         setDataCollection(data);
       } catch (err) {
         setError1('Failed to load question data');
@@ -54,7 +57,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       }
     };
     fetchData();
-  }, [query.uid, expanded]);
+  }, [query.uid, expanded, templateId]);
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -64,9 +67,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         try {
           setLoading2(true);
           setError2(null);
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2]);
+          const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -81,9 +85,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         try {
           setLoading2(true);
           setError2(null);
+          const sparqlMap = getTemplateConfig(templateId as string).sparql;
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           //@ts-ignore
-          const data = await fetchSPARQLData(SPARQL_QUERIES[query.uid_2_merge]);
+          const data = await fetchSPARQLData(sparqlMap[query.uid_2_merge]);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -94,7 +99,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge, expanded]);
+  }, [query, query?.uid_2, query?.uid_2_merge, expanded, templateId]);
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
@@ -104,7 +109,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   };
 
   const openQuestionPage = () => {
-    navigate(`/questions/${query.id}`);
+    navigate(`/${templateId}/questions/${query.id}`);
   };
 
   const getProcessedChartData = () => {
@@ -117,15 +122,17 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
     return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
   };
 
-  const getDataInterpretation = (tabName: string) => {
-    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+  const getDataInterpretation = (tabName: string): string => {
+    const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
+    if (Array.isArray(dataInterpretation)) {
       if (tabName === 'dataCollection') {
-        return query.dataAnalysisInformation.dataInterpretation[0];
+        return dataInterpretation[0] || '';
       } else if (tabName === 'dataAnalysis') {
-        return query.dataAnalysisInformation.dataInterpretation[1];
+        return dataInterpretation[1] || '';
       }
+      return '';
     }
-    return query.dataAnalysisInformation.dataInterpretation;
+    return dataInterpretation || '';
   };
 
   const renderLoadingState = () => (
@@ -284,6 +291,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         <QuestionInformation
           information={query.dataAnalysisInformation.requiredDataForAnalysis}
           label="Required Data for Analysis"
+          tabIndex={0}
         />
 
         {query.uid_2 && (
@@ -294,8 +302,8 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             indicatorColor="primary"
             textColor="primary"
           >
-            <Tab label="Data Collection" />
-            <Tab label="Data Analysis" />
+            <Tab label={query.tabs?.tab1_name ?? 'Data Collection'} />
+            <Tab label={query.tabs?.tab2_name ?? 'Data Analysis'} />
           </Tabs>
         )}
 
@@ -307,8 +315,14 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             renderErrorState(error1)
           ) : (
             <>
-              {query.chartSettings && (
+              {query.chartSettings ? (
                 <>
+                  <SectionSelector
+                    sectionType="chart"
+                    sectionTitle="Chart Visualization"
+                    query={query}
+                    data={dataCollection}
+                  />
                   <QuestionChartView
                     query={query}
                     normalized={normalized}
@@ -321,8 +335,15 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                   />
                   <Divider sx={{ my: 3 }} />
                 </>
+              ) : (
+                <>
+                  <QuestionInformation
+                    information={getDataInterpretation('dataCollection')}
+                    label="Data Interpretation"
+                    tabIndex={tab}
+                  />
+                </>
               )}
-              {/* <QuestionDataGridView questionData={dataCollection} /> */}
             </>
           )}
         </Box>
@@ -336,8 +357,14 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                {query.chartSettings2 && (
+                {query.chartSettings2 ? (
                   <>
+                    <SectionSelector
+                      sectionType="chart"
+                      sectionTitle="Data Analysis Chart"
+                      query={query}
+                      data={dataAnalysis}
+                    />
                     <QuestionChartView
                       query={query}
                       normalized={normalized}
@@ -351,10 +378,17 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
                     />
-                    {/* <Divider sx={{ my: 3 }} /> */}
+                    <Divider sx={{ my: 3 }} />
+                  </>
+                ) : (
+                  <>
+                    <QuestionInformation
+                      information={getDataInterpretation('dataAnalysis')}
+                      label="Data Interpretation"
+                      tabIndex={tab}
+                    />
                   </>
                 )}
-                {/* <QuestionDataGridView questionData={dataAnalysis} /> */}
               </>
             )}
           </Box>

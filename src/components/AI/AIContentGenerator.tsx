@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { CircularProgress, Typography, Paper } from '@mui/material';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 
 interface AIContentGeneratorProps {
   data: Record<string, unknown>[];
@@ -23,6 +23,7 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
 }) => {
   const aiService = useAIService();
   const [generating, setGenerating] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   // Helper function to prepare data summary for AI processing
   const prepareDataSummary = (data: Record<string, unknown>[]) => {
@@ -71,7 +72,12 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
   };
 
   const generateContent = useCallback(async () => {
+    if (hasGenerated) {
+      return; // Prevent multiple generations
+    }
+
     setGenerating(true);
+    setHasGenerated(true);
     try {
       // Prepare data summary for efficient AI processing
       const dataSummary = prepareDataSummary(data);
@@ -297,19 +303,19 @@ Return ONLY the explanation text.`;
       // Generate Data Collection interpretation
       const dataCollectionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Required Data for Analysis" section.
 
-Data Summary: ${dataSummary}
+        Data Summary: ${dataSummary}
 
-Requirements:
-1. Return a simple, clear explanation (not HTML)
-2. Focus on:
-   - What kind of data is needed to answer this question
-   - What the SPARQL query extracts
-   - How the data supports the research objectives
-3. Keep it to 2-3 sentences maximum
-4. Use professional but accessible language
-5. Don't use HTML tags, just plain text
+        Requirements:
+        1. Return a simple, clear explanation (not HTML)
+        2. Focus on:
+          - What kind of data is needed to answer this question
+          - What the SPARQL query extracts
+          - How the data supports the research objectives
+        3. Keep it to 2-3 sentences maximum
+        4. Use professional but accessible language
+        5. Don't use HTML tags, just plain text
 
-Return ONLY the explanation text.`;
+        Return ONLY the explanation text.`;
 
       const dataCollectionInterpretationResult = await aiService.generateText(
         dataCollectionInterpretationPrompt,
@@ -375,14 +381,14 @@ Return ONLY the explanation text.`;
     } finally {
       setGenerating(false);
     }
-  }, [data, question, aiService, onContentGenerated, onError]);
+  }, [data, question, aiService, hasGenerated]); // Add hasGenerated to prevent multiple generations
 
-  // Auto-generate content when data changes
+  // Auto-generate content when component mounts with data
   React.useEffect(() => {
-    if (data.length > 0 && question) {
+    if (data.length > 0 && question && !hasGenerated) {
       generateContent();
     }
-  }, [data, question, generateContent]);
+  }, []); // Empty dependency array - only run once on mount
 
   // Check if AI is configured
   if (!aiService.isConfigured()) {
