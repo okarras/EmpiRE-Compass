@@ -32,7 +32,7 @@ import {
   useDynamicQuestion,
   DynamicQuestionHistory,
 } from '../../context/DynamicQuestionContext';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 
 interface DataProcessingCodeSectionProps {
   processingCode: string | null;

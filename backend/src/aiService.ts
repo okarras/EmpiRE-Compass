@@ -1,8 +1,4 @@
-import {
-  generateText,
-  wrapLanguageModel,
-  extractReasoningMiddleware,
-} from 'ai';
+import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 
@@ -28,6 +24,8 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
+  // NOTE: API keys from request are IGNORED - backend uses environment keys only
+  // This is for security - user API keys should never be sent to backend
 }
 
 export interface GenerateTextResponse {
@@ -47,14 +45,16 @@ export class AIService {
     this.config = config;
   }
 
-  private getApiKey(provider: AIProvider): string {
+  private getApiKey(provider: AIProvider, userProvidedKey?: string): string {
+    // SECURITY: Always ignore user-provided keys - only use environment keys
+    // User API keys should never be sent to backend for security reasons
     return provider === 'openai'
       ? this.config.openaiApiKey
       : this.config.groqApiKey;
   }
 
-  private createProvider(provider: AIProvider) {
-    const apiKey = this.getApiKey(provider);
+  private createProvider(provider: AIProvider, userProvidedKey?: string) {
+    const apiKey = this.getApiKey(provider, userProvidedKey);
 
     if (!apiKey) {
       throw new Error(`${provider.toUpperCase()} API key is not configured`);
@@ -65,45 +65,116 @@ export class AIService {
       : createGroq({ apiKey });
   }
 
-  private getModel(provider: AIProvider, modelName?: string) {
-    const aiProvider = this.createProvider(provider);
+  private sanitizeModelName(modelName: string): string {
+    // Remove surrounding quotes if present
+    return modelName.trim().replace(/^["']|["']$/g, '');
+  }
+
+  private getModel(
+    provider: AIProvider,
+    modelName?: string,
+    userProvidedKey?: string
+  ) {
+    const aiProvider = this.createProvider(provider, userProvidedKey);
     const defaultModel =
       provider === 'openai' ? this.config.openaiModel : this.config.groqModel;
-    const model = modelName || defaultModel;
+    const rawModel = modelName || defaultModel;
+
+    // Sanitize model name to remove any quotes
+    const model = this.sanitizeModelName(rawModel);
 
     return aiProvider.languageModel(model);
   }
 
-  public getEnhancedModel(provider?: AIProvider, modelName?: string) {
+  public getEnhancedModel(
+    provider?: AIProvider,
+    modelName?: string,
+    userProvidedKey?: string
+  ) {
     const targetProvider = provider || this.config.provider;
-    const baseModel = this.getModel(targetProvider, modelName);
-
-    // Add reasoning middleware for better AI responses
-    return wrapLanguageModel({
-      model: baseModel,
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    });
+    // Return base model directly; compatible with SDK v5 providers
+    return this.getModel(targetProvider, modelName, userProvidedKey) as any;
   }
 
   public async generateText(
     request: GenerateTextRequest
   ): Promise<GenerateTextResponse> {
-    const targetProvider = request.provider || this.config.provider;
-    const model = this.getEnhancedModel(targetProvider, request.model);
+    try {
+      const targetProvider = request.provider || this.config.provider;
+      // SECURITY: Never use API keys from request - always use environment keys
+      // This ensures user API keys are never processed by the backend
 
-    const result = await generateText({
-      model,
-      prompt: request.prompt,
-      temperature: request.temperature ?? 0.3,
-      maxTokens: request.maxTokens ?? 2000,
-      system: request.systemContext,
-    });
+      // Check if API key is configured
+      const apiKey = this.getApiKey(targetProvider);
+      if (!apiKey || apiKey.trim().length === 0) {
+        throw new Error(
+          `${targetProvider.toUpperCase()} API key is not configured`
+        );
+      }
 
-    return {
-      text: result.text,
-      reasoning: result.reasoning,
-      usage: result.usage,
-    };
+      const model = this.getEnhancedModel(
+        targetProvider,
+        request.model,
+        undefined // Never pass user API keys
+      );
+
+      const result = await generateText({
+        model,
+        prompt: request.prompt,
+        temperature: request.temperature ?? 0.3,
+        // omit maxTokens for SDK v5 typings
+        system: request.systemContext,
+      });
+
+      // Handle different response formats safely
+      if (!result) {
+        throw new Error('AI service returned empty result');
+      }
+
+      // Normalize text response
+      let normalizedText = '';
+      if (result.text) {
+        normalizedText =
+          typeof result.text === 'string' ? result.text : String(result.text);
+      }
+
+      // Handle reasoning
+      const reasoningVal = (result as any).reasoning;
+      let normalizedReasoning: string | undefined = undefined;
+
+      if (reasoningVal !== undefined && reasoningVal !== null) {
+        if (Array.isArray(reasoningVal)) {
+          normalizedReasoning = JSON.stringify(reasoningVal);
+        } else if (typeof reasoningVal === 'string') {
+          normalizedReasoning = reasoningVal;
+        } else {
+          normalizedReasoning = String(reasoningVal);
+        }
+      }
+
+      // Use reasoning as fallback if text is empty
+      const finalText = normalizedText.trim() || normalizedReasoning || '';
+
+      return {
+        text: finalText,
+        reasoning: normalizedReasoning,
+        usage: result.usage,
+      };
+    } catch (error) {
+      // Enhanced error logging
+      console.error('Error in generateText:', {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        provider: request.provider || this.config.provider,
+      });
+
+      // Re-throw with more context
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(`AI generation failed: ${String(error)}`);
+    }
   }
 
   public isConfigured(provider?: AIProvider): boolean {
