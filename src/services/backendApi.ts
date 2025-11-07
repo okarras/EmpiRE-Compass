@@ -4,7 +4,8 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL || 'https://empirecompassbackend.vercel.app';
 
 export interface ApiRequestOptions extends RequestInit {
   userId?: string;
