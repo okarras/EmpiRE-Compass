@@ -1,4 +1,5 @@
 <a id='top'></a>
+
 <div align="center">
   <a href="https://github.com/okarras/EmpiRE-Compass">
     <img src="logo.png" alt="Logo" width="500" height="250">
@@ -11,8 +12,8 @@
 
 </div>
 
-
 # Table of Contents
+
 <details>
   <summary>Contents</summary>
   <ol>
@@ -34,7 +35,6 @@
   </ol>
 </details>
 
-
 # About the Project
 
 EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, replication, and reuse of empirical research knowledge from **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering (RE). By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
@@ -52,7 +52,6 @@ Key capabilities include:
 5. **Data Contribution Workflow** – Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
 6. **Study Designer Knowledge Base** – Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
 
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 # Folder Structure and Files
@@ -60,16 +59,17 @@ Key capabilities include:
 In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
 
 ## Graphical Overview
+
 ```
 EmpiRE-Compass/
 ┣━ .github/
 ┃   ┗━ workflows/
 ┃       ┗━ update-statistics.yml
 ┣━ .husky/
-┃   ┣━ _/                       
+┃   ┣━ _/
 ┃   ┣━ commit-msg
 ┃   ┗━ pre-commit
-┣━ .idea/                       
+┣━ .idea/
 ┣━ .storybook/
 ┃   ├── main.ts
 ┃   ├── preview.ts
@@ -210,8 +210,8 @@ EmpiRE-Compass/
 ┃   ├── main.css
 ┃   ├── main.tsx
 ┃   └── vite-env.d.ts
-┣━ stories/                      
-┃   ├── AI/ …                   
+┣━ stories/
+┃   ├── AI/ …
 ┃   ├── DataVisualization/ …
 ┃   ├── Home/ …
 ┃   ├── Layout/ …
@@ -232,86 +232,107 @@ EmpiRE-Compass/
 ```
 
 ## Description of the Folders and Files
-| **Directory / File** | **Description** |
-|----------------------|-----------------|
-| [.storybook/](.storybook/) | Storybook configuration files used to document UI components. |
-| [.storybook/main.js](.storybook/main.js) | Main Storybook configuration (addons, stories). |
-| [.storybook/preview.js](.storybook/preview.js) | Global settings, decorators, and parameters for Storybook. |
-| [.storybook/manager.js](.storybook/manager.js) | Custom Storybook UI configuration. |
-| [public/](public/) | Static files served by the app. |
-| [public/logo.png](public/logo.png) | Logo of the project. |
-| [src/assets/](src/assets/) | Contains static project assets. |
-| [src/assets/images/](src/assets/images/) | Image files for UI. |
-| [src/assets/styles/](src/assets/styles/) | CSS/SCSS files for asset styling. |
-| [src/components/](src/components/) | All reusable and page-specific components. |
-| [src/components/Dashboard/](src/components/Dashboard/) | Components for dashboard display. |
-| [src/components/Charts/](src/components/Charts/) | Chart.js and diagram components. |
-| [src/components/Forms/](src/components/Forms/) | Form components for data input. |
-| [src/components/Shared/](src/components/Shared/) | Shared UI elements like buttons and modals. |
-| [src/hooks/](src/hooks/) | Custom React hooks for reusable logic. |
-| [src/hooks/useFetchData.js](src/hooks/useFetchData.js) | Data fetching logic for ORKG queries. |
-| [src/hooks/usePagination.js](src/hooks/usePagination.js) | Hook for pagination logic. |
-| [src/pages/](src/pages/) | Page-level React components for routing. |
-| [src/pages/HomePage.js](src/pages/HomePage.js) | Landing page. |
-| [src/pages/DashboardPage.js](src/pages/DashboardPage.js) | Dashboard overview page. |
-| [src/pages/StatisticsPage.js](src/pages/StatisticsPage.js) | Statistics visualization page. |
-| [src/services/](src/services/) | Service layer for API interactions. |
-| [src/services/api.js](src/services/api.js) | Base API setup. |
-| [src/services/orkgService.js](src/services/orkgService.js) | ORKG-specific API requests. |
-| [src/store/](src/store/) | Global state management with Zustand. |
-| [src/store/comparisonStore.js](src/store/comparisonStore.js) | Zustand store for comparisons. |
-| [src/styles/](src/styles/) | Global style definitions. |
-| [src/styles/globals.css](src/styles/globals.css) | Base global styles. |
-| [src/styles/theme.css](src/styles/theme.css) | Theme definitions and color variables. |
-| [src/tests/](src/tests/) | Unit and integration tests. |
-| [src/tests/App.test.js](src/tests/App.test.js) | Main app test. |
-| [src/tests/utils.test.js](src/tests/utils.test.js) | Utility function tests. |
-| [src/utils/](src/utils/) | Helper functions. |
-| [src/utils/fetchData.js](src/utils/fetchData.js) | Fetch data helper. |
-| [src/utils/formatData.js](src/utils/formatData.js) | Data formatting helper. |
-| [src/index.js](src/index.js) | Entry point for the React app. |
-| [.gitignore](.gitignore) | Git ignore rules. |
-| [package.json](package.json) | Project dependencies and scripts. |
-| [README.md](README.md) | Project documentation. |
-| [LICENSE](LICENSE) | Project license. |
+
+| **Directory / File**                                         | **Description**                                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------- |
+| [.storybook/](.storybook/)                                   | Storybook configuration files used to document UI components. |
+| [.storybook/main.js](.storybook/main.js)                     | Main Storybook configuration (addons, stories).               |
+| [.storybook/preview.js](.storybook/preview.js)               | Global settings, decorators, and parameters for Storybook.    |
+| [.storybook/manager.js](.storybook/manager.js)               | Custom Storybook UI configuration.                            |
+| [public/](public/)                                           | Static files served by the app.                               |
+| [public/logo.png](public/logo.png)                           | Logo of the project.                                          |
+| [src/assets/](src/assets/)                                   | Contains static project assets.                               |
+| [src/assets/images/](src/assets/images/)                     | Image files for UI.                                           |
+| [src/assets/styles/](src/assets/styles/)                     | CSS/SCSS files for asset styling.                             |
+| [src/components/](src/components/)                           | All reusable and page-specific components.                    |
+| [src/components/Dashboard/](src/components/Dashboard/)       | Components for dashboard display.                             |
+| [src/components/Charts/](src/components/Charts/)             | Chart.js and diagram components.                              |
+| [src/components/Forms/](src/components/Forms/)               | Form components for data input.                               |
+| [src/components/Shared/](src/components/Shared/)             | Shared UI elements like buttons and modals.                   |
+| [src/hooks/](src/hooks/)                                     | Custom React hooks for reusable logic.                        |
+| [src/hooks/useFetchData.js](src/hooks/useFetchData.js)       | Data fetching logic for ORKG queries.                         |
+| [src/hooks/usePagination.js](src/hooks/usePagination.js)     | Hook for pagination logic.                                    |
+| [src/pages/](src/pages/)                                     | Page-level React components for routing.                      |
+| [src/pages/HomePage.js](src/pages/HomePage.js)               | Landing page.                                                 |
+| [src/pages/DashboardPage.js](src/pages/DashboardPage.js)     | Dashboard overview page.                                      |
+| [src/pages/StatisticsPage.js](src/pages/StatisticsPage.js)   | Statistics visualization page.                                |
+| [src/services/](src/services/)                               | Service layer for API interactions.                           |
+| [src/services/api.js](src/services/api.js)                   | Base API setup.                                               |
+| [src/services/orkgService.js](src/services/orkgService.js)   | ORKG-specific API requests.                                   |
+| [src/store/](src/store/)                                     | Global state management with Zustand.                         |
+| [src/store/comparisonStore.js](src/store/comparisonStore.js) | Zustand store for comparisons.                                |
+| [src/styles/](src/styles/)                                   | Global style definitions.                                     |
+| [src/styles/globals.css](src/styles/globals.css)             | Base global styles.                                           |
+| [src/styles/theme.css](src/styles/theme.css)                 | Theme definitions and color variables.                        |
+| [src/tests/](src/tests/)                                     | Unit and integration tests.                                   |
+| [src/tests/App.test.js](src/tests/App.test.js)               | Main app test.                                                |
+| [src/tests/utils.test.js](src/tests/utils.test.js)           | Utility function tests.                                       |
+| [src/utils/](src/utils/)                                     | Helper functions.                                             |
+| [src/utils/fetchData.js](src/utils/fetchData.js)             | Fetch data helper.                                            |
+| [src/utils/formatData.js](src/utils/formatData.js)           | Data formatting helper.                                       |
+| [src/index.js](src/index.js)                                 | Entry point for the React app.                                |
+| [.gitignore](.gitignore)                                     | Git ignore rules.                                             |
+| [package.json](package.json)                                 | Project dependencies and scripts.                             |
+| [README.md](README.md)                                       | Project documentation.                                        |
+| [LICENSE](LICENSE)                                           | Project license.                                              |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-
-
-
 # Installation Instructions
+
 In the following, we explain how to install and run the project locally using a terminal, assuming that the prerequisites are met.
 
 ## 1. Ensure prerequisites are installed
-- **Node.js** (version 14 or higher)  
-- **Modern web browser** (e.g., Chrome, Firefox)  
-- **Git** (optional, for version control)  
+
+- **Node.js** (version 14 or higher)
+- **Modern web browser** (e.g., Chrome, Firefox)
+- **Git** (optional, for version control)
 
 ## 2. Clone the repository
+
 ```sh
 git clone https://github.com/okarras/EmpiRE-Compass.git
 ```
 
 ## 3. Navigate to the main project directory
+
 ```sh
 cd EmpiRE-Compass
 ```
 
 ## 4. Install dependencies
+
 Using **npm**:
+
 ```sh
 npm install
 ```
 
-## 5. Start the development server
+## 5. Configure environment variables (optional)
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+VITE_KEYCLOAK_URL=https://accounts.orkg.org
+VITE_KEYCLOAK_REALM=orkg
+VITE_KEYCLOAK_CLIENT_ID=empire-compass-devel
+VITE_BACKEND_URL=https://empirecompassbackend.vercel.app
+```
+
+**Note:** The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available. The dashboard and public features will function normally in unauthenticated mode.
+
+## 6. Start the development server
+
 Using **npm**:
+
 ```sh
 npm run dev
 ```
 
-## 6. Open the application in your browser
+## 7. Open the application in your browser
+
 Visit:
+
 ```
 http://localhost:5173
 ```
@@ -319,16 +340,17 @@ http://localhost:5173
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 # Usage Instructions
+
 The dashboard offers an immediate view of **16 competency questions** with their answers and corresponding diagrams.  
 Users can:
-- Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.  
-- Reproduce and compare historical states of KG-EmpiRE to monitor data evolution.  
-- View up-to-date metrics such as the number of conferences, papers, and triples on the statistics page.  
-- Submit new data via a survey (including paper DOIs and research details) for curator review.  
+
+- Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.
+- Reproduce and compare historical states of KG-EmpiRE to monitor data evolution.
+- View up-to-date metrics such as the number of conferences, papers, and triples on the statistics page.
+- Submit new data via a survey (including paper DOIs and research details) for curator review.
 - Use the **Study Designer Knowledge Base** to find similar research and receive design recommendations aligned with ACM standards.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 # Design System & Storybook
 
@@ -393,7 +415,6 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 - 📱 **Responsive Design** - Mobile-first component library
 - 🔧 **Developer Tools** - Props controls and code examples
 
-
 # Firebase Setup
 
 EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data updates. Follow these guides to set up Firebase integration:
@@ -426,7 +447,6 @@ python firebase_integration.py
 # Run statistics update locally
 python empire-statistics.py --service_account path/to/service-account.json --limit 5
 ```
-
 
 # Statistics Automation
 
@@ -466,8 +486,6 @@ python scripts/empire-statistics.py --no_firebase
 - View execution logs in **GitHub Actions** tab
 - Check results in **Firebase Console** → **Firestore Database**
 - Download CSV reports from workflow artifacts
-
-
 
 # Repository Links
 
