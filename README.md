@@ -313,7 +313,7 @@ npm run dev
 ## 6. Open the application in your browser
 Visit:
 ```
-http://localhost:3000
+http://localhost:5173
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
