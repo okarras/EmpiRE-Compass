@@ -274,7 +274,6 @@ EmpiRE-Compass/
 | [package.json](package.json) | Project dependencies and scripts. |
 | [README.md](README.md) | Project documentation. |
 | [LICENSE](LICENSE) | Project license. |
-| [yarn.lock](yarn.lock) | Dependency lockfile for Yarn. |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -304,19 +303,11 @@ Using **npm**:
 ```sh
 npm install
 ```
-or using **yarn**:
-```sh
-yarn install
-```
 
 ## 5. Start the development server
 Using **npm**:
 ```sh
-npm start
-```
-or using **yarn**:
-```sh
-yarn start
+npm run dev
 ```
 
 ## 6. Open the application in your browser
