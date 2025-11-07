@@ -15,7 +15,6 @@ interface TemplateConfig {
   title: string;
   queries: EmpiricalQuery[] | Nlp4reQuery[];
   sparql: typeof empiricalSPARQL | typeof nlp4reSPARQL;
-  collectionName: string;
 }
 
 export const templateConfig: Record<string, TemplateConfig> = {
@@ -23,13 +22,11 @@ export const templateConfig: Record<string, TemplateConfig> = {
     title: 'Empirical Research Practice',
     queries: empiricalQueries,
     sparql: empiricalSPARQL,
-    collectionName: 'Questions',
   },
   R1544125: {
     title: 'NLP4RE ID Card',
     queries: nlp4reQueries,
     sparql: nlp4reSPARQL,
-    collectionName: 'Questions Nlp4re',
   },
 };
 

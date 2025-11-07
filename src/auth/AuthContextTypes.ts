@@ -5,6 +5,10 @@ interface UserData {
   email: string;
   id: string;
   created_at: string;
+  is_admin?: boolean;
+  is_curation_allowed?: boolean;
+  observatory_id?: string | null;
+  organization_id?: string | null;
 }
 
 interface AuthContextType {

@@ -28,7 +28,7 @@ import {
   Refresh,
   Edit,
 } from '@mui/icons-material';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 import {
   useDynamicQuestion,
   DynamicQuestionHistory,
@@ -38,11 +38,13 @@ import type { Query } from '../constants/queries_chart_info';
 interface QuestionInformationViewProps {
   query: Query;
   isInteractive?: boolean;
+  tabIndex?: number;
 }
 
 const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   query,
   isInteractive = false,
+  tabIndex = 0,
 }) => {
   const aiService = useAIService();
   const {
@@ -124,10 +126,23 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
         case 'question':
           return state.questionInterpretation || info.questionExplanation;
         case 'dataCollection':
+          // Handle array case for requiredDataForAnalysis
+          if (Array.isArray(info.requiredDataForAnalysis)) {
+            return (
+              state.dataCollectionInterpretation ||
+              info.requiredDataForAnalysis[tabIndex]
+            );
+          }
           return (
             state.dataCollectionInterpretation || info.requiredDataForAnalysis
           );
         case 'dataAnalysis':
+          // Handle array case for dataAnalysis
+          if (Array.isArray(info.dataAnalysis)) {
+            return (
+              state.dataAnalysisInterpretation || info.dataAnalysis[tabIndex]
+            );
+          }
           return state.dataAnalysisInterpretation || info.dataAnalysis;
         default:
           return '';
@@ -137,8 +152,16 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
         case 'question':
           return info.questionExplanation;
         case 'dataCollection':
+          // Handle array case for requiredDataForAnalysis
+          if (Array.isArray(info.requiredDataForAnalysis)) {
+            return info.requiredDataForAnalysis[tabIndex];
+          }
           return info.requiredDataForAnalysis;
         case 'dataAnalysis':
+          // Handle array case for dataAnalysis
+          if (Array.isArray(info.dataAnalysis)) {
+            return info.dataAnalysis[tabIndex];
+          }
           return info.dataAnalysis;
         default:
           return '';
@@ -167,6 +190,11 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     const allHistory = getHistoryByType('analysis');
     const currentContent = getSectionContent(section);
 
+    // Convert currentContent to string if it's an array
+    const currentContentStr = Array.isArray(currentContent)
+      ? currentContent.join(' ')
+      : currentContent || '';
+
     // Filter history items that are different from current content and not duplicates
     const seenContents = new Set();
     return allHistory
@@ -175,7 +203,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
         const trimmedContent = item.content.trim();
         if (
           !trimmedContent ||
-          trimmedContent === currentContent?.trim() ||
+          trimmedContent === currentContentStr.trim() ||
           seenContents.has(trimmedContent)
         ) {
           return false;

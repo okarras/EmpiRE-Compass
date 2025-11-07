@@ -28,12 +28,12 @@ import { queries } from '../constants/queries_chart_info';
 import LoginORKG from './LoginORKG';
 import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
+import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
+import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
 }
-
-const templates = templateConfig;
 
 const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const muiTheme = useMuiTheme();
@@ -42,23 +42,36 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const navigate = useNavigate();
   // const { mode, toggleColorMode } = useTheme();
 
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<keyof typeof templates>('R186491');
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+
+  // Load templates from Firebase
+  useEffect(() => {
+    const loadTemplates = async () => {
+      const content = await CRUDHomeContent.getHomeContent();
+      if (content.templates && content.templates.length > 0) {
+        setTemplates(content.templates);
+      } else {
+        // Fallback to default templates
+        setTemplates(CRUDHomeContent.defaultHomeContent.templates);
+      }
+    };
+    loadTemplates();
+  }, []);
 
   // Read template from URL on mount
   useEffect(() => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const templateFromUrl = pathSegments[0];
-    if (templateFromUrl && templateFromUrl in templates) {
-      setSelectedTemplate(templateFromUrl as keyof typeof templates);
+    if (templateFromUrl && templates.some((t) => t.id === templateFromUrl)) {
+      setSelectedTemplate(templateFromUrl);
     }
-  }, [location.pathname]);
+  }, [location.pathname, templates]);
 
-  const handleTemplateChange = (
-    event: SelectChangeEvent<keyof typeof templates>
-  ) => {
-    const newTemplate = event.target.value as keyof typeof templates;
+  const handleTemplateChange = (event: SelectChangeEvent<string>) => {
+    const newTemplate = event.target.value;
     setSelectedTemplate(newTemplate);
+    toast.success(`Template changed to ${templateConfig[newTemplate]?.title}`);
 
     // Navigate to new template, preserving the rest of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -73,7 +86,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
     if (paths.length > 0) {
       // Add template name as first breadcrumb
       const templateId = paths[0];
-      const templateName = templates[templateId]?.title || 'Template';
+      const template = templates.find((t) => t.id === templateId);
+      const templateName =
+        template?.title || templateConfig[templateId]?.title || 'Template';
       breadcrumbs.push({
         path: `/${templateId}/`,
         label: templateName,
@@ -86,9 +101,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
         // Handle specific route names
         if (path === 'allquestions') {
-          label = `${templateName} Questions`;
+          label = `All Questions`;
         } else if (path === 'statistics') {
           label = 'Statistics';
+        } else if (path === 'team') {
+          label = 'Team';
         } else if (path === 'dynamic-question') {
           label = 'Dynamic Question';
         } else if (path === 'graph') {
@@ -97,8 +114,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           const questionId = parseInt(paths[index + 2]);
           const question = queries.find((q) => q.id === questionId);
           if (question) {
-            label = `Question ${questionId}`;
-            fullPath = `/${templateId}/questions/${questionId}`;
+            label = `All Questions`;
+            fullPath = `/${templateId}/allquestions`;
           }
         }
 
@@ -284,12 +301,15 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               size="small"
               id="header-templates-select"
             >
-              <MenuItem value="R186491" sx={{ fontSize: '0.875rem' }}>
-                {templates.R186491.title}
-              </MenuItem>
-              <MenuItem value="R1544125" sx={{ fontSize: '0.875rem' }}>
-                {templates.R1544125.title}
-              </MenuItem>
+              {templates.map((template) => (
+                <MenuItem
+                  key={template.id}
+                  value={template.id}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  {template.title}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 

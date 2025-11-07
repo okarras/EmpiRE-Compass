@@ -101,7 +101,7 @@ const QuestionPage = () => {
                 },
               }}
             >
-              {`${targetQuery.id}. ${targetQuery.dataAnalysisInformation.question}`}
+              {`${finalQuery.id}. ${finalQuery.dataAnalysisInformation.question}`}
             </Typography>
           </Box>
 
