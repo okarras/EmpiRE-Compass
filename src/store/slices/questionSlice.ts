@@ -11,10 +11,10 @@ export interface FirebaseQuestion {
   uid: string;
   dataAnalysisInformation: {
     question: string;
-    dataAnalysis: string;
-    requiredDataForAnalysis: string;
+    dataAnalysis: string | string[];
+    requiredDataForAnalysis: string | string[];
     questionExplanation: string;
-    dataInterpretation: string;
+    dataInterpretation: string | string[];
   };
 }
 
@@ -56,7 +56,6 @@ const getTemplateResources = (templateId: string) => {
   return {
     queries: config.queries,
     sparql: config.sparql,
-    collectionName: config.collectionName,
   };
 };
 
@@ -84,12 +83,12 @@ const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
 };
 
 // Async thunk for fetching questions from Firebase
+// UPDATED FOR NEW NESTED STRUCTURE
 export const fetchQuestionsFromFirebase = createAsyncThunk(
   'questions/fetchQuestions',
-  async (templateId: string) => {
-    const { collectionName } = getTemplateResources(templateId);
-    const firebaseQuestions = await CRUDQuestions.getQuestions(collectionName);
-    return { firebaseQuestions, templateId };
+  async (templateId: string = 'R186491') => {
+    const firebaseQuestions = await CRUDQuestions.getQuestions(templateId);
+    return { firebaseQuestions, templateId }; // Return both questions and templateId
   }
 );
 

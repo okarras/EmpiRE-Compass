@@ -1,8 +1,5 @@
-import {
-  generateText,
-  wrapLanguageModel,
-  extractReasoningMiddleware,
-} from 'ai';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { useAppSelector } from '../store/hooks';
@@ -61,13 +58,8 @@ export class AIService {
 
   public getEnhancedModel(provider?: AIProvider) {
     const targetProvider = provider || this.config.provider;
-    const baseModel = this.getModel(targetProvider);
-
-    // Add reasoning middleware for better AI responses
-    return wrapLanguageModel({
-      model: baseModel,
-      middleware: extractReasoningMiddleware({ tagName: 'think' }),
-    });
+    // Return the provider model directly; cast to satisfy SDK typings
+    return this.getModel(targetProvider) as unknown as any;
   }
 
   public async generateText(
@@ -76,17 +68,42 @@ export class AIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      systemContext?: string;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
     const model = this.getEnhancedModel(targetProvider);
 
-    return await generateText({
+    const result = await generateText({
       model,
       prompt,
+      system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
-      maxTokens: options?.maxTokens ?? 2000,
+      // omit maxTokens to match SDK typings
     });
+
+    // Normalize text to string (handle different response formats)
+    const normalizedText =
+      typeof result.text === 'string'
+        ? result.text
+        : result.text
+          ? String(result.text)
+          : '';
+
+    // Normalize reasoning to string for downstream types
+    const reasoningVal = (result as any).reasoning;
+    const normalizedReasoning =
+      typeof reasoningVal === 'string'
+        ? reasoningVal
+        : Array.isArray(reasoningVal)
+          ? JSON.stringify(reasoningVal)
+          : undefined;
+
+    return {
+      text: normalizedText,
+      reasoning: normalizedReasoning,
+      usage: result.usage,
+    };
   }
 
   public isConfigured(): boolean {

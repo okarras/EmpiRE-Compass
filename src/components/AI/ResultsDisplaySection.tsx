@@ -15,9 +15,9 @@ interface DynamicQuery {
   dataAnalysisInformation: {
     question: string;
     questionExplanation: string;
-    requiredDataForAnalysis: string;
-    dataAnalysis: string;
-    dataInterpretation: string;
+    requiredDataForAnalysis: string | string[];
+    dataAnalysis: string | string[];
+    dataInterpretation: string | string[];
   };
   chartSettings?: {
     series: Array<{ dataKey: string; label: string }>;
@@ -32,6 +32,10 @@ interface DynamicQuery {
   dataProcessingFunction?: (
     data: Record<string, unknown>[]
   ) => Record<string, unknown>[];
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
+  };
 }
 
 interface ResultsDisplaySectionProps {
@@ -142,7 +146,10 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
       )}
 
       {queryResults.length > 0 && (
-        <QuestionDataGridView questionData={queryResults} />
+        <QuestionDataGridView
+          questionData={queryResults}
+          gridOptions={dynamicQuery?.gridOptions}
+        />
       )}
     </>
   );

@@ -2,15 +2,19 @@ import QuestionAccordion from './QuestionAccordion';
 import { Box, Paper, Typography, Chip } from '@mui/material';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
-import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
 import { useParams } from 'react-router';
 import { getTemplateConfig, Query } from '../constants/template_config';
 import InfoIcon from '@mui/icons-material/Info';
+import { useState, useEffect } from 'react';
+import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 
+//* Dashboard component that displays the questions for a given template
 const Dashboard = () => {
   const params = useParams();
   const templateId = params.templateId;
+  const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
+
   const firebaseQuestions = useSelector<
     RootState,
     Record<string, FirebaseQuestion>
@@ -18,6 +22,14 @@ const Dashboard = () => {
     (state) =>
       state.questions.firebaseQuestions as Record<string, FirebaseQuestion>
   );
+
+  useEffect(() => {
+    const loadHomeContent = async () => {
+      const content = await CRUDHomeContent.getHomeContent();
+      setHomeContent(content);
+    };
+    loadHomeContent();
+  }, []);
 
   const sortedFirebaseQuestions = Object.values(firebaseQuestions).sort(
     (a, b) => a.id - b.id
@@ -29,6 +41,21 @@ const Dashboard = () => {
   if (!queries) {
     return <div>No queries found</div>;
   }
+
+  const mergedQuestions = sortedFirebaseQuestions.map((question) => {
+    return {
+      ...queries.find((q) => q.id === question.id),
+      ...question,
+    };
+  });
+
+  // Get template info box content from home content or use fallback
+  const templateInfoBox = homeContent?.templateInfoBoxes?.[
+    templateId as string
+  ] || {
+    title: templateConfig.title,
+    description: `This template contains ${queries.length} research questions designed to help you explore and analyze data related to ${templateConfig.title.toLowerCase()}. Each question is carefully crafted to provide insights into different aspects of your research domain.`,
+  };
 
   return (
     <Box
@@ -83,7 +110,7 @@ const Dashboard = () => {
                 fontSize: '1rem',
               }}
             >
-              {templateConfig.title}
+              {templateInfoBox.title}
             </Typography>
           </Box>
 
@@ -96,11 +123,7 @@ const Dashboard = () => {
               lineHeight: 1.6,
             }}
           >
-            This template contains {queries.length} research questions designed
-            to help you explore and analyze data related to{' '}
-            {templateConfig.title.toLowerCase()}. Each question is carefully
-            crafted to provide insights into different aspects of your research
-            domain.
+            {templateInfoBox.description}
           </Typography>
 
           <Box
@@ -122,18 +145,6 @@ const Dashboard = () => {
                 height: 24,
               }}
             />
-            <Chip
-              label={templateConfig.collectionName}
-              size="small"
-              variant="outlined"
-              sx={{
-                borderColor: 'divider',
-                color: 'text.secondary',
-                fontWeight: 400,
-                fontSize: '0.75rem',
-                height: 24,
-              }}
-            />
             <Typography
               variant="caption"
               sx={{
@@ -148,7 +159,7 @@ const Dashboard = () => {
           </Box>
         </Paper>
       </Box>
-      {Object.values(sortedFirebaseQuestions).map((query: FirebaseQuestion) => (
+      {Object.values(mergedQuestions).map((query: Query) => (
         <>
           <div
             style={{
@@ -162,16 +173,7 @@ const Dashboard = () => {
             id={`question-${query.id}`}
           >
             {queries.find((q) => q.id === query.id) && (
-              <QuestionAccordion
-                key={`question-${query.uid}`}
-                query={mergeQueryWithFirebase(
-                  queries.find((q) => q.uid === query.uid) as Query,
-                  firebaseQuestions[query.uid] as unknown as Record<
-                    string,
-                    unknown
-                  >
-                )}
-              />
+              <QuestionAccordion key={`question-${query.uid}`} query={query} />
             )}
           </div>
         </>

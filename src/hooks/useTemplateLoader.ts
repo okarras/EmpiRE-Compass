@@ -79,25 +79,17 @@ export const useTemplateLoader = ({
    */
   const handleTemplateChange = useCallback(
     async (newTemplateId: string) => {
-      console.log('🔄 Template change requested:', newTemplateId);
       updateTemplateId(newTemplateId);
 
       if (newTemplateId !== DEFAULT_TEMPLATE_ID) {
         // Non-default template: load template data
         try {
-          console.log('📥 Loading template data for:', newTemplateId);
           const templateMapping = await loadTemplateData(newTemplateId);
-          console.log(
-            '✅ Template mapping loaded:',
-            Object.keys(templateMapping).length,
-            'predicates'
-          );
           updateTemplateMapping(templateMapping);
 
           // Persist to localStorage
           try {
             localStorage.setItem(STORAGE_KEY, newTemplateId);
-            console.log('💾 Template ID saved to localStorage:', newTemplateId);
           } catch {
             // Ignore storage errors
           }
@@ -107,14 +99,12 @@ export const useTemplateLoader = ({
         }
       } else {
         // Default template: clear template mapping and ensure default target class
-        console.log('🔙 Switching to default template');
         updateTemplateMapping({});
         if (currentTargetClassId !== DEFAULT_TARGET_CLASS_ID) {
           updateTargetClassId(DEFAULT_TARGET_CLASS_ID);
         }
         try {
           localStorage.setItem(STORAGE_KEY, newTemplateId);
-          console.log('💾 Default template ID saved to localStorage');
         } catch {
           // Ignore storage errors
         }

@@ -17,6 +17,7 @@ import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { getTemplateConfig } from '../constants/template_config';
 import { useParams } from 'react-router-dom';
+import QuestionInformation from './QuestionInformation';
 
 interface QuestionProps {
   query: Query;
@@ -124,15 +125,17 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
     return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
   };
 
-  const getDataInterpretation = (tabName: string) => {
-    if (Array.isArray(query.dataAnalysisInformation.dataInterpretation)) {
+  const getDataInterpretation = (tabName: string): string => {
+    const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
+    if (Array.isArray(dataInterpretation)) {
       if (tabName === 'dataCollection') {
-        return query.dataAnalysisInformation.dataInterpretation[0];
+        return dataInterpretation[0] || '';
       } else if (tabName === 'dataAnalysis') {
-        return query.dataAnalysisInformation.dataInterpretation[1];
+        return dataInterpretation[1] || '';
       }
+      return '';
     }
-    return query.dataAnalysisInformation.dataInterpretation;
+    return dataInterpretation || '';
   };
 
   const renderLoadingState = () => (
@@ -188,12 +191,8 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           indicatorColor="primary"
           textColor="primary"
         >
-          <Tab
-            label={query.chartSettings2?.tabs?.tab1_name ?? 'Data Collection'}
-          />
-          <Tab
-            label={query.chartSettings2?.tabs?.tab2_name ?? 'Data Analysis'}
-          />
+          <Tab label={query.tabs?.tab1_name ?? 'Data Collection'} />
+          <Tab label={query.tabs?.tab2_name ?? 'Data Analysis'} />
         </Tabs>
       )}
 
@@ -212,11 +211,15 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           sectionTitle="Question Information"
           query={query}
         />
-        <QuestionInformationView query={query} isInteractive={false} />
+        <QuestionInformationView
+          query={query}
+          isInteractive={false}
+          tabIndex={tab}
+        />
 
         {/* Data Collection View */}
         <Box hidden={tab !== 0}>
-          {query.chartSettings && (
+          {query.chartSettings ? (
             <>
               <Divider sx={{ my: 3 }} />
               <SectionSelector
@@ -237,6 +240,14 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               />
               <Divider sx={{ my: 3 }} />
             </>
+          ) : (
+            <>
+              <QuestionInformation
+                information={getDataInterpretation('dataCollection')}
+                label="Data Interpretation"
+                tabIndex={tab}
+              />
+            </>
           )}
           <SectionSelector
             sectionType="data"
@@ -244,7 +255,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
             query={query}
             data={dataCollection}
           />
-          <QuestionDataGridView questionData={dataCollection} />
+          <QuestionDataGridView
+            questionData={dataCollection}
+            gridOptions={query.gridOptions}
+          />
         </Box>
 
         {/* Data Analysis View */}
@@ -256,7 +270,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
               renderErrorState(error2)
             ) : (
               <>
-                {query.chartSettings2 && (
+                {query.chartSettings2 ? (
                   <>
                     <SectionSelector
                       sectionType="chart"
@@ -279,6 +293,14 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                     />
                     <Divider sx={{ my: 3 }} />
                   </>
+                ) : (
+                  <>
+                    <QuestionInformation
+                      information={getDataInterpretation('dataAnalysis')}
+                      label="Data Interpretation"
+                      tabIndex={tab}
+                    />
+                  </>
                 )}
                 <SectionSelector
                   sectionType="data"
@@ -286,7 +308,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                   query={query}
                   data={dataAnalysis}
                 />
-                <QuestionDataGridView questionData={dataAnalysis} />
+                <QuestionDataGridView
+                  questionData={dataAnalysis}
+                  gridOptions={query.gridOptions}
+                />
               </>
             )}
           </Box>
