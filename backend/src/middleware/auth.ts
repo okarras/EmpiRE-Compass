@@ -18,6 +18,23 @@ export const validateKeycloakToken = async (
   next: NextFunction
 ) => {
   try {
+    // First, check if user info is provided in headers (for development/testing)
+    // This allows the frontend to send user info when token validation isn't fully implemented
+    // Express normalizes headers to lowercase, so check both possible formats
+    const userId =
+      (req.headers['x-user-id'] as string) ||
+      (req.headers['X-User-Id'] as string);
+    const userEmail =
+      (req.headers['x-user-email'] as string) ||
+      (req.headers['X-User-Email'] as string);
+
+    if (userId && userEmail) {
+      req.userId = userId;
+      req.userEmail = userEmail;
+      req.isAdmin = isAdminEmail(userEmail);
+      return next();
+    }
+
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
 
@@ -33,26 +50,12 @@ export const validateKeycloakToken = async (
     // For now, extract user info from token (JWT decode)
     // In production, use: https://www.npmjs.com/package/keycloak-connect
 
-    // For development/testing, allow passing user info in headers
-    // Remove this in production!
-    if (process.env.NODE_ENV === 'development') {
-      const userId = req.headers['x-user-id'] as string;
-      const userEmail = req.headers['x-user-email'] as string;
-
-      if (userId && userEmail) {
-        req.userId = userId;
-        req.userEmail = userEmail;
-        req.isAdmin = isAdminEmail(userEmail);
-        return next();
-      }
-    }
-
     // In production, decode and verify JWT token from Keycloak
     // const decoded = jwt.verify(token, keycloakPublicKey);
     // req.userId = decoded.sub;
     // req.userEmail = decoded.email;
 
-    // For now, return error if no dev headers
+    // For now, return error if no headers and token validation not implemented
     return res.status(401).json({
       error:
         'Token validation not implemented. Use x-user-id and x-user-email headers in development.',

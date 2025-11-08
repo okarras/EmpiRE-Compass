@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@ai-sdk/groq": "^1.2.9",
+    "@ai-sdk/mistral": "^2.0.23",
     "@ai-sdk/openai": "^2.0.0-alpha.3",
     "ai": "^5.0.86",
-    "zod": "^3.25.76",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -23,7 +23,8 @@
     "express-rate-limit": "^7.1.5",
     "firebase-admin": "^12.0.0",
     "helmet": "^7.1.0",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/compression": "^1.7.5",
