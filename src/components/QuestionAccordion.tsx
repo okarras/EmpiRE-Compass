@@ -114,12 +114,18 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
 
   const getProcessedChartData = () => {
     if (query.uid_2_merge) {
-      return (
-        query.dataProcessingFunction2?.(dataCollection ?? [], dataAnalysis) ??
-        []
-      );
+      if (typeof query.dataProcessingFunction2 === 'function') {
+        return (
+          query.dataProcessingFunction2(dataCollection ?? [], dataAnalysis) ??
+          []
+        );
+      }
+      return [];
     }
-    return query.dataProcessingFunction?.(dataCollection ?? []) ?? [];
+    if (typeof query.dataProcessingFunction === 'function') {
+      return query.dataProcessingFunction(dataCollection ?? []) ?? [];
+    }
+    return [];
   };
 
   const getDataInterpretation = (tabName: string): string => {
@@ -372,8 +378,11 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                       queryId={query.uid_2}
                       chartSettings={query.chartSettings2}
                       processedChartDataset={
-                        query.dataProcessingFunction2?.(dataAnalysis ?? []) ??
-                        []
+                        typeof query.dataProcessingFunction2 === 'function'
+                          ? (query.dataProcessingFunction2(
+                              dataAnalysis ?? []
+                            ) ?? [])
+                          : []
                       }
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
