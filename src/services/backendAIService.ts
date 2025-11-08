@@ -6,6 +6,7 @@ import type {
 } from '../store/slices/aiSlice';
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
+import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
 
 export interface BackendAIConfig {
   provider: AIProvider;
@@ -44,20 +45,45 @@ export interface AIConfigResponse {
 
 /**
  * Get Keycloak token if available
+ * Uses the global Keycloak store
  */
 const getKeycloakToken = (): string | null => {
   try {
-    // Try to get token from window.keycloak if available
-    if (typeof window !== 'undefined' && (window as any).keycloak) {
-      const keycloak = (window as any).keycloak;
-      if (keycloak.token) {
-        return keycloak.token;
-      }
-    }
-    return null;
+    return getKeycloakTokenFromStore();
   } catch (error) {
     console.warn('Failed to get Keycloak token:', error);
     return null;
+  }
+};
+
+/**
+ * Decode JWT token to extract user info (without verification)
+ * This is safe because the backend will verify the token signature
+ */
+const decodeJWT = (token: string): { userId?: string; userEmail?: string } => {
+  try {
+    // JWT format: header.payload.signature
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return {};
+    }
+
+    // Decode the payload (base64url)
+    const payload = parts[1];
+    // Replace URL-safe base64 characters
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    // Add padding if needed
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const decoded = atob(padded);
+    const parsed = JSON.parse(decoded);
+
+    return {
+      userId: parsed.sub || parsed.userId,
+      userEmail: parsed.email || parsed.preferred_username,
+    };
+  } catch (error) {
+    console.warn('Failed to decode JWT token:', error);
+    return {};
   }
 };
 
@@ -83,29 +109,47 @@ export class BackendAIService {
       ...(options.headers as Record<string, string>),
     };
 
+    const isDev = import.meta.env.DEV;
+
     // Add Authorization header if token is available
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
 
-    // In development, also add user headers if available (for testing)
-    const isDev = import.meta.env.DEV;
-    if (isDev && typeof window !== 'undefined') {
-      // Try to get user info from auth context or localStorage
-      try {
-        const authData = localStorage.getItem('auth-data');
-        if (authData) {
-          const parsed = JSON.parse(authData);
-          if (parsed.userId) {
-            headers['x-user-id'] = parsed.userId;
-          }
-          if (parsed.userEmail) {
-            headers['x-user-email'] = parsed.userEmail;
-          }
+      // Extract user info from token for development mode header-based auth
+      if (isDev) {
+        const userInfo = decodeJWT(token);
+        if (userInfo.userId) {
+          headers['x-user-id'] = userInfo.userId;
         }
-      } catch (error) {
-        console.error('Error getting user info:', error);
-        // Ignore errors getting user info
+        if (userInfo.userEmail) {
+          headers['x-user-email'] = userInfo.userEmail;
+        }
+      }
+    } else {
+      // No token available - try to get user info from other sources in development
+      if (isDev && typeof window !== 'undefined') {
+        // Try localStorage as fallback
+        try {
+          const authData = localStorage.getItem('auth-data');
+          if (authData) {
+            const parsed = JSON.parse(authData);
+            if (parsed.userId) {
+              headers['x-user-id'] = parsed.userId;
+            }
+            if (parsed.userEmail) {
+              headers['x-user-email'] = parsed.userEmail;
+            }
+          }
+        } catch (error) {
+          console.warn('Error getting user info from localStorage:', error);
+        }
+
+        // Log warning if no authentication available
+        if (!headers['x-user-id'] && !headers['x-user-email']) {
+          console.warn(
+            '⚠️  No authentication token or headers available. Backend request may fail. Please log in to use backend AI service.'
+          );
+        }
       }
     }
 
@@ -121,11 +165,26 @@ export class BackendAIService {
 
       // Handle authentication errors
       if (response.status === 401) {
-        const error = new Error(
-          errorData.error || 'Authentication required. Please log in.'
-        ) as Error & { status: number; requiresAuth: boolean };
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          'Authentication required. Please log in to use the backend AI service.';
+        const error = new Error(errorMessage) as Error & {
+          status: number;
+          requiresAuth: boolean;
+          details?: string;
+        };
         error.status = 401;
         error.requiresAuth = true;
+        if (errorData.details) {
+          error.details = errorData.details;
+        }
+        console.error('Authentication failed:', {
+          status: 401,
+          error: errorMessage,
+          hasToken: !!token,
+          isDev: import.meta.env.DEV,
+        });
         throw error;
       }
 
