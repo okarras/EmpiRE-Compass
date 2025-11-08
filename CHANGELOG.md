@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.1](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.0...v1.8.1) (2025-11-08)
+
+### Bug Fixes
+
+- increase the request logs time ([68b89b7](https://github.com/okarras/EmpiRE-Compass/commit/68b89b7506b457c3b2e74aaf09e3ed8a02627deb))
+- security issues in the backend ([0840900](https://github.com/okarras/EmpiRE-Compass/commit/0840900749901aa7e7b5eed28a5f6f86628e551f))
+- template add in firebase ([15420c7](https://github.com/okarras/EmpiRE-Compass/commit/15420c7a14b01d9b7eaaf50260279646dbb6dfdc))
+- token access in the backend ([251d7ea](https://github.com/okarras/EmpiRE-Compass/commit/251d7ea6b18e3251c6117437c361015b1be76e01))
+
 ## [1.8.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.7.0...v1.8.0) (2025-11-08)
 
 ### Features
