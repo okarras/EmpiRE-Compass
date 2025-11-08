@@ -2,6 +2,7 @@ import type {
   AIProvider,
   OpenAIModel,
   GroqModel,
+  MistralModel,
 } from '../store/slices/aiSlice';
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
@@ -10,6 +11,7 @@ export interface BackendAIConfig {
   provider: AIProvider;
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
+  mistralModel: MistralModel;
   useEnvironmentKeys: boolean;
   // NOTE: API keys are NEVER sent to backend - backend uses its own environment keys
 }
@@ -202,12 +204,20 @@ export class BackendAIService {
   }
 
   public getCurrentConfig() {
+    let model: string;
+    if (this.config.provider === 'openai') {
+      model = this.config.openaiModel;
+    } else if (this.config.provider === 'groq') {
+      model = this.config.groqModel;
+    } else if (this.config.provider === 'mistral') {
+      model = this.config.mistralModel;
+    } else {
+      model = '';
+    }
+
     return {
       provider: this.config.provider,
-      model:
-        this.config.provider === 'openai'
-          ? this.config.openaiModel
-          : this.config.groqModel,
+      model,
       apiKeyConfigured: this.isConfigured(),
     };
   }
@@ -225,8 +235,10 @@ export class UnifiedAIService {
     provider: AIProvider;
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
+    mistralModel: MistralModel;
     openaiApiKey: string;
     groqApiKey: string;
+    mistralApiKey: string;
     useEnvironmentKeys: boolean;
   };
 
@@ -234,8 +246,10 @@ export class UnifiedAIService {
     provider: AIProvider;
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
+    mistralModel: MistralModel;
     openaiApiKey: string;
     groqApiKey: string;
+    mistralApiKey: string;
     useEnvironmentKeys: boolean;
   }) {
     this.config = config;
@@ -256,12 +270,17 @@ export class UnifiedAIService {
       this.config.openaiApiKey && this.config.openaiApiKey.trim().length > 0;
     const hasGroqKey =
       this.config.groqApiKey && this.config.groqApiKey.trim().length > 0;
+    const hasMistralKey =
+      this.config.mistralApiKey && this.config.mistralApiKey.trim().length > 0;
 
     // Use frontend if user has provided keys for the selected provider
     if (this.config.provider === 'openai' && hasOpenAIKey) {
       return true;
     }
     if (this.config.provider === 'groq' && hasGroqKey) {
+      return true;
+    }
+    if (this.config.provider === 'mistral' && hasMistralKey) {
       return true;
     }
 
@@ -275,8 +294,10 @@ export class UnifiedAIService {
         provider: this.config.provider,
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
+        mistralModel: this.config.mistralModel,
         openaiApiKey: this.config.openaiApiKey,
         groqApiKey: this.config.groqApiKey,
+        mistralApiKey: this.config.mistralApiKey,
         useEnvironmentKeys: false, // Always false for frontend service
       };
       this.frontendService = new AIService(frontendConfig);
@@ -290,6 +311,7 @@ export class UnifiedAIService {
         provider: this.config.provider,
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
+        mistralModel: this.config.mistralModel,
         useEnvironmentKeys: this.config.useEnvironmentKeys,
         // API keys are never sent to backend - backend uses its own environment keys
       });
@@ -365,9 +387,10 @@ export const useBackendAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new BackendAIService({
-    provider: aiConfig.provider || 'groq',
+    provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
     // API keys are never sent to backend - backend uses its own environment keys
   });
@@ -378,11 +401,13 @@ export const useAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new UnifiedAIService({
-    provider: aiConfig.provider || 'groq',
+    provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
+    mistralApiKey: aiConfig.mistralApiKey || '',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
   });
 };
@@ -390,20 +415,23 @@ export const useAIService = () => {
 // for components that dont use hooks
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
-    provider: 'openai',
+    provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'deepseek-r1-distill-llama-70b',
+    mistralModel: 'mistral-large-latest',
     useEnvironmentKeys: true,
   });
 };
 
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
-    provider: 'openai',
+    provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'deepseek-r1-distill-llama-70b',
+    mistralModel: 'mistral-large-latest',
     openaiApiKey: '',
     groqApiKey: '',
+    mistralApiKey: '',
     useEnvironmentKeys: true,
   });
 };
