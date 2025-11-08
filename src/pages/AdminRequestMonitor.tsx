@@ -111,7 +111,7 @@ const AdminRequestMonitor = () => {
     // Set up polling if auto-refresh is enabled
     const interval = setInterval(() => {
       fetchLogs();
-    }, 5000); // Poll every 5 seconds
+    }, 300000); // Poll every 5 minutes
 
     return () => {
       clearInterval(interval);
