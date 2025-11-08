@@ -1,20 +1,29 @@
 import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
+import { createMistral } from '@ai-sdk/mistral';
 
-export type AIProvider = 'openai' | 'groq';
+export type AIProvider = 'openai' | 'groq' | 'mistral';
 export type OpenAIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
 export type GroqModel =
   | 'deepseek-r1-distill-llama-70b'
   | 'llama-3-70b-8192'
   | 'mixtral-8x7b-32768';
+export type MistralModel =
+  | 'mistral-large-latest'
+  | 'mistral-medium-latest'
+  | 'mistral-small-latest'
+  | 'pixtral-large-latest'
+  | 'open-mistral-nemo';
 
 export interface AIConfig {
   provider: AIProvider;
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
+  mistralModel: MistralModel;
   openaiApiKey: string;
   groqApiKey: string;
+  mistralApiKey: string;
 }
 
 export interface GenerateTextRequest {
@@ -48,9 +57,14 @@ export class AIService {
   private getApiKey(provider: AIProvider, userProvidedKey?: string): string {
     // SECURITY: Always ignore user-provided keys - only use environment keys
     // User API keys should never be sent to backend for security reasons
-    return provider === 'openai'
-      ? this.config.openaiApiKey
-      : this.config.groqApiKey;
+    if (provider === 'openai') {
+      return this.config.openaiApiKey;
+    } else if (provider === 'groq') {
+      return this.config.groqApiKey;
+    } else if (provider === 'mistral') {
+      return this.config.mistralApiKey;
+    }
+    return '';
   }
 
   private createProvider(provider: AIProvider, userProvidedKey?: string) {
@@ -60,9 +74,14 @@ export class AIService {
       throw new Error(`${provider.toUpperCase()} API key is not configured`);
     }
 
-    return provider === 'openai'
-      ? createOpenAI({ apiKey })
-      : createGroq({ apiKey });
+    if (provider === 'openai') {
+      return createOpenAI({ apiKey });
+    } else if (provider === 'groq') {
+      return createGroq({ apiKey });
+    } else if (provider === 'mistral') {
+      return createMistral({ apiKey });
+    }
+    throw new Error(`Unsupported provider: ${provider}`);
   }
 
   private sanitizeModelName(modelName: string): string {
@@ -76,8 +95,16 @@ export class AIService {
     userProvidedKey?: string
   ) {
     const aiProvider = this.createProvider(provider, userProvidedKey);
-    const defaultModel =
-      provider === 'openai' ? this.config.openaiModel : this.config.groqModel;
+    let defaultModel: string;
+    if (provider === 'openai') {
+      defaultModel = this.config.openaiModel;
+    } else if (provider === 'groq') {
+      defaultModel = this.config.groqModel;
+    } else if (provider === 'mistral') {
+      defaultModel = this.config.mistralModel;
+    } else {
+      throw new Error(`Unsupported provider: ${provider}`);
+    }
     const rawModel = modelName || defaultModel;
 
     // Sanitize model name to remove any quotes
@@ -184,12 +211,20 @@ export class AIService {
   }
 
   public getCurrentConfig() {
+    let model: string;
+    if (this.config.provider === 'openai') {
+      model = this.config.openaiModel;
+    } else if (this.config.provider === 'groq') {
+      model = this.config.groqModel;
+    } else if (this.config.provider === 'mistral') {
+      model = this.config.mistralModel;
+    } else {
+      model = '';
+    }
+
     return {
       provider: this.config.provider,
-      model:
-        this.config.provider === 'openai'
-          ? this.config.openaiModel
-          : this.config.groqModel,
+      model,
       apiKeyConfigured: this.isConfigured(),
     };
   }

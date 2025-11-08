@@ -47,9 +47,10 @@ const getAIService = (): AIService => {
     // Fallback initialization if not already initialized
     const fallbackConfig: AIConfig = {
       provider:
-        (sanitizeEnvVar(process.env.AI_PROVIDER, 'groq') as
+        (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
           | 'openai'
-          | 'groq') || 'groq',
+          | 'groq'
+          | 'mistral') || 'mistral',
       openaiModel:
         (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
           | 'gpt-4o-mini'
@@ -63,8 +64,16 @@ const getAIService = (): AIService => {
           | 'deepseek-r1-distill-llama-70b'
           | 'llama-3-70b-8192'
           | 'mixtral-8x7b-32768') || 'deepseek-r1-distill-llama-70b',
+      mistralModel:
+        (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
+          | 'mistral-large-latest'
+          | 'mistral-medium-latest'
+          | 'mistral-small-latest'
+          | 'pixtral-large-latest'
+          | 'open-mistral-nemo') || 'mistral-large-latest',
       openaiApiKey: sanitizeEnvVar(process.env.OPENAI_API_KEY, ''),
       groqApiKey: sanitizeEnvVar(process.env.GROQ_API_KEY, ''),
+      mistralApiKey: sanitizeEnvVar(process.env.MISTRAL_API_KEY, ''),
     };
     aiService = new AIService(fallbackConfig);
   }
