@@ -34,7 +34,8 @@ FRONTEND_URL=http://localhost:5173
 # Keycloak Configuration (optional - defaults to ORKG Keycloak)
 KEYCLOAK_URL=https://accounts.orkg.org
 KEYCLOAK_REALM=orkg
-KEYCLOAK_CLIENT_ID=empire-compass-devel
+# Comma-separated list of allowed Keycloak client IDs (first entry is primary)
+KEYCLOAK_CLIENT_IDS=empire-compass-devel,empire-compass
 
 # Firebase Admin SDK (must be minified single-line JSON)
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"projectdbclass","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"...@....iam.gserviceaccount.com","client_id":"...","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"...","universe_domain":"googleapis.com"}

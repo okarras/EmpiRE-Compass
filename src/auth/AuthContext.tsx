@@ -7,6 +7,7 @@ import {
   type AuthContextType,
 } from './AuthContextTypes';
 import UserSync from '../firestore/UserSync';
+import { setKeycloakInstance } from './keycloakStore';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -20,6 +21,13 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Derive authentication state from Keycloak only
   const isAuthenticated = keycloak?.authenticated || false;
   const isLoading = !initialized;
+
+  // Store Keycloak instance globally for non-React code to access
+  useEffect(() => {
+    if (keycloak && initialized) {
+      setKeycloakInstance(keycloak);
+    }
+  }, [keycloak, initialized]);
 
   // Save user data to Firebase when authenticated
   useEffect(() => {

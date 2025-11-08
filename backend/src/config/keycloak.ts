@@ -4,11 +4,35 @@ import { jwtVerify, createRemoteJWKSet } from 'jose';
  * Keycloak configuration
  * Defaults to ORKG Keycloak instance
  */
+const parseClientIds = (value?: string | null): string[] => {
+  if (!value) {
+    return [];
+  }
+  return value
+    .split(',')
+    .map((id) => id.trim())
+    .filter((id) => id.length > 0);
+};
+
 export const getKeycloakConfig = () => {
+  const url = process.env.KEYCLOAK_URL || 'https://accounts.orkg.org';
+  const realm = process.env.KEYCLOAK_REALM || 'orkg';
+
+  const configuredClientIds = parseClientIds(
+    process.env.KEYCLOAK_CLIENT_IDS || process.env.KEYCLOAK_CLIENT_ID
+  );
+
+  const defaultClientIds = ['empire-compass-devel', 'empire-compass'];
+
+  const clientIds = configuredClientIds.length
+    ? configuredClientIds
+    : defaultClientIds;
+
   return {
-    url: process.env.KEYCLOAK_URL || 'https://accounts.orkg.org',
-    realm: process.env.KEYCLOAK_REALM || 'orkg',
-    clientId: process.env.KEYCLOAK_CLIENT_ID || 'empire-compass-devel',
+    url,
+    realm,
+    clientId: clientIds[0],
+    clientIds,
   };
 };
 
@@ -58,21 +82,26 @@ export const verifyKeycloakToken = async (token: string) => {
     const azp = payload.azp as string | undefined;
     const aud = payload.aud;
 
-    // Check if token is for our client
-    // Keycloak tokens can have:
-    // - aud: "account" (for account API) with azp: clientId - VALID if azp matches
-    // - aud: clientId (direct client token) - VALID
-    // - aud: [clientId, "account"] (array with both) - VALID if contains clientId
-    const hasClientIdInAudience =
-      aud === config.clientId ||
-      (Array.isArray(aud) && aud.includes(config.clientId));
+    const audienceValues: string[] = Array.isArray(aud)
+      ? aud.map(String)
+      : aud
+        ? [String(aud)]
+        : [];
+
+    const hasClientIdInAudience = audienceValues.some((value) =>
+      config.clientIds.includes(value)
+    );
 
     const isAccountAudienceWithMatchingAzp =
-      aud === 'account' && azp === config.clientId;
+      audienceValues.includes('account') &&
+      azp !== undefined &&
+      config.clientIds.includes(azp);
 
     if (!hasClientIdInAudience && !isAccountAudienceWithMatchingAzp) {
       throw new Error(
-        `Token not issued for this client. Expected client: ${config.clientId}, got azp: ${azp}, aud: ${JSON.stringify(aud)}`
+        `Token not issued for this client. Expected client IDs: ${config.clientIds.join(
+          ', '
+        )}, got azp: ${azp}, aud: ${JSON.stringify(aud)}`
       );
     }
 
