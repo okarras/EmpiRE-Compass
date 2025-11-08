@@ -31,6 +31,11 @@ PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 
+# Keycloak Configuration (optional - defaults to ORKG Keycloak)
+KEYCLOAK_URL=https://accounts.orkg.org
+KEYCLOAK_REALM=orkg
+KEYCLOAK_CLIENT_ID=empire-compass-devel
+
 # Firebase Admin SDK (must be minified single-line JSON)
 FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"projectdbclass","private_key_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n","client_email":"...@....iam.gserviceaccount.com","client_id":"...","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"...","universe_domain":"googleapis.com"}
 
@@ -38,8 +43,10 @@ FIREBASE_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"projectdbcl
 AI_PROVIDER=groq
 OPENAI_API_KEY=your_openai_key
 GROQ_API_KEY=your_groq_key
+MISTRAL_API_KEY=your_mistral_key
 OPENAI_MODEL=gpt-4o-mini
 GROQ_MODEL=deepseek-r1-distill-llama-70b
+MISTRAL_MODEL=mistral-large-latest
 ```
 
 ### 3. Firebase Service Account Setup
@@ -79,10 +86,21 @@ Copy the output and paste into your `.env` file.
 
 All admin endpoints require:
 
-- `Authorization: Bearer <keycloak_token>` header
-- In development, use headers:
+- `Authorization: Bearer <keycloak_token>` header with a valid Keycloak JWT token
+
+**Token Verification:**
+
+- **Always verified**: When a Bearer token is provided, it is always verified using Keycloak's JWKS endpoint (both production and development)
+- Token signature, expiration, issuer, and audience are validated
+- Invalid or expired tokens are rejected
+
+**Development Mode Fallback:**
+
+- In development (`NODE_ENV !== 'production'`), if no token is provided, you can use headers for testing:
   - `x-user-id`: User ID
   - `x-user-email`: User email
+- **Note:** Header-based auth is only used as a fallback when no token is provided. If a token is present, it will always be verified.
+- Header-based auth is completely disabled in production for security
 
 ### Users
 
@@ -145,12 +163,14 @@ npm start
 
 ## Security Features
 
-1. **Firebase Admin SDK** - All write operations use Admin SDK (bypasses security rules)
-2. **Admin Verification** - Double-checks admin status against Firebase Users collection
-3. **SPARQL Validation** - Validates queries before saving
-4. **Request Logging** - All operations logged with user info
-5. **Rate Limiting** - 100 requests per 15 minutes per IP
-6. **CORS Protection** - Only allows requests from configured frontend URL
+1. **Keycloak Token Verification** - JWT tokens are verified using Keycloak's public keys (JWKS)
+2. **Firebase Admin SDK** - All write operations use Admin SDK (bypasses security rules)
+3. **Admin Verification** - Double-checks admin status against Firebase Users collection
+4. **SPARQL Validation** - Validates queries before saving
+5. **Request Logging** - All operations logged with user info
+6. **Rate Limiting** - 100 requests per 15 minutes per IP
+7. **CORS Protection** - Only allows requests from configured frontend URL
+8. **Production Security** - Header-based auth bypass disabled in production
 
 ## Migration Notes
 

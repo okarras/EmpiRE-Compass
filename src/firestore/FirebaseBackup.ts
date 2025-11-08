@@ -31,7 +31,8 @@ const COLLECTIONS_TO_BACKUP = [
   'Templates',
   'Users',
   'HomeContent',
-  'RequestLogs',
+  'FirebaseRequestLogs',
+  'Team',
 ];
 
 /**

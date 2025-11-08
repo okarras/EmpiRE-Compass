@@ -149,7 +149,7 @@ export class AIService {
         model,
         prompt: request.prompt,
         temperature: request.temperature ?? 0.3,
-        // omit maxTokens for SDK v5 typings
+        maxTokens: request.maxTokens,
         system: request.systemContext,
       });
 
