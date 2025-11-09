@@ -232,8 +232,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
           minHeight: 64,
           '& .MuiAccordionSummary-content': {
             margin: '0',
-            gap: 2,
-            alignItems: 'center',
+            gap: { xs: 1.5, sm: 2 },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            flexDirection: { xs: 'column', sm: 'row' },
+            width: '100%',
           },
           '&.Mui-expanded': {
             minHeight: 64,
@@ -249,8 +251,9 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
             fontWeight: 600,
             color: expanded ? 'primary.main' : 'text.primary',
-            flex: 1,
+            flex: { xs: 'none', sm: 1 },
             lineHeight: 1.4,
+            width: '100%',
           }}
         >
           {`${query.id}. ${query.dataAnalysisInformation.question}`}
@@ -258,9 +261,11 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
         <Box
           sx={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: { xs: 'flex-start', sm: 'flex-end' },
             alignItems: 'center',
-            minWidth: 'fit-content',
+            flexWrap: 'wrap',
+            gap: 1,
+            width: { xs: '100%', sm: 'auto' },
           }}
         >
           <Button
@@ -270,8 +275,8 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
             sx={{
               color: '#e86161',
               borderColor: '#e86161',
-              marginLeft: '10px',
-              minWidth: '15vw',
+              marginLeft: { xs: 0, sm: '10px' },
+              minWidth: { xs: '100%', sm: 160 },
               '&:hover': {
                 backgroundColor: '#e86161',
                 color: 'white',
@@ -280,8 +285,10 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
               '&.MuiButton-outlined': {
                 borderColor: '#e86161',
               },
+              mt: { xs: 1, sm: 0 },
             }}
             size="small"
+            fullWidth={false}
           >
             Question Information
           </Button>
