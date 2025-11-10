@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.2](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.1...v1.8.2) (2025-11-10)
+
+### Bug Fixes
+
+- chart normalized ratio scales ([efaf632](https://github.com/okarras/EmpiRE-Compass/commit/efaf63245400f7851cc7115c18106f10563c74d0))
+- responsiveness ([1753781](https://github.com/okarras/EmpiRE-Compass/commit/1753781b83e394f83da58ec8c08b0dd16ba2f929))
+
 ### [1.8.1](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.0...v1.8.1) (2025-11-08)
 
 ### Bug Fixes
