@@ -88,7 +88,7 @@ export const Query2DataProcessingFunctionForDataCollection = (
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
           uniquePaperCount > 0
-            ? Number((count / uniquePaperCount).toFixed(2))
+            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -725,7 +725,7 @@ export const Query14DataProcessingFunction = (
         normalizedRatio[method] = count;
         // Normalize to percentage (0-100 range) and round to 2 decimals
         normalizedRatio[`normalized_${method}`] = parseFloat(
-          (count / totalPapers).toFixed(2)
+          ((count / totalPapers) * 100).toFixed(2)
         );
       });
 
@@ -786,7 +786,7 @@ export const Query15DataProcessingFunction = (
     numberOfMethodsUsed: key,
     count: value,
     normalizedRatio:
-      Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      Number((((value as number) * 100) / countedData.length).toFixed(2)) || 0,
   }));
 
   return arrayResult;
@@ -859,7 +859,7 @@ export const Query16DataProcessingFunction = (
       Object.entries(counts).forEach(([methodKey, count]) => {
         result[methodKey] = count;
         result[`normalized_${methodKey}`] = parseFloat(
-          (count / totalByYear[year]).toFixed(2)
+          ((count / totalByYear[year]) * 100).toFixed(2)
         );
       });
 
