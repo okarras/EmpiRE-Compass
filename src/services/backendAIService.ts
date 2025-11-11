@@ -2,14 +2,17 @@ import type {
   AIProvider,
   OpenAIModel,
   GroqModel,
+  MistralModel,
 } from '../store/slices/aiSlice';
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
+import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
 
 export interface BackendAIConfig {
   provider: AIProvider;
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
+  mistralModel: MistralModel;
   useEnvironmentKeys: boolean;
   // NOTE: API keys are NEVER sent to backend - backend uses its own environment keys
 }
@@ -42,20 +45,45 @@ export interface AIConfigResponse {
 
 /**
  * Get Keycloak token if available
+ * Uses the global Keycloak store
  */
 const getKeycloakToken = (): string | null => {
   try {
-    // Try to get token from window.keycloak if available
-    if (typeof window !== 'undefined' && (window as any).keycloak) {
-      const keycloak = (window as any).keycloak;
-      if (keycloak.token) {
-        return keycloak.token;
-      }
-    }
-    return null;
+    return getKeycloakTokenFromStore();
   } catch (error) {
     console.warn('Failed to get Keycloak token:', error);
     return null;
+  }
+};
+
+/**
+ * Decode JWT token to extract user info (without verification)
+ * This is safe because the backend will verify the token signature
+ */
+const decodeJWT = (token: string): { userId?: string; userEmail?: string } => {
+  try {
+    // JWT format: header.payload.signature
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return {};
+    }
+
+    // Decode the payload (base64url)
+    const payload = parts[1];
+    // Replace URL-safe base64 characters
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+    // Add padding if needed
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+    const decoded = atob(padded);
+    const parsed = JSON.parse(decoded);
+
+    return {
+      userId: parsed.sub || parsed.userId,
+      userEmail: parsed.email || parsed.preferred_username,
+    };
+  } catch (error) {
+    console.warn('Failed to decode JWT token:', error);
+    return {};
   }
 };
 
@@ -81,29 +109,47 @@ export class BackendAIService {
       ...(options.headers as Record<string, string>),
     };
 
+    const isDev = import.meta.env.DEV;
+
     // Add Authorization header if token is available
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-    }
 
-    // In development, also add user headers if available (for testing)
-    const isDev = import.meta.env.DEV;
-    if (isDev && typeof window !== 'undefined') {
-      // Try to get user info from auth context or localStorage
-      try {
-        const authData = localStorage.getItem('auth-data');
-        if (authData) {
-          const parsed = JSON.parse(authData);
-          if (parsed.userId) {
-            headers['x-user-id'] = parsed.userId;
-          }
-          if (parsed.userEmail) {
-            headers['x-user-email'] = parsed.userEmail;
-          }
+      // Extract user info from token for development mode header-based auth
+      if (isDev) {
+        const userInfo = decodeJWT(token);
+        if (userInfo.userId) {
+          headers['x-user-id'] = userInfo.userId;
         }
-      } catch (error) {
-        console.error('Error getting user info:', error);
-        // Ignore errors getting user info
+        if (userInfo.userEmail) {
+          headers['x-user-email'] = userInfo.userEmail;
+        }
+      }
+    } else {
+      // No token available - try to get user info from other sources in development
+      if (isDev && typeof window !== 'undefined') {
+        // Try localStorage as fallback
+        try {
+          const authData = localStorage.getItem('auth-data');
+          if (authData) {
+            const parsed = JSON.parse(authData);
+            if (parsed.userId) {
+              headers['x-user-id'] = parsed.userId;
+            }
+            if (parsed.userEmail) {
+              headers['x-user-email'] = parsed.userEmail;
+            }
+          }
+        } catch (error) {
+          console.warn('Error getting user info from localStorage:', error);
+        }
+
+        // Log warning if no authentication available
+        if (!headers['x-user-id'] && !headers['x-user-email']) {
+          console.warn(
+            '⚠️  No authentication token or headers available. Backend request may fail. Please log in to use backend AI service.'
+          );
+        }
       }
     }
 
@@ -119,11 +165,26 @@ export class BackendAIService {
 
       // Handle authentication errors
       if (response.status === 401) {
-        const error = new Error(
-          errorData.error || 'Authentication required. Please log in.'
-        ) as Error & { status: number; requiresAuth: boolean };
+        const errorMessage =
+          errorData.error ||
+          errorData.message ||
+          'Authentication required. Please log in to use the backend AI service.';
+        const error = new Error(errorMessage) as Error & {
+          status: number;
+          requiresAuth: boolean;
+          details?: string;
+        };
         error.status = 401;
         error.requiresAuth = true;
+        if (errorData.details) {
+          error.details = errorData.details;
+        }
+        console.error('Authentication failed:', {
+          status: 401,
+          error: errorMessage,
+          hasToken: !!token,
+          isDev: import.meta.env.DEV,
+        });
         throw error;
       }
 
@@ -202,12 +263,20 @@ export class BackendAIService {
   }
 
   public getCurrentConfig() {
+    let model: string;
+    if (this.config.provider === 'openai') {
+      model = this.config.openaiModel;
+    } else if (this.config.provider === 'groq') {
+      model = this.config.groqModel;
+    } else if (this.config.provider === 'mistral') {
+      model = this.config.mistralModel;
+    } else {
+      model = '';
+    }
+
     return {
       provider: this.config.provider,
-      model:
-        this.config.provider === 'openai'
-          ? this.config.openaiModel
-          : this.config.groqModel,
+      model,
       apiKeyConfigured: this.isConfigured(),
     };
   }
@@ -225,8 +294,10 @@ export class UnifiedAIService {
     provider: AIProvider;
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
+    mistralModel: MistralModel;
     openaiApiKey: string;
     groqApiKey: string;
+    mistralApiKey: string;
     useEnvironmentKeys: boolean;
   };
 
@@ -234,8 +305,10 @@ export class UnifiedAIService {
     provider: AIProvider;
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
+    mistralModel: MistralModel;
     openaiApiKey: string;
     groqApiKey: string;
+    mistralApiKey: string;
     useEnvironmentKeys: boolean;
   }) {
     this.config = config;
@@ -256,12 +329,17 @@ export class UnifiedAIService {
       this.config.openaiApiKey && this.config.openaiApiKey.trim().length > 0;
     const hasGroqKey =
       this.config.groqApiKey && this.config.groqApiKey.trim().length > 0;
+    const hasMistralKey =
+      this.config.mistralApiKey && this.config.mistralApiKey.trim().length > 0;
 
     // Use frontend if user has provided keys for the selected provider
     if (this.config.provider === 'openai' && hasOpenAIKey) {
       return true;
     }
     if (this.config.provider === 'groq' && hasGroqKey) {
+      return true;
+    }
+    if (this.config.provider === 'mistral' && hasMistralKey) {
       return true;
     }
 
@@ -275,8 +353,10 @@ export class UnifiedAIService {
         provider: this.config.provider,
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
+        mistralModel: this.config.mistralModel,
         openaiApiKey: this.config.openaiApiKey,
         groqApiKey: this.config.groqApiKey,
+        mistralApiKey: this.config.mistralApiKey,
         useEnvironmentKeys: false, // Always false for frontend service
       };
       this.frontendService = new AIService(frontendConfig);
@@ -290,6 +370,7 @@ export class UnifiedAIService {
         provider: this.config.provider,
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
+        mistralModel: this.config.mistralModel,
         useEnvironmentKeys: this.config.useEnvironmentKeys,
         // API keys are never sent to backend - backend uses its own environment keys
       });
@@ -365,9 +446,10 @@ export const useBackendAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new BackendAIService({
-    provider: aiConfig.provider || 'groq',
+    provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
     // API keys are never sent to backend - backend uses its own environment keys
   });
@@ -378,11 +460,13 @@ export const useAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new UnifiedAIService({
-    provider: aiConfig.provider || 'groq',
+    provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
+    mistralApiKey: aiConfig.mistralApiKey || '',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
   });
 };
@@ -390,20 +474,23 @@ export const useAIService = () => {
 // for components that dont use hooks
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
-    provider: 'openai',
+    provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'deepseek-r1-distill-llama-70b',
+    mistralModel: 'mistral-large-latest',
     useEnvironmentKeys: true,
   });
 };
 
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
-    provider: 'openai',
+    provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'deepseek-r1-distill-llama-70b',
+    mistralModel: 'mistral-large-latest',
     openaiApiKey: '',
     groqApiKey: '',
+    mistralApiKey: '',
     useEnvironmentKeys: true,
   });
 };

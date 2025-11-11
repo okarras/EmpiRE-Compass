@@ -38,6 +38,7 @@ export interface ChartSetting {
   barGap?: number;
   barWidth?: number;
   hideDetailedChartLegend?: boolean;
+  detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
 }
 export interface Query {
   title?: string;
@@ -288,7 +289,8 @@ export const queries: Query[] = [
         numberOfMethodsUsed: key,
         count: value,
         normalizedRatio:
-          Number(((value as number) / countedData.length).toFixed(2)) || 0,
+          Number((((value as number) / countedData.length) * 100).toFixed(2)) ||
+          0,
       }));
 
       return arrayResult;
