@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.2](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.1...v1.8.2) (2025-11-10)
+
+### Bug Fixes
+
+- chart normalized ratio scales ([efaf632](https://github.com/okarras/EmpiRE-Compass/commit/efaf63245400f7851cc7115c18106f10563c74d0))
+- responsiveness ([1753781](https://github.com/okarras/EmpiRE-Compass/commit/1753781b83e394f83da58ec8c08b0dd16ba2f929))
+
+### [1.8.1](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.0...v1.8.1) (2025-11-08)
+
+### Bug Fixes
+
+- increase the request logs time ([68b89b7](https://github.com/okarras/EmpiRE-Compass/commit/68b89b7506b457c3b2e74aaf09e3ed8a02627deb))
+- security issues in the backend ([0840900](https://github.com/okarras/EmpiRE-Compass/commit/0840900749901aa7e7b5eed28a5f6f86628e551f))
+- template add in firebase ([15420c7](https://github.com/okarras/EmpiRE-Compass/commit/15420c7a14b01d9b7eaaf50260279646dbb6dfdc))
+- token access in the backend ([251d7ea](https://github.com/okarras/EmpiRE-Compass/commit/251d7ea6b18e3251c6117437c361015b1be76e01))
+
+## [1.8.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.7.0...v1.8.0) (2025-11-08)
+
+### Features
+
+- added authentication to AI ([4e60269](https://github.com/okarras/EmpiRE-Compass/commit/4e60269e3b140d083ba20532a42286b4dc64b2d2))
+- fetch home content and team content from backend ([80ccec0](https://github.com/okarras/EmpiRE-Compass/commit/80ccec049c6fe3a94d94b4f16dd928e473ca42be))
+
+### Bug Fixes
+
+- authentication headers ([d9c0018](https://github.com/okarras/EmpiRE-Compass/commit/d9c0018fe00339eb7bd42daf6333a7e156615b8b))
+- barchart legend styles ([ed48483](https://github.com/okarras/EmpiRE-Compass/commit/ed48483b57bd4fa9189f436d081df19a570f4343))
+- change default backend url ([1e5d082](https://github.com/okarras/EmpiRE-Compass/commit/1e5d08207c7cc1e679acfa90db74727b07ccda95))
+- crash in nlp4re template ([47d6cbe](https://github.com/okarras/EmpiRE-Compass/commit/47d6cbe49787f9ca71944b7586b13c4cbc7e58d1))
+- dont show error when firebase is not configured ([0d444b2](https://github.com/okarras/EmpiRE-Compass/commit/0d444b25cde50d9478683e2ea747a172d1076950))
+- firebase initialization check ([eccdd76](https://github.com/okarras/EmpiRE-Compass/commit/eccdd76119016346ba67327ba519c8559d988065))
+- premission in data management ([8d688e9](https://github.com/okarras/EmpiRE-Compass/commit/8d688e99b76c791343ebfaabf20c5d398ca995c9))
+
 ## [1.7.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.6.0...v1.7.0) (2025-11-03)
 
 ### Features

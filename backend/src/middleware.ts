@@ -93,10 +93,12 @@ export const validateGenerateTextRequest = (
       .json({ error: 'Prompt too long (max 100000 characters)' });
   }
 
-  if (provider && !['openai', 'groq'].includes(provider)) {
+  if (provider && !['openai', 'groq', 'mistral'].includes(provider)) {
     return res
       .status(400)
-      .json({ error: 'Invalid provider. Must be "openai" or "groq"' });
+      .json({
+        error: 'Invalid provider. Must be "openai", "groq", or "mistral"',
+      });
   }
 
   if (

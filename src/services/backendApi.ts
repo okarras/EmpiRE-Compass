@@ -4,6 +4,8 @@
  */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
+
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL || 'https://empirecompassbackend.vercel.app';
 
@@ -17,17 +19,11 @@ export interface ApiRequestOptions extends RequestInit {
 
 /**
  * Get Keycloak token if available
+ * Uses the global Keycloak store
  */
 const getKeycloakToken = (): string | null => {
   try {
-    // Try to get token from window.keycloak if available
-    if (typeof window !== 'undefined' && (window as any).keycloak) {
-      const keycloak = (window as any).keycloak;
-      if (keycloak.token) {
-        return keycloak.token;
-      }
-    }
-    return null;
+    return getKeycloakTokenFromStore();
   } catch (error) {
     console.warn('Failed to get Keycloak token:', error);
     return null;
@@ -60,21 +56,17 @@ export const apiRequest = async <T = any>(
   if (requiresAuth || requiresAdmin) {
     const token = keycloakToken || getKeycloakToken();
 
-    // In development, use header-based auth as fallback
-    const isDev = process.env.NODE_ENV === 'development' || import.meta.env.DEV;
-
     if (token) {
       requestHeaders['Authorization'] = `Bearer ${token}`;
     }
 
-    // In development, also add user headers for easier testing
-    if (isDev) {
-      if (userId) {
-        requestHeaders['x-user-id'] = userId;
-      }
-      if (userEmail) {
-        requestHeaders['x-user-email'] = userEmail;
-      }
+    // Always add user headers when available (backend checks these first)
+    // This allows authentication to work even when token validation isn't fully implemented
+    if (userId) {
+      requestHeaders['x-user-id'] = userId;
+    }
+    if (userEmail) {
+      requestHeaders['x-user-email'] = userEmail;
     }
   }
 

@@ -26,20 +26,22 @@ export default function StatCard({
       sx={{
         p: 3,
         borderRadius: 4,
-        width: 150,
+        width: { xs: '100%', sm: 168, md: 184 },
+        maxWidth: 240,
         textAlign: 'center',
         backgroundColor: '#ffffff',
         color: '#c0392b',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: { xs: 168, sm: 'auto' },
+        boxSizing: 'border-box',
         cursor: link ? 'pointer' : 'default',
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
           transform: link ? 'translateY(-4px)' : 'none',
-          boxShadow: link
-            ? '0px 6px 20px rgba(0, 0, 0, 0.08)'
-            : 'none',
+          boxShadow: link ? '0px 6px 20px rgba(0, 0, 0, 0.08)' : 'none',
         },
       }}
       onClick={handleClick}
