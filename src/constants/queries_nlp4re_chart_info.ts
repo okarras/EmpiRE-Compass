@@ -5,6 +5,7 @@ import {
   Query5DataProcessingFunction,
   Query6DataProcessingFunction,
   Query7DataProcessingFunction,
+  Query8DataProcessingFunction,
 } from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
@@ -37,6 +38,7 @@ export interface ChartSetting {
   colors?: string[];
   xAxis?: any;
   yAxis: any;
+  width?: number;
   series: any;
   height: number;
   sx: Record<string, unknown>;
@@ -60,7 +62,7 @@ export interface Query {
   uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie';
+  chartType?: 'bar' | 'pie' | 'heatmap';
   //TODO: fix types
   dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (
@@ -353,6 +355,24 @@ export const queries: Query[] = [
     title: 'RE and NLP Task Combinations',
     id: 8,
     uid: 'query_8',
+    chartType: 'heatmap',
+    chartSettings: {
+      heading: 'Distribution of datasets in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      yAxis: [
+        {
+          label: '',
+        },
+      ],
+
+      series: [],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 350,
+      },
+    },
+    dataProcessingFunction: Query8DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'Which combinations of RE and NLP tasks are most (a)typical?',
       requiredDataForAnalysis:

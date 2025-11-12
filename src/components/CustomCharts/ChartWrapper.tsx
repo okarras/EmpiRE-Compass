@@ -1,17 +1,17 @@
 import { Box } from '@mui/material';
 import CustomBarChart from './CustomBarChart';
-import { ChartSetting } from '../../constants/queries_chart_info';
 import CustomPieChart from './CustomPieChart';
+import CustomHeatMap from './CustomHeatMap';
+import { ChartSetting } from '../../constants/queries_chart_info';
 
 interface ChartWrapperProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataset: any[];
   chartSetting: ChartSetting;
   question_id: string;
   normalized?: boolean;
   loading: boolean;
-  defaultChartType?: 'bar' | 'pie';
-  availableCharts?: ('bar' | 'pie')[];
+  defaultChartType?: 'bar' | 'pie' | 'heatmap';
+  availableCharts?: ('bar' | 'pie' | 'heatmap')[];
   isSubChart?: boolean;
 }
 
@@ -96,6 +96,12 @@ const ChartWrapper = ({
       </Box> */}
       {defaultChartType === 'pie' ? (
         <CustomPieChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+        />
+      ) : defaultChartType === 'heatmap' ? (
+        <CustomHeatMap
           dataset={dataset}
           chartSetting={chartSetting}
           question_id={question_id}
