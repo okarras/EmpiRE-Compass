@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axisClasses } from '@mui/x-charts';
-import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import {
+  Query1DataProcessingFunction,
+  Query5DataProcessingFunction,
+  Query6DataProcessingFunction,
+  Query7DataProcessingFunction,
+} from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query4DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
@@ -81,7 +86,7 @@ export const queries: Query[] = [
     chartType: 'bar',
     chartSettings: {
       className: 'fullWidth',
-      xAxis: xAxisSettings('metricLabel', 'Metrics'),
+      xAxis: xAxisSettings('label', 'Metrics'),
       heading:
         'Top-3 Most Frequently Used Evaluation Metrics in NLP Approaches',
       barLabel: 'value',
@@ -123,7 +128,7 @@ export const queries: Query[] = [
       yAxis: [
         {
           scaleType: 'band',
-          dataKey: 'guidelineAvailabilityLabel',
+          dataKey: 'label',
           label: 'Guideline Type',
         },
       ],
@@ -204,7 +209,7 @@ export const queries: Query[] = [
       yAxis: [
         {
           scaleType: 'band',
-          dataKey: 'baseline_typeLabel',
+          dataKey: 'label',
           label: 'Baseline Type',
         },
       ],
@@ -229,6 +234,34 @@ export const queries: Query[] = [
     title: 'Format of Textual Requirements',
     id: 5,
     uid: 'query_5',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading:
+        'Distribution of common format of textual requirements in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: 'Data Format Type',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query5DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What is the most common format of textual requirements?',
       requiredDataForAnalysis:
@@ -241,6 +274,33 @@ export const queries: Query[] = [
     title: 'Dataset Quality Validation',
     id: 6,
     uid: 'query_6',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of dataset quality validation in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: 'Dataset Validation Type',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query6DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What is the state of practice for validating the quality of the annotated datasets?',
@@ -254,6 +314,33 @@ export const queries: Query[] = [
     title: 'Available Datasets for NLP4RE Tasks',
     id: 7,
     uid: 'query_7',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of datasets in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: '',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query7DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What datasets exist for a certain NLP4RE task?',
       requiredDataForAnalysis:
