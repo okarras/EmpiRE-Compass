@@ -2,199 +2,171 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-export const Query1DataProcessingFunction = (rawData: RawDataItem[] = []) => {
-  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+type CommonResult = { label: string; count: number; normalizedRatio: number };
 
-  const getFirst = (row: RawDataItem, keys: string[]) => {
-    for (const k of keys) {
-      const v = row[k];
-      if (v !== undefined && v !== null && String(v).trim() !== '')
-        return String(v).trim();
-    }
-    return '';
-  };
-
-  const PAPER_KEYS = [
-    'paper',
-    'paperId',
-    'paper_id',
-    'paperLabel',
-    'paperLabel.value',
-  ];
-  const METRIC_KEYS = [
-    'evaluation_metricLabel',
-    'evaluation_metric_label',
-    'metric',
-    'metricLabel',
-  ];
-
-  const hasPaperId = rawData.some((r) => getFirst(r, PAPER_KEYS) !== '');
-
-  const metricMap = new Map<string, Set<string> | number>();
-  const uniquePaperIds = new Set<string>();
-
-  for (const row of rawData) {
-    const metric = getFirst(row, METRIC_KEYS);
-    if (!metric) continue;
-
-    if (hasPaperId) {
-      const pid = getFirst(row, PAPER_KEYS);
-      if (!pid) continue;
-      uniquePaperIds.add(pid);
-      let set = metricMap.get(metric) as Set<string> | undefined;
-      if (!set) {
-        set = new Set<string>();
-        metricMap.set(metric, set);
-      }
-      (set as Set<string>).add(pid);
-    } else {
-      const cur = (metricMap.get(metric) as number) ?? 0;
-      metricMap.set(metric, cur + 1);
-    }
-  }
-
-  const allMetrics = Array.from(metricMap.entries()).map(([metric, val]) => ({
-    metricLabel: metric,
-    count: val instanceof Set ? val.size : (val as number),
-  }));
-
-  allMetrics.sort(
-    (a, b) => b.count - a.count || a.metricLabel.localeCompare(b.metricLabel)
-  );
-  const top3 = allMetrics.slice(0, 3);
-
-  const topSum = top3.reduce((s, it) => s + it.count, 0);
-
-  const result = top3.map((it) => ({
-    metricLabel: it.metricLabel,
-    count: it.count,
-    normalizedRatio:
-      topSum > 0 ? Number(((it.count * 100) / topSum).toFixed(3)) : 0,
-  }));
-
-  return result;
+type ProcessOptions = {
+  paperKey: string;
+  labelKey: string;
+  uniqueValueKey?: string | null;
+  excludeValues?: string[];
+  requiredValues?: string[];
+  dedupeByPaper?: boolean;
+  topK?: number | null;
 };
 
-export const Query2DataProcessingFunction = (rawData: any[] = []) => {
+const processQuery = (
+  rawData: RawDataItem[] = [],
+  opts: ProcessOptions
+): CommonResult[] => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
-  const getFirst = (row: any, keys: string[]) => {
-    for (const k of keys) {
-      const v = row?.[k];
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        return String(v).trim();
-      }
-    }
-    return '';
-  };
+  const {
+    paperKey,
+    labelKey,
+    uniqueValueKey = null,
+    excludeValues = [],
+    requiredValues = [],
+    dedupeByPaper = true,
+    topK = null,
+  } = opts;
 
-  const PAPER_KEYS = ['paper'];
-  const GUIDELINE_KEYS = ['guidelineAvailabilityLabel'];
-
-  const paperMap = new Map<string, any>();
-  for (const row of rawData) {
-    const pid = getFirst(row, PAPER_KEYS);
-    if (pid) paperMap.set(pid, row);
+  // 1) optionally dedupe by paper (keeps first occurrence)
+  let rows = rawData;
+  if (dedupeByPaper) {
+    const seen = new Set<string>();
+    rows = rawData.filter((row) => {
+      const pid = String(row[paperKey] ?? '').trim();
+      if (!pid || seen.has(pid)) return false;
+      seen.add(pid);
+      return true;
+    });
   }
 
-  const uniquePapers = Array.from(paperMap.values());
-
-  const counts = new Map<string, number>();
-  for (const row of uniquePapers) {
-    const label = getFirst(row, GUIDELINE_KEYS) || 'Unknown';
-    counts.set(label, (counts.get(label) ?? 0) + 1);
+  // 2) If uniqueValueKey provided -> build map label -> Set(uniqueValue)
+  if (uniqueValueKey) {
+    const map = new Map<string, Set<string>>();
+    for (const row of rows) {
+      const label = String(row[labelKey] ?? '').trim();
+      const val = String(row[uniqueValueKey] ?? '').trim();
+      if (!label || !val) continue;
+      if (excludeValues.includes(label) || excludeValues.includes(val))
+        continue;
+      if (!map.has(label)) map.set(label, new Set<string>());
+      map.get(label)!.add(val);
+    }
+    // ensure required labels exist
+    for (const req of requiredValues) {
+      if (!map.has(req)) map.set(req, new Set<string>());
+    }
+    const entries = Array.from(map.entries()).map(([label, s]) => ({
+      label,
+      count: s.size,
+    }));
+    entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+    const selected = topK ? entries.slice(0, topK) : entries;
+    const base = selected.reduce((s, it) => s + it.count, 0);
+    return selected.map(({ label, count }) => ({
+      label,
+      count,
+      normalizedRatio: base > 0 ? Number(((count * 100) / base).toFixed(3)) : 0,
+    }));
   }
 
-  const total = Array.from(counts.values()).reduce((s, n) => s + n, 0);
-
-  const result = Array.from(counts.entries()).map(([label, count]) => ({
-    guidelineAvailabilityLabel: label,
-    count,
-    normalizedRatio: total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
-  }));
-
-  result.sort(
-    (a, b) =>
-      b.count - a.count ||
-      a.guidelineAvailabilityLabel.localeCompare(b.guidelineAvailabilityLabel)
-  );
-  console.log('result', result);
-  return result;
-};
-
-export const Query3DataProcessingFunction = (rawData: any[] = []) => {
-  if (!Array.isArray(rawData) || rawData.length === 0) return [];
-
-  const getFirst = (row: any, keys: string[]) => {
-    for (const k of keys) {
-      const v = row?.[k];
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        return String(v).trim();
-      }
-    }
-    return '';
-  };
-
-  const LABEL_KEYS = ['NLPTaskInputLabel'];
-
+  // 3) Otherwise count (per row or per deduped paper as above)
   const counts = new Map<string, number>();
-
-  for (const row of rawData) {
-    const label = getFirst(row, LABEL_KEYS);
+  for (const row of rows) {
+    const label = String(row[labelKey] ?? '').trim();
     if (!label) continue;
+    if (excludeValues.includes(label)) continue;
     counts.set(label, (counts.get(label) ?? 0) + 1);
   }
-
-  const total = Array.from(counts.values()).reduce((s, n) => s + n, 0);
-
-  // Build result
-  const result = Array.from(counts.entries()).map(([label, count]) => ({
+  for (const req of requiredValues) {
+    if (!counts.has(req)) counts.set(req, 0);
+  }
+  const entries = Array.from(counts.entries()).map(([label, count]) => ({
     label,
     count,
-    normalizedRatio: total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
   }));
-
-  // Sort by count desc
-  result.sort((a, b) => b.count - a.count);
-
-  return result;
+  entries.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const selected = topK ? entries.slice(0, topK) : entries;
+  const base = selected.reduce((s, it) => s + it.count, 0);
+  return selected.map(({ label, count }) => ({
+    label,
+    count,
+    normalizedRatio: base > 0 ? Number(((count * 100) / base).toFixed(3)) : 0,
+  }));
 };
+
+export const Query1DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'evaluation_metricLabel',
+    topK: 3,
+  });
+
+export const Query2DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'guidelineAvailabilityLabel',
+    excludeValues: [
+      'No',
+      'Not reported',
+      'No, but are made available upon request',
+    ],
+    requiredValues: [
+      'Yes, via a non-persistent URL',
+      'Yes, via a persistent URL',
+    ],
+  });
+
+export const Query3DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'NLPTaskInputLabel',
+  });
 
 export const Query4DataProcessingFunction = (
-  rawData: Array<{ baseline_typeLabel?: string; paper?: string }> = []
-): { baseline_typeLabel: string; count: number; normalizedRatio: number }[] => {
-  if (!Array.isArray(rawData) || rawData.length === 0) return [];
-
-  const paperMap = new Map<
-    string,
-    { baseline_typeLabel?: string; paper?: string }
-  >();
-  rawData.forEach((item, idx) => {
-    const pid =
-      item.paper && String(item.paper).trim() !== ''
-        ? String(item.paper).trim()
-        : `__nopaper_${idx}`;
-    paperMap.set(pid, { ...item, paper: pid });
-  });
-  const uniquePapers = Array.from(paperMap.values());
-  const counts: Record<string, number> = {};
-  uniquePapers.forEach((row) => {
-    const type = String(row.baseline_typeLabel ?? '').trim();
-    if (!type) return;
-    counts[type] = (counts[type] || 0) + 1;
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'baseline_typeLabel',
+    excludeValues: ['None'],
   });
 
-  const total = uniquePapers.length || 0;
-  return Object.entries(counts)
-    .map(([baseline_typeLabel, count]) => ({
-      baseline_typeLabel,
-      count,
-      normalizedRatio:
-        total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
-    }))
-    .sort(
-      (a, b) =>
-        b.count - a.count ||
-        a.baseline_typeLabel.localeCompare(b.baseline_typeLabel)
-    );
-};
+export const Query5DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'NLPdataformatLabel',
+    excludeValues: [''],
+  });
+
+export const Query6DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'intercoderReliabilityMetricLabel',
+    excludeValues: [''],
+  });
+
+export const Query7DataProcessingFunction = (
+  rawData: RawDataItem[] = []
+): CommonResult[] =>
+  processQuery(rawData, {
+    paperKey: 'paper',
+    labelKey: 'NLPTaskTypeLabel',
+    uniqueValueKey: 'NLPdataset',
+    excludeValues: [],
+    requiredValues: [],
+    dedupeByPaper: false,
+    topK: null,
+  });
