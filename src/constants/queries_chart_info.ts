@@ -29,6 +29,7 @@ export interface ChartSetting {
   yAxis: any;
   series: any;
   height: number;
+  width?: number;
   sx: Record<string, unknown>;
   barLabel?: string;
   layout?: string;
@@ -48,7 +49,7 @@ export interface Query {
   uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie';
+  chartType?: 'bar' | 'pie' | 'heatmap';
   //TODO: fix types
   dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (
