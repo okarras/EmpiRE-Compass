@@ -111,18 +111,28 @@ export const queries: Query[] = [
     uid: 'query_2',
     chartType: 'bar',
     chartSettings: {
+      layout: 'horizontal',
       className: 'fullWidth',
-      xAxis: xAxisSettings(),
       heading: 'Papers with Annotation Guidelines — papers per year',
       barLabel: 'value',
-      yAxis: [
+      xAxis: [
         {
           label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'guidelineAvailabilityLabel',
+          label: 'Guideline Type',
         },
       ],
       series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
+      margin: {
+        left: 150,
+      },
     },
     dataProcessingFunction: Query2DataProcessingFunction,
     dataAnalysisInformation: {
@@ -138,19 +148,33 @@ export const queries: Query[] = [
     title: 'Input Granularity — Distribution of NLP Task Input Types',
     id: 3,
     uid: 'query_3',
-    chartType: 'pie',
+    chartType: 'bar',
     chartSettings: {
+      layout: 'horizontal',
       className: 'fullWidth',
       heading: 'Distribution of Input Granularity Levels Used in NLP Tasks',
       series: [{ dataKey: 'normalizedRatio' }],
-      yAxis: [
+      // yAxis: [
+      //   {
+      //     label: 'Number of Papers',
+      //   },
+      // ],
+      xAxis: [
         {
           label: 'Number of Papers',
         },
       ],
-
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+        },
+      ],
       height: chartHeight,
       sx: chartStyles,
+      margin: {
+        left: 150,
+      },
     },
     dataProcessingFunction: Query3DataProcessingFunction,
     dataAnalysisInformation: {
