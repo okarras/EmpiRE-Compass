@@ -4,7 +4,7 @@ import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 import QueryExecutionSection from './AI/QueryExecutionSection';
 import DataProcessingCodeSection from './AI/DataProcessingCodeSection';
@@ -84,7 +84,6 @@ const DynamicAIQuestion = () => {
   // Initialize template ID in context
   useEffect(() => {
     if (templateId && state.templateId !== templateId) {
-      console.log('🔄 Prop templateId changed, initializing:', templateId);
       void handleTemplateChange(templateId);
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');

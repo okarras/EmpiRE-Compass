@@ -47,11 +47,14 @@ interface Query2DataCollenctionRawDataInterface {
 export const Query2DataProcessingFunctionForDataCollection = (
   rawData: Query2DataCollenctionRawDataInterface[] = []
 ): Record<string, unknown>[] => {
-  // 1) Deduplicate by paper
-  const paperMap = new Map<string, Query2DataCollenctionRawDataInterface>();
-  rawData.forEach((item) => paperMap.set(item.paper as string, item));
-  //TODO: fix this
-  const uniquePapers = rawData;
+  // 1) Count unique papers per year (for normalization denominator)
+  const uniquePapersPerYear: Record<string, Set<string>> = {};
+  rawData.forEach(({ paper, year }) => {
+    if (!uniquePapersPerYear[year]) {
+      uniquePapersPerYear[year] = new Set();
+    }
+    uniquePapersPerYear[year].add(paper as string);
+  });
 
   // 2) Define which labels go into "others"
   const dataKeys = [
@@ -63,9 +66,9 @@ export const Query2DataProcessingFunctionForDataCollection = (
     'action research',
   ];
 
-  // 3) Aggregate counts per year × method
+  // 3) Aggregate counts per year × method (NOT deduplicated - one paper can have multiple methods)
   const aggregatedData: Record<string, Record<string, number>> = {};
-  uniquePapers.forEach(({ dc_method_type_label, year }) => {
+  rawData.forEach(({ dc_method_type_label, year }) => {
     aggregatedData[year] = aggregatedData[year] || {};
     const key = dataKeys.includes(dc_method_type_label)
       ? dc_method_type_label
@@ -73,22 +76,19 @@ export const Query2DataProcessingFunctionForDataCollection = (
     aggregatedData[year][key] = (aggregatedData[year][key] || 0) + 1;
   });
 
-  // 4) For each year, compute per-year total and per-method ratios
+  // 4) For each year, compute normalized values by dividing by unique paper count
   const result = Object.entries(aggregatedData)
     .sort(([a], [b]) => parseInt(a) - parseInt(b))
     .map(([year, methods]) => {
-      // per-year total = sum of all method counts for that year
-      const totalPapersThisYear = Object.values(methods).reduce(
-        (sum, c) => sum + c,
-        0
-      );
+      // Number of unique papers for this year
+      const uniquePaperCount = uniquePapersPerYear[year]?.size || 0;
 
-      // for each method, compute normalized = count / totalThisYear
+      // For each method, compute normalized = count / uniquePaperCount
       const normalizedFields = Object.fromEntries(
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
-          totalPapersThisYear > 0
-            ? Number(((count * 100) / totalPapersThisYear).toFixed(2))
+          uniquePaperCount > 0
+            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -225,7 +225,7 @@ export const Query3DataProcessingFunction = (
   }));
 };
 
-export const Query4DataProcessingFunctionForDataCollection = (
+export const Query4DataProcessingFunctionForDataAnalysis = (
   rawData: RawDataItem[]
 ): RawDataItem[] => {
   const keys_to_count = ['descriptive', 'inferential', 'machine_learning'];
@@ -236,7 +236,7 @@ export const Query4DataProcessingFunctionForDataCollection = (
     descriptive: 0,
     inferential: 0,
     machine_learning: 0,
-    others: 0,
+    'other methods': 0,
   };
 
   rawData.forEach((item) => {
@@ -244,7 +244,7 @@ export const Query4DataProcessingFunctionForDataCollection = (
       if (keys_to_count.includes(key)) {
         labelCounts[key]++;
       } else if (!static_keys.includes(key)) {
-        labelCounts['others']++;
+        labelCounts['other methods']++;
       }
     });
   });
@@ -256,26 +256,41 @@ export const Query4DataProcessingFunctionForDataCollection = (
       ((labelCounts[label] * 100) / rawData.length).toFixed(2)
     ),
   }));
-  //sort by count
-  chartData.sort((a, b) => b.count - a.count);
 
   return chartData;
 };
 
-export const Query4DataProcessingFunctionForDataAnalysis = (
+export const Query4DataProcessingFunctionForDataCollection = (
   rawData: { dc_method_type_label: string }[]
 ): RawDataItem[] => {
-  const labelCounts = rawData.reduce(
-    (
-      acc: { [x: string]: number },
-      item: { dc_method_type_label: string | number }
-    ) => {
-      acc[item.dc_method_type_label] =
-        (acc[item.dc_method_type_label] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
+  const keys_to_count = [
+    'secondary research',
+    'experiment',
+    'survey',
+    'case study',
+    'interview',
+    'action research',
+  ];
+
+  // Initialize all counts to 0
+  const labelCounts: { [key: string]: number } = {
+    'secondary research': 0,
+    experiment: 0,
+    survey: 0,
+    'case study': 0,
+    interview: 0,
+    'action research': 0,
+    others: 0,
+  };
+
+  rawData.forEach((item) => {
+    const labelLower = item.dc_method_type_label?.toLowerCase();
+    if (keys_to_count.includes(labelLower)) {
+      labelCounts[labelLower]++;
+    } else {
+      labelCounts['others']++;
+    }
+  });
   const chartData = Object.keys(labelCounts).map((label) => ({
     methodType: label.charAt(0).toUpperCase() + label.slice(1),
     count: labelCounts[label],
@@ -283,9 +298,6 @@ export const Query4DataProcessingFunctionForDataAnalysis = (
       ((labelCounts[label] * 100) / rawData.length).toFixed(2)
     ),
   }));
-
-  //sort by count
-  chartData.sort((a, b) => b.count - a.count);
 
   return chartData;
 };
@@ -713,7 +725,7 @@ export const Query14DataProcessingFunction = (
         normalizedRatio[method] = count;
         // Normalize to percentage (0-100 range) and round to 2 decimals
         normalizedRatio[`normalized_${method}`] = parseFloat(
-          (count / totalPapers).toFixed(2)
+          ((count / totalPapers) * 100).toFixed(2)
         );
       });
 
@@ -774,7 +786,7 @@ export const Query15DataProcessingFunction = (
     numberOfMethodsUsed: key,
     count: value,
     normalizedRatio:
-      Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      Number((((value as number) * 100) / countedData.length).toFixed(2)) || 0,
   }));
 
   return arrayResult;
@@ -847,7 +859,7 @@ export const Query16DataProcessingFunction = (
       Object.entries(counts).forEach(([methodKey, count]) => {
         result[methodKey] = count;
         result[`normalized_${methodKey}`] = parseFloat(
-          (count / totalByYear[year]).toFixed(2)
+          ((count / totalByYear[year]) * 100).toFixed(2)
         );
       });
 

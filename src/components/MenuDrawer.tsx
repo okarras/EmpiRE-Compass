@@ -10,26 +10,23 @@ import {
   Tooltip,
   Typography,
   ListItemIcon,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  SelectChangeEvent,
 } from '@mui/material';
-import { useNavigate, useLocation, useSearchParams } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
-import { queries as empiricalQueries } from '../constants/queries_chart_info';
-import { queries as nlp4reQueries } from '../constants/queries_nlp4re_info';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import PeopleIcon from '@mui/icons-material/People';
+import { templateConfig } from '../constants/template_config';
+import BackupIcon from '@mui/icons-material/Backup';
+import StorageIcon from '@mui/icons-material/Storage';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EditIcon from '@mui/icons-material/Edit';
+import { useAuthData } from '../auth/useAuthData';
 
-const templates = {
-  R186491: empiricalQueries,
-  R1544125: nlp4reQueries,
-};
+const templates = templateConfig;
 
 const drawerWidth = 280;
 
@@ -41,37 +38,47 @@ interface MenuDrawerProps {
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuthData();
 
   const [selectedTemplate, setSelectedTemplate] =
     useState<keyof typeof templates>('R186491');
 
-  const currentQueries = templates[selectedTemplate] ?? [];
+  useEffect(() => {
+    if (selectedTemplate === 'R186491' || selectedTemplate === 'R1544125') {
+      setSelectedTemplate(selectedTemplate);
+    }
+  }, [selectedTemplate]);
+  const currentQueries = templates[selectedTemplate]?.queries ?? [];
 
   // Read template from URL on mount
   useEffect(() => {
-    const templateFromUrl = searchParams.get('template');
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const templateFromUrl = pathSegments[0];
     if (templateFromUrl && templateFromUrl in templates) {
       setSelectedTemplate(templateFromUrl as keyof typeof templates);
     }
-  }, [searchParams]);
-
-  const handleTemplateChange = (
-    event: SelectChangeEvent<keyof typeof templates>
-  ) => {
-    const newTemplate = event.target.value as keyof typeof templates;
-    setSelectedTemplate(newTemplate);
-
-    // Update URL with new template
-    setSearchParams({ template: newTemplate });
-  };
+  }, [location.pathname]);
 
   const handleListItemClick = (id: number) => {
-    navigate(`/questions/${id}`);
+    navigate(`/${selectedTemplate}/questions/${id}`);
     handleDrawerClose();
   };
 
-  const isCurrentPath = (path: string) => location.pathname === path;
+  const isCurrentPath = (path: string) => {
+    // Handle home route
+    if (path === '/') {
+      const homePath = `/${selectedTemplate}/`;
+      return (
+        location.pathname === homePath ||
+        location.pathname === `/${selectedTemplate}`
+      );
+    }
+    const fullPath = `/${selectedTemplate}${path}`;
+    return (
+      location.pathname === fullPath ||
+      location.pathname.startsWith(fullPath + '/')
+    );
+  };
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -121,61 +128,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         </IconButton>
       </Box>
 
-      {/* Templates dropdown */}
-      <Box
-        sx={{
-          px: 2,
-          pt: 3, // extra space above
-          pb: 1,
-          backgroundColor: 'transparent',
-        }}
-      >
-        <FormControl
-          fullWidth
-          size="small"
-          sx={{
-            borderRadius: 1,
-            '& .MuiInputLabel-root': {
-              color: '#e86161',
-              fontWeight: 600,
-            },
-            '& .MuiOutlinedInput-root': {
-              '& fieldset': {
-                borderColor: '#e86161',
-              },
-              '&:hover fieldset': {
-                borderColor: '#e86161',
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#e86161',
-              },
-              '& .MuiSelect-select': {
-                color: '#e86161',
-                fontWeight: 600,
-              },
-            },
-          }}
-        >
-          <InputLabel id="templates-select-label">Templates</InputLabel>
-          <Select
-            labelId="templates-select-label"
-            value={selectedTemplate}
-            label="Templates"
-            onChange={handleTemplateChange}
-            size="small"
-            id="menu-drawer-templates-select"
-          >
-            <MenuItem value="R186491">Empirical research practice</MenuItem>
-            <MenuItem value="R1544125">NLP4RE ID Card</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
       <List sx={{ p: 2 }}>
         {/* Home Link */}
         <ListItem
           onClick={() => {
-            navigate('/');
+            navigate(`/${selectedTemplate}/`);
             handleDrawerClose();
           }}
           sx={{
@@ -208,7 +165,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Statistics Link */}
         <ListItem
           onClick={() => {
-            navigate('/statistics');
+            navigate(`/${selectedTemplate}/statistics`);
             handleDrawerClose();
           }}
           sx={{
@@ -238,10 +195,43 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           />
         </ListItem>
 
+        {/* Team Link */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/team`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/team')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <PeopleIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/team') ? 600 : 500,
+                }}
+              >
+                Team
+              </Typography>
+            }
+          />
+        </ListItem>
+
         {/* All Questions Link */}
         <ListItem
           onClick={() => {
-            navigate('/allquestions');
+            navigate(`/${selectedTemplate}/allquestions`);
             handleDrawerClose();
           }}
           sx={{
@@ -265,7 +255,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                   fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
                 }}
               >
-                All Questions
+                {templates[selectedTemplate]?.title} Questions
               </Typography>
             }
           />
@@ -274,7 +264,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Dynamic Question Link */}
         <ListItem
           onClick={() => {
-            navigate('/dynamic-question');
+            navigate(`/${selectedTemplate}/dynamic-question`);
             handleDrawerClose();
           }}
           sx={{
@@ -338,6 +328,178 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
         <Divider sx={{ my: 2 }} />
 
+        {/* Admin Section */}
+        {user?.is_admin && (
+          <>
+            <Typography
+              variant="overline"
+              sx={{
+                color: 'text.secondary',
+                fontWeight: 600,
+                pl: 2,
+                display: 'block',
+                mb: 1,
+              }}
+            >
+              Admin Tools
+            </Typography>
+
+            {/* Admin Dashboard Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(`/${selectedTemplate}/admin`)
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <AdminPanelSettingsIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(`/${selectedTemplate}/admin`)
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Dashboard
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Data Management Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/data`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/data`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <StorageIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/data`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Data Management
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Admin Backup Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/backup`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/backup`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <BackupIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/backup`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Backup
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            {/* Home Content Management Link */}
+            <ListItem
+              onClick={() => {
+                navigate(`/${selectedTemplate}/admin/home-content`);
+                handleDrawerClose();
+              }}
+              sx={{
+                mb: 1,
+                borderRadius: 2,
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/admin/home-content`
+                )
+                  ? 'rgba(232, 97, 97, 0.08)'
+                  : 'transparent',
+                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+              }}
+            >
+              <ListItemIcon>
+                <EditIcon sx={{ color: '#e86161' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: '#e86161',
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/admin/home-content`
+                      )
+                        ? 600
+                        : 500,
+                    }}
+                  >
+                    Home Content
+                  </Typography>
+                }
+              />
+            </ListItem>
+
+            <Divider sx={{ my: 2 }} />
+          </>
+        )}
+
         {/* Questions List */}
         <Typography
           variant="overline"
@@ -364,7 +526,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
-                backgroundColor: isCurrentPath(`/questions/${query.id}`)
+                backgroundColor: isCurrentPath(
+                  `/${selectedTemplate}/questions/${query.id}`
+                )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
                 transition: 'all 0.2s ease-in-out',
@@ -380,7 +544,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     variant="body2"
                     sx={{
                       color: 'text.primary',
-                      fontWeight: isCurrentPath(`/questions/${query.id}`)
+                      fontWeight: isCurrentPath(
+                        `/${selectedTemplate}/questions/${query.id}`
+                      )
                         ? 600
                         : 400,
                       fontSize: '0.9rem',

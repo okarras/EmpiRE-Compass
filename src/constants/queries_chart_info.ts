@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 //TODO: fix types and some styles
-import { axisClasses } from '@mui/x-charts';
 import {
   Query10DataProcessingFunction,
   Query11DataProcessingFunction,
@@ -21,26 +20,6 @@ import {
   Query16DataProcessingFunction,
 } from './data_processing_helper_functions';
 
-const chartStyles = {
-  [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
-    transform: 'translateX(-10px)',
-  },
-};
-
-const chartHeight = 400;
-
-function xAxisSettings(dataKey = 'year', label = 'Year') {
-  return [
-    {
-      scaleType: 'band',
-      dataKey: dataKey,
-      valueFormatter: (v: any) => v.toString(),
-      tickPlacement: 'middle',
-      label: label,
-    },
-  ];
-}
-
 export interface ChartSetting {
   heading?: string;
   seriesHeadingTemplate?: string;
@@ -58,14 +37,11 @@ export interface ChartSetting {
   barCategoryGap?: number;
   barGap?: number;
   barWidth?: number;
-  tabs?: {
-    tab1_name: string;
-    tab2_name: string;
-  };
-  hideLegend?: boolean;
+  hideDetailedChartLegend?: boolean;
+  detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
 }
 export interface Query {
-  title: string;
+  title?: string;
   id: number;
   uid: string; // data collection
   uid_2?: string; // data analysis
@@ -83,9 +59,17 @@ export interface Query {
   dataAnalysisInformation: {
     question: string;
     questionExplanation?: string;
-    dataAnalysis?: string;
-    dataInterpretation?: string;
-    requiredDataForAnalysis?: string;
+    dataAnalysis?: string | string[];
+    dataInterpretation?: string | string[];
+    requiredDataForAnalysis?: string | string[];
+  };
+  tabs?: {
+    tab1_name: string;
+    tab2_name: string;
+  };
+  gridOptions?: {
+    defaultColumns?: string[];
+    defaultGroupBy?: string;
   };
 }
 
@@ -95,21 +79,6 @@ export const queries: Query[] = [
     title: 'number of papers with an empirical study per year',
     id: 1,
     uid: 'query_1',
-    chartType: 'bar',
-    chartSettings: {
-      className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      heading: 'number of papers with an empirical study per year',
-      barLabel: 'value',
-      yAxis: [
-        {
-          label: 'number of papers with an empirical study',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-    },
     // dataProcessingFunction: sortDataByYear,
     dataProcessingFunction: Query1DataProcessingFunction,
     dataAnalysisInformation: {
@@ -124,71 +93,7 @@ export const queries: Query[] = [
     id: 2,
     uid: 'query_2_1',
     uid_2: 'query_2_2',
-    chartSettings2: {
-      heading: 'number of empirical methods used for data analysis per year',
-      // seriesHeadingTemplate: 'Number of {label} used for data analysis',
-      className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      colors: [
-        '#4c72b0',
-        '#dd8452',
-        '#55a868',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-      ],
-      yAxis: [
-        {
-          label: 'number of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'descriptive', label: 'descriptive statistics' },
-        { dataKey: 'inferential', label: 'inferential statistics' },
-        { dataKey: 'machine_learning', label: 'machine learning statistics' },
-        { dataKey: 'others', label: 'Other' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction2: Query2DataProcessingFunctionForDataAnalysis,
-    chartSettings: {
-      heading: 'number of empirical methods used for data collection per year',
-      // seriesHeadingTemplate: 'Number of {label} used for data collection',
-      className: 'fullWidth',
-      xAxis: xAxisSettings(),
-      colors: [
-        '#4c72b0',
-        '#dd8452',
-        '#55a868',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-      ],
-      yAxis: [
-        {
-          label: 'empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'case study', label: 'case studies' },
-        { dataKey: 'experiment', label: 'experiments' },
-        { dataKey: 'survey', label: 'surveys' },
-        { dataKey: 'interview', label: 'interviews' },
-        {
-          dataKey: 'secondary research',
-          label: 'secondary research',
-        },
-        { dataKey: 'action research', label: 'action research' },
-        { dataKey: 'others', label: 'other' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction: Query2DataProcessingFunctionForDataCollection,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used over time?',
@@ -199,22 +104,6 @@ export const queries: Query[] = [
     title: 'number of papers without an empirical study per year',
     id: 3,
     uid: 'query_3',
-    chartSettings: {
-      className: 'fullWidth',
-      heading: 'number of papers without an empirical study per year',
-
-      xAxis: xAxisSettings(),
-      barLabel: 'value',
-      yAxis: [
-        {
-          label: 'proportion of papers without an empirical study',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-    },
-
     dataProcessingFunction: Query3DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -227,51 +116,8 @@ export const queries: Query[] = [
     id: 4,
     uid: 'query_4_1',
     uid_2: 'query_4_2',
-    chartSettings2: {
-      layout: 'horizontal',
-      barLabel: 'value',
-      heading: 'number of empirical methods used for data analysis',
-      // seriesHeadingTemplate: 'number of {label} used for data analysis',
-      className: 'fullWidth fixText',
-      xAxis: [{ label: 'number of empirical method used' }],
-      colors: ['#e86161'],
-      yAxis: [
-        {
-          scaleType: 'band',
-          dataKey: 'methodType',
-          label: 'empirical method used',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-      margin: {
-        left: 150,
-      },
-    },
-    dataProcessingFunction2: Query4DataProcessingFunctionForDataCollection,
-    chartSettings: {
-      layout: 'horizontal',
-      className: 'fullWidth fixText',
-      heading: 'number of empirical methods used for data collection',
-      barLabel: 'value',
-      xAxis: [{ label: 'number of empirical method used' }],
-      yAxis: [
-        {
-          scaleType: 'band',
-          dataKey: 'methodType',
-          label: 'empirical method used',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      margin: {
-        left: 150,
-        right: 20,
-      },
-      height: chartHeight,
-      sx: chartStyles,
-    },
-    dataProcessingFunction: Query4DataProcessingFunctionForDataAnalysis,
+    dataProcessingFunction2: Query4DataProcessingFunctionForDataAnalysis,
+    dataProcessingFunction: Query4DataProcessingFunctionForDataCollection,
     dataAnalysisInformation: {
       question: 'How often are which empirical methods used?',
     },
@@ -282,30 +128,6 @@ export const queries: Query[] = [
       'normalized number of empirical methods used for data collection per year',
     id: 5,
     uid: 'query_5',
-    chartSettings: {
-      className: 'fullWidth',
-      colors: ['#5975a4', '#cc8963', '#5f9e6e', '#c44e52', '#8d7866'],
-      heading:
-        'normalized number of empirical methods used for data collection per year',
-      // seriesHeadingTemplate:
-      //   'number of {label} used for data collection per year',
-      xAxis: xAxisSettings(),
-      yAxis: [
-        {
-          label: 'proportion of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'experiment', label: 'experiment' },
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'secondary research', label: 'secondary research' },
-        { dataKey: 'survey', label: 'survey' },
-        { dataKey: 'action research', label: 'action research' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction: Query5DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -319,30 +141,13 @@ export const queries: Query[] = [
     id: 6,
     uid: 'query_6_2',
     uid_2: 'query_6_1',
-    chartSettings2: {
-      layout: 'horizontal',
-      className: 'fullWidth fixText',
-      heading:
-        'number of statistical methods of descriptive statistics used for data analysis',
-      barLabel: 'value',
-      xAxis: [{ label: 'number of statistical method used' }],
-      yAxis: [
-        {
-          scaleType: 'band',
-          dataKey: 'method',
-          label: 'statistical method used',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      margin: {
-        left: 150,
-      },
-      height: chartHeight,
-      sx: chartStyles,
-    },
     dataProcessingFunction2: Query6DataProcessingFunctionForDataAnalysis,
     dataAnalysisInformation: {
       question: 'How often are which statistical methods used?',
+    },
+    tabs: {
+      tab1_name: 'Descriptive statistics',
+      tab2_name: 'Inferential statistics',
     },
   },
   // Query 7
@@ -352,48 +157,9 @@ export const queries: Query[] = [
     id: 7,
     uid: 'query_7_2',
     uid_2: 'query_7_1',
-    chartSettings2: {
-      className: 'fullWidth',
-      colors: [
-        '#5975a4',
-        '#cc8963',
-        '#5f9e6e',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-        '#8c8c8c',
-        '#ccb974',
-        '#64b5cd',
-        '#4c72b0',
-      ],
-      xAxis: xAxisSettings(),
-      heading:
-        'number of statistical method used for data analysis per year grouped by statistical method',
-      yAxis: [
-        {
-          label: 'proportion of statistical methods used',
-        },
-      ],
-      tabs: {
-        tab1_name: 'Inferential Statistics',
-        tab2_name: 'Descriptive Statistics',
-      },
-      series: [
-        { dataKey: 'count', label: 'count' },
-        { dataKey: 'percent', label: 'percent' },
-        { dataKey: 'mean', label: 'mean' },
-        { dataKey: 'median', label: 'median' },
-        { dataKey: 'mode', label: 'mode' },
-        { dataKey: 'minimum', label: 'minimum' },
-        { dataKey: 'maximum', label: 'maximum' },
-        { dataKey: 'range', label: 'range' },
-        { dataKey: 'variance', label: 'variance' },
-        { dataKey: 'standard_deviation', label: 'standard deviation' },
-        { dataKey: 'boxplot', label: 'boxplot' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
+    tabs: {
+      tab1_name: 'Descriptive statistics',
+      tab2_name: 'Inferential statistics',
     },
     dataProcessingFunction2: Query7DataProcessingFunction,
     dataAnalysisInformation: {
@@ -405,21 +171,6 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 8,
     uid: 'query_8',
-    chartSettings: {
-      className: 'fullWidth',
-      barLabel: 'value',
-
-      xAxis: xAxisSettings(),
-      heading: 'number of papers reporting threats to validity per year',
-      yAxis: [
-        {
-          label: 'proportion of papers reporting threats to validity',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-    },
     dataProcessingFunction: Query8DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -431,27 +182,6 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 9,
     uid: 'query_9',
-    chartSettings: {
-      layout: 'horizontal',
-      className: 'fullWidth fixText',
-      heading: 'number of threats to validity reported in papers',
-
-      barLabel: 'value',
-      xAxis: [{ label: 'proportion of threats to validity reported' }],
-      yAxis: [
-        {
-          scaleType: 'band',
-          dataKey: 'method',
-          label: 'threats to validity reported',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-      margin: {
-        left: 150,
-      },
-    },
     dataProcessingFunction: Query9DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What types of threats to validity do the authors report?',
@@ -462,37 +192,6 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 10,
     uid: 'query_10',
-    chartSettings: {
-      className: 'fullWidth',
-      colors: [
-        '#5975a4',
-        '#cc8963',
-        '#5f9e6e',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-        '#8c8c8c',
-        '#ccb974',
-        '#64b5cd',
-        '#4c72b0',
-      ],
-      heading:
-        'normalized number of case studies and action research used for data collection per year',
-      xAxis: xAxisSettings(),
-      yAxis: [
-        {
-          label: 'proportions of empirical methods used',
-        },
-      ],
-      series: [
-        { dataKey: 'case study', label: 'case study' },
-        { dataKey: 'action research', label: 'action research' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -504,24 +203,7 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 11,
     uid: 'query_11',
-    chartSettings: {
-      className: 'fullWidth',
-
-      heading:
-        'number of papers that provide at least one URL to data per year',
-      barLabel: 'value',
-      xAxis: xAxisSettings(),
-      yAxis: [
-        {
-          label: 'number of papers with data',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-    },
     dataProcessingFunction: Query11DataProcessingFunction,
-
     dataAnalysisInformation: {
       question:
         'How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?',
@@ -532,70 +214,6 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 12,
     uid: 'query_12',
-
-    chartSettings: {
-      className: 'fullWidth fixText',
-      xAxis: xAxisSettings(),
-      colors: [
-        '#4c72b0',
-        '#dd8452',
-        '#55a868',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-      ],
-      heading:
-        'number of papers with highlighted research question(s) and highlighted answers per year',
-      noHeadingInSeries: true,
-      yAxis: [
-        {
-          label: 'numbers of papers',
-        },
-      ],
-      series: [
-        {
-          dataKey: 'noRQHighlighted',
-          label:
-            'papers without highlighted research question(s) and highlighted answers per year',
-        },
-        {
-          dataKey: 'noRQHidden',
-          label: 'papers without research question and hidden answers per year',
-        },
-        {
-          dataKey: 'hqha',
-          label:
-            'papers with highlighted research question(s) and highlighted answers per year',
-        },
-        {
-          dataKey: 'hqhaHidden',
-          label:
-            'papers with highlighted research question(s) and hidden answers per year',
-        },
-        {
-          dataKey: 'hidqha',
-          label:
-            'papers with hidden research question(s) and highlighted answers per year',
-        },
-        {
-          dataKey: 'hidqhid',
-          label:
-            'papers with hidden research question(s) and hidden answers per year',
-        },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      barCategoryGap: 0.1,
-      barGap: 0.05,
-      barWidth: 12,
-      margin: {
-        left: 60,
-        right: 20,
-        top: 150,
-        bottom: 40,
-      },
-    },
     dataProcessingFunction: Query12DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -607,26 +225,6 @@ export const queries: Query[] = [
     title: 'number of papers per year',
     id: 13,
     uid: 'query_13',
-    chartSettings: {
-      layout: 'horizontal',
-      className: 'fullWidth fixText2',
-      heading: 'number of empirical methods used for secondary research',
-      barLabel: 'value',
-      yAxis: [
-        {
-          scaleType: 'band',
-          dataKey: 'method',
-          label: 'empirical method used',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      xAxis: [{ label: 'number of empirical method used' }],
-      margin: {
-        left: 190,
-      },
-      height: chartHeight,
-      sx: chartStyles,
-    },
     dataProcessingFunction: Query13DataProcessingFunction,
     dataAnalysisInformation: {
       question:
@@ -638,126 +236,10 @@ export const queries: Query[] = [
     title: 'normalized empirical methods for secondary research per year',
     id: 14,
     uid: 'query_14',
-    chartSettings: {
-      colors: [
-        '#5975a4',
-        '#dd8452',
-        '#55a868',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-        '#8c8c8c',
-        '#ccb974',
-        '#64b5cd',
-        '#9467bd',
-        '#8c564b',
-        '#e377c2',
-        '#7f7f7f',
-        '#bcbd22',
-        '#17becf',
-        '#ff7f0e',
-      ],
-      className: 'fullWidth',
-      barCategoryGap: 0.1,
-      barGap: 0.05,
-      barWidth: 10,
-      margin: {
-        left: 60,
-        right: 20,
-        top: 120,
-        bottom: 40,
-      },
-      heading:
-        'normalized number of empirical methods used for secondary research per year',
-      xAxis: xAxisSettings(),
-      yAxis: [
-        {
-          label: 'proportion of empirical methods used (%)',
-        },
-      ],
-      series: [
-        {
-          dataKey: 'archive_analysis',
-          label: 'archive analysis',
-        },
-        {
-          dataKey: 'literature_review',
-          label: 'literature review',
-        },
-        {
-          dataKey: 'systematic_literature_review',
-          label: 'systematic literature review',
-        },
-        {
-          dataKey: 'document_analysis',
-          label: 'document analysis',
-        },
-        {
-          dataKey: 'document_inspection',
-          label: 'document inspection',
-        },
-        {
-          dataKey: 'literature_survey',
-          label: 'literature survey',
-        },
-        {
-          dataKey: 'systematic_review',
-          label: 'systematic review',
-        },
-        {
-          dataKey: 'systematic_literature_map',
-          label: 'systematic literature map',
-        },
-        {
-          dataKey: 'tertiary_literature_review',
-          label: 'tertiary literature review',
-        },
-        {
-          dataKey: 'systematic_mapping_study',
-          label: 'systematic mapping study',
-        },
-        {
-          dataKey: 'DPA_collection',
-          label: 'DPA collection',
-        },
-        {
-          dataKey: 'market_research_and_analysis',
-          label: 'market research and analysis',
-        },
-        {
-          dataKey: 'manual_inspection',
-          label: 'manual inspection',
-        },
-        {
-          dataKey: 'literature_study',
-          label: 'literature study',
-        },
-        {
-          dataKey: 'grey_literature_review',
-          label: 'grey literature review',
-        },
-        {
-          dataKey: 'dataset_creation',
-          label: 'dataset creation',
-        },
-        {
-          dataKey: 'tool_review',
-          label: 'tool review',
-        },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction: Query14DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'How has the proportions of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?',
-      requiredDataForAnalysis:
-        'We need data about papers using secondary research methods (like literature reviews, systematic reviews, etc.) grouped by year, including the method name and paper identifier to properly normalize by total papers per year.',
-      dataInterpretation:
-        'This visualization shows the normalized proportion of different secondary research methods used per year, helping identify trends in which research methods are gaining or losing popularity in empirical software engineering research.',
     },
   },
   // Query 15
@@ -766,21 +248,6 @@ export const queries: Query[] = [
     id: 15,
     uid: 'query_15_1',
     uid_2_merge: 'query_15_2',
-    chartSettings: {
-      className: 'fullWidth',
-      barLabel: 'value',
-      xAxis: xAxisSettings('numberOfMethodsUsed'),
-      heading:
-        'number of papers using X empirical methods for data collection and data analysis',
-      yAxis: [
-        {
-          label: 'proportions of empirical methods used',
-        },
-      ],
-      series: [{ dataKey: 'normalizedRatio' }],
-      height: chartHeight,
-      sx: chartStyles,
-    },
     dataProcessingFunction2: (rawData: any[], rawData2: any[]) => {
       //merge rawData and rawData2 based on paper and year in each object
       const mergedData = rawData.map((item) => {
@@ -822,7 +289,8 @@ export const queries: Query[] = [
         numberOfMethodsUsed: key,
         count: value,
         normalizedRatio:
-          Number(((value as number) / countedData.length).toFixed(2)) || 0,
+          Number((((value as number) / countedData.length) * 100).toFixed(2)) ||
+          0,
       }));
 
       return arrayResult;
@@ -837,52 +305,6 @@ export const queries: Query[] = [
     id: 16,
     uid: 'query_16_1',
     uid_2_merge: 'query_16_2',
-    chartSettings: {
-      className: 'fullWidth',
-      colors: [
-        '#5975a4',
-        '#cc8963',
-        '#5f9e6e',
-        '#c44e52',
-        '#8172b3',
-        '#937860',
-        '#da8bc3',
-        '#8c8c8c',
-        '#ccb974',
-        '#64b5cd',
-        '#4c72b0',
-      ],
-      barCategoryGap: 0.1,
-      barGap: 0.05,
-      barWidth: 12,
-      margin: {
-        left: 60,
-        right: 20,
-        top: 120,
-        bottom: 40,
-      },
-      xAxis: xAxisSettings(),
-      heading:
-        'number of papers using X empirical methods for data collection and data analysis per year grouped by number of empirical methods',
-      // seriesHeadingTemplate: 'number of papers using {label} per year',
-      yAxis: [{ label: 'number of papers' }],
-      series: [
-        { dataKey: '1.0', label: '1 empirical methods' },
-        { dataKey: '2.0', label: '2 empirical methods' },
-        { dataKey: '3.0', label: '3 empirical methods' },
-        { dataKey: '4.0', label: '4 empirical methods' },
-        { dataKey: '5.0', label: '5 empirical methods' },
-        { dataKey: '6.0', label: '6 empirical methods' },
-        { dataKey: '7.0', label: '7 empirical methods' },
-        { dataKey: '8.0', label: '8 empirical methods' },
-        { dataKey: '9.0', label: '9 empirical methods' },
-        { dataKey: '10.0', label: '10 empirical methods' },
-        { dataKey: '12.0', label: '12 empirical methods' },
-      ],
-      height: chartHeight,
-      sx: chartStyles,
-      noHeadingInSeries: true,
-    },
     dataProcessingFunction2: Query16DataProcessingFunction,
     dataAnalysisInformation: {
       question:

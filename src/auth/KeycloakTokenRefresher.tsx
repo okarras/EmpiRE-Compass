@@ -1,18 +1,15 @@
 import { useKeycloak } from '@react-keycloak/web';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
 
 function KeycloakTokenRefresher() {
   const { keycloak, initialized } = useKeycloak();
-  const location = useLocation();
 
   useEffect(() => {
     if (!initialized || !keycloak) return;
 
     // Set up token refresh interval
     const refreshInterval = setInterval(async () => {
-      if (keycloak.authenticated && location.pathname === '/statistics') {
-        console.log('Refreshing token');
+      if (keycloak.authenticated) {
         try {
           const refreshed = await keycloak.updateToken(30);
           if (refreshed) {
