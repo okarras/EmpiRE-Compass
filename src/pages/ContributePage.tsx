@@ -19,13 +19,32 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ClearIcon from '@mui/icons-material/Clear';
+import { templateConfig } from '../constants/template_config';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import theme from '../utils/theme';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MAX_SIZE_BYTES = 30 * 1024 * 1024; // 30 MB
+const templates = templateConfig;
 
 const ContributePage: React.FC = () => {
+  const location = useLocation();
+
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<keyof typeof templates>('R186491');
+
+  useEffect(() => {
+    if (selectedTemplate === 'R186491' || selectedTemplate === 'R1544125') {
+      setSelectedTemplate(selectedTemplate);
+    }
+  }, [selectedTemplate]);
+  useEffect(() => {
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const templateFromUrl = pathSegments[0];
+    if (templateFromUrl && templateFromUrl in templates) {
+      setSelectedTemplate(templateFromUrl as keyof typeof templates);
+    }
+  }, [location.pathname]);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -126,7 +145,7 @@ const ContributePage: React.FC = () => {
       setUploading(false);
       setProgress(100);
       const pdfUrl = URL.createObjectURL(file);
-      navigate('/contribute/viewer', {
+      navigate(`/${selectedTemplate}/contribute/viewer`, {
         state: {
           pdfUrl,
           filename: file.name,

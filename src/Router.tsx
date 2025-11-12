@@ -55,12 +55,12 @@ const Router = () => {
               errorElement={<ErrorFallback />}
             />
             <Route
-              path="/contribute"
+              path="contribute"
               element={<ContributePage />}
               errorElement={<ErrorFallback />}
             />
             <Route
-              path="/contribute/viewer"
+              path="contribute/viewer"
               element={<ContributeViewer />}
               errorElement={<ErrorFallback />}
             />

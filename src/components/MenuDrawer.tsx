@@ -296,7 +296,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Contribute Link (NEW) */}
         <ListItem
           onClick={() => {
-            navigate('/contribute');
+            navigate(`/${selectedTemplate}/contribute`);
             handleDrawerClose();
           }}
           sx={{
