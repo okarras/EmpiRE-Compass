@@ -75,68 +75,89 @@ export const Query1DataProcessingFunction = (rawData: RawDataItem[] = []) => {
   return result;
 };
 
-export const Query2DataProcessingFunction = (
-  rawData: Array<{
-    paper: string;
-    year: string;
-    paperLabel: string;
-    guidelineAvailabilityLabel: string;
-  }> = []
-): { year: number; count: number; normalizedRatio: number }[] => {
-  if (!rawData.length) return [];
-
-  // 1) Deduplicate by paper (keep last occurrence)
-  const paperMap = new Map<string, (typeof rawData)[0]>();
-  rawData.forEach((item) => paperMap.set(item.paper, item));
-  const uniquePapers = Array.from(paperMap.values());
-
-  // 2) Filter for papers where guideline availability indicates “Yes” / “Available” / URL present
-  const guidelineAvailable = uniquePapers.filter((item) =>
-    /Yes|available|http|url/i.test(item.guidelineAvailabilityLabel)
-  );
-  // 3) Count papers with guidelines per year
-  const counts: Record<string, number> = {};
-  guidelineAvailable.forEach(({ year }) => {
-    if (!year) return;
-    const yearMatch = String(year).match(/(\d{4})/); // matches 2019 or 2019-07-01
-    if (!yearMatch) return;
-    const y = yearMatch[1];
-    counts[y] = (counts[y] || 0) + 1;
-  });
-  // 4) Convert to sorted array (numeric years)
-  const total = guidelineAvailable.length || 0;
-
-  return Object.entries(counts)
-    .map(([y, c]) => ({
-      year: Number(y),
-      count: c,
-      normalizedRatio: total > 0 ? Number(((c * 100) / total).toFixed(3)) : 0,
-    }))
-    .sort((a, b) => a.year - b.year);
-};
-
-export const Query3DataProcessingFunction = (
-  rawData: Array<{ NLPTaskInputLabel?: string }> = []
-): { label: string; value: number }[] => {
+export const Query2DataProcessingFunction = (rawData: any[] = []) => {
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
-  const counts: Record<string, number> = {};
+  const getFirst = (row: any, keys: string[]) => {
+    for (const k of keys) {
+      const v = row?.[k];
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        return String(v).trim();
+      }
+    }
+    return '';
+  };
 
-  rawData.forEach((row) => {
-    const label = (row.NLPTaskInputLabel || '').trim();
-    if (!label) return;
-    counts[label] = (counts[label] || 0) + 1;
-  });
-  const total = Object.values(counts).reduce((sum, v) => sum + v, 0);
+  const PAPER_KEYS = ['paper'];
+  const GUIDELINE_KEYS = ['guidelineAvailabilityLabel'];
 
-  return Object.entries(counts)
-    .map(([label, value]) => ({
-      label,
-      value,
-      normalizedRatio:
-        total > 0 ? Number(((value * 100) / total).toFixed(3)) : 0,
-    }))
-    .sort((a, b) => b.value - a.value);
+  const paperMap = new Map<string, any>();
+  for (const row of rawData) {
+    const pid = getFirst(row, PAPER_KEYS);
+    if (pid) paperMap.set(pid, row);
+  }
+
+  const uniquePapers = Array.from(paperMap.values());
+
+  const counts = new Map<string, number>();
+  for (const row of uniquePapers) {
+    const label = getFirst(row, GUIDELINE_KEYS) || 'Unknown';
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+
+  const total = Array.from(counts.values()).reduce((s, n) => s + n, 0);
+
+  const result = Array.from(counts.entries()).map(([label, count]) => ({
+    guidelineAvailabilityLabel: label,
+    count,
+    normalizedRatio: total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
+  }));
+
+  result.sort(
+    (a, b) =>
+      b.count - a.count ||
+      a.guidelineAvailabilityLabel.localeCompare(b.guidelineAvailabilityLabel)
+  );
+  console.log('result', result);
+  return result;
+};
+
+export const Query3DataProcessingFunction = (rawData: any[] = []) => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  const getFirst = (row: any, keys: string[]) => {
+    for (const k of keys) {
+      const v = row?.[k];
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        return String(v).trim();
+      }
+    }
+    return '';
+  };
+
+  const LABEL_KEYS = ['NLPTaskInputLabel'];
+
+  const counts = new Map<string, number>();
+
+  for (const row of rawData) {
+    const label = getFirst(row, LABEL_KEYS);
+    if (!label) continue;
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+
+  const total = Array.from(counts.values()).reduce((s, n) => s + n, 0);
+
+  // Build result
+  const result = Array.from(counts.entries()).map(([label, count]) => ({
+    label,
+    count,
+    normalizedRatio: total > 0 ? Number(((count * 100) / total).toFixed(3)) : 0,
+  }));
+
+  // Sort by count desc
+  result.sort((a, b) => b.count - a.count);
+
+  return result;
 };
 
 export const Query4DataProcessingFunction = (
