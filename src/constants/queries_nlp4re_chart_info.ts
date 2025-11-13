@@ -6,6 +6,7 @@ import {
   Query6DataProcessingFunction,
   Query7DataProcessingFunction,
   Query8DataProcessingFunction,
+  Query9DataProcessingFunction,
 } from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
@@ -62,7 +63,7 @@ export interface Query {
   uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie' | 'heatmap';
+  chartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot';
   //TODO: fix types
   dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (
@@ -370,6 +371,7 @@ export const queries: Query[] = [
       sx: chartStyles,
       margin: {
         left: 350,
+        bottom: 200,
       },
     },
     dataProcessingFunction: Query8DataProcessingFunction,
@@ -385,6 +387,29 @@ export const queries: Query[] = [
     title: 'Missing ID Card Information',
     id: 9,
     uid: 'query_9',
+    chartType: 'boxplot',
+    chartSettings: {
+      heading: 'Sections of ID_Card and their missing values',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          dataKey: 'label',
+        },
+      ],
+      yAxis: [
+        {
+          label: 'Percentage of missing values',
+        },
+      ],
+      series: [{ dataKey: 'values' }],
+      height: chartHeight,
+      width: 1000,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query9DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'Which ID-card informational elements do not provide enough options to respondents?',

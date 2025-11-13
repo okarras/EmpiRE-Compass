@@ -49,7 +49,7 @@ export interface Query {
   uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie' | 'heatmap';
+  chartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot';
   //TODO: fix types
   dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (

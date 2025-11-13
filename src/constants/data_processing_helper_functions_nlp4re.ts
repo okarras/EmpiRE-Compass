@@ -4,6 +4,11 @@ export interface RawDataItem {
 
 type CommonResult = { label: string; count: number; normalizedRatio: number };
 
+export type BoxPlotItem = {
+  label: string;
+  values: number[];
+};
+
 type ProcessOptions = {
   paperKey: string;
   labelKey: string;
@@ -208,4 +213,27 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[] = []) => {
   );
 
   return result;
+};
+
+export const Query9DataProcessingFunction = (
+  rawData: Record<string, unknown>[] = []
+): BoxPlotItem[] => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  const KEYS = [
+    'ratio_missing_approach',
+    'ratio_missing_eval',
+    'ratio_missing_nlptask',
+    'ratio_missing_nlp_dataset',
+    'ratio_annotation_missing',
+  ];
+  console.log('result:', rawData);
+
+  return KEYS.map((key) => {
+    const values = rawData
+      .map((row) => Number(row[key]))
+      .filter((v) => Number.isFinite(v));
+
+    return { label: key, values };
+  });
 };
