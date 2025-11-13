@@ -12,12 +12,13 @@ import {
   Query4DataProcessingFunctionForDataCollection,
   Query5DataProcessingFunction,
   Query6DataProcessingFunctionForDataAnalysis,
-  Query7DataProcessingFunction,
+  Query7DataProcessingFunctionForDescriptiveStatistics,
   Query8DataProcessingFunction,
   Query9DataProcessingFunction,
   Query12DataProcessingFunction,
   Query14DataProcessingFunction,
   Query16DataProcessingFunction,
+  Query7DataProcessingFunctionForInferentialStatistics,
 } from './data_processing_helper_functions';
 
 export interface ChartSetting {
@@ -161,7 +162,10 @@ export const queries: Query[] = [
       tab1_name: 'Descriptive statistics',
       tab2_name: 'Inferential statistics',
     },
-    dataProcessingFunction2: Query7DataProcessingFunction,
+    dataProcessingFunction2:
+      Query7DataProcessingFunctionForDescriptiveStatistics,
+    dataProcessingFunction:
+      Query7DataProcessingFunctionForInferentialStatistics,
     dataAnalysisInformation: {
       question: 'How has the use of statistical methods evolved over time?',
     },
