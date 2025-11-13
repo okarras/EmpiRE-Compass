@@ -367,11 +367,11 @@ export const queries: Query[] = [
       ],
 
       series: [],
-      height: chartHeight,
+      height: chartHeight + 100,
       sx: chartStyles,
       margin: {
         left: 350,
-        bottom: 200,
+        bottom: 300,
       },
     },
     dataProcessingFunction: Query8DataProcessingFunction,
