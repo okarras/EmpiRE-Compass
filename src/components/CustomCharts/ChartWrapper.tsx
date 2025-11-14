@@ -4,6 +4,7 @@ import CustomPieChart from './CustomPieChart';
 import CustomHeatMap from './CustomHeatMap';
 import { ChartSetting } from '../../constants/queries_chart_info';
 import CustomBoxPlot from './CustomBoxPlot';
+import CustomScatterChart from './CustomScatterChart';
 
 interface ChartWrapperProps {
   dataset: any[];
@@ -11,8 +12,8 @@ interface ChartWrapperProps {
   question_id: string;
   normalized?: boolean;
   loading: boolean;
-  defaultChartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot';
-  availableCharts?: ('bar' | 'pie' | 'heatmap' | 'boxplot')[];
+  defaultChartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter';
+  availableCharts?: ('bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter')[];
   isSubChart?: boolean;
 }
 
@@ -113,6 +114,15 @@ const ChartWrapper = ({
           chartSetting={chartSetting}
           question_id={question_id}
           loading={loading}
+        />
+      ) : defaultChartType === 'scatter' ? (
+        <CustomScatterChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+          normalized={normalized}
+          loading={loading}
+          // optional: pass isSubChart if needed
         />
       ) : (
         <CustomBarChart

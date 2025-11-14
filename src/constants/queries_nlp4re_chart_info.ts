@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axisClasses } from '@mui/x-charts';
 import {
+  Query10DataProcessingFunction,
   Query1DataProcessingFunction,
   Query5DataProcessingFunction,
   Query6DataProcessingFunction,
@@ -63,7 +64,7 @@ export interface Query {
   uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
   chartSettings2?: ChartSetting;
   chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot';
+  chartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter';
   //TODO: fix types
   dataProcessingFunction2?: (data: any, data2?: any) => any[];
   dataProcessingFunction?: (
@@ -423,6 +424,30 @@ export const queries: Query[] = [
     title: 'Annotator Numbers by Study Type',
     id: 10,
     uid: 'query_10',
+    chartType: 'scatter',
+    chartSettings: {
+      heading: 'Number of annotators per NLP Task',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          dataKey: 'x',
+          scaleType: 'band',
+          label: 'NLP task',
+        },
+      ],
+      yAxis: [
+        {
+          dataKey: 'y',
+          label: 'Number of annotators',
+        },
+      ],
+      colors: ['#e86161', '#4c72b0', '#55a868', '#dd8452', '#8172b3'],
+      sx: chartStyles,
+      series: [{ datasetKeys: { id: 'x', x: 'x', y: 'y' } }],
+      height: chartHeight,
+      margin: { left: 100, right: 120 },
+    },
+    dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What are the usual numbers of annotators for a given type of study?',
