@@ -36,22 +36,8 @@ const CustomScatterChart = ({
       <ScatterChart
         dataset={dataset}
         {...chartSetting}
-        series={chartSetting.series.map((s: any) => ({
-          ...s,
-          x: s.datasetKeys?.x ?? 'x',
-          y: s.datasetKeys?.y ?? 'y',
-          id: s.datasetKeys?.id ?? 'id',
-        }))}
+        series={chartSetting.series}
         grid={{ vertical: true, horizontal: true }}
-        colors={
-          chartSetting.colors ?? [
-            '#e86161',
-            '#4c72b0',
-            '#55a868',
-            '#dd8452',
-            '#8172b3',
-          ]
-        }
         height={chartSetting.height ?? 360}
         margin={chartSetting.margin}
         loading={loading}

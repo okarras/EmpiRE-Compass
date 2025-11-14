@@ -430,22 +430,83 @@ export const queries: Query[] = [
       className: 'fullWidth fixText',
       xAxis: [
         {
-          dataKey: 'x',
-          scaleType: 'band',
           label: 'NLP task',
+          scaleType: 'linear',
+          domain: [0, 'dataMax'],
         },
       ],
       yAxis: [
         {
-          dataKey: 'y',
           label: 'Number of annotators',
         },
       ],
-      colors: ['#e86161', '#4c72b0', '#55a868', '#dd8452', '#8172b3'],
+      colors: [
+        '#4C72B0', // blue
+        '#DD8452', // orange
+        '#55A868', // green
+        '#C44E52', // red
+        '#8172B2', // purple
+        '#937860', // brown
+        '#64B5CD', // teal/cyan
+      ],
       sx: chartStyles,
-      series: [{ datasetKeys: { id: 'x', x: 'x', y: 'y' } }],
+      series: [
+        {
+          label: 'Classification',
+          datasetKeys: {
+            id: 'id',
+            x: 'Classification_x',
+            y: 'Classification_y',
+          },
+        },
+        {
+          label: 'Information_retrieval',
+          datasetKeys: {
+            id: 'id',
+            x: 'Information_retrieval_x',
+            y: 'Information_retrieval_y',
+          },
+        },
+        {
+          label: 'Information_extraction',
+          datasetKeys: {
+            id: 'id',
+            x: 'Information_extraction_x',
+            y: 'Information_extraction_y',
+          },
+        },
+        {
+          label: 'language_modeling',
+          datasetKeys: {
+            id: 'id',
+            x: 'language_modeling_x',
+            y: 'language_modeling_y',
+          },
+        },
+        {
+          label: 'Translation',
+          datasetKeys: { id: 'id', x: 'Translation_x', y: 'Translation_y' },
+        },
+        {
+          label: 'Similar_Requirements_Clustering__Coreference_Resolution',
+          datasetKeys: {
+            id: 'id',
+            x: 'Similar_Requirements_Clustering__Coreference_Resolution_x',
+            y: 'Similar_Requirements_Clustering__Coreference_Resolution_y',
+          },
+        },
+        {
+          label:
+            'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology',
+          datasetKeys: {
+            id: 'id',
+            x: 'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology_x',
+            y: 'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology_y',
+          },
+        },
+      ],
       height: chartHeight,
-      margin: { left: 100, right: 120 },
+      margin: { left: 150, right: 120, top: 100 },
     },
     dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
