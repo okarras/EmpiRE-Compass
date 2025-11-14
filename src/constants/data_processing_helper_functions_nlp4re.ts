@@ -237,3 +237,21 @@ export const Query9DataProcessingFunction = (
     return { label: key, values };
   });
 };
+
+export const Query10DataProcessingFunction = (rawData: any[] = []) => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  return rawData
+    .map((row) => {
+      const label = String(row?.NLPTaskTypeLabel ?? '').trim();
+      const y = Number(row?.numberOfAnnotators ?? 0);
+
+      if (!label || !Number.isFinite(y)) return null;
+
+      return {
+        x: label,
+        y,
+      };
+    })
+    .filter(Boolean);
+};
