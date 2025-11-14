@@ -238,20 +238,58 @@ export const Query9DataProcessingFunction = (
   });
 };
 
-export const Query10DataProcessingFunction = (rawData: any[] = []) => {
+type RawRow = {
+  NLPTaskTypeLabel?: unknown;
+  numberOfAnnotators?: unknown;
+};
+
+export const Query10DataProcessingFunction = (
+  rawData: RawRow[] = []
+): Array<Record<string, any>> => {
+  const jitterAmount = 0.3;
+
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
-  return rawData
-    .map((row) => {
-      const label = String(row?.NLPTaskTypeLabel ?? '').trim();
-      const y = Number(row?.numberOfAnnotators ?? 0);
-
+  const points = rawData
+    .map((r) => {
+      const label = String((r as any)?.NLPTaskTypeLabel ?? '').trim();
+      const y = Number((r as any)?.numberOfAnnotators ?? NaN);
       if (!label || !Number.isFinite(y)) return null;
-
-      return {
-        x: label,
-        y,
-      };
+      return { label, y };
     })
-    .filter(Boolean);
+    .filter((v): v is { label: string; y: number } => v !== null);
+
+  if (points.length === 0) return [];
+
+  const labels = Array.from(new Set(points.map((p) => p.label)));
+
+  const grouped: Record<string, number[]> = {};
+  labels.forEach((lbl) => (grouped[lbl] = []));
+  points.forEach((p) => grouped[p.label].push(p.y));
+
+  const maxRows = Math.max(...Object.values(grouped).map((arr) => arr.length));
+
+  const safe = (s: string) =>
+    s.trim().replace(/\s+/g, '_').replace(/[^\w]/g, '');
+  const labelIndex = Object.fromEntries(
+    labels.map((lbl, idx) => [lbl, idx + 1])
+  );
+
+  const result = Array.from({ length: maxRows }).map((_, i) => {
+    const row: Record<string, any> = { id: `row-${i}`, rowIndex: i };
+
+    labels.forEach((lbl) => {
+      const key = safe(lbl);
+      const baseX = labelIndex[lbl];
+      const jitterOffset = jitterAmount
+        ? (Math.random() - 0.5) * jitterAmount
+        : 0;
+      row[`${key}_x`] = baseX + jitterOffset;
+      row[`${key}_xLabel`] = lbl;
+      row[`${key}_y`] = grouped[lbl][i] ?? null;
+    });
+
+    return row;
+  });
+  return result;
 };
