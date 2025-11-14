@@ -112,31 +112,49 @@ const FloatingAIAssistant: React.FC = () => {
     }
   }, [location.pathname, setContext]);
 
+  const getViewport = () => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  });
+
+  const getCollapsedSize = () => {
+    const { width: viewportWidth, height: viewportHeight } = getViewport();
+    const width = Math.max(
+      320,
+      Math.min(600, viewportWidth ? viewportWidth - 32 : 600)
+    );
+    const height = Math.max(
+      480,
+      Math.min(720, viewportHeight ? viewportHeight - 64 : 720)
+    );
+    return { width, height };
+  };
+
   // Set initial position when dialog opens or expands
   useEffect(() => {
     if (isOpen) {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      const { width: viewportWidth, height: viewportHeight } = getViewport();
+      const { width, height } = getCollapsedSize();
 
-      if (isExpanded) {
+      if (isExpanded || isMobile) {
         // When expanded, position at (0,0) to take full viewport
         setPosition({ x: 0, y: 0 });
       } else {
         // When not expanded, position in bottom-right corner
         setPosition({
-          x: viewportWidth - 400 - 24,
-          y: viewportHeight - 400 - 24,
+          x: Math.max(16, viewportWidth - width - 24),
+          y: Math.max(16, viewportHeight - height - 24),
         });
       }
     }
-  }, [isOpen, isExpanded]);
+  }, [isOpen, isExpanded, isMobile]);
 
   const handleExpand = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (isExpanded) return; // Disable dragging when expanded
+    if (isExpanded || isMobile) return; // Disable dragging when expanded or on mobile
     if (e.target instanceof HTMLElement && e.target.closest('.dialog-header')) {
       e.preventDefault();
       setIsDragging(true);
@@ -148,18 +166,18 @@ const FloatingAIAssistant: React.FC = () => {
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging || isExpanded) return;
+    if (!isDragging || isExpanded || isMobile) return;
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const { width: viewportWidth, height: viewportHeight } = getViewport();
+    const { width, height } = getCollapsedSize();
 
     // Calculate new position
     let newX = e.clientX - dragStartPos.current.x;
     let newY = e.clientY - dragStartPos.current.y;
 
     // Constrain to viewport bounds
-    newX = Math.max(0, Math.min(newX, viewportWidth - 400));
-    newY = Math.max(0, Math.min(newY, viewportHeight - 400));
+    newX = Math.max(16, Math.min(newX, viewportWidth - width - 16));
+    newY = Math.max(16, Math.min(newY, viewportHeight - height - 16));
 
     setPosition({ x: newX, y: newY });
   };
@@ -207,6 +225,7 @@ const FloatingAIAssistant: React.FC = () => {
         open={isOpen}
         onClose={toggleAssistant}
         TransitionComponent={Transition}
+        fullScreen={isMobile || isExpanded}
         hideBackdrop
         disableEnforceFocus
         disableAutoFocus
@@ -214,27 +233,50 @@ const FloatingAIAssistant: React.FC = () => {
         disableScrollLock
         PaperProps={{
           ref: dialogRef,
-          sx: {
-            position: 'fixed',
-            left: isExpanded ? position.x : position.x - 180,
-            top: isExpanded ? position.y : position.y - 350,
-            right: isExpanded ? 0 : 0,
-            width: isExpanded ? '100vw' : 600,
-            height: isExpanded ? '100vh' : 800,
-            maxHeight: isMobile ? '80vh' : 'none',
-            margin: 0,
-            borderRadius: isExpanded ? 0 : '16px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-            transition: 'all 0.3s ease',
-            cursor: isDragging ? 'grabbing' : 'default',
-            zIndex: 1200,
-            resize: isExpanded ? 'none' : 'both',
-            minWidth: isExpanded ? '100vw' : 300,
-            minHeight: isExpanded ? '100vh' : 300,
-            '& .MuiDialog-paper': {
+          sx: () => {
+            if (isMobile || isExpanded) {
+              return {
+                position: 'fixed',
+                left: 0,
+                top: 0,
+                width: '100vw',
+                height: '100vh',
+                margin: 0,
+                borderRadius: 0,
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                transition: 'all 0.3s ease',
+                cursor: isDragging ? 'grabbing' : 'default',
+                zIndex: 1200,
+              };
+            }
+
+            const { width, height } = getCollapsedSize();
+            const { width: viewportWidth, height: viewportHeight } =
+              getViewport();
+            const clampedX = Math.max(
+              16,
+              Math.min(position.x, viewportWidth - width - 16)
+            );
+            const clampedY = Math.max(
+              16,
+              Math.min(position.y, viewportHeight - height - 16)
+            );
+
+            return {
+              position: 'fixed',
+              left: clampedX,
+              top: clampedY,
+              width,
+              height,
               margin: 0,
-            },
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease',
+              cursor: isDragging ? 'grabbing' : 'default',
+              zIndex: 1200,
+            };
           },
         }}
       >

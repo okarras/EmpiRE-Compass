@@ -1,6 +1,25 @@
 import { Request, Response, NextFunction } from 'express';
 import rateLimit from 'express-rate-limit';
 
+// cors config helper - defined early so it can be used by other middleware
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
+
+  // Always allow localhost for development
+  origins.push('http://localhost:5173');
+  origins.push('http://localhost:3000');
+
+  // Add production frontend URL from environment variable
+  if (process.env.FRONTEND_URL) {
+    origins.push(process.env.FRONTEND_URL);
+  }
+
+  // Add Vercel frontend URL (hardcoded for your production deployment)
+  origins.push('https://empire-compass.vercel.app');
+
+  return origins;
+};
+
 // rate limit
 export const createRateLimiter = (
   windowMs: number = 15 * 60 * 1000,
@@ -23,12 +42,34 @@ export const validateApiKey = (
   next: NextFunction
 ) => {
   const apiKey = req.headers['x-api-key'] || req.headers['authorization'];
+  const origin = req.headers.origin;
 
-  // todo: implement proper api key validation
-  if (!apiKey && process.env.NODE_ENV === 'production') {
-    return res.status(401).json({ error: 'API key required' });
+  // Allow requests from trusted frontend origins without API key
+  const allowedOrigins = getAllowedOrigins();
+  // Case-insensitive origin matching
+  const isTrustedOrigin =
+    origin &&
+    allowedOrigins.some(
+      (allowedOrigin) => allowedOrigin.toLowerCase() === origin.toLowerCase()
+    );
+
+  // In production, require API key OR trusted origin
+  if (process.env.NODE_ENV === 'production') {
+    if (!apiKey && !isTrustedOrigin) {
+      // Log for debugging (remove in production if needed)
+      console.log('API key validation failed:', {
+        hasApiKey: !!apiKey,
+        origin,
+        allowedOrigins,
+        isTrustedOrigin,
+      });
+      return res.status(401).json({
+        error: 'API key required or request must come from trusted origin',
+      });
+    }
   }
 
+  // In development, allow all requests
   next();
 };
 
@@ -46,16 +87,18 @@ export const validateGenerateTextRequest = (
       .json({ error: 'Prompt is required and must be a string' });
   }
 
-  if (prompt.length > 10000) {
+  if (prompt.length > 100000) {
     return res
       .status(400)
-      .json({ error: 'Prompt too long (max 10000 characters)' });
+      .json({ error: 'Prompt too long (max 100000 characters)' });
   }
 
-  if (provider && !['openai', 'groq'].includes(provider)) {
+  if (provider && !['openai', 'groq', 'mistral'].includes(provider)) {
     return res
       .status(400)
-      .json({ error: 'Invalid provider. Must be "openai" or "groq"' });
+      .json({
+        error: 'Invalid provider. Must be "openai", "groq", or "mistral"',
+      });
   }
 
   if (
@@ -81,7 +124,35 @@ export const validateGenerateTextRequest = (
 
 // cors config
 export const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void
+  ) => {
+    const allowedOrigins = getAllowedOrigins();
+
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Case-insensitive origin matching
+    const isAllowed = allowedOrigins.some(
+      (allowedOrigin) => allowedOrigin.toLowerCase() === origin.toLowerCase()
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      // In development, be more permissive
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`CORS: Allowing origin ${origin} in development mode`);
+        callback(null, true);
+      } else {
+        console.warn(`CORS: Blocked origin ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };

@@ -77,8 +77,8 @@ export default function Statistics() {
 
         const [paperData, , , , , perVenueData, venuesData] = results;
 
-        setStatistics({
-          ...statistics,
+        setStatistics((prev) => ({
+          ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
 
           perVenueData: perVenueData.map((row: VenueData) => ({
@@ -86,7 +86,7 @@ export default function Statistics() {
             paperCount: Number(row.paperCount ?? 0),
           })),
           venueCount: Number(venuesData[0]?.venueCount ?? 0),
-        });
+        }));
       } catch (error) {
         console.error('Error fetching SPARQL statistics data:', error);
       } finally {
@@ -95,13 +95,20 @@ export default function Statistics() {
     };
 
     fetchData().then(() => {
-      CRUDStatistics.getStatistics().then((statisticsValues) => {
-        Object.keys(statisticsValues[0]).forEach((key) => {
-          setStatistics((prev) => ({
-            ...prev,
-            [key]: statisticsValues[0][key],
-          }));
-        });
+      // UPDATED FOR NEW NESTED STRUCTURE
+      // Get template ID from URL (e.g., /R186491/statistics)
+      const pathSegments = window.location.pathname.split('/').filter(Boolean);
+      const templateId = pathSegments[0] || 'R186491';
+
+      CRUDStatistics.getStatistics(templateId).then((statisticsValues) => {
+        if (statisticsValues) {
+          Object.keys(statisticsValues).forEach((key) => {
+            setStatistics((prev) => ({
+              ...prev,
+              [key]: statisticsValues[key],
+            }));
+          });
+        }
       });
     });
   }, []);
@@ -123,7 +130,17 @@ export default function Statistics() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container sx={{ mt: 8, height: '100vh' }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          mt: { xs: 4, md: 8 },
+          mb: { xs: 6, md: 10 },
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          px: { xs: 2, sm: 3 },
+        }}
+      >
         {/* <StatsChartTypeSelector
           chartType={chartType}
           setChartType={setChartType}
@@ -141,7 +158,15 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
           </Stack>
         ) : ( */}
-        <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          spacing={{ xs: 2, md: 3 }}
+          useFlexGap
+          mb={4}
+          justifyContent={{ xs: 'center', md: 'flex-start' }}
+          alignItems={{ xs: 'center', md: 'stretch' }}
+        >
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>

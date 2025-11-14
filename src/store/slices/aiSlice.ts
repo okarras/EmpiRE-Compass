@@ -18,16 +18,27 @@ export const GROQ_MODELS = [
   'deepseek-r1-distill-llama-70b',
 ] as const;
 
+export const MISTRAL_MODELS = [
+  'mistral-large-latest',
+  'mistral-medium-latest',
+  'mistral-small-latest',
+  'pixtral-large-latest',
+  'open-mistral-nemo',
+] as const;
+
 export type OpenAIModel = (typeof OPENAI_MODELS)[number];
 export type GroqModel = (typeof GROQ_MODELS)[number];
-export type AIProvider = 'openai' | 'groq';
+export type MistralModel = (typeof MISTRAL_MODELS)[number];
+export type AIProvider = 'openai' | 'groq' | 'mistral';
 
 interface InitialState {
   provider: AIProvider;
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
+  mistralModel: MistralModel;
   openaiApiKey: string;
   groqApiKey: string;
+  mistralApiKey: string;
   isConfigured: boolean;
   useEnvironmentKeys: boolean;
 }
@@ -39,16 +50,18 @@ const loadAIConfig = (): Partial<InitialState> => {
     if (savedConfig) {
       const parsed = JSON.parse(savedConfig);
       return {
-        provider: parsed.provider || 'groq',
+        provider: parsed.provider || 'mistral',
         openaiModel: parsed.openaiModel || 'gpt-4o-mini',
         groqModel: parsed.groqModel || 'deepseek-r1-distill-llama-70b',
+        mistralModel: parsed.mistralModel || 'mistral-large-latest',
         openaiApiKey: parsed.openaiApiKey || '',
         groqApiKey: parsed.groqApiKey || '',
+        mistralApiKey: parsed.mistralApiKey || '',
         isConfigured: parsed.isConfigured || false,
         useEnvironmentKeys:
           parsed.useEnvironmentKeys !== undefined
             ? parsed.useEnvironmentKeys
-            : true,
+            : false,
       };
     }
   } catch (error) {
@@ -67,13 +80,15 @@ const saveAIConfig = (config: InitialState) => {
 };
 
 const defaultConfig: InitialState = {
-  provider: 'groq',
+  provider: 'mistral',
   openaiModel: 'gpt-4o-mini',
   groqModel: 'deepseek-r1-distill-llama-70b',
+  mistralModel: 'mistral-large-latest',
   openaiApiKey: '',
   groqApiKey: '',
+  mistralApiKey: '',
   isConfigured: false,
-  useEnvironmentKeys: true,
+  useEnvironmentKeys: false,
 };
 
 const initialState: InitialState = {
@@ -97,12 +112,20 @@ const aiSlice = createSlice({
       state.groqModel = action.payload;
       saveAIConfig(state);
     },
+    setMistralModel: (state, action: PayloadAction<MistralModel>) => {
+      state.mistralModel = action.payload;
+      saveAIConfig(state);
+    },
     setOpenAIApiKey: (state, action: PayloadAction<string>) => {
       state.openaiApiKey = action.payload;
       saveAIConfig(state);
     },
     setGroqApiKey: (state, action: PayloadAction<string>) => {
       state.groqApiKey = action.payload;
+      saveAIConfig(state);
+    },
+    setMistralApiKey: (state, action: PayloadAction<string>) => {
+      state.mistralApiKey = action.payload;
       saveAIConfig(state);
     },
     setIsConfigured: (state, action: PayloadAction<boolean>) => {
@@ -116,6 +139,7 @@ const aiSlice = createSlice({
     resetConfiguration: (state) => {
       state.openaiApiKey = '';
       state.groqApiKey = '';
+      state.mistralApiKey = '';
       state.isConfigured = false;
       saveAIConfig(state);
     },
@@ -136,8 +160,10 @@ export const {
   setProvider,
   setOpenAIModel,
   setGroqModel,
+  setMistralModel,
   setOpenAIApiKey,
   setGroqApiKey,
+  setMistralApiKey,
   setIsConfigured,
   setUseEnvironmentKeys,
   resetConfiguration,

@@ -1,0 +1,177 @@
+{
+  "template": {
+    "id": "R1544125",
+    "title": "NLP for Requirements Engineering (NLP4RE)",
+    "collectionName": "Questions Nlp4re",
+    "description": "Template for analyzing Natural Language Processing approaches applied to Requirements Engineering tasks. This template organizes scientific data about NLP4RE methods, evaluation metrics, datasets, and annotation processes."
+  },
+  "questions": [
+    {
+      "id": 1,
+      "uid": "query_1",
+      "title": "Top-3 Most Frequently Used Evaluation Metrics",
+      "sparqlQuery": "SELECT DISTINCT ?paper ?paperLabel ?evaluation_metricLabel \n   WHERE {\n   ?paper orkgp:P31 ?contribution .\n   ?contribution rdf:type orkgc:C121001;\n           orkgp:HAS_EVALUATION ?evaluation .\n   ?evaluation orkgp:P110006 ?evaluation_metric .\n\n   \n   OPTIONAL {?paper rdfs:label ?paperLabel .}\n   OPTIONAL {?evaluation_metric rdfs:label ?evaluation_metricLabel .}\n   } ORDER BY ?paperLabel",
+      "chartType": "bar",
+      "dataProcessingFunction": "Query1DataProcessingFunction",
+      "chartSettings": {
+        "className": "fullWidth",
+        "heading": "Top-3 Most Frequently Used Evaluation Metrics in NLP Approaches",
+        "barLabel": "value",
+        "xAxis": [
+          {
+            "scaleType": "band",
+            "dataKey": "metricLabel",
+            "tickPlacement": "middle",
+            "label": "Metrics"
+          }
+        ],
+        "yAxis": [
+          {
+            "label": "Number of papers",
+            "dataKey": "count"
+          }
+        ],
+        "series": [
+          {
+            "dataKey": "count"
+          }
+        ],
+        "height": 400
+      },
+      "dataAnalysisInformation": {
+        "question": "What are top-3 most frequently used evaluation metrics to assess a developed NLP approach?",
+        "requiredDataForAnalysis": "As a researcher, I want to know the established evaluation metrics so that I can assess my own NLP4RE approach according to the state-of-the-art metrics. (Asked by: Oliver Karras, Related ID Card: VII.1)"
+      }
+    },
+    {
+      "id": 2,
+      "uid": "query_2",
+      "title": "Papers with Annotation Guidelines (by Year)",
+      "sparqlQuery": "SELECT DISTINCT ?paper ?year ?paperLabel ?guidelineAvailabilityLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n      orkgp:P181031 ?annotationProcess .\n    ?paper orkgp:P29 ?year .\n\n    ?annotationProcess orkgp:P181036 ?annotationScheme .\n    ?annotationScheme orkgp:P181038 ?guidelineAvailability .\n\n    \n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?guidelineAvailability rdfs:label ?guidelineAvailabilityLabel .}\n}ORDER BY ?paperLabel",
+      "chartType": "bar",
+      "dataProcessingFunction": "Query2DataProcessingFunction",
+      "chartSettings": {
+        "className": "fullWidth",
+        "heading": "Papers with Annotation Guidelines — papers per year",
+        "barLabel": "value",
+        "xAxis": [
+          {
+            "scaleType": "band",
+            "dataKey": "year",
+            "tickPlacement": "middle",
+            "label": "Year"
+          }
+        ],
+        "yAxis": [
+          {
+            "label": "Number of Papers",
+            "dataKey": "count"
+          }
+        ],
+        "series": [
+          {
+            "dataKey": "count"
+          }
+        ],
+        "height": 400
+      },
+      "dataAnalysisInformation": {
+        "question": "Which papers are associated with annotation guidelines (distribution by year)?",
+        "requiredDataForAnalysis": "As a researcher, I want to understand the annotation process so that I can reuse it to replicate dataset creation. (Asked by: Sallam Abualhaija, Related ID Card: V.6)"
+      }
+    },
+    {
+      "id": 3,
+      "uid": "query_3",
+      "title": "Input Granularity and RE Tasks",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?RETaskLabel ?NLPTaskInputLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n         orkgp:P181002 ?RETask;\n                    orkgp:P181003 ?NLPTask.\n    ?NLPTask orkgp:P181005 ?NLPTaskInput .\n\n\n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?RETask rdfs:label ?RETaskLabel .}\n    OPTIONAL {?NLPTaskInput rdfs:label ?NLPTaskInputLabel .}\n}ORDER BY ?contribution",
+      "dataAnalysisInformation": {
+        "question": "What are the different levels of granularity at which inputs can be represented and how is this related to the RE task?",
+        "requiredDataForAnalysis": "As a developer, I want to work at the right level of granularity so that I can accurately compare my method against existing ones. (Asked by: Sallam Abualhaija, Related ID Card: III.1 and I.1)"
+      }
+    },
+    {
+      "id": 4,
+      "uid": "query_4",
+      "title": "Types of Baselines",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?baseline_typeLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n         orkgp:HAS_EVALUATION ?evaluation .\n    ?evaluation orkgp:P181051 ?baseline_comparison .\n    ?baseline_comparison orkgp:P181052 ?baseline_type .\n\n\n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?baseline_type rdfs:label ?baseline_typeLabel .}\n} ORDER BY ?contribution",
+      "dataAnalysisInformation": {
+        "question": "What are the types of baselines reported in the papers?",
+        "requiredDataForAnalysis": "As a reviewer, I want to be able to position the paper against existing work so that I can make a more informed decision. (Asked by: Sallam Abualhaija, Related ID Card: VII.3)"
+      }
+    },
+    {
+      "id": 5,
+      "uid": "query_5",
+      "title": "Format of Textual Requirements",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?NLPdataformatLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n             orkgp:P181011 ?NLPdataset .\n    ?NLPdataset orkgp:P181022 ?NLPdatatype .\n    ?NLPdatatype orkgp:P181023 ?NLPdataformat .\n\n\n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?NLPdataformat rdfs:label ?NLPdataformatLabel .}\n} ORDER BY ?contribution",
+      "dataAnalysisInformation": {
+        "question": "What is the most common format of textual requirements?",
+        "requiredDataForAnalysis": "As a researcher, I want to collect diverse requirements so that I validate the generalizability of my proposed method. (Asked by: Sallam Abualhaija, Related ID Card: IV.5)"
+      }
+    },
+    {
+      "id": 6,
+      "uid": "query_6",
+      "title": "Dataset Quality Validation",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?intercoderReliabilityMetricLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n             orkgp:P181031 ?annotationProcess .\n    ?annotationProcess orkgp:P181041 ?annotationAgreement .\n    ?annotationAgreement orkgp:P181042 ?intercoderReliabilityMetric .\n\n\n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?intercoderReliabilityMetric rdfs:label ?intercoderReliabilityMetricLabel .}\n} ORDER BY ?contribution",
+      "dataAnalysisInformation": {
+        "question": "What is the state of practice for validating the quality of the annotated datasets?",
+        "requiredDataForAnalysis": "As a researcher, I want to ensure that available datasets are of good quality so that I can reuse them in my research. (Asked by: Sallam Abualhaija, Related ID Card: V.9)"
+      }
+    },
+    {
+      "id": 7,
+      "uid": "query_7",
+      "title": "Available Datasets for NLP4RE Tasks",
+      "sparqlQuery": "SELECT DISTINCT\n  ?contribution\n  ?paper\n  ?paperLabel\n  ?NLPTaskTypeLabel\n  ?NLPdataItem\n  ?dataProductionTime\n  ?NLPdatasourceTypeLabel\n  ?numberOfDatasources\n  ?datasourceDomainLabel\n  ?NLPdataFormatLabel\n  ?rigorOfDataFormatLabel\n  ?naturalLanguage\n  ?licensePubliclyAvailableLabel\n  ?licenseTypeLabel\n  ?NLPdataset\n  ?datasetLocationTypeLabel\n  ?datasetURL\n  ?NLPabstractionLevelLabel\nWHERE {\n  ?paper orkgp:P31 ?contribution .\n  ?contribution rdf:type orkgc:C121001 ;\n                orkgp:P181003 ?NLPTask ;\n                orkgp:P181011 ?NLPdataset .\n\n  OPTIONAL {\n    ?NLPTask orkgp:P181004 ?NLPTaskType .\n    ?NLPTaskType rdfs:label ?NLPTaskTypeLabel .}\n\n  ?NLPdataset orkgp:P181015 ?NLPdataItem ;\n              orkgp:P181016 ?dataProductionTime ;\n              orkgp:P181017 ?NLPdatasource ;\n              orkgp:P181021 ?NLPabstractionLevel ;\n              orkgp:P181022 ?NLPdatatype ;\n              orkgp:license ?license ;\n              orkgp:P181028 ?datasetLocation .\n\n  ?NLPdatasource orkgp:P181018 ?NLPdatasourceType ;\n                     orkgp:P181020 ?datasourceDomain .\n\n  OPTIONAL{?NLPdatasource orkgp:P181019 ?numberOfDatasources .}\n\n  OPTIONAL { ?NLPdatasourceType rdfs:label ?NLPdatasourceTypeLabel .\n             ?datasourceDomain rdfs:label ?datasourceDomainLabel .\n             ?NLPabstractionLevel rdfs:label ?NLPabstractionLevelLabel .}\n\n  ?NLPdatatype orkgp:P181023 ?NLPdataFormat ;\n               orkgp:P181024 ?rigorOfDataFormat ;\n               orkgp:P181025 ?naturalLanguage .\n\n  OPTIONAL { ?NLPdataFormat rdfs:label ?NLPdataFormatLabel . }\n  OPTIONAL { ?rigorOfDataFormat rdfs:label ?rigorOfDataFormatLabel .}\n\n  ?license orkgp:P181026 ?licensePubliclyAvailable ;\n           orkgp:P181027 ?licenseType .\n  OPTIONAL { ?licensePubliclyAvailable rdfs:label ?licensePubliclyAvailableLabel . }\n  OPTIONAL { ?licenseType rdfs:label ?licenseTypeLabel . }\n\n  ?datasetLocation orkgp:P181030 ?datasetLocationType .\n  OPTIONAL { ?datasetLocationType rdfs:label ?datasetLocationTypeLabel . }\n  OPTIONAL { ?datasetLocation orkgp:P1003 ?datasetURL . }\n\n  OPTIONAL { ?paper rdfs:label ?paperLabel . }\n}\nORDER BY ?contribution ?NLPTaskTypeLabel",
+      "dataAnalysisInformation": {
+        "question": "What datasets exist for a certain NLP4RE task?",
+        "requiredDataForAnalysis": "As a researcher, I want to find all datasets for a certain NLP4RE task so that I can make a selection for my next paper. (Asked by: Fabiano Dalpiaz, Related ID Card: II.1 and IV)"
+      }
+    },
+    {
+      "id": 8,
+      "uid": "query_8",
+      "title": "RE and NLP Task Combinations",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?RETaskLabel ?NLPTaskTypeLabel ?NLPTaskTypeDescription\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n                      orkgp:P181002 ?RETask;\n                      orkgp:P181003 ?NLPTask .\n\n    ?NLPTask orkgp:P181004 ?NLPTaskType .\n    OPTIONAL{?NLPTaskType orkgp:description ?NLPTaskTypeDescription .}\n\n    OPTIONAL { ?paper rdfs:label ?paperLabel . }\n    OPTIONAL { ?RETask rdfs:label ?RETaskLabel . }\n    OPTIONAL { ?NLPTaskType rdfs:label ?NLPTaskTypeLabel . }\n}\nORDER BY ?contribution ?paperLabel ?NLPTaskTypeLabel",
+      "dataAnalysisInformation": {
+        "question": "Which combinations of RE and NLP tasks are most (a)typical?",
+        "requiredDataForAnalysis": "As a researcher, I want to identify over- and under-explored tasks so that I can direct my research line. (Asked by: Fabiano Dalpiaz, Related ID Card: I.1 and II.1)"
+      }
+    },
+    {
+      "id": 9,
+      "uid": "query_9",
+      "title": "Missing ID Card Information",
+      "sparqlQuery": "SELECT \nDISTINCT ?contribution\n?ratio_missing_eval\n?ratio_missing_approach\n?ratio_missing_nlptask\n?ratio_missing_nlp_dataset\n?ratio_annotation_missing\nWHERE {\n  {\n    SELECT DISTINCT ?contribution (xsd:float(?AnnotationNotReportedCount)/xsd:float(10)*100 AS ?ratio_annotation_missing)\n    WHERE {\n      ?paper orkgp:P31 ?contribution.\n      ?contribution a orkgc:C121001;\n                   orkgp:P181031 ?annotationProcess.\n      \n      ?annotationProcess orkgp:P181032 ?annotator; \n                         orkgp:P181036 ?annotationScheme; \n                         orkgp:P181039 ?sharedMat; \n                         orkgp:P181040 ?fatigueMitig; \n                         orkgp:P181041 ?agreement .\n      \n      ?annotator orkgp:P181033 ?annotatorAssignm; \n                 orkgp:P181034 ?levelExpertise; \n                 orkgp:P181035 ?annotatorIdentity .\n      \n      OPTIONAL{?annotator orkgp:P59120 ?numAnnotators.}\n      \n      ?annotationScheme orkgp:P181037 ?schemeEstabl; \n                        orkgp:P181038 ?guidelineAv .\n      \n      ?agreement orkgp:P181042 ?intercoder; \n                 orkgp:P181044 ?conflictRes; \n                 orkgp:P181045 ?measueredAgree .\n                \n      ?sharedMat rdfs:label ?sharedMatLabel .\n      ?annotatorAssignm rdfs:label ?annotatorAssignmLabel .\n      ?levelExpertise rdfs:label ?levelExpertiseLabel .\n      ?annotatorIdentity rdfs:label ?annotatorIdentityLabel .\n      ?schemeEstabl rdfs:label ?schemeEstablLabel .\n      ?guidelineAv rdfs:label ?guidelineAvLabel .\n      ?intercoder rdfs:label ?intercoderLabel .\n      ?conflictRes rdfs:label ?conflictResLabel .\n      \n      BIND(\n        (IF(?sharedMatLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?annotatorAssignmLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?levelExpertiseLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?annotatorIdentityLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?schemeEstablLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?guidelineAvLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?intercoderLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?conflictResLabel = \"Not reported\"^^xsd:string, 1, 0) +\n        IF(?measueredAgree = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(BOUND(?numAnnotators), 0, 1))\n        AS ?AnnotationNotReportedCount\n      )\n    } GROUP BY ?contribution\n  }\n\n  {\n    SELECT DISTINCT ?contribution (xsd:float(?DatasetNotReportedCount)/xsd:float(13)*100 AS ?ratio_missing_nlp_dataset)\n    WHERE {\n      ?paper orkgp:P31 ?contribution.\n      ?contribution a orkgc:C121001;\n                   orkgp:P181011 ?NLPdataset.\n      \n      ?NLPdataset orkgp:P181015 ?dataitem; \n                  orkgp:P181016 ?prodtime;\n                  orkgp:P181021 ?abstractionLevel; \n                  orkgp:P181017 ?dataSource; \n                  orkgp:P181022 ?dataType; \n                  orkgp:license ?license; \n                  orkgp:P181028 ?datasetLoc .\n                \n      ?dataSource orkgp:P181018 ?datasourceType; \n                  orkgp:P181020 ?dataSourceDomain .\n      \n       OPTIONAL{?dataSource orkgp:P181019 ?numDatasources.} \n      \n      ?abstractionLevel rdfs:label ?abstractionLevelLabel .\n      ?datasourceType rdfs:label ?datasourceTypeLabel .\n      ?dataSourceDomain rdfs:label ?dataSourceDomainLabel .\n      \n      ?dataType orkgp:P181023 ?dataFormat; \n                orkgp:P181025 ?naturalLang; \n                orkgp:P181024 ?rigor .\n                \n      ?dataFormat rdfs:label ?dataFormatLabel .\n      ?rigor rdfs:label ?rigorLabel .\n      \n      ?license orkgp:P181026 ?publiclyAvail;\n               orkgp:P181027 ?licenseType .\n      \n      ?publiclyAvail rdfs:label ?publiclyAvailLabel .\n      ?licenseType rdfs:label ?licenseTypeLabel .\n      \n      ?datasetLoc orkgp:P181030 ?locType .\n      OPTIONAL{ ?datasetLoc orkgp:P1003 ?url .}\n      \n      ?locType rdfs:label ?locTypeLabel .\n                \n      BIND(\n        (IF(?dataitem = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?prodtime = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?abstractionLevelLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?datasourceTypeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?dataSourceDomainLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?dataFormatLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?naturalLang = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?rigorLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?publiclyAvailLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?licenseTypeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?locTypeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(BOUND(?numDataSources), 0, 1)+\n         IF(BOUND(?url), 0, 1))\n        AS ?DatasetNotReportedCount\n      )\n    } GROUP BY ?contribution\n  }\n\n  {\n    SELECT DISTINCT ?contribution (xsd:float(?NLPTaskNotReportedCount)/xsd:float(6)*100 AS ?ratio_missing_nlptask)\n    WHERE {\n      ?paper orkgp:P31 ?contribution.\n      ?contribution a orkgc:C121001;\n                    orkgp:P181003 ?NLPTask .\n      ?NLPTask orkgp:P181004 ?NLPTaskType;\n             orkgp:P181005 ?NLPTaskInput;\n             orkgp:P181006 ?NLPTaskOutput .\n\n      ?NLPTaskOutput orkgp:P181007 ?NLPTaskOutputType;\n                   orkgp:P181008 ?NLPTaskOutputClassi;\n                   orkgp:P181009 ?NLPTaskOutputExtr; \n                   orkgp:P181010 ?NLPTaskOutputTransl .\n    \n      ?NLPTaskType rdfs:label ?taskLabel .\n      ?NLPTaskInput rdfs:label ?inputLabel .\n      ?NLPTaskOutputType rdfs:label ?outputLabel .\n      ?NLPTaskOutputTransl rdfs:label ?transLabel .\n    \n      BIND(\n        (IF(?taskLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?inputLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?outputLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?NLPTaskOutputClassi = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?NLPTaskOutputExtr = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?transLabel = \"Not reported\"^^xsd:string, 1, 0))\n        AS ?NLPTaskNotReportedCount\n        )\n      }ORDER BY ?contribution\n   }\n     \n  {\n    SELECT DISTINCT ?contribution (xsd:float(?EvaluationNotReportedCount)/xsd:float(4)*100 AS ?ratio_missing_eval)\n    WHERE {\n      ?paper orkgp:P31 ?contribution.\n      ?contribution a orkgc:C121001.\n      ?contribution orkgp:HAS_EVALUATION ?evaluation.\n      ?evaluation orkgp:P110006 ?metric;\n                  orkgp:P181050 ?validation;\n                  orkgp:P181051 ?baseline.\n      ?baseline orkgp:P181052 ?type;\n                orkgp:P181053 ?details.\n      ?metric rdfs:label ?mlabel.\n      ?validation rdfs:label ?vlabel.\n      ?type rdfs:label ?tlabel.\n      \n      BIND(\n        (IF(?mlabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?vlabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?tlabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?details = \"Not reported\"^^xsd:string, 1, 0))\n        AS ?EvaluationNotReportedCount\n      )\n    } GROUP BY ?contribution\n  }\n  \n  {\n    SELECT DISTINCT ?contribution (xsd:float(?ApproachNotReportedCount)/xsd:float(9)*100 AS ?ratio_missing_approach)\n    WHERE {\n      ?paper orkgp:P31 ?contribution.\n      ?contribution a orkgc:C121001.\n\n      ?contribution orkgp:P181046 ?approach.\n      ?approach orkgp:P5043 ?type;\n                orkgp:P58069 ?algorithm;\n                orkgp:P181047 ?requirements; \n                orkgp:P41835 ?documentation;\n                orkgp:P181048 ?dependency; \n                orkgp:P181027 ?licenseType; \n                orkgp:release ?release.\n      ?release orkgp:P181029 ?locationType;\n               orkgp:P181049 ?releaseFormat.\n      \n      OPTIONAL{?release orkgp:P1003 ?url.}\n      ?type rdfs:label ?typeLabel.\n      ?algorithm rdfs:label ?algorithmLabel.\n\n      ?requirements rdfs:label ?requirementsLabel.\n      ?documentation rdfs:label ?documentationLabel.\n      ?dependency rdfs:label ?dependencyLabel.\n      ?licenseType rdfs:label ?licenseTypeLabel.\n      ?locationType rdfs:label ?locationTypeLabel.\n      ?releaseFormat rdfs:label ?releaseFormatLabel.\n\n      BIND(\n        (IF(?typeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?algorithmLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?requirementsLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?documentationLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?dependencyLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?licenseTypeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?locationTypeLabel = \"Not reported\"^^xsd:string, 1, 0) +\n         IF(?releaseFormatLabel = \"No reported\"^^xsd:string, 1, 0) +\n         IF(BOUND(?url), 0, 1))\n        AS ?ApproachNotReportedCount\n      )\n    } GROUP BY ?contribution\n  } \n} GROUP BY ?contribution\nORDER BY ?contribution",
+      "dataAnalysisInformation": {
+        "question": "Which ID-card informational elements do not provide enough options to respondents?",
+        "requiredDataForAnalysis": "As an ID card manager, I want to identify emerging research topics so that I can update the ID card options offered to respondents according to the state of the art. (Asked by: Xavier Franch, Affects: all ID card questions)"
+      }
+    },
+    {
+      "id": 10,
+      "uid": "query_10",
+      "title": "Annotator Numbers by Study Type",
+      "sparqlQuery": "SELECT DISTINCT ?contribution ?paper ?paperLabel ?numberOfAnnotators ?NLPTaskTypeLabel ?annotatorAssignmentLabel ?levelOfExpertiseLabel ?annotatorIdentityLabel\nWHERE {\n    ?paper orkgp:P31 ?contribution .\n    ?contribution rdf:type orkgc:C121001;\n             orkgp:P181031 ?annotationProcess;\n             orkgp:P181003 ?NLPTask .\n\n     ?NLPTask orkgp:P181004 ?NLPTaskType .\n     ?annotationProcess orkgp:P181032 ?annotator .\n     ?annotator orkgp:P59120 ?numberOfAnnotators;\n                orkgp:P181033 ?annotatorAssignment;\n                orkgp:P181034 ?levelOfExpertise;\n                orkgp:P181035 ?annotatorIdentity .\n\n    OPTIONAL { ?NLPTaskType rdfs:label ?NLPTaskTypeLabel . }\n    OPTIONAL {?paper rdfs:label ?paperLabel .}\n    OPTIONAL {?annotatorAssignment rdfs:label ?annotatorAssignmentLabel .}\n    OPTIONAL {?levelOfExpertise rdfs:label ?levelOfExpertiseLabel .}\n    OPTIONAL {?annotatorIdentity rdfs:label ?annotatorIdentityLabel .}\n} ORDER BY ?paperLabel",
+      "dataAnalysisInformation": {
+        "question": "What are the usual numbers of annotators for a given type of study?",
+        "requiredDataForAnalysis": "As a researcher, I want to have an idea of how many annotators to recruit based on state of art so that I can estimate how expensive/feasible is a study. (Asked by: Davide Fucci, Related ID Card: V.1-V.4)"
+      }
+    }
+  ],
+  "statistics": [],
+  "metadata": {
+    "createdDate": "2025-10-24",
+    "version": "1.0",
+    "notes": [
+      "This template focuses on NLP4RE research contributions.",
+      "Data processing functions referenced in chartSettings need to be mapped from data_processing_helper_functions_nlp4re.ts",
+      "Query 1 uses: Query1DataProcessingFunction",
+      "Query 2 uses: Query2DataProcessingFunction",
+      "SPARQL queries use ORKG predicates and classes specific to the NLP4RE template (orkgc:C121001)",
+      "All SPARQL queries require the ORKG prefixes to be defined"
+    ]
+  }
+}

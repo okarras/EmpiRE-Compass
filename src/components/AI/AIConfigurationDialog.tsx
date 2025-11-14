@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -23,23 +22,25 @@ import {
   VisibilityOff,
   Settings,
   CheckCircle,
-  Error,
 } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
   setProvider,
   setOpenAIModel,
   setGroqModel,
+  setMistralModel,
   setOpenAIApiKey,
   setGroqApiKey,
+  setMistralApiKey,
   setIsConfigured,
   setUseEnvironmentKeys,
-  clearStoredConfiguration,
   OPENAI_MODELS,
   GROQ_MODELS,
+  MISTRAL_MODELS,
   type AIProvider,
   type OpenAIModel,
   type GroqModel,
+  type MistralModel,
 } from '../../store/slices/aiSlice';
 
 interface AIConfigurationDialogProps {
@@ -56,8 +57,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     provider,
     openaiModel,
     groqModel,
+    mistralModel,
     openaiApiKey,
     groqApiKey,
+    mistralApiKey,
     isConfigured,
     useEnvironmentKeys,
   } = useAppSelector((state) => state.ai);
@@ -67,12 +70,16 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const [localOpenAIModel, setLocalOpenAIModel] =
     useState<OpenAIModel>(openaiModel);
   const [localGroqModel, setLocalGroqModel] = useState<GroqModel>(groqModel);
+  const [localMistralModel, setLocalMistralModel] =
+    useState<MistralModel>(mistralModel);
   const [localOpenAIApiKey, setLocalOpenAIApiKey] = useState(openaiApiKey);
   const [localGroqApiKey, setLocalGroqApiKey] = useState(groqApiKey);
+  const [localMistralApiKey, setLocalMistralApiKey] = useState(mistralApiKey);
   const [localUseEnvironmentKeys, setLocalUseEnvironmentKeys] =
     useState(useEnvironmentKeys);
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showGroqKey, setShowGroqKey] = useState(false);
+  const [showMistralKey, setShowMistralKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset local state when dialog opens
@@ -81,8 +88,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       setLocalProvider(provider);
       setLocalOpenAIModel(openaiModel);
       setLocalGroqModel(groqModel);
+      setLocalMistralModel(mistralModel);
       setLocalOpenAIApiKey(openaiApiKey);
       setLocalGroqApiKey(groqApiKey);
+      setLocalMistralApiKey(mistralApiKey);
       setLocalUseEnvironmentKeys(useEnvironmentKeys);
       setError(null);
     }
@@ -91,8 +100,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     provider,
     openaiModel,
     groqModel,
+    mistralModel,
     openaiApiKey,
     groqApiKey,
+    mistralApiKey,
     useEnvironmentKeys,
   ]);
 
@@ -101,12 +112,16 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       // Validate configuration
       if (!localUseEnvironmentKeys) {
         if (localProvider === 'openai' && !localOpenAIApiKey.trim()) {
-          //@ts-ignore
-          throw new Error('OpenAI API key is required');
+          setError('OpenAI API key is required');
+          return;
         }
         if (localProvider === 'groq' && !localGroqApiKey.trim()) {
-          //@ts-ignore
-          throw new Error('Groq API key is required');
+          setError('Groq API key is required');
+          return;
+        }
+        if (localProvider === 'mistral' && !localMistralApiKey.trim()) {
+          setError('Mistral API key is required');
+          return;
         }
       }
 
@@ -114,15 +129,22 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       dispatch(setProvider(localProvider));
       dispatch(setOpenAIModel(localOpenAIModel));
       dispatch(setGroqModel(localGroqModel));
+      dispatch(setMistralModel(localMistralModel));
       dispatch(setOpenAIApiKey(localOpenAIApiKey));
       dispatch(setGroqApiKey(localGroqApiKey));
+      dispatch(setMistralApiKey(localMistralApiKey));
       dispatch(setUseEnvironmentKeys(localUseEnvironmentKeys));
       dispatch(setIsConfigured(true));
 
       onClose();
-    } catch (err) {
-      //@ts-ignore
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : err
+            ? String(err)
+            : 'An error occurred';
+      setError(errorMessage);
     }
   };
 
@@ -130,40 +152,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     onClose();
   };
 
-  const handleClearStoredSettings = () => {
-    dispatch(clearStoredConfiguration());
-    // Reset to defaults
-    setLocalProvider('groq');
-    setLocalOpenAIModel('gpt-4o-mini');
-    setLocalGroqModel('deepseek-r1-distill-llama-70b');
-    setLocalOpenAIApiKey('');
-    setLocalGroqApiKey('');
-    setLocalUseEnvironmentKeys(true);
-    setError(null);
-  };
-
-  // Check if settings are loaded from localStorage
-  const hasStoredSettings = () => {
-    try {
-      return localStorage.getItem('ai-configuration') !== null;
-    } catch {
-      return false;
-    }
-  };
-
-  const getCurrentApiKey = () => {
-    if (localUseEnvironmentKeys) {
-      return localProvider === 'openai'
-        ? import.meta.env.VITE_OPEN_AI_API_KEY || 'Not set in environment'
-        : import.meta.env.VITE_GROQ_API_KEY || 'Not set in environment';
-    }
-    return localProvider === 'openai' ? localOpenAIApiKey : localGroqApiKey;
-  };
-
-  const isApiKeyValid = () => {
-    const key = getCurrentApiKey();
-    return key && key !== 'Not set in environment' && key.length > 0;
-  };
+  // handleClearStoredSettings removed - no longer needed without API keys
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -184,7 +173,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           )}
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Configure your AI provider to get started
+          Configure your AI provider and API keys. API keys are sent securely to
+          the backend.
         </Typography>
       </DialogTitle>
 
@@ -202,6 +192,31 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 variant="outlined"
                 sx={{ '& .MuiSelect-select': { py: 1.5 } }}
               >
+                <MenuItem value="mistral">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Mistral AI
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        High-performance models • Mistral Large, Medium, Small
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label="Default"
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                </MenuItem>
                 <MenuItem value="groq">
                   <Box
                     sx={{
@@ -219,12 +234,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Fast inference • Llama, DeepSeek, Mixtral
                       </Typography>
                     </Box>
-                    <Chip
-                      label="Recommended"
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
                   </Box>
                 </MenuItem>
                 <MenuItem value="openai">
@@ -258,13 +267,19 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             <FormControl fullWidth>
               <Select
                 value={
-                  localProvider === 'openai' ? localOpenAIModel : localGroqModel
+                  localProvider === 'openai'
+                    ? localOpenAIModel
+                    : localProvider === 'groq'
+                      ? localGroqModel
+                      : localMistralModel
                 }
                 onChange={(e) => {
                   if (localProvider === 'openai') {
                     setLocalOpenAIModel(e.target.value as OpenAIModel);
-                  } else {
+                  } else if (localProvider === 'groq') {
                     setLocalGroqModel(e.target.value as GroqModel);
+                  } else if (localProvider === 'mistral') {
+                    setLocalMistralModel(e.target.value as MistralModel);
                   }
                 }}
                 variant="outlined"
@@ -296,38 +311,72 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </Box>
                       </MenuItem>
                     ))
-                  : GROQ_MODELS.map((model) => (
-                      <MenuItem key={model} value={model}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                          }}
-                        >
-                          <Typography sx={{ fontWeight: 500 }}>
-                            {model}
-                          </Typography>
-                          {model === 'deepseek-r1-distill-llama-70b' && (
-                            <Chip
-                              label="Recommended"
-                              size="small"
-                              color="primary"
-                              variant="outlined"
-                            />
-                          )}
-                          {(model.includes('70b') || model.includes('405b')) &&
-                            model !== 'deepseek-r1-distill-llama-70b' && (
+                  : localProvider === 'groq'
+                    ? GROQ_MODELS.map((model) => (
+                        <MenuItem key={model} value={model}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 500 }}>
+                              {model}
+                            </Typography>
+                            {model === 'deepseek-r1-distill-llama-70b' && (
                               <Chip
-                                label="Large"
+                                label="Recommended"
                                 size="small"
-                                variant="outlined"
                                 color="primary"
+                                variant="outlined"
                               />
                             )}
-                        </Box>
-                      </MenuItem>
-                    ))}
+                            {(model.includes('70b') ||
+                              model.includes('405b')) &&
+                              model !== 'deepseek-r1-distill-llama-70b' && (
+                                <Chip
+                                  label="Large"
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                />
+                              )}
+                          </Box>
+                        </MenuItem>
+                      ))
+                    : MISTRAL_MODELS.map((model) => (
+                        <MenuItem key={model} value={model}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 500 }}>
+                              {model}
+                            </Typography>
+                            {model === 'mistral-large-latest' && (
+                              <Chip
+                                label="Default"
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                            )}
+                            {model.includes('large') &&
+                              model !== 'mistral-large-latest' && (
+                                <Chip
+                                  label="Large"
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                />
+                              )}
+                          </Box>
+                        </MenuItem>
+                      ))}
               </Select>
             </FormControl>
           </Box>
@@ -337,47 +386,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
               API Key Setup
             </Typography>
-
-            <Box
-              sx={{
-                mb: 3,
-                p: 2,
-                backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                borderRadius: 2,
-              }}
-            >
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                <strong>What is an API key?</strong>
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                An API key is a secure token that allows this application to
-                access AI services. You'll need to create one from your chosen
-                provider's platform.
-              </Typography>
-
-              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  href="https://console.groq.com/keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textTransform: 'none' }}
-                >
-                  Get Groq API Key
-                </Button>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  href="https://platform.openai.com/api-keys"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{ textTransform: 'none' }}
-                >
-                  Get OpenAI API Key
-                </Button>
-              </Box>
-            </Box>
 
             <FormControlLabel
               control={
@@ -390,26 +398,16 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
               label={
                 <Box>
                   <Typography variant="body2">
-                    Use environment variables
+                    Use backend environment variables
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Recommended for production deployments
+                    Use API keys configured in backend (if available)
                   </Typography>
                 </Box>
               }
             />
 
-            {localUseEnvironmentKeys ? (
-              <Alert
-                severity={isApiKeyValid() ? 'success' : 'warning'}
-                sx={{ mt: 2 }}
-                icon={isApiKeyValid() ? <CheckCircle /> : <Error />}
-              >
-                {isApiKeyValid()
-                  ? `Using ${localProvider.toUpperCase()} API key from environment variables`
-                  : `${localProvider.toUpperCase()} API key not found in environment variables`}
-              </Alert>
-            ) : (
+            {!localUseEnvironmentKeys ? (
               <Box sx={{ mt: 2 }}>
                 {localProvider === 'openai' ? (
                   <TextField
@@ -428,9 +426,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Get your API key from https://platform.openai.com/api-keys"
+                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
-                ) : (
+                ) : localProvider === 'groq' ? (
                   <TextField
                     fullWidth
                     label="Groq API Key"
@@ -447,10 +445,36 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Get your API key from https://console.groq.com/keys"
+                    helperText="Your API key is sent securely to the backend and never exposed"
+                  />
+                ) : (
+                  <TextField
+                    fullWidth
+                    label="Mistral API Key"
+                    type={showMistralKey ? 'text' : 'password'}
+                    value={localMistralApiKey}
+                    onChange={(e) => setLocalMistralApiKey(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <IconButton
+                          onClick={() => setShowMistralKey(!showMistralKey)}
+                          edge="end"
+                        >
+                          {showMistralKey ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      ),
+                    }}
+                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
                 )}
               </Box>
+            ) : (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                <Typography variant="body2">
+                  Using API keys from backend environment variables. If not
+                  configured, you'll need to provide your own API key above.
+                </Typography>
+              </Alert>
             )}
           </Box>
 
@@ -459,50 +483,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
             </Alert>
-          )}
-
-          {/* Quick Status */}
-          {hasStoredSettings() && (
-            <Box
-              sx={{
-                p: 2,
-                backgroundColor: 'rgba(25, 118, 210, 0.04)',
-                borderRadius: 2,
-                border: '1px solid rgba(25, 118, 210, 0.12)',
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {localProvider.toUpperCase()} •{' '}
-                    {localProvider === 'openai'
-                      ? localOpenAIModel
-                      : localGroqModel}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Settings saved locally
-                  </Typography>
-                </Box>
-                <Button
-                  size="small"
-                  onClick={handleClearStoredSettings}
-                  sx={{
-                    color: 'text.secondary',
-                    fontSize: '0.75rem',
-                    textTransform: 'none',
-                    '&:hover': { backgroundColor: 'action.hover' },
-                  }}
-                >
-                  Reset
-                </Button>
-              </Box>
-            </Box>
           )}
         </Box>
       </DialogContent>
@@ -518,7 +498,12 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={!isApiKeyValid()}
+          disabled={
+            !localUseEnvironmentKeys &&
+            ((localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
+              (localProvider === 'groq' && !localGroqApiKey.trim()) ||
+              (localProvider === 'mistral' && !localMistralApiKey.trim()))
+          }
           sx={{
             backgroundColor: '#e86161',
             textTransform: 'none',
