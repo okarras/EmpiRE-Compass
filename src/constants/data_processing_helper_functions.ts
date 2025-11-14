@@ -47,11 +47,14 @@ interface Query2DataCollenctionRawDataInterface {
 export const Query2DataProcessingFunctionForDataCollection = (
   rawData: Query2DataCollenctionRawDataInterface[] = []
 ): Record<string, unknown>[] => {
-  // 1) Deduplicate by paper
-  const paperMap = new Map<string, Query2DataCollenctionRawDataInterface>();
-  rawData.forEach((item) => paperMap.set(item.paper as string, item));
-  //TODO: fix this
-  const uniquePapers = rawData;
+  // 1) Count unique papers per year (for normalization denominator)
+  const uniquePapersPerYear: Record<string, Set<string>> = {};
+  rawData.forEach(({ paper, year }) => {
+    if (!uniquePapersPerYear[year]) {
+      uniquePapersPerYear[year] = new Set();
+    }
+    uniquePapersPerYear[year].add(paper as string);
+  });
 
   // 2) Define which labels go into "others"
   const dataKeys = [
@@ -63,9 +66,9 @@ export const Query2DataProcessingFunctionForDataCollection = (
     'action research',
   ];
 
-  // 3) Aggregate counts per year × method
+  // 3) Aggregate counts per year × method (NOT deduplicated - one paper can have multiple methods)
   const aggregatedData: Record<string, Record<string, number>> = {};
-  uniquePapers.forEach(({ dc_method_type_label, year }) => {
+  rawData.forEach(({ dc_method_type_label, year }) => {
     aggregatedData[year] = aggregatedData[year] || {};
     const key = dataKeys.includes(dc_method_type_label)
       ? dc_method_type_label
@@ -73,22 +76,19 @@ export const Query2DataProcessingFunctionForDataCollection = (
     aggregatedData[year][key] = (aggregatedData[year][key] || 0) + 1;
   });
 
-  // 4) For each year, compute per-year total and per-method ratios
+  // 4) For each year, compute normalized values by dividing by unique paper count
   const result = Object.entries(aggregatedData)
     .sort(([a], [b]) => parseInt(a) - parseInt(b))
     .map(([year, methods]) => {
-      // per-year total = sum of all method counts for that year
-      const totalPapersThisYear = Object.values(methods).reduce(
-        (sum, c) => sum + c,
-        0
-      );
+      // Number of unique papers for this year
+      const uniquePaperCount = uniquePapersPerYear[year]?.size || 0;
 
-      // for each method, compute normalized = count / totalThisYear
+      // For each method, compute normalized = count / uniquePaperCount
       const normalizedFields = Object.fromEntries(
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
-          totalPapersThisYear > 0
-            ? Number(((count * 100) / totalPapersThisYear).toFixed(2))
+          uniquePaperCount > 0
+            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -225,7 +225,7 @@ export const Query3DataProcessingFunction = (
   }));
 };
 
-export const Query4DataProcessingFunctionForDataCollection = (
+export const Query4DataProcessingFunctionForDataAnalysis = (
   rawData: RawDataItem[]
 ): RawDataItem[] => {
   const keys_to_count = ['descriptive', 'inferential', 'machine_learning'];
@@ -236,7 +236,7 @@ export const Query4DataProcessingFunctionForDataCollection = (
     descriptive: 0,
     inferential: 0,
     machine_learning: 0,
-    others: 0,
+    'other methods': 0,
   };
 
   rawData.forEach((item) => {
@@ -244,7 +244,7 @@ export const Query4DataProcessingFunctionForDataCollection = (
       if (keys_to_count.includes(key)) {
         labelCounts[key]++;
       } else if (!static_keys.includes(key)) {
-        labelCounts['others']++;
+        labelCounts['other methods']++;
       }
     });
   });
@@ -256,26 +256,41 @@ export const Query4DataProcessingFunctionForDataCollection = (
       ((labelCounts[label] * 100) / rawData.length).toFixed(2)
     ),
   }));
-  //sort by count
-  chartData.sort((a, b) => b.count - a.count);
 
   return chartData;
 };
 
-export const Query4DataProcessingFunctionForDataAnalysis = (
+export const Query4DataProcessingFunctionForDataCollection = (
   rawData: { dc_method_type_label: string }[]
 ): RawDataItem[] => {
-  const labelCounts = rawData.reduce(
-    (
-      acc: { [x: string]: number },
-      item: { dc_method_type_label: string | number }
-    ) => {
-      acc[item.dc_method_type_label] =
-        (acc[item.dc_method_type_label] || 0) + 1;
-      return acc;
-    },
-    {}
-  );
+  const keys_to_count = [
+    'secondary research',
+    'experiment',
+    'survey',
+    'case study',
+    'interview',
+    'action research',
+  ];
+
+  // Initialize all counts to 0
+  const labelCounts: { [key: string]: number } = {
+    'secondary research': 0,
+    experiment: 0,
+    survey: 0,
+    'case study': 0,
+    interview: 0,
+    'action research': 0,
+    others: 0,
+  };
+
+  rawData.forEach((item) => {
+    const labelLower = item.dc_method_type_label?.toLowerCase();
+    if (keys_to_count.includes(labelLower)) {
+      labelCounts[labelLower]++;
+    } else {
+      labelCounts['others']++;
+    }
+  });
   const chartData = Object.keys(labelCounts).map((label) => ({
     methodType: label.charAt(0).toUpperCase() + label.slice(1),
     count: labelCounts[label],
@@ -283,9 +298,6 @@ export const Query4DataProcessingFunctionForDataAnalysis = (
       ((labelCounts[label] * 100) / rawData.length).toFixed(2)
     ),
   }));
-
-  //sort by count
-  chartData.sort((a, b) => b.count - a.count);
 
   return chartData;
 };
@@ -329,20 +341,117 @@ export const Query6DataProcessingFunctionForDataAnalysis = (
 };
 
 type StatisticalData = {
-  year: number;
+  paper: string;
+  year: number | string;
   da_label: string; // Type of data analysis
-  count: number;
-  mean: number;
-  median: number;
-  standard_deviation: number;
-  variance: number;
-  mode: number;
-  range: number;
-  maximum: number;
-  minimum: number;
+  test?: string; // Test name (e.g., "shapiro-wilk test")
+  count?: number;
+  mean?: number;
+  median?: number;
+  standard_deviation?: number;
+  variance?: number;
+  mode?: number;
+  range?: number;
+  maximum?: number;
+  minimum?: number;
+  [key: string]: unknown; // Allow dynamic keys
 };
 
-export const Query7DataProcessingFunction = (rawData: StatisticalData[]) => {
+export const Query7DataProcessingFunctionForInferentialStatistics = (
+  rawData: StatisticalData[]
+) => {
+  if (!rawData.length) return [];
+
+  // Step 1: Calculate total number of unique papers with da_label across ALL years
+  // Equivalent to: df_query_7_2.drop_duplicates(subset=['paper'])['da_label'].count()
+  const uniquePapersWithDaLabel = new Set<string>();
+  rawData.forEach((item) => {
+    if (item.paper && item.da_label) {
+      uniquePapersWithDaLabel.add(item.paper);
+    }
+  });
+  const number_of_all_papers_with_da = uniquePapersWithDaLabel.size;
+
+  // Step 2: Extract unique years and convert to numbers
+  const years = [...new Set(rawData.map((item) => Number(item.year)))].sort(
+    (a, b) => a - b
+  );
+
+  // Step 3: Get all unique test values across all data (for unstack columns)
+  // Equivalent to: df_query_7_2.groupby('year')['test'].value_counts().unstack()
+  const uniqueTestValues = new Set<string>();
+  rawData.forEach((item) => {
+    if (item.test && typeof item.test === 'string' && item.test.trim()) {
+      uniqueTestValues.add(item.test.trim());
+    }
+  });
+  const testColumns = Array.from(uniqueTestValues).sort();
+
+  // Step 4: Process data per year (groupby year) and count occurrences of each test
+  const processedData = years.map((year) => {
+    const filteredData = rawData.filter((item) => Number(item.year) === year);
+    const result: { year: number; rowSum: number; [key: string]: number } = {
+      year: Number(year),
+      rowSum: 0,
+    };
+
+    // Count occurrences of each test value for this year
+    // Equivalent to: value_counts() per year
+    testColumns.forEach((testValue) => {
+      const count = filteredData.filter(
+        (item) => item.test && item.test.trim() === testValue
+      ).length;
+
+      // Use test value as column name (sanitize for JSON keys)
+      const columnName = testValue.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+      result[columnName] = count;
+      result.rowSum += count;
+
+      // Normalize: divide by total papers with da_label (across all years)
+      // Equivalent to: (result[column] / number_of_all_papers_with_da).round(3)
+      result[`normalized_${columnName}`] =
+        number_of_all_papers_with_da > 0
+          ? Number((count / number_of_all_papers_with_da).toFixed(3))
+          : 0;
+    });
+
+    // Normalize rowSum
+    result.normalized_rowSum =
+      number_of_all_papers_with_da > 0
+        ? Number((result.rowSum / number_of_all_papers_with_da).toFixed(3))
+        : 0;
+
+    return result;
+  });
+  console.log(processedData);
+
+  const finalData = processedData.map((item) => {
+    // Python script: (result[column] / number_of_all_papers_with_da).round(3)
+    // normalized_rowSum is already calculated as (rowSum / number_of_all_papers_with_da).toFixed(3)
+    // So we just need to ensure it's rounded to 3 decimals and handle edge case where > 0 but rounds to 0
+    let normalizedRatio = item.normalized_rowSum;
+
+    // If rowSum > 0 but normalized_rowSum rounds to 0.000, set to 0.001 to ensure bar has width
+    if (item.rowSum > 0 && normalizedRatio === 0) {
+      normalizedRatio = 0.001;
+    }
+
+    // Round to 3 decimal places (matching Python's .round(3))
+    normalizedRatio = Number((normalizedRatio * 100).toFixed(3));
+
+    return {
+      year: Number(item.year),
+      normalizedRatio,
+      count: item.rowSum,
+    };
+  });
+  console.log(finalData);
+  return finalData;
+};
+
+export const Query7DataProcessingFunctionForDescriptiveStatistics = (
+  rawData: StatisticalData[]
+) => {
   if (!rawData.length) return [];
   // Extract unique years
   const years = [...new Set(rawData.map((item) => item.year))];
@@ -357,7 +466,9 @@ export const Query7DataProcessingFunction = (rawData: StatisticalData[]) => {
     const totalPapersWithDaLabel = filteredData.filter(
       (item) => item.da_label
     ).length;
-    const result: { year: number; [key: string]: number } = { year };
+    const result: { year: number; [key: string]: number } = {
+      year: Number(year),
+    };
 
     methodKeys.forEach((method) => {
       // Convert encoded string into a numeric value (count of occurrences)
@@ -680,6 +791,7 @@ export const Query14DataProcessingFunction = (
 ): Query14DataProcessingFunctionReturnInterface[] => {
   if (!rawData.length) return [];
 
+  // Get unique papers per year
   const uniquePapers: Record<number, Set<string>> = {};
   rawData.forEach(({ year, paper }) => {
     if (!uniquePapers[year]) uniquePapers[year] = new Set();
@@ -693,6 +805,7 @@ export const Query14DataProcessingFunction = (
     ])
   );
 
+  // Group by year and count each method
   const methodCounts: Record<number, Record<string, number>> = {};
   rawData.forEach(({ year, dc_method_name }) => {
     if (!methodCounts[year]) methodCounts[year] = {};
@@ -701,16 +814,25 @@ export const Query14DataProcessingFunction = (
     methodCounts[year][methodKey] = (methodCounts[year][methodKey] || 0) + 1;
   });
 
-  return Object.entries(methodCounts).map(([year, methods]) => {
-    const normalizedRatio: Record<string, number> = {};
-    Object.entries(methods).forEach(([method, count]) => {
-      normalizedRatio[method] = count;
-      normalizedRatio[`normalized_${method}`] = parseFloat(
-        ((count * 100) / papersPerYear[Number(year)]).toFixed(2)
-      );
-    });
-    return { year: Number(year), ...normalizedRatio };
-  });
+  // Calculate normalized values (percentage between 0 and 100 for better chart visibility)
+  const result = Object.entries(methodCounts)
+    .map(([year, methods]) => {
+      const normalizedRatio: Record<string, number> = {};
+      const totalPapers = papersPerYear[Number(year)];
+
+      Object.entries(methods).forEach(([method, count]) => {
+        normalizedRatio[method] = count;
+        // Normalize to percentage (0-100 range) and round to 2 decimals
+        normalizedRatio[`normalized_${method}`] = parseFloat(
+          ((count / totalPapers) * 100).toFixed(2)
+        );
+      });
+
+      return { year: Number(year), ...normalizedRatio };
+    })
+    .sort((a, b) => a.year - b.year); // Sort by year ascending
+
+  return result;
 };
 
 export const Query15DataProcessingFunction = (
@@ -763,7 +885,7 @@ export const Query15DataProcessingFunction = (
     numberOfMethodsUsed: key,
     count: value,
     normalizedRatio:
-      Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      Number((((value as number) * 100) / countedData.length).toFixed(2)) || 0,
   }));
 
   return arrayResult;
@@ -836,7 +958,7 @@ export const Query16DataProcessingFunction = (
       Object.entries(counts).forEach(([methodKey, count]) => {
         result[methodKey] = count;
         result[`normalized_${methodKey}`] = parseFloat(
-          (count / totalByYear[year]).toFixed(2)
+          ((count / totalByYear[year]) * 100).toFixed(2)
         );
       });
 

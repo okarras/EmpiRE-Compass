@@ -1,6 +1,11 @@
 import { Box, Paper, Typography } from '@mui/material';
+import { ContactContent } from '../../firestore/CRUDHomeContent';
 
-const Contact = () => {
+interface ContactProps {
+  content: ContactContent;
+}
+
+const Contact = ({ content }: ContactProps) => {
   return (
     <Paper
       elevation={2}
@@ -25,7 +30,7 @@ const Contact = () => {
           fontSize: { xs: '1.75rem', sm: '2rem', md: '2.25rem' },
         }}
       >
-        Contact
+        {content.title}
       </Typography>
       <Box
         sx={{
@@ -43,7 +48,7 @@ const Contact = () => {
             fontWeight: 600,
           }}
         >
-          Dr. rer. nat. Oliver Karras
+          {content.name}
         </Typography>
         <Typography
           sx={{
@@ -55,23 +60,20 @@ const Contact = () => {
             },
           }}
         >
-          <span>
-            Researcher and Data Scientist - Open Research Knowledge Graph
-          </span>
-          <span>
-            TIB - Leibniz Information Centre for Science and Technology
-          </span>
-          <span>Welfengarten 1B</span>
-          <span>30167 Hannover</span>
+          <span>{content.position}</span>
+          <span>{content.organization}</span>
+          {content.address.map((line, index) => (
+            <span key={index}>{line}</span>
+          ))}
           <span>
             <Box component="strong" sx={{ color: '#e86161', mr: 1 }}>
               Email:
             </Box>
             <a
-              href="mailto:oliver.karras@tib.eu"
+              href={`mailto:${content.email}`}
               style={{ color: '#e86161', textDecoration: 'none' }}
             >
-              oliver.karras@tib.eu
+              {content.email}
             </a>
           </span>
         </Typography>

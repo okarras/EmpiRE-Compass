@@ -30,10 +30,12 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       }}
       id={`chart-${question_id}`}
     >
-      <h4 style={{ textAlign: 'center' }}>
-        {normalized ? 'Relative ' : 'Absolute '}
-        {chartSetting.heading}
-      </h4>
+      {!chartSetting.noHeadingInSeries && (
+        <h4 style={{ textAlign: 'center' }}>
+          {normalized ? 'Relative ' : 'Absolute '}
+          {chartSetting.heading}
+        </h4>
+      )}
       <BarChart
         dataset={dataset}
         {...chartSetting}
@@ -46,6 +48,16 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         }))}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
+        slotProps={{
+          legend: {
+            hidden: isSubChart && chartSetting.hideDetailedChartLegend,
+            labelStyle: {
+              fontSize: 15, // or '10px'
+            },
+            itemMarkHeight: 15,
+            itemMarkWidth: 15,
+          },
+        }}
       />
     </div>
   );
