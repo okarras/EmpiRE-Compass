@@ -51,9 +51,34 @@ router.get('/', async (req, res) => {
       return priorityA - priorityB;
     });
 
+    await logRequest(
+      'read',
+      'Team',
+      undefined,
+      true,
+      undefined,
+      undefined,
+      undefined,
+      { resultCount: teamMembers.length },
+      undefined,
+      teamMembers
+    );
+
+    // Always return an array, even if empty
     res.json(teamMembers);
   } catch (error) {
     console.error('Error fetching team members:', error);
+
+    await logRequest(
+      'read',
+      'Team',
+      undefined,
+      false,
+      undefined,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+
     res.status(500).json({ error: 'Failed to fetch team members' });
   }
 });

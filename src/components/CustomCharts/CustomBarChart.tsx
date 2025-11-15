@@ -51,6 +51,11 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         slotProps={{
           legend: {
             hidden: isSubChart && chartSetting.hideDetailedChartLegend,
+            labelStyle: {
+              fontSize: 15, // or '10px'
+            },
+            itemMarkHeight: 15,
+            itemMarkWidth: 15,
           },
         }}
       />

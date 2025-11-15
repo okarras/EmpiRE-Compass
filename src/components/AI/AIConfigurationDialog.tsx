@@ -28,15 +28,19 @@ import {
   setProvider,
   setOpenAIModel,
   setGroqModel,
+  setMistralModel,
   setOpenAIApiKey,
   setGroqApiKey,
+  setMistralApiKey,
   setIsConfigured,
   setUseEnvironmentKeys,
   OPENAI_MODELS,
   GROQ_MODELS,
+  MISTRAL_MODELS,
   type AIProvider,
   type OpenAIModel,
   type GroqModel,
+  type MistralModel,
 } from '../../store/slices/aiSlice';
 
 interface AIConfigurationDialogProps {
@@ -53,8 +57,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     provider,
     openaiModel,
     groqModel,
+    mistralModel,
     openaiApiKey,
     groqApiKey,
+    mistralApiKey,
     isConfigured,
     useEnvironmentKeys,
   } = useAppSelector((state) => state.ai);
@@ -64,12 +70,16 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const [localOpenAIModel, setLocalOpenAIModel] =
     useState<OpenAIModel>(openaiModel);
   const [localGroqModel, setLocalGroqModel] = useState<GroqModel>(groqModel);
+  const [localMistralModel, setLocalMistralModel] =
+    useState<MistralModel>(mistralModel);
   const [localOpenAIApiKey, setLocalOpenAIApiKey] = useState(openaiApiKey);
   const [localGroqApiKey, setLocalGroqApiKey] = useState(groqApiKey);
+  const [localMistralApiKey, setLocalMistralApiKey] = useState(mistralApiKey);
   const [localUseEnvironmentKeys, setLocalUseEnvironmentKeys] =
     useState(useEnvironmentKeys);
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showGroqKey, setShowGroqKey] = useState(false);
+  const [showMistralKey, setShowMistralKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset local state when dialog opens
@@ -78,8 +88,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       setLocalProvider(provider);
       setLocalOpenAIModel(openaiModel);
       setLocalGroqModel(groqModel);
+      setLocalMistralModel(mistralModel);
       setLocalOpenAIApiKey(openaiApiKey);
       setLocalGroqApiKey(groqApiKey);
+      setLocalMistralApiKey(mistralApiKey);
       setLocalUseEnvironmentKeys(useEnvironmentKeys);
       setError(null);
     }
@@ -88,8 +100,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     provider,
     openaiModel,
     groqModel,
+    mistralModel,
     openaiApiKey,
     groqApiKey,
+    mistralApiKey,
     useEnvironmentKeys,
   ]);
 
@@ -105,14 +119,20 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           setError('Groq API key is required');
           return;
         }
+        if (localProvider === 'mistral' && !localMistralApiKey.trim()) {
+          setError('Mistral API key is required');
+          return;
+        }
       }
 
       // Save to store
       dispatch(setProvider(localProvider));
       dispatch(setOpenAIModel(localOpenAIModel));
       dispatch(setGroqModel(localGroqModel));
+      dispatch(setMistralModel(localMistralModel));
       dispatch(setOpenAIApiKey(localOpenAIApiKey));
       dispatch(setGroqApiKey(localGroqApiKey));
+      dispatch(setMistralApiKey(localMistralApiKey));
       dispatch(setUseEnvironmentKeys(localUseEnvironmentKeys));
       dispatch(setIsConfigured(true));
 
@@ -172,6 +192,31 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 variant="outlined"
                 sx={{ '& .MuiSelect-select': { py: 1.5 } }}
               >
+                <MenuItem value="mistral">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Mistral AI
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        High-performance models • Mistral Large, Medium, Small
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label="Default"
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </Box>
+                </MenuItem>
                 <MenuItem value="groq">
                   <Box
                     sx={{
@@ -189,12 +234,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Fast inference • Llama, DeepSeek, Mixtral
                       </Typography>
                     </Box>
-                    <Chip
-                      label="Recommended"
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
                   </Box>
                 </MenuItem>
                 <MenuItem value="openai">
@@ -228,13 +267,19 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             <FormControl fullWidth>
               <Select
                 value={
-                  localProvider === 'openai' ? localOpenAIModel : localGroqModel
+                  localProvider === 'openai'
+                    ? localOpenAIModel
+                    : localProvider === 'groq'
+                      ? localGroqModel
+                      : localMistralModel
                 }
                 onChange={(e) => {
                   if (localProvider === 'openai') {
                     setLocalOpenAIModel(e.target.value as OpenAIModel);
-                  } else {
+                  } else if (localProvider === 'groq') {
                     setLocalGroqModel(e.target.value as GroqModel);
+                  } else if (localProvider === 'mistral') {
+                    setLocalMistralModel(e.target.value as MistralModel);
                   }
                 }}
                 variant="outlined"
@@ -266,38 +311,72 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </Box>
                       </MenuItem>
                     ))
-                  : GROQ_MODELS.map((model) => (
-                      <MenuItem key={model} value={model}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                          }}
-                        >
-                          <Typography sx={{ fontWeight: 500 }}>
-                            {model}
-                          </Typography>
-                          {model === 'deepseek-r1-distill-llama-70b' && (
-                            <Chip
-                              label="Recommended"
-                              size="small"
-                              color="primary"
-                              variant="outlined"
-                            />
-                          )}
-                          {(model.includes('70b') || model.includes('405b')) &&
-                            model !== 'deepseek-r1-distill-llama-70b' && (
+                  : localProvider === 'groq'
+                    ? GROQ_MODELS.map((model) => (
+                        <MenuItem key={model} value={model}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 500 }}>
+                              {model}
+                            </Typography>
+                            {model === 'deepseek-r1-distill-llama-70b' && (
                               <Chip
-                                label="Large"
+                                label="Recommended"
                                 size="small"
-                                variant="outlined"
                                 color="primary"
+                                variant="outlined"
                               />
                             )}
-                        </Box>
-                      </MenuItem>
-                    ))}
+                            {(model.includes('70b') ||
+                              model.includes('405b')) &&
+                              model !== 'deepseek-r1-distill-llama-70b' && (
+                                <Chip
+                                  label="Large"
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                />
+                              )}
+                          </Box>
+                        </MenuItem>
+                      ))
+                    : MISTRAL_MODELS.map((model) => (
+                        <MenuItem key={model} value={model}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 500 }}>
+                              {model}
+                            </Typography>
+                            {model === 'mistral-large-latest' && (
+                              <Chip
+                                label="Default"
+                                size="small"
+                                color="primary"
+                                variant="outlined"
+                              />
+                            )}
+                            {model.includes('large') &&
+                              model !== 'mistral-large-latest' && (
+                                <Chip
+                                  label="Large"
+                                  size="small"
+                                  variant="outlined"
+                                  color="primary"
+                                />
+                              )}
+                          </Box>
+                        </MenuItem>
+                      ))}
               </Select>
             </FormControl>
           </Box>
@@ -349,7 +428,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                     }}
                     helperText="Your API key is sent securely to the backend and never exposed"
                   />
-                ) : (
+                ) : localProvider === 'groq' ? (
                   <TextField
                     fullWidth
                     label="Groq API Key"
@@ -363,6 +442,25 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                           edge="end"
                         >
                           {showGroqKey ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      ),
+                    }}
+                    helperText="Your API key is sent securely to the backend and never exposed"
+                  />
+                ) : (
+                  <TextField
+                    fullWidth
+                    label="Mistral API Key"
+                    type={showMistralKey ? 'text' : 'password'}
+                    value={localMistralApiKey}
+                    onChange={(e) => setLocalMistralApiKey(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <IconButton
+                          onClick={() => setShowMistralKey(!showMistralKey)}
+                          edge="end"
+                        >
+                          {showMistralKey ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       ),
                     }}
@@ -403,7 +501,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           disabled={
             !localUseEnvironmentKeys &&
             ((localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
-              (localProvider === 'groq' && !localGroqApiKey.trim()))
+              (localProvider === 'groq' && !localGroqApiKey.trim()) ||
+              (localProvider === 'mistral' && !localMistralApiKey.trim()))
           }
           sx={{
             backgroundColor: '#e86161',
