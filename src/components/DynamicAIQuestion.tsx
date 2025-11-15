@@ -23,6 +23,7 @@ const DynamicAIQuestion = () => {
     state,
     updateQuestion,
     updateSparqlQuery,
+    updateSparqlTranslation,
     updateQueryResults,
     updateChartHtml,
     updateQuestionInterpretation,
@@ -254,6 +255,7 @@ const DynamicAIQuestion = () => {
     updateDataCollectionInterpretation('');
     updateDataAnalysisInterpretation('');
     updateSparqlQuery('');
+    updateSparqlTranslation('');
     updateQueryResults([]);
     setDynamicQuery(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
@@ -508,11 +510,13 @@ const DynamicAIQuestion = () => {
       <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
+        sparqlTranslation={state.sparqlTranslation}
         loading={loading}
         queryResults={state.queryResults}
         queryError={error}
         onQuestionChange={updateQuestion}
         onSparqlChange={updateSparqlQuery}
+        onSparqlTranslationChange={updateSparqlTranslation}
         onGenerateAndRun={handleGenerateAndRun}
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}

@@ -9,6 +9,7 @@ import React, {
 export interface DynamicQuestionState {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   queryResults: Record<string, unknown>[];
   chartHtml: string;
   questionInterpretation: string;
@@ -36,6 +37,7 @@ export interface DynamicQuestionHistory {
 const initialState: DynamicQuestionState = {
   question: '',
   sparqlQuery: '',
+  sparqlTranslation: '',
   queryResults: [],
   chartHtml: '',
   questionInterpretation: '',
@@ -52,6 +54,7 @@ interface DynamicQuestionContextType {
   state: DynamicQuestionState;
   updateQuestion: (question: string) => void;
   updateSparqlQuery: (query: string, prompt?: string) => void;
+  updateSparqlTranslation: (translation: string, prompt?: string) => void;
   updateQueryResults: (results: Record<string, unknown>[]) => void;
   updateChartHtml: (html: string, prompt?: string) => void;
   updateQuestionInterpretation: (
@@ -151,6 +154,21 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
       type: 'sparql',
       action: prompt ? 'ai_modified' : 'edited',
       content: query,
+      prompt,
+      previousContent,
+    });
+  };
+
+  const updateSparqlTranslation = (translation: string, prompt?: string) => {
+    const previousContent = state.sparqlTranslation;
+    setState((prev) => ({
+      ...prev,
+      sparqlTranslation: translation,
+    }));
+    addToHistory({
+      type: 'sparql',
+      action: prompt ? 'ai_modified' : 'edited',
+      content: translation,
       prompt,
       previousContent,
     });
@@ -314,6 +332,7 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         state,
         updateQuestion,
         updateSparqlQuery,
+        updateSparqlTranslation,
         updateQueryResults,
         updateChartHtml,
         updateQuestionInterpretation,

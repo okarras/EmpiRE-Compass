@@ -28,6 +28,7 @@ import {
   Refresh,
   Restore,
   Close,
+  Translate,
 } from '@mui/icons-material';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 
@@ -43,11 +44,13 @@ import { CodeEditor } from '../CodeEditor';
 interface SPARQLQuerySectionProps {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   loading: boolean;
   queryResults?: Record<string, unknown>[];
   queryError?: string | null;
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
+  onSparqlTranslationChange: (translation: string) => void;
   onGenerateAndRun: () => void;
   onRunEditedQuery: () => void;
   onOpenHistory: (type: 'query' | 'sparql') => void;
@@ -56,11 +59,13 @@ interface SPARQLQuerySectionProps {
 const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   question,
   sparqlQuery,
+  sparqlTranslation,
   loading,
   queryResults = [],
   queryError,
   onQuestionChange,
   onSparqlChange,
+  onSparqlTranslationChange,
   onGenerateAndRun,
   onRunEditedQuery,
   onOpenHistory,
@@ -76,6 +81,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -225,6 +231,44 @@ Modified SPARQL Query:`;
     }
   };
 
+  // Function to generate natural language translation of SPARQL query
+  const handleGenerateTranslation = async () => {
+    if (!sparqlQuery.trim()) {
+      setError('No SPARQL query to translate.');
+      return;
+    }
+
+    if (!aiService.isConfigured()) {
+      setError('Please configure your AI settings first.');
+      return;
+    }
+
+    setIsTranslating(true);
+    setError(null);
+
+    try {
+      const translationPrompt = `Translate the following SPARQL query into a single, clear, human-readable English paragraph explaining what it does and what data it returns. Do not explain what SPARQL is; just explain what this specific query does:
+
+${sparqlQuery}
+
+Translation:`;
+
+      const result = await aiService.generateText(translationPrompt, {
+        temperature: 0.3,
+        maxTokens: 500,
+      });
+
+      const translation = result.text.trim();
+      onSparqlTranslationChange(translation);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to generate translation'
+      );
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
   return (
     <>
       {/* Question Input Section */}
@@ -297,6 +341,87 @@ Modified SPARQL Query:`;
           </Box>
         </Box>
       </Paper>
+
+      {/* SPARQL Translation Section */}
+      {sparqlQuery && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            mb: 3,
+            backgroundColor: 'rgba(232, 97, 97, 0.05)',
+            borderRadius: 2,
+            border: '1px solid rgba(232, 97, 97, 0.2)',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ color: '#e86161', fontWeight: 600 }}>
+              Query Explanation
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Tooltip title="Generate natural language explanation">
+                <IconButton
+                  onClick={handleGenerateTranslation}
+                  disabled={isTranslating}
+                  size="small"
+                  sx={{
+                    color: '#e86161',
+                    '&:hover': {
+                      backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                    },
+                    '&:disabled': {
+                      color: 'text.disabled',
+                    },
+                  }}
+                >
+                  {isTranslating ? (
+                    <CircularProgress size={16} />
+                  ) : (
+                    <Translate />
+                  )}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          {sparqlTranslation ? (
+            <Typography
+              variant="body1"
+              sx={{
+                color: 'text.primary',
+                lineHeight: 1.6,
+                fontStyle: 'italic',
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                p: 2,
+                borderRadius: 1,
+                border: '1px solid rgba(232, 97, 97, 0.1)',
+              }}
+            >
+              {sparqlTranslation}
+            </Typography>
+          ) : (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                fontStyle: 'italic',
+                textAlign: 'center',
+                py: 2,
+              }}
+            >
+              Click the translate button to generate a natural language
+              explanation of this SPARQL query.
+            </Typography>
+          )}
+        </Paper>
+      )}
 
       {/* SPARQL Query Section */}
       {sparqlQuery && (
