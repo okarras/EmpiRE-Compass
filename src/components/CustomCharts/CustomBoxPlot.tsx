@@ -1,11 +1,50 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
+import {
+  VictoryAxis,
+  VictoryBoxPlot,
+  VictoryChart,
+  VictoryContainer,
+  VictoryLabel,
+  VictoryScatter,
+} from 'victory';
 
 type BoxItem = { label: string; values: number[] };
 
+type AxisSetting = {
+  dataKey?: string;
+  label?: string;
+};
+
+type MarginSetting = Partial<{
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}>;
+
+type TextAnchor = 'start' | 'middle' | 'end' | 'inherit';
+
+interface ChartSetting {
+  height?: number;
+  width?: number;
+  margin?: MarginSetting;
+  barWidth?: number;
+  showOutliers?: boolean;
+  heading?: string;
+  labelRotate?: number;
+  labelAnchor?: TextAnchor;
+  colors?: string[];
+  xAxis?: AxisSetting[];
+  yAxis?: AxisSetting[];
+  series?: Array<{ dataKey?: string }>;
+}
+
+type RawDatum = Record<string, unknown>;
+
 interface Props {
-  dataset: any[];
-  chartSetting?: any;
+  dataset: RawDatum[];
+  chartSetting?: ChartSetting;
   question_id?: string;
   loading?: boolean;
 }
@@ -13,8 +52,8 @@ interface Props {
 const quantile = (a: number[], q: number) => {
   if (!a.length) return 0;
   const p = (a.length - 1) * q;
-  const lo = Math.floor(p),
-    hi = Math.ceil(p);
+  const lo = Math.floor(p);
+  const hi = Math.ceil(p);
   const w = p - lo;
   return hi === lo ? a[lo] : a[lo] * (1 - w) + a[hi] * w;
 };
@@ -23,12 +62,12 @@ const summarize = (vals: number[]) => {
   const v = vals.filter(Number.isFinite).sort((x, y) => x - y);
   if (!v.length)
     return { min: 0, q1: 0, med: 0, q3: 0, max: 0, outliers: [] as number[] };
-  const q1 = quantile(v, 0.25),
-    med = quantile(v, 0.5),
-    q3 = quantile(v, 0.75);
+  const q1 = quantile(v, 0.25);
+  const med = quantile(v, 0.5);
+  const q3 = quantile(v, 0.75);
   const iqr = q3 - q1;
-  const lower = q1 - 1.5 * iqr,
-    upper = q3 + 1.5 * iqr;
+  const lower = q1 - 1.5 * iqr;
+  const upper = q3 + 1.5 * iqr;
   const nonOut = v.filter((x) => x >= lower && x <= upper);
   return {
     min: nonOut.length ? Math.min(...nonOut) : v[0],
@@ -40,28 +79,60 @@ const summarize = (vals: number[]) => {
   };
 };
 
+const finiteOrUndefined = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+type BoxDatum = {
+  x: string;
+  label: string;
+  min: number;
+  q1: number;
+  median: number;
+  q3: number;
+  max: number;
+  color: string;
+  outliers: number[];
+};
+
+type OutlierDatum = { x: string; y: number; color: string };
+
 export default function CustomBoxPlot({
   dataset = [],
-  chartSetting = {},
+  chartSetting,
   question_id = 'boxplot',
   loading = false,
 }: Props) {
-  const labelKey = chartSetting?.xAxis?.[0]?.dataKey ?? 'label';
-  const valuesKey = chartSetting?.series?.[0]?.dataKey ?? 'values';
+  const config: ChartSetting = chartSetting ?? {};
+  const labelKey = config.xAxis?.[0]?.dataKey ?? 'label';
+  const valuesKey = config.series?.[0]?.dataKey ?? 'values';
 
   const series = useMemo<BoxItem[]>(() => {
     if (!Array.isArray(dataset) || dataset.length === 0) return [];
-    const s0 = dataset[0];
-    if (s0 && Array.isArray(s0.values) && typeof s0.label === 'string') {
-      return dataset.map((s: any) => ({
-        label: String(s.label),
-        values: (s.values || []).map(Number).filter(Number.isFinite),
-      }));
+    const s0 = dataset[0] as RawDatum | undefined;
+    if (
+      s0 &&
+      Array.isArray((s0 as { values?: unknown }).values) &&
+      typeof (s0 as { label?: unknown }).label === 'string'
+    ) {
+      return dataset.map((s) => {
+        const entry = s as { label?: unknown; values?: unknown };
+        const values = Array.isArray(entry.values) ? entry.values : [];
+        return {
+          label: String(entry.label ?? ''),
+          values: values.map(Number).filter(Number.isFinite),
+        };
+      });
     }
     return dataset
-      .map((r: any) => {
-        const label = r?.[labelKey] ?? r?.label;
-        const values = r?.[valuesKey] ?? r?.values;
+      .map((record) => {
+        const dataRecord = record as RawDatum & {
+          label?: unknown;
+          values?: unknown;
+        };
+        const label =
+          (dataRecord[labelKey] as unknown) ?? dataRecord.label ?? null;
+        const values =
+          (dataRecord[valuesKey] as unknown) ?? dataRecord.values ?? null;
         if (!label) return null;
         return {
           label: String(label),
@@ -73,25 +144,14 @@ export default function CustomBoxPlot({
       .filter((x): x is BoxItem => x !== null);
   }, [dataset, labelKey, valuesKey]);
 
-  const containerHeight = Number.isFinite(chartSetting?.height)
-    ? chartSetting.height
-    : 400;
+  const containerHeight = finiteOrUndefined(config.height) ?? 400;
   const margin = {
     top: 40,
     left: 140,
     right: 0,
     bottom: 80,
-    ...(chartSetting?.margin ?? {}),
+    ...(config.margin ?? {}),
   };
-
-  const plotHeight = Math.max(
-    40,
-    containerHeight - (margin.top + margin.bottom)
-  );
-
-  const all = series.flatMap((s) => s.values);
-  const dataMin = all.length ? Math.min(...all) : 0;
-  const dataMax = all.length ? Math.max(...all) : 1;
 
   const boxSpacingMultiplier = 2.5;
   const nBoxes = Math.max(1, series.length);
@@ -99,19 +159,18 @@ export default function CustomBoxPlot({
     margin.left +
     Math.max(1, nBoxes) * (48 * boxSpacingMultiplier) +
     margin.right;
-  const containerTotalWidth = Number.isFinite(chartSetting?.width)
-    ? chartSetting.width
-    : typeof window !== 'undefined'
+  const widthValue = finiteOrUndefined(config.width);
+  const containerTotalWidth =
+    widthValue ??
+    (typeof window !== 'undefined'
       ? Math.max(600, Math.min(window.innerWidth - 40, computedFallbackWidth))
-      : computedFallbackWidth;
+      : computedFallbackWidth);
 
   const availablePlotWidth = Math.max(
     48,
     containerTotalWidth - (margin.left + margin.right)
   );
-  const providedWidth = Number.isFinite(chartSetting?.barWidth)
-    ? chartSetting.barWidth
-    : undefined;
+  const providedWidth = finiteOrUndefined(config.barWidth);
 
   const rawAutoBox = Math.max(
     6,
@@ -120,21 +179,59 @@ export default function CustomBoxPlot({
 
   const effectiveBoxWidth: number = providedWidth ?? rawAutoBox;
 
-  const effectiveShowOutliers: boolean = chartSetting?.showOutliers ?? true;
+  const effectiveShowOutliers: boolean = config.showOutliers ?? true;
 
   const spacing = effectiveBoxWidth * boxSpacingMultiplier;
   const plotWidth = Math.max(1, series.length) * spacing;
   const computedSvgW = margin.left + plotWidth + margin.right;
-  const svgW = Number.isFinite(chartSetting?.width)
-    ? chartSetting.width
-    : computedSvgW;
+  const svgW = widthValue ?? computedSvgW;
   const svgH = containerHeight;
 
-  const valueToY = (v: number) => {
-    if (dataMax === dataMin) return margin.top + plotHeight / 2;
-    const t = (v - dataMin) / (dataMax - dataMin);
-    return margin.top + (1 - t) * plotHeight;
-  };
+  const allValues = series.flatMap((s) => s.values);
+  const dataMin = allValues.length ? Math.min(...allValues) : 0;
+  const dataMax = allValues.length ? Math.max(...allValues) : 1;
+  const [domainMin, domainMax] = useMemo(() => {
+    if (!allValues.length) return [0, 1];
+    if (dataMin === dataMax) {
+      const delta = Math.abs(dataMin) || 1;
+      return [dataMin - delta * 0.5, dataMax + delta * 0.5];
+    }
+    return [dataMin, dataMax];
+  }, [allValues.length, dataMin, dataMax]);
+
+  const colorPalette = useMemo<string[]>(
+    () => (config.colors?.length ? config.colors : ['#e86161']),
+    [config.colors]
+  );
+
+  const boxData = useMemo<BoxDatum[]>(() => {
+    return series.map((s, idx) => {
+      const stats = summarize(s.values);
+      const color = colorPalette[idx % colorPalette.length];
+      return {
+        x: s.label,
+        label: s.label,
+        min: stats.min,
+        q1: stats.q1,
+        median: stats.med,
+        q3: stats.q3,
+        max: stats.max,
+        color,
+        outliers: stats.outliers,
+      };
+    });
+  }, [series, colorPalette]);
+
+  const outlierData = useMemo<OutlierDatum[]>(() => {
+    if (!effectiveShowOutliers) return [];
+    return boxData.flatMap((datum) =>
+      datum.outliers.map((value) => ({
+        x: datum.x,
+        y: value,
+        color: datum.color,
+      }))
+    );
+  }, [boxData, effectiveShowOutliers]);
 
   if (loading)
     return <Box sx={{ p: 2, textAlign: 'center' }}>Loading boxplot...</Box>;
@@ -145,9 +242,10 @@ export default function CustomBoxPlot({
       </Box>
     );
 
-  const labelY = margin.top + plotHeight + 16;
-  const rotateAngle = chartSetting?.labelRotate ?? -25;
-  const textAnchor = chartSetting?.labelAnchor ?? 'end';
+  const rotateAngle = config.labelRotate ?? -25;
+  const textAnchor = config.labelAnchor ?? 'end';
+  const xAxisLabel = config.xAxis?.[0]?.label;
+  const yAxisLabel = config.yAxis?.[0]?.label;
 
   return (
     <Box
@@ -161,162 +259,95 @@ export default function CustomBoxPlot({
         borderRadius: 1,
       }}
     >
-      {chartSetting?.heading && (
+      {config.heading && (
         <Typography variant="h6" sx={{ textAlign: 'center', mb: 1 }}>
-          {chartSetting.heading}
+          {config.heading}
         </Typography>
       )}
 
-      <svg
-        width={svgW}
-        height={svgH}
-        role="img"
-        aria-label={chartSetting.heading ?? 'boxplot'}
-        style={{ display: 'block', minWidth: computedSvgW }}
+      <Box
+        sx={{
+          width: '100%',
+          minWidth: computedSvgW,
+        }}
       >
-        {/* y grid & ticks */}
-        <g transform={`translate(${margin.left - 10}, ${margin.top})`}>
-          {Array.from({ length: 6 }).map((_, i) => {
-            const t = i / 5;
-            const val = dataMin + (1 - t) * (dataMax - dataMin);
-            const y = t * plotHeight;
-            return (
-              <g key={i}>
-                <line x1={0} x2={plotWidth} y1={y} y2={y} stroke="#eee" />
-                <text
-                  x={-8}
-                  y={y}
-                  textAnchor="end"
-                  alignmentBaseline="middle"
-                  fontSize={11}
-                >
-                  {Number.isFinite(val) ? val.toFixed(0) : '0'}
-                </text>
-              </g>
-            );
-          })}
-        </g>
+        <VictoryChart
+          width={svgW}
+          height={svgH}
+          padding={margin}
+          domain={{ y: [domainMin, domainMax] }}
+          containerComponent={<VictoryContainer responsive={false} />}
+          domainPadding={{ x: Math.max(12, spacing / 2), y: 12 }}
+        >
+          <VictoryAxis
+            style={{
+              axisLabel: { fontSize: 14, fontWeight: 600, padding: 40 },
+              tickLabels: {
+                angle: rotateAngle,
+                textAnchor,
+                fontSize: 11,
+                padding: 20,
+              },
+              ticks: { size: 0 },
+            }}
+            tickValues={series.map((s) => s.label)}
+            label={xAxisLabel}
+            axisLabelComponent={<VictoryLabel dy={55} />}
+          />
+          <VictoryAxis
+            dependentAxis
+            tickCount={6}
+            tickFormat={(tick: number) =>
+              Number.isFinite(tick) ? tick.toFixed(0) : '0'
+            }
+            style={{
+              axisLabel: { fontSize: 14, fontWeight: 600, padding: 50 },
+              grid: { stroke: '#eee' },
+              tickLabels: { fontSize: 11, padding: 6 },
+            }}
+            label={yAxisLabel}
+            axisLabelComponent={<VictoryLabel dx={-50} angle={-90} />}
+          />
 
-        {/* boxes */}
-        <g>
-          {series.map((s, i) => {
-            const cx = margin.left + i * spacing + effectiveBoxWidth / 2;
-            const left = cx - effectiveBoxWidth / 2;
-            const right = cx + effectiveBoxWidth / 2;
-            const sum = summarize(s.values);
-            const yQ1 = valueToY(sum.q1);
-            const yQ3 = valueToY(sum.q3);
-            const yMed = valueToY(sum.med);
-            const yMin = valueToY(sum.min);
-            const yMax = valueToY(sum.max);
-            const color =
-              (chartSetting?.colors &&
-                chartSetting.colors[i % chartSetting.colors.length]) ??
-              '#e86161';
+          <VictoryBoxPlot
+            data={boxData}
+            boxWidth={effectiveBoxWidth}
+            whiskerWidth={Math.max(2, Math.floor(effectiveBoxWidth * 0.4))}
+            style={{
+              min: { stroke: '#333', strokeWidth: 1 },
+              max: { stroke: '#333', strokeWidth: 1 },
+              median: {
+                stroke: ({ datum }) => datum.color,
+                strokeWidth: 2,
+              },
+              q1: {
+                fill: '#fff',
+                stroke: ({ datum }) => datum.color,
+                strokeWidth: 1.5,
+              },
+              q3: {
+                fill: '#fff',
+                stroke: ({ datum }) => datum.color,
+                strokeWidth: 1.5,
+              },
+            }}
+          />
 
-            return (
-              <g key={s.label}>
-                <line
-                  x1={cx}
-                  x2={cx}
-                  y1={yMax}
-                  y2={yQ3}
-                  stroke="#333"
-                  strokeWidth={1}
-                />
-                <line
-                  x1={cx}
-                  x2={cx}
-                  y1={yQ1}
-                  y2={yMin}
-                  stroke="#333"
-                  strokeWidth={1}
-                />
-                <line
-                  x1={left + effectiveBoxWidth * 0.15}
-                  x2={right - effectiveBoxWidth * 0.15}
-                  y1={yMax}
-                  y2={yMax}
-                  stroke="#333"
-                />
-                <line
-                  x1={left + effectiveBoxWidth * 0.15}
-                  x2={right - effectiveBoxWidth * 0.15}
-                  y1={yMin}
-                  y2={yMin}
-                  stroke="#333"
-                />
-                <rect
-                  x={left}
-                  y={yQ3}
-                  width={effectiveBoxWidth}
-                  height={Math.max(2, yQ1 - yQ3)}
-                  fill="white"
-                  stroke={color}
-                  strokeWidth={1.5}
-                  rx={4}
-                />
-                <line
-                  x1={left}
-                  x2={right}
-                  y1={yMed}
-                  y2={yMed}
-                  stroke={color}
-                  strokeWidth={2}
-                />
-                {effectiveShowOutliers &&
-                  sum.outliers.map((o, oi) => (
-                    <circle
-                      key={oi}
-                      cx={cx}
-                      cy={valueToY(o)}
-                      r={3}
-                      fill={color}
-                      stroke="#333"
-                    />
-                  ))}
-                <text
-                  key={`lbl-${i}`}
-                  x={cx}
-                  y={labelY}
-                  transform={`rotate(${rotateAngle} ${cx} ${labelY})`}
-                  fontSize={11}
-                  textAnchor={textAnchor}
-                  alignmentBaseline="middle"
-                  style={{ pointerEvents: 'none' }}
-                >
-                  {s.label}
-                </text>
-              </g>
-            );
-          })}
-        </g>
-
-        {/* axis titles */}
-        {chartSetting?.xAxis?.[0]?.label && (
-          <text
-            x={margin.left + plotWidth / 2}
-            y={margin.top + plotHeight + 55}
-            fontSize={14}
-            fontWeight={600}
-            textAnchor="middle"
-          >
-            {chartSetting.xAxis[0].label}
-          </text>
-        )}
-        {chartSetting?.yAxis?.[0]?.label && (
-          <text
-            x={margin.left - 80}
-            y={margin.top + plotHeight / 2}
-            fontSize={14}
-            fontWeight={600}
-            textAnchor="middle"
-            transform={`rotate(-90, ${margin.left - 80}, ${margin.top + plotHeight / 2})`}
-          >
-            {chartSetting.yAxis[0].label}
-          </text>
-        )}
-      </svg>
+          {effectiveShowOutliers && outlierData.length > 0 && (
+            <VictoryScatter
+              data={outlierData}
+              size={4}
+              style={{
+                data: {
+                  fill: ({ datum }) => datum.color,
+                  stroke: '#333',
+                  strokeWidth: 1,
+                },
+              }}
+            />
+          )}
+        </VictoryChart>
+      </Box>
     </Box>
   );
 }
