@@ -64,7 +64,6 @@ const DEFAULT_STATS: StatisticsData = {
 export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
-  console.log('statistics', statistics);
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
@@ -102,9 +101,7 @@ export default function Statistics() {
       const templateId = pathSegments[0] || 'R186491';
 
       CRUDStatistics.getStatistics(templateId).then((statisticsValues) => {
-        console.log('statisticsValues', statisticsValues);
         if (statisticsValues) {
-          console.log('statisticsValues', statisticsValues);
           Object.keys(statisticsValues).forEach((key) => {
             setStatistics((prev) => ({
               ...prev,
@@ -133,7 +130,17 @@ export default function Statistics() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container sx={{ mt: 8, height: '100vh' }}>
+      <Container
+        maxWidth="lg"
+        sx={{
+          mt: { xs: 4, md: 8 },
+          mb: { xs: 6, md: 10 },
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          px: { xs: 2, sm: 3 },
+        }}
+      >
         {/* <StatsChartTypeSelector
           chartType={chartType}
           setChartType={setChartType}
@@ -151,7 +158,15 @@ export default function Statistics() {
             <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
           </Stack>
         ) : ( */}
-        <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          spacing={{ xs: 2, md: 3 }}
+          useFlexGap
+          mb={4}
+          justifyContent={{ xs: 'center', md: 'flex-start' }}
+          alignItems={{ xs: 'center', md: 'stretch' }}
+        >
           <StatCard value={paperCount} label="Papers">
             <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
           </StatCard>

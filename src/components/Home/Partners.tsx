@@ -31,25 +31,34 @@ const Partners = ({ content }: PartnersProps) => {
   };
 
   return (
-    <Box sx={{ mt: 8 }}>
+    <Box
+      sx={{
+        mt: { xs: 6, sm: 8 },
+        px: { xs: 1, sm: 0 },
+      }}
+    >
       <Typography
         variant="h6"
         align="center"
         sx={{
-          mb: 4,
+          mb: { xs: 3, sm: 4 },
           color: 'text.secondary',
-          fontSize: { xs: '1.1rem', sm: '1.2rem' },
+          fontSize: { xs: '1.125rem', sm: '1.2rem' },
+          fontWeight: 600,
         }}
       >
         {content.title}
       </Typography>
       <Box
         sx={{
-          display: 'flex',
-          justifyContent: 'center',
           width: '100%',
-          gap: { xs: 3, sm: 6, md: 8 },
-          flexWrap: 'wrap',
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: 'repeat(auto-fit, minmax(200px, 1fr))',
+            sm: 'repeat(auto-fit, minmax(180px, 1fr))',
+          },
+          gap: { xs: 2.5, sm: 3, md: 4 },
+          justifyItems: 'center',
         }}
       >
         {content.partners.map((partner, index) => (

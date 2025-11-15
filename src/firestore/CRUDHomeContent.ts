@@ -1,15 +1,10 @@
-import { db } from '../firebase';
 import {
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  getDocs,
-  DocumentData,
-} from 'firebase/firestore';
+  getHomeContent as getHomeContentApi,
+  updateHomeContent as updateHomeContentApi,
+} from '../services/backendApi';
 
 /**
- * Home content structure in Firebase:
+ * Home content structure:
  *
  * HomeContent (collection)
  *   └─ sections (document)
@@ -100,7 +95,7 @@ export interface HomeContentData {
 }
 
 /**
- * Default home content (fallback if Firebase data is not available)
+ * Default home content (fallback if backend data is not available)
  */
 export const defaultHomeContent: HomeContentData = {
   header: {
@@ -223,38 +218,42 @@ export const defaultHomeContent: HomeContentData = {
 };
 
 /**
- * Get home content from Firebase
+ * Get home content from backend API
  */
 export const getHomeContent = async (): Promise<HomeContentData> => {
   try {
-    const docRef = doc(db, 'HomeContent', 'sections');
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data() as HomeContentData;
+    const content = await getHomeContentApi();
+    // If backend returns data, use it; otherwise fall back to default
+    if (content && typeof content === 'object') {
+      return content as HomeContentData;
     } else {
-      console.log('No home content found, using default');
       return defaultHomeContent;
     }
   } catch (error) {
     console.error('Error fetching home content:', error);
+    // Return default content on error
     return defaultHomeContent;
   }
 };
 
 /**
- * Set/update home content in Firebase
+ * Set/update home content via backend API
+ * Note: This function requires userId and userEmail parameters
  */
 export const setHomeContent = async (
-  content: HomeContentData
+  content: HomeContentData,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
 ): Promise<void> => {
   try {
-    const docRef = doc(db, 'HomeContent', 'sections');
-    await setDoc(docRef, {
-      ...content,
-      updatedAt: new Date().toISOString(),
-    });
-    console.log('Home content updated successfully');
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for updating home content'
+      );
+    }
+
+    await updateHomeContentApi(content, userId, userEmail, keycloakToken);
   } catch (error) {
     console.error('Error updating home content:', error);
     throw error;
@@ -263,18 +262,46 @@ export const setHomeContent = async (
 
 /**
  * Initialize home content with default values (for first-time setup)
+ * Note: This function requires userId and userEmail parameters
+ * Checks if content exists by fetching it, and creates it if it doesn't exist
  */
-export const initializeHomeContent = async (): Promise<void> => {
+export const initializeHomeContent = async (
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+): Promise<void> => {
   try {
-    const docRef = doc(db, 'HomeContent', 'sections');
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
-      await setHomeContent(defaultHomeContent);
-      console.log('Home content initialized with defaults');
-    } else {
-      console.log('Home content already exists');
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for initializing home content'
+      );
     }
+
+    // Try to get existing content
+    try {
+      const existingContent = await getHomeContentApi();
+      // If we get content back and it's not the default, it exists
+      if (existingContent && typeof existingContent === 'object') {
+        console.log('Home content already exists');
+        return;
+      }
+    } catch (fetchError: unknown) {
+      // If fetch fails with 404 or similar, content doesn't exist
+      const error = fetchError as Error;
+      if (
+        error?.message?.includes('404') ||
+        error?.message?.includes('not found')
+      ) {
+        // Content doesn't exist, proceed to create it
+      } else {
+        // Some other error occurred
+        throw fetchError;
+      }
+    }
+
+    // Content doesn't exist, create it with defaults
+    await setHomeContent(defaultHomeContent, userId, userEmail, keycloakToken);
+    console.log('Home content initialized with defaults');
   } catch (error) {
     console.error('Error initializing home content:', error);
     throw error;
@@ -283,15 +310,18 @@ export const initializeHomeContent = async (): Promise<void> => {
 
 /**
  * Get all documents in HomeContent collection (for backup purposes)
+ * Note: This now returns a single document array since home content is a single document
  */
-export const getAllHomeContent = async (): Promise<DocumentData[]> => {
+export const getAllHomeContent = async (): Promise<
+  Array<{ id: string } & HomeContentData>
+> => {
   try {
-    const collectionRef = collection(db, 'HomeContent');
-    const querySnapshot = await getDocs(collectionRef);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const content = await getHomeContentApi();
+    // Return as array format for backward compatibility
+    if (content && typeof content === 'object') {
+      return [{ id: 'sections', ...content }];
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching all home content:', error);
     throw error;

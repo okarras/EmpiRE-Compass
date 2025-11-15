@@ -33,7 +33,7 @@ import {
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 
 import { useHistoryManager } from './HistoryManager';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 import {
   DynamicQuestionHistory,
   useDynamicQuestion,

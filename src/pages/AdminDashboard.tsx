@@ -53,8 +53,8 @@ interface FirebaseUser {
   email?: string;
   is_admin?: boolean;
   orcid?: string;
-  created_at?: Timestamp;
-  last_login?: Timestamp;
+  created_at?: Timestamp | Date | string | number;
+  last_login?: Timestamp | Date | string | number;
 }
 
 interface TemplateStats {
@@ -102,6 +102,15 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
+
+    if (!db) {
+      setError(
+        'Firebase is not configured. Please set up Firebase environment variables.'
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch Users
       const usersSnapshot = await getDocs(
@@ -168,13 +177,26 @@ const AdminDashboard = () => {
     setTabValue(newValue);
   };
 
-  const formatDate = (timestamp: Timestamp) => {
+  const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return 'N/A';
     try {
-      if (timestamp.toDate) {
+      // Handle Firestore Timestamp
+      if (timestamp.toDate && typeof timestamp.toDate === 'function') {
         return timestamp.toDate().toLocaleString();
       }
-      return new Date(timestamp.toDate()).toLocaleString();
+      // Handle if it's already a Date object
+      if (timestamp instanceof Date) {
+        return timestamp.toLocaleString();
+      }
+      // Handle if it's a number (Unix timestamp)
+      if (typeof timestamp === 'number') {
+        return new Date(timestamp).toLocaleString();
+      }
+      // Handle if it's a string
+      if (typeof timestamp === 'string') {
+        return new Date(timestamp).toLocaleString();
+      }
+      return 'Invalid Date';
     } catch {
       return 'Invalid Date';
     }
@@ -562,12 +584,12 @@ const AdminDashboard = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.created_at ?? new Timestamp(0, 0))}
+                          {formatDate(user.created_at as Timestamp)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.last_login ?? new Timestamp(0, 0))}
+                          {formatDate(user.last_login as Timestamp)}
                         </Typography>
                       </TableCell>
                     </TableRow>

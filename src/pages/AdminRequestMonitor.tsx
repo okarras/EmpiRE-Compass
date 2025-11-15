@@ -38,39 +38,92 @@ import {
   Description,
   //   BugReport,
 } from '@mui/icons-material';
-import RequestLogger, { FirebaseRequest } from '../firestore/RequestLogger';
-import { Timestamp } from 'firebase/firestore';
-// import { useAuth } from '../auth/useAuth';
+import { getRequestLogs, RequestLog } from '../services/backendApi';
+import { useAuth } from '../auth/useAuth';
+import { useKeycloak } from '@react-keycloak/web';
 
 const AdminRequestMonitor = () => {
-  //   const { user } = useAuth();
-  const [requests, setRequests] = useState<FirebaseRequest[]>([]);
-  const [filteredRequests, setFilteredRequests] = useState<FirebaseRequest[]>(
-    []
+  const { user } = useAuth();
+  const { keycloak } = useKeycloak();
+  const [requests, setRequests] = useState<RequestLog[]>([]);
+  const [filteredRequests, setFilteredRequests] = useState<RequestLog[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<RequestLog | null>(
+    null
   );
-  const [selectedRequest, setSelectedRequest] =
-    useState<FirebaseRequest | null>(null);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [filterOperation, setFilterOperation] = useState<string>('all');
   const [filterCollection, setFilterCollection] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [testStatus, setTestStatus] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLogs = async () => {
+    if (!user || !keycloak?.token) {
+      setError('Authentication required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const options: {
+        limit?: number;
+        operation?: string;
+        collection?: string;
+        success?: boolean;
+      } = {
+        limit: 200,
+      };
+
+      if (filterOperation !== 'all') {
+        options.operation = filterOperation;
+      }
+      if (filterCollection !== 'all') {
+        options.collection = filterCollection;
+      }
+
+      const response = await getRequestLogs(
+        options,
+        user.id,
+        user.email,
+        keycloak.token
+      );
+
+      setRequests(response.logs);
+    } catch (err) {
+      console.error('Error fetching request logs:', err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch request logs'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh || !user || !keycloak?.token) return;
 
-    console.log('Subscribing to request logs...');
-    const unsubscribe = RequestLogger.subscribeToRequestLogs((logs) => {
-      console.log('Received logs:', logs.length);
-      setRequests(logs);
-    }, 200);
+    // Initial fetch
+    fetchLogs();
+
+    // Set up polling if auto-refresh is enabled
+    const interval = setInterval(() => {
+      fetchLogs();
+    }, 300000); // Poll every 5 minutes
 
     return () => {
-      console.log('Unsubscribing from request logs');
-      unsubscribe();
+      clearInterval(interval);
     };
-  }, [autoRefresh]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    autoRefresh,
+    user?.id,
+    keycloak?.token,
+    filterOperation,
+    filterCollection,
+  ]);
 
   //   const handleTestLog = async () => {
   //     setTestStatus('Creating test log...');
@@ -160,11 +213,9 @@ const AdminRequestMonitor = () => {
     }
   };
 
-  const formatTimestamp = (timestamp: Timestamp) => {
+  const formatTimestamp = (timestamp: string | Date) => {
     if (!timestamp) return 'N/A';
-    const date = timestamp.toDate
-      ? timestamp.toDate()
-      : new Date(timestamp.toDate());
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     return date.toLocaleString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -228,10 +279,22 @@ const AdminRequestMonitor = () => {
                 sx={{ cursor: 'pointer', fontWeight: 600 }}
               />
             </Tooltip> */}
+            <Tooltip
+              title={autoRefresh ? 'Pause Auto-refresh' : 'Enable Auto-refresh'}
+            >
+              <Chip
+                label={autoRefresh ? 'Live' : 'Paused'}
+                color={autoRefresh ? 'success' : 'default'}
+                size="small"
+                onClick={() => setAutoRefresh(!autoRefresh)}
+                sx={{ cursor: 'pointer', fontWeight: 600, mr: 1 }}
+              />
+            </Tooltip>
             <Tooltip title="Refresh Now">
               <IconButton
                 size="small"
-                onClick={() => setAutoRefresh(!autoRefresh)}
+                onClick={fetchLogs}
+                disabled={loading}
                 sx={{ color: '#e86161' }}
               >
                 <Refresh />
@@ -240,47 +303,24 @@ const AdminRequestMonitor = () => {
           </Box>
         </Box>
         <Typography variant="body1" color="text.secondary">
-          Monitor and debug all Firebase Firestore requests in real-time
+          Monitor and debug all backend API requests in real-time
         </Typography>
-        {testStatus && (
-          <Alert
-            severity={
-              testStatus.includes('✅')
-                ? 'success'
-                : testStatus.includes('❌')
-                  ? 'error'
-                  : 'info'
-            }
-            sx={{ mt: 2 }}
-            onClose={() => setTestStatus('')}
-          >
-            {testStatus}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }} onClose={() => setError(null)}>
+            {error}
           </Alert>
         )}
       </Box>
 
       {/* Setup Instructions */}
-      {requests.length === 0 && (
+      {requests.length === 0 && !loading && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-            🚀 First Time Setup
+            📊 Request Logs
           </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            If you're not seeing any requests, you may need to deploy the
-            Firestore rules:
-          </Typography>
-          <Typography
-            variant="body2"
-            component="div"
-            sx={{ fontFamily: 'monospace', fontSize: '0.8rem', ml: 2 }}
-          >
-            1. Click "Test Logging" button above to verify permissions
-            <br />
-            2. If it fails, deploy rules:{' '}
-            <code>firebase deploy --only firestore:rules</code>
-            <br />
-            3. Or copy firestore.rules to Firebase Console → Firestore → Rules
-            tab
+          <Typography variant="body2">
+            Request logs are fetched from the backend. Make some API requests to
+            see them appear here.
           </Typography>
         </Alert>
       )}

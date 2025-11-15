@@ -125,15 +125,23 @@ const prepareStatisticsForFirebase = (
 /**
  * Migrate Empirical Research Practice template
  */
-export const migrateEmpiricalTemplate = async (): Promise<void> => {
+
+/**
+ * Migrate empirical template
+ */
+const migrateEmpiricalTemplate = async (
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
   const templateId = 'R186491';
 
   const templateData: TemplateData = {
     id: templateId,
-    title: 'Empirical Research Practice',
+    title: 'Empirical Software Engineering ID Card',
     collectionName: 'Questions',
     description:
-      'Template for analyzing empirical research practices in software engineering',
+      'Template for empirical software engineering research questions and analysis',
   };
 
   const questions = prepareQuestionsForFirebase(
@@ -147,14 +155,21 @@ export const migrateEmpiricalTemplate = async (): Promise<void> => {
     templateId,
     templateData,
     questions,
-    statistics
+    statistics,
+    userId,
+    userEmail,
+    keycloakToken
   );
 };
 
 /**
- * Migrate NLP4RE template
+ * Migrate NLP4RE template with authentication
  */
-export const migrateNLP4RETemplate = async (): Promise<void> => {
+export const migrateNLP4RETemplateWithAuth = async (
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
   const templateId = 'R1544125';
 
   const templateData: TemplateData = {
@@ -176,7 +191,46 @@ export const migrateNLP4RETemplate = async (): Promise<void> => {
     templateId,
     templateData,
     questions,
-    statistics
+    statistics,
+    userId,
+    userEmail,
+    keycloakToken
+  );
+};
+
+/**
+ * Migrate empirical template with authentication
+ */
+const migrateEmpiricalTemplateWithAuth = async (
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
+  const templateId = 'R186491';
+
+  const templateData: TemplateData = {
+    id: templateId,
+    title: 'Empirical Software Engineering ID Card',
+    collectionName: 'Questions',
+    description:
+      'Template for empirical software engineering research questions and analysis',
+  };
+
+  const questions = prepareQuestionsForFirebase(
+    empiricalQueries,
+    SPARQL_QUERIES
+  );
+
+  const statistics = prepareStatisticsForFirebase(STATISTICS_SPARQL_QUERIES);
+
+  await TemplateManagement.importTemplateWithQuestions(
+    templateId,
+    templateData,
+    questions,
+    statistics,
+    userId,
+    userEmail,
+    keycloakToken
   );
 };
 
@@ -191,13 +245,10 @@ export const migrateAllTemplates = async (): Promise<{
   try {
     const migratedTemplates: string[] = [];
 
-    // Migrate Empirical Research Practice
-    await migrateEmpiricalTemplate();
-    migratedTemplates.push('R186491');
-
-    // Migrate NLP4RE
-    await migrateNLP4RETemplate();
-    migratedTemplates.push('R1544125');
+    // Note: Migration now requires authentication - use individual migration functions with auth
+    throw new Error(
+      'migrateAllTemplates requires authentication. Use individual migration functions with auth instead.'
+    );
 
     return {
       success: true,
@@ -233,9 +284,14 @@ export const exportTemplateToJSON = async (templateId: string) => {
 };
 
 /**
- * Import template from JSON
+ * Import template from JSON with authentication
  */
-export const importTemplateFromJSON = async (jsonData: any): Promise<void> => {
+export const importTemplateFromJSONWithAuth = async (
+  jsonData: any,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
   const { template, questions, statistics } = jsonData;
   const templateId = jsonData.metadata?.templateId || template.id;
 
@@ -243,16 +299,20 @@ export const importTemplateFromJSON = async (jsonData: any): Promise<void> => {
     templateId,
     template,
     questions,
-    statistics
+    statistics,
+    userId,
+    userEmail,
+    keycloakToken
   );
 };
 
 const DataMigration = {
-  migrateEmpiricalTemplate,
-  migrateNLP4RETemplate,
-  migrateAllTemplates,
+  migrateEmpiricalTemplate, // Deprecated - throws error
+  migrateEmpiricalTemplateWithAuth,
+  migrateNLP4RETemplateWithAuth,
+  migrateAllTemplates, // Deprecated - throws error
   exportTemplateToJSON,
-  importTemplateFromJSON,
+  importTemplateFromJSONWithAuth,
   prepareQuestionsForFirebase,
   prepareStatisticsForFirebase,
 };

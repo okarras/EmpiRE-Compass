@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { CircularProgress, Typography, Paper } from '@mui/material';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 
 interface AIContentGeneratorProps {
   data: Record<string, unknown>[];

@@ -74,9 +74,28 @@ const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
         );
         return query;
       }
+      // Merge Firebase data with local query, but preserve functions from local query
+      // Firebase stores function names as strings, not actual functions
+      const {
+        dataProcessingFunction: firebaseFn,
+        dataProcessingFunction2: firebaseFn2,
+        dataProcessingFunctionName: _fnName,
+        dataProcessingFunctionName2: _fnName2,
+        ...firebaseDataWithoutFunctions
+      } = firebaseData;
+
       return {
         ...query,
-        ...firebaseData, // Firebase data takes priority
+        ...firebaseDataWithoutFunctions, // Firebase data takes priority for non-function fields
+        // Preserve functions from local query (Firebase only has function names, not functions)
+        dataProcessingFunction:
+          typeof firebaseFn === 'function'
+            ? firebaseFn
+            : query.dataProcessingFunction,
+        dataProcessingFunction2:
+          typeof firebaseFn2 === 'function'
+            ? firebaseFn2
+            : query.dataProcessingFunction2,
       } as Query;
     })
     .sort((a, b) => a.id - b.id);

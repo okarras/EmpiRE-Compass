@@ -59,4 +59,4 @@ MANIFEST
 
 # Note: scripts/orkg-cache/ is now committed to Git for GitHub Actions caching
 .vercel
-scripts/orkg-cache/
+orkg-cache/

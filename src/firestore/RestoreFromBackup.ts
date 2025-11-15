@@ -128,6 +128,12 @@ const restoreUsers = async (users: any[]): Promise<number> => {
       continue;
     }
 
+    if (!db) {
+      throw new Error(
+        'Firebase is not initialized. Please configure Firebase environment variables.'
+      );
+    }
+
     const userRef = doc(db, 'Users', userId);
 
     // Save all user data (remove id from data, use it as document ID)
@@ -147,12 +153,19 @@ const restoreUsers = async (users: any[]): Promise<number> => {
 const restoreLegacyTemplates = async (templates: any[]): Promise<number> => {
   if (!templates || templates.length === 0) return 0;
 
-  const batch = writeBatch(db);
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
+  const firestoreDb = db; // TypeScript narrowing helper
+  const batch = writeBatch(firestoreDb);
   let count = 0;
 
   templates.forEach((template) => {
     const { id, ...templateData } = template;
-    const templateRef = doc(db, 'LegacyTemplates', id);
+    const templateRef = doc(firestoreDb, 'LegacyTemplates', id);
     batch.set(templateRef, templateData);
     count++;
   });
@@ -175,24 +188,31 @@ const createNestedTemplate = async (
   questions: any[],
   statistics: any[]
 ): Promise<{ questionsCreated: number; statisticsCreated: number }> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
+  const firestoreDb = db; // TypeScript narrowing helper
   let questionsCreated = 0;
   let statisticsCreated = 0;
 
   // Create template document
-  const templateRef = doc(db, 'Templates', templateId);
+  const templateRef = doc(firestoreDb, 'Templates', templateId);
   await setDoc(templateRef, templateData);
 
   // Create questions in batches (Firestore limit: 500 operations per batch)
   const BATCH_SIZE = 400;
 
   for (let i = 0; i < questions.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
+    const batch = writeBatch(firestoreDb);
     const batchQuestions = questions.slice(i, i + BATCH_SIZE);
 
     batchQuestions.forEach((question) => {
       const questionId = question.uid || `query_${question.id}`;
       const questionRef = doc(
-        db,
+        firestoreDb,
         'Templates',
         templateId,
         'Questions',
@@ -209,12 +229,12 @@ const createNestedTemplate = async (
 
   // Create statistics in batches
   for (let i = 0; i < statistics.length; i += BATCH_SIZE) {
-    const batch = writeBatch(db);
+    const batch = writeBatch(firestoreDb);
     const batchStatistics = statistics.slice(i, i + BATCH_SIZE);
 
     batchStatistics.forEach((stat) => {
       const statisticRef = doc(
-        db,
+        firestoreDb,
         'Templates',
         templateId,
         'Statistics',
