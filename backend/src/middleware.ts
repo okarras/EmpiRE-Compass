@@ -94,11 +94,9 @@ export const validateGenerateTextRequest = (
   }
 
   if (provider && !['openai', 'groq', 'mistral'].includes(provider)) {
-    return res
-      .status(400)
-      .json({
-        error: 'Invalid provider. Must be "openai", "groq", or "mistral"',
-      });
+    return res.status(400).json({
+      error: 'Invalid provider. Must be "openai", "groq", or "mistral"',
+    });
   }
 
   if (
