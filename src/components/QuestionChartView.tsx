@@ -84,13 +84,17 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 
       {/* Main Chart Section */}
       <>
-        <Box sx={{ mb: 3 }}>
-          <ChartParamsSelector
-            normalized={normalized}
-            setNormalized={setNormalized}
-            query={query}
-          />
-        </Box>
+        {!query.chartSettings?.doesntHaveNormalization ? (
+          <Box sx={{ mb: 3 }}>
+            <ChartParamsSelector
+              normalized={normalized}
+              setNormalized={setNormalized}
+              query={query}
+            />
+          </Box>
+        ) : (
+          <></>
+        )}
         <ChartWrapper
           key={`${queryId}-chart`}
           question_id={queryId}

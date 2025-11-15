@@ -1,16 +1,19 @@
 import { Box } from '@mui/material';
 import CustomBarChart from './CustomBarChart';
+import CustomPieChart from './CustomPieChart';
+import CustomHeatMap from './CustomHeatMap';
 import { ChartSetting } from '../../constants/queries_chart_info';
+import CustomBoxPlot from './CustomBoxPlot';
+import CustomScatterChart from './CustomScatterChart';
 
 interface ChartWrapperProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dataset: any[];
   chartSetting: ChartSetting;
   question_id: string;
   normalized?: boolean;
   loading: boolean;
-  defaultChartType?: 'bar' | 'pie';
-  availableCharts?: ('bar' | 'pie')[];
+  defaultChartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter';
+  availableCharts?: ('bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter')[];
   isSubChart?: boolean;
 }
 
@@ -36,7 +39,7 @@ const ChartWrapper = ({
   question_id,
   normalized = true,
   loading = false,
-  // defaultChartType = 'bar',
+  defaultChartType = 'bar',
   // availableCharts = ['bar', 'pie'],
   isSubChart = false,
 }: ChartWrapperProps) => {
@@ -93,15 +96,44 @@ const ChartWrapper = ({
           availableCharts={availableCharts}
         />
       </Box> */}
-
-      <CustomBarChart
-        dataset={dataset}
-        chartSetting={chartSetting}
-        question_id={question_id}
-        normalized={normalized}
-        loading={loading}
-        isSubChart={isSubChart}
-      />
+      {defaultChartType === 'pie' ? (
+        <CustomPieChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+        />
+      ) : defaultChartType === 'heatmap' ? (
+        <CustomHeatMap
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+        />
+      ) : defaultChartType === 'boxplot' ? (
+        <CustomBoxPlot
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+          loading={loading}
+        />
+      ) : defaultChartType === 'scatter' ? (
+        <CustomScatterChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+          normalized={normalized}
+          loading={loading}
+          // optional: pass isSubChart if needed
+        />
+      ) : (
+        <CustomBarChart
+          dataset={dataset}
+          chartSetting={chartSetting}
+          question_id={question_id}
+          normalized={normalized}
+          loading={loading}
+          isSubChart={isSubChart}
+        />
+      )}
     </Box>
   );
 };

@@ -1,7 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axisClasses } from '@mui/x-charts';
-import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import {
+  Query10DataProcessingFunction,
+  Query1DataProcessingFunction,
+  Query5DataProcessingFunction,
+  Query6DataProcessingFunction,
+  Query7DataProcessingFunction,
+  Query8DataProcessingFunction,
+  Query9DataProcessingFunction,
+} from './data_processing_helper_functions_nlp4re';
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query4DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query } from './queries_chart_info';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -23,53 +34,6 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
   ];
 }
 
-export interface ChartSetting {
-  heading?: string;
-  seriesHeadingTemplate?: string;
-  className?: string;
-  colors?: string[];
-  xAxis?: any;
-  yAxis: any;
-  series: any;
-  height: number;
-  sx: Record<string, unknown>;
-  barLabel?: string;
-  layout?: string;
-  margin?: Record<string, unknown>;
-  noHeadingInSeries?: boolean;
-  barCategoryGap?: number;
-  barGap?: number;
-  barWidth?: number;
-  tabs?: {
-    tab1_name: string;
-    tab2_name: string;
-  };
-}
-export interface Query {
-  title: string;
-  id: number;
-  uid: string; // data collection
-  uid_2?: string; // data analysis
-  uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
-  chartSettings2?: ChartSetting;
-  chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie';
-  //TODO: fix types
-  dataProcessingFunction2?: (data: any, data2?: any) => any[];
-  dataProcessingFunction?: (
-    data: any,
-    query_id?: string,
-    options?: Record<string, unknown>
-  ) => any[];
-  dataAnalysisInformation: {
-    question: string;
-    questionExplanation?: string;
-    dataAnalysis?: string;
-    dataInterpretation?: string;
-    requiredDataForAnalysis?: string;
-  };
-}
-
 export const queries: Query[] = [
   // Query 1 - Evaluation Metrics
   {
@@ -79,7 +43,7 @@ export const queries: Query[] = [
     chartType: 'bar',
     chartSettings: {
       className: 'fullWidth',
-      xAxis: xAxisSettings('metricLabel', 'Metrics'),
+      xAxis: xAxisSettings('label', 'Metrics'),
       heading:
         'Top-3 Most Frequently Used Evaluation Metrics in NLP Approaches',
       barLabel: 'value',
@@ -89,7 +53,7 @@ export const queries: Query[] = [
           dataKey: 'count',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
     },
@@ -109,19 +73,28 @@ export const queries: Query[] = [
     uid: 'query_2',
     chartType: 'bar',
     chartSettings: {
+      layout: 'horizontal',
       className: 'fullWidth',
-      xAxis: xAxisSettings(),
       heading: 'Papers with Annotation Guidelines — papers per year',
       barLabel: 'value',
-      yAxis: [
+      xAxis: [
         {
           label: 'Number of Papers',
-          dataKey: 'count',
         },
       ],
-      series: [{ dataKey: 'count' }],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: 'Guideline Type',
+        },
+      ],
+      series: [{ dataKey: 'normalizedRatio' }],
       height: chartHeight,
       sx: chartStyles,
+      margin: {
+        left: 150,
+      },
     },
     dataProcessingFunction: Query2DataProcessingFunction,
     dataAnalysisInformation: {
@@ -134,9 +107,38 @@ export const queries: Query[] = [
 
   // Query 3 - Input Granularity
   {
-    title: 'Input Granularity and RE Tasks',
+    title: 'Input Granularity — Distribution of NLP Task Input Types',
     id: 3,
     uid: 'query_3',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      className: 'fullWidth',
+      heading: 'Distribution of Input Granularity Levels Used in NLP Tasks',
+      series: [{ dataKey: 'normalizedRatio' }],
+      // yAxis: [
+      //   {
+      //     label: 'Number of Papers',
+      //   },
+      // ],
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+        },
+      ],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query3DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What are the different levels of granularity at which inputs can be represented and how is this related to the RE task?',
@@ -150,6 +152,33 @@ export const queries: Query[] = [
     title: 'Types of Baselines',
     id: 4,
     uid: 'query_4',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of Reported Baseline Types in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+      doesntHaveNormalization: true,
+    },
+    dataProcessingFunction: Query4DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What are the types of baselines reported in the papers?',
       requiredDataForAnalysis:
@@ -162,6 +191,34 @@ export const queries: Query[] = [
     title: 'Format of Textual Requirements',
     id: 5,
     uid: 'query_5',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading:
+        'Distribution of common format of textual requirements in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: 'Data Format Type',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query5DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What is the most common format of textual requirements?',
       requiredDataForAnalysis:
@@ -174,6 +231,33 @@ export const queries: Query[] = [
     title: 'Dataset Quality Validation',
     id: 6,
     uid: 'query_6',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of dataset quality validation in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: 'Dataset Validation Type',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query6DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What is the state of practice for validating the quality of the annotated datasets?',
@@ -187,6 +271,33 @@ export const queries: Query[] = [
     title: 'Available Datasets for NLP4RE Tasks',
     id: 7,
     uid: 'query_7',
+    chartType: 'bar',
+    chartSettings: {
+      layout: 'horizontal',
+      barLabel: 'value',
+      heading: 'Distribution of datasets in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'Number of Papers',
+        },
+      ],
+      yAxis: [
+        {
+          scaleType: 'band',
+          dataKey: 'label',
+          label: '',
+        },
+      ],
+
+      series: [{ dataKey: 'normalizedRatio' }],
+      height: chartHeight,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query7DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'What datasets exist for a certain NLP4RE task?',
       requiredDataForAnalysis:
@@ -199,6 +310,21 @@ export const queries: Query[] = [
     title: 'RE and NLP Task Combinations',
     id: 8,
     uid: 'query_8',
+    chartType: 'heatmap',
+    chartSettings: {
+      heading: 'Distribution of datasets in NLP4RE Papers',
+      className: 'fullWidth fixText',
+      yAxis: [
+        {
+          label: '',
+        },
+      ],
+
+      series: [],
+      height: 800,
+      sx: chartStyles,
+    },
+    dataProcessingFunction: Query8DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'Which combinations of RE and NLP tasks are most (a)typical?',
       requiredDataForAnalysis:
@@ -211,6 +337,29 @@ export const queries: Query[] = [
     title: 'Missing ID Card Information',
     id: 9,
     uid: 'query_9',
+    chartType: 'boxplot',
+    chartSettings: {
+      heading: 'Sections of ID_Card and their missing values',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          dataKey: 'label',
+        },
+      ],
+      yAxis: [
+        {
+          label: 'Percentage of missing values',
+        },
+      ],
+      series: [{ dataKey: 'values' }],
+      height: chartHeight,
+      width: 1000,
+      sx: chartStyles,
+      margin: {
+        left: 150,
+      },
+    },
+    dataProcessingFunction: Query9DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'Which ID-card informational elements do not provide enough options to respondents?',
@@ -224,6 +373,91 @@ export const queries: Query[] = [
     title: 'Annotator Numbers by Study Type',
     id: 10,
     uid: 'query_10',
+    chartType: 'scatter',
+    chartSettings: {
+      heading: 'Number of annotators per NLP Task',
+      className: 'fullWidth fixText',
+      xAxis: [
+        {
+          label: 'NLP task',
+          scaleType: 'linear',
+          domain: [0, 'dataMax'],
+        },
+      ],
+      yAxis: [
+        {
+          label: 'Number of annotators',
+        },
+      ],
+      colors: [
+        '#4C72B0', // blue
+        '#DD8452', // orange
+        '#55A868', // green
+        '#C44E52', // red
+        '#8172B2', // purple
+        '#937860', // brown
+        '#64B5CD', // teal/cyan
+      ],
+      sx: chartStyles,
+      series: [
+        {
+          label: 'Classification',
+          datasetKeys: {
+            id: 'id',
+            x: 'Classification_x',
+            y: 'Classification_y',
+          },
+        },
+        {
+          label: 'Information_retrieval',
+          datasetKeys: {
+            id: 'id',
+            x: 'Information_retrieval_x',
+            y: 'Information_retrieval_y',
+          },
+        },
+        {
+          label: 'Information_extraction',
+          datasetKeys: {
+            id: 'id',
+            x: 'Information_extraction_x',
+            y: 'Information_extraction_y',
+          },
+        },
+        {
+          label: 'language_modeling',
+          datasetKeys: {
+            id: 'id',
+            x: 'language_modeling_x',
+            y: 'language_modeling_y',
+          },
+        },
+        {
+          label: 'Translation',
+          datasetKeys: { id: 'id', x: 'Translation_x', y: 'Translation_y' },
+        },
+        {
+          label: 'Similar_Requirements_Clustering__Coreference_Resolution',
+          datasetKeys: {
+            id: 'id',
+            x: 'Similar_Requirements_Clustering__Coreference_Resolution_x',
+            y: 'Similar_Requirements_Clustering__Coreference_Resolution_y',
+          },
+        },
+        {
+          label:
+            'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology',
+          datasetKeys: {
+            id: 'id',
+            x: 'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology_x',
+            y: 'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology_y',
+          },
+        },
+      ],
+      height: chartHeight,
+      margin: { left: 150, right: 120, top: 100 },
+    },
+    dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {
       question:
         'What are the usual numbers of annotators for a given type of study?',

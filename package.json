@@ -36,6 +36,7 @@
     "@mui/material": "^6.4.11",
     "@mui/x-charts": "^7.24.1",
     "@mui/x-data-grid": "^8.1.0",
+    "@nivo/heatmap": "^0.99.0",
     "@react-keycloak/web": "^3.4.0",
     "@reduxjs/toolkit": "^2.8.2",
     "@types/dompurify": "^3.0.5",
@@ -54,7 +55,9 @@
     "react-router": "^7.5.0",
     "react-router-dom": "^7.5.0",
     "reactflow": "11.11.4",
+    "recharts": "^3.4.1",
     "universal-cookie": "^8.0.1",
+    "victory": "^37.3.6",
     "vite-plugin-pwa": "^1.0.0",
     "zod": "^3.25.76"
   },
