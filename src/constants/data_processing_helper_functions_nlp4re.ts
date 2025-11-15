@@ -245,15 +245,15 @@ type RawRow = {
 
 export const Query10DataProcessingFunction = (
   rawData: RawRow[] = []
-): Array<Record<string, any>> => {
+): Array<Record<string, unknown>> => {
   const jitterAmount = 0.3;
 
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
   const points = rawData
     .map((r) => {
-      const label = String((r as any)?.NLPTaskTypeLabel ?? '').trim();
-      const y = Number((r as any)?.numberOfAnnotators ?? NaN);
+      const label = String(r?.NLPTaskTypeLabel ?? '').trim();
+      const y = Number(r?.numberOfAnnotators ?? NaN);
       if (!label || !Number.isFinite(y)) return null;
       return { label, y };
     })
@@ -276,7 +276,7 @@ export const Query10DataProcessingFunction = (
   );
 
   const result = Array.from({ length: maxRows }).map((_, i) => {
-    const row: Record<string, any> = { id: `row-${i}`, rowIndex: i };
+    const row: Record<string, unknown> = { id: `row-${i}`, rowIndex: i };
 
     labels.forEach((lbl) => {
       const key = safe(lbl);
