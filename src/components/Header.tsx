@@ -29,6 +29,7 @@ import LoginORKG from './LoginORKG';
 import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
+import { toast } from 'react-hot-toast';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -70,6 +71,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const handleTemplateChange = (event: SelectChangeEvent<string>) => {
     const newTemplate = event.target.value;
     setSelectedTemplate(newTemplate);
+    toast.success(`Template changed to ${templateConfig[newTemplate]?.title}`);
 
     // Navigate to new template, preserving the rest of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -157,13 +159,24 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
     >
       <Toolbar
         sx={{
-          justifyContent: 'space-between',
-          minHeight: { xs: 56, sm: 64 },
+          minHeight: { xs: 64, sm: 72 },
           px: { xs: 2, sm: 3 },
-          py: 1,
+          py: { xs: 1.5, sm: 1 },
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'stretch', md: 'center' },
+          justifyContent: { xs: 'flex-start', md: 'space-between' },
+          gap: { xs: 1.75, md: 0 },
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            width: { xs: '100%', md: 'auto' },
+            gap: { xs: 1, md: 1.5 },
+            flex: { md: '1 1 auto' },
+          }}
+        >
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -185,13 +198,16 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             component={RouterLink}
             to="/"
             sx={{
+              flexGrow: { xs: 1, sm: 0 },
               textDecoration: 'none',
               color: '#e86161',
               fontWeight: 600,
-              fontSize: { xs: '1.1rem', sm: '1.25rem' },
+              fontSize: { xs: '1.2rem', sm: '1.25rem' },
               display: 'flex',
               alignItems: 'center',
+              justifyContent: { xs: 'center', sm: 'flex-start' },
               letterSpacing: '-0.02em',
+              textAlign: { xs: 'center', sm: 'left' },
               '&:hover': {
                 opacity: 0.85,
               },
@@ -257,21 +273,42 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
         </Box>
 
         <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}
+          sx={{
+            width: { xs: '100%', md: 'auto' },
+            display: { xs: 'grid', md: 'flex' },
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(auto-fit, minmax(200px, 1fr))',
+              md: 'unset',
+            },
+            justifyItems: { xs: 'center', md: 'unset' },
+            alignItems: 'center',
+            gap: { xs: 1.25, md: 2 },
+          }}
         >
-          <LoginORKG />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: { xs: 'center', md: 'flex-end' },
+              width: { xs: '100%', md: 'auto' },
+            }}
+          >
+            <LoginORKG />
+          </Box>
 
           {/* Templates dropdown */}
           <FormControl
             size="small"
+            fullWidth={isMobile}
             sx={{
-              minWidth: { xs: 140, sm: 180 },
+              minWidth: { xs: '100%', md: 200 },
               '& .MuiInputLabel-root': {
                 fontSize: '0.8125rem',
                 fontWeight: 500,
               },
               '& .MuiOutlinedInput-root': {
                 borderRadius: 1.5,
+                backgroundColor: { xs: 'background.default', sm: 'inherit' },
                 '& fieldset': {
                   borderColor: 'divider',
                 },
@@ -310,60 +347,61 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               ))}
             </Select>
           </FormControl>
+        </Box>
 
-          <Box
-            sx={{
-              display: { xs: 'none', md: 'flex' },
-              alignItems: 'center',
-              gap: 0.5,
-            }}
-          >
-            <Tooltip title="Components">
-              <IconButton
-                onClick={redirectToStorybook}
-                size="small"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': {
-                    color: 'text.primary',
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <BookIcon sx={{ fontSize: '1.1rem' }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Graph">
-              <IconButton
-                onClick={redirectToArchitecture}
-                size="small"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': {
-                    color: 'text.primary',
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <AccountTreeIcon sx={{ fontSize: '1.1rem' }} />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="GitHub">
-              <IconButton
-                onClick={redirectToGitHub}
-                size="small"
-                sx={{
-                  color: 'text.secondary',
-                  '&:hover': {
-                    color: 'text.primary',
-                    backgroundColor: 'action.hover',
-                  },
-                }}
-              >
-                <GitHubIcon sx={{ fontSize: '1.1rem' }} />
-              </IconButton>
-            </Tooltip>
-          </Box>
+        <Box
+          sx={{
+            display: { xs: 'none', md: 'flex' },
+            justifyContent: 'flex-end',
+            width: 'auto',
+            gap: 0.5,
+          }}
+        >
+          <Tooltip title="Components">
+            <IconButton
+              onClick={redirectToStorybook}
+              size="small"
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary',
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <BookIcon sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Graph">
+            <IconButton
+              onClick={redirectToArchitecture}
+              size="small"
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary',
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <AccountTreeIcon sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="GitHub">
+            <IconButton
+              onClick={redirectToGitHub}
+              size="small"
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary',
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <GitHubIcon sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>

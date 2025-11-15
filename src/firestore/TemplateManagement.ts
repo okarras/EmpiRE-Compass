@@ -1,15 +1,16 @@
 import { db } from '../firebase';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import {
-  collection,
-  doc,
-  setDoc,
-  getDoc,
-  getDocs,
-  deleteDoc,
-  updateDoc,
-  writeBatch,
-} from 'firebase/firestore';
-import RequestLogger from './RequestLogger';
+  createTemplate as createTemplateApi,
+  updateTemplate as updateTemplateApi,
+  deleteTemplate as deleteTemplateApi,
+  createQuestion as createQuestionApi,
+  updateQuestion as updateQuestionApi,
+  deleteQuestion as deleteQuestionApi,
+  createStatistic as createStatisticApi,
+  updateStatistic as updateStatisticApi,
+  deleteStatistic as deleteStatisticApi,
+} from '../services/backendApi';
 
 /**
  * New Firebase Structure:
@@ -83,18 +84,32 @@ export interface StatisticData {
 
 /**
  * Template CRUD Operations
+ * Write operations now use backend API
  */
 export const createTemplate = async (
   templateId: string,
-  templateData: TemplateData
+  templateData: TemplateData,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const templateRef = doc(db, 'Templates', templateId);
-  await setDoc(templateRef, templateData);
+  await createTemplateApi(
+    { ...templateData, id: templateId },
+    userId,
+    userEmail,
+    keycloakToken
+  );
 };
 
 export const getTemplate = async (
   templateId: string
 ): Promise<TemplateData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const templateRef = doc(db, 'Templates', templateId);
   const templateSnap = await getDoc(templateRef);
 
@@ -107,6 +122,12 @@ export const getTemplate = async (
 export const getAllTemplates = async (): Promise<
   Record<string, TemplateData>
 > => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const templatesSnapshot = await getDocs(collection(db, 'Templates'));
   const templates: Record<string, TemplateData> = {};
 
@@ -119,15 +140,27 @@ export const getAllTemplates = async (): Promise<
 
 export const updateTemplate = async (
   templateId: string,
-  updates: Partial<TemplateData>
+  updates: Partial<TemplateData>,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const templateRef = doc(db, 'Templates', templateId);
-  await updateDoc(templateRef, updates);
+  await updateTemplateApi(
+    templateId,
+    updates,
+    userId,
+    userEmail,
+    keycloakToken
+  );
 };
 
-export const deleteTemplate = async (templateId: string): Promise<void> => {
-  const templateRef = doc(db, 'Templates', templateId);
-  await deleteDoc(templateRef);
+export const deleteTemplate = async (
+  templateId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
+  await deleteTemplateApi(templateId, userId, userEmail, keycloakToken);
 };
 
 /**
@@ -135,41 +168,31 @@ export const deleteTemplate = async (templateId: string): Promise<void> => {
  */
 export const createQuestion = async (
   templateId: string,
-  questionId: string,
+  _questionId: string, // Unused - backend API creates ID from questionData
   questionData: QuestionData,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  try {
-    await setDoc(questionRef, questionData);
-    await RequestLogger.withLogging.logWrite(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      true,
-      userId,
-      userEmail,
-      undefined,
-      questionData
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logWrite(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error',
-      questionData
-    );
-    throw error;
-  }
+  await createQuestionApi(
+    templateId,
+    questionData,
+    userId,
+    userEmail,
+    keycloakToken
+  );
 };
 
 export const getQuestion = async (
   templateId: string,
   questionId: string
 ): Promise<QuestionData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
   const questionSnap = await getDoc(questionRef);
 
@@ -182,6 +205,12 @@ export const getQuestion = async (
 export const getAllQuestions = async (
   templateId: string
 ): Promise<QuestionData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const questionsSnapshot = await getDocs(
     collection(db, 'Templates', templateId, 'Questions')
   );
@@ -198,62 +227,37 @@ export const updateQuestion = async (
   templateId: string,
   questionId: string,
   updates: Partial<QuestionData>,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  try {
-    await updateDoc(questionRef, updates);
-    await RequestLogger.withLogging.logUpdate(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      true,
-      userId,
-      userEmail,
-      undefined,
-      updates
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logUpdate(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error',
-      updates
-    );
-    throw error;
-  }
+  // Get existing question data and merge with updates
+  const existingQuestion = await getQuestion(templateId, questionId);
+  const updatedQuestion = { ...existingQuestion, ...updates } as QuestionData;
+  await updateQuestionApi(
+    templateId,
+    questionId,
+    updatedQuestion,
+    userId,
+    userEmail,
+    keycloakToken
+  );
 };
 
 export const deleteQuestion = async (
   templateId: string,
   questionId: string,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  try {
-    await deleteDoc(questionRef);
-    await RequestLogger.withLogging.logDelete(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      true,
-      userId,
-      userEmail
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logDelete(
-      `Templates/${templateId}/Questions`,
-      questionId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    throw error;
-  }
+  await deleteQuestionApi(
+    templateId,
+    questionId,
+    userId,
+    userEmail,
+    keycloakToken
+  );
 };
 
 /**
@@ -261,47 +265,31 @@ export const deleteQuestion = async (
  */
 export const createStatistic = async (
   templateId: string,
-  statisticId: string,
+  _statisticId: string, // Unused - backend API creates ID from statisticData
   statisticData: StatisticData,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const statisticRef = doc(
-    db,
-    'Templates',
+  await createStatisticApi(
     templateId,
-    'Statistics',
-    statisticId
+    statisticData,
+    userId,
+    userEmail,
+    keycloakToken
   );
-  try {
-    await setDoc(statisticRef, statisticData);
-    await RequestLogger.withLogging.logWrite(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      true,
-      userId,
-      userEmail,
-      undefined,
-      statisticData
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logWrite(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error',
-      statisticData
-    );
-    throw error;
-  }
 };
 
 export const getStatistic = async (
   templateId: string,
   statisticId: string
 ): Promise<StatisticData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const statisticRef = doc(
     db,
     'Templates',
@@ -320,6 +308,12 @@ export const getStatistic = async (
 export const getAllStatistics = async (
   templateId: string
 ): Promise<StatisticData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const statisticsSnapshot = await getDocs(
     collection(db, 'Templates', templateId, 'Statistics')
   );
@@ -336,74 +330,40 @@ export const updateStatistic = async (
   templateId: string,
   statisticId: string,
   updates: Partial<StatisticData>,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const statisticRef = doc(
-    db,
-    'Templates',
+  // Get existing statistic data and merge with updates
+  const existingStatistic = await getStatistic(templateId, statisticId);
+  const updatedStatistic = {
+    ...existingStatistic,
+    ...updates,
+  } as StatisticData;
+  await updateStatisticApi(
     templateId,
-    'Statistics',
-    statisticId
+    statisticId,
+    updatedStatistic,
+    userId,
+    userEmail,
+    keycloakToken
   );
-  try {
-    await updateDoc(statisticRef, updates);
-    await RequestLogger.withLogging.logUpdate(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      true,
-      userId,
-      userEmail,
-      undefined,
-      updates
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logUpdate(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error',
-      updates
-    );
-    throw error;
-  }
 };
 
 export const deleteStatistic = async (
   templateId: string,
   statisticId: string,
-  userId?: string,
-  userEmail?: string
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const statisticRef = doc(
-    db,
-    'Templates',
+  await deleteStatisticApi(
     templateId,
-    'Statistics',
-    statisticId
+    statisticId,
+    userId,
+    userEmail,
+    keycloakToken
   );
-  try {
-    await deleteDoc(statisticRef);
-    await RequestLogger.withLogging.logDelete(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      true,
-      userId,
-      userEmail
-    );
-  } catch (error) {
-    await RequestLogger.withLogging.logDelete(
-      `Templates/${templateId}/Statistics`,
-      statisticId,
-      false,
-      userId,
-      userEmail,
-      error instanceof Error ? error.message : 'Unknown error'
-    );
-    throw error;
-  }
 };
 
 /**
@@ -413,39 +373,48 @@ export const importTemplateWithQuestions = async (
   templateId: string,
   templateData: TemplateData,
   questions: QuestionData[],
-  statistics: StatisticData[]
+  statistics: StatisticData[],
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
 ): Promise<void> => {
-  const batch = writeBatch(db);
-
-  // Create template
-  const templateRef = doc(db, 'Templates', templateId);
-  batch.set(templateRef, templateData);
-
-  // Create questions
-  questions.forEach((question) => {
-    const questionRef = doc(
-      db,
-      'Templates',
-      templateId,
-      'Questions',
-      question.uid
+  // Note: This function should use backend API instead of direct Firestore writes
+  // Use individual backend API calls for each operation
+  if (!userId || !userEmail) {
+    throw new Error(
+      'UserId and userEmail are required for importing templates'
     );
-    batch.set(questionRef, question);
-  });
+  }
 
-  // Create statistics
-  statistics.forEach((statistic) => {
-    const statisticRef = doc(
-      db,
-      'Templates',
+  // Create template via backend API
+  await createTemplateApi(
+    { ...templateData, id: templateId },
+    userId,
+    userEmail,
+    keycloakToken
+  );
+
+  // Create questions via backend API
+  for (const question of questions) {
+    await createQuestionApi(
       templateId,
-      'Statistics',
-      statistic.id
+      question,
+      userId,
+      userEmail,
+      keycloakToken
     );
-    batch.set(statisticRef, statistic);
-  });
+  }
 
-  await batch.commit();
+  // Create statistics via backend API
+  for (const statistic of statistics) {
+    await createStatisticApi(
+      templateId,
+      statistic,
+      userId,
+      userEmail,
+      keycloakToken
+    );
+  }
 };
 
 /**

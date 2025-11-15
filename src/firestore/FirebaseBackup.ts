@@ -31,7 +31,8 @@ const COLLECTIONS_TO_BACKUP = [
   'Templates',
   'Users',
   'HomeContent',
-  'RequestLogs',
+  'FirebaseRequestLogs',
+  'Team',
 ];
 
 /**
@@ -42,6 +43,12 @@ const backupNestedCollections = async (
   documentId: string,
   subcollections: string[]
 ): Promise<Record<string, DocumentData[]>> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const nestedData: Record<string, DocumentData[]> = {};
 
   for (const subcollectionName of subcollections) {
@@ -80,6 +87,12 @@ const backupNestedCollections = async (
 const backupCollection = async (
   collectionName: string
 ): Promise<DocumentData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   try {
     const collectionRef = collection(db, collectionName);
     const querySnapshot = await getDocs(collectionRef);
@@ -87,7 +100,6 @@ const backupCollection = async (
 
     // If collection is empty, return empty array (not an error)
     if (querySnapshot.empty) {
-      console.log(`Collection ${collectionName} is empty`);
       return documents;
     }
 
@@ -155,11 +167,6 @@ export const backupAllCollections = async (
 
         if (documents.length > 0) {
           successfulCollections.push(collectionName);
-          console.log(
-            `✓ Backed up ${collectionName}: ${documents.length} documents`
-          );
-        } else {
-          console.log(`✓ ${collectionName} is empty (0 documents)`);
         }
       } catch (collectionError) {
         console.error(`✗ Failed to backup ${collectionName}:`, collectionError);
@@ -176,8 +183,6 @@ export const backupAllCollections = async (
     if (skippedCollections.length > 0) {
       resultMessage += `. Skipped: ${skippedCollections.join(', ')}`;
     }
-
-    console.log(`Backup completed: ${totalDocuments} total documents`);
 
     return {
       success: true,

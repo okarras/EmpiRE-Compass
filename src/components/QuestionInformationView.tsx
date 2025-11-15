@@ -28,7 +28,7 @@ import {
   Refresh,
   Edit,
 } from '@mui/icons-material';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 import {
   useDynamicQuestion,
   DynamicQuestionHistory,

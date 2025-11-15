@@ -88,7 +88,7 @@ export const Query2DataProcessingFunctionForDataCollection = (
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
           uniquePaperCount > 0
-            ? Number((count / uniquePaperCount).toFixed(2))
+            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -341,20 +341,117 @@ export const Query6DataProcessingFunctionForDataAnalysis = (
 };
 
 type StatisticalData = {
-  year: number;
+  paper: string;
+  year: number | string;
   da_label: string; // Type of data analysis
-  count: number;
-  mean: number;
-  median: number;
-  standard_deviation: number;
-  variance: number;
-  mode: number;
-  range: number;
-  maximum: number;
-  minimum: number;
+  test?: string; // Test name (e.g., "shapiro-wilk test")
+  count?: number;
+  mean?: number;
+  median?: number;
+  standard_deviation?: number;
+  variance?: number;
+  mode?: number;
+  range?: number;
+  maximum?: number;
+  minimum?: number;
+  [key: string]: unknown; // Allow dynamic keys
 };
 
-export const Query7DataProcessingFunction = (rawData: StatisticalData[]) => {
+export const Query7DataProcessingFunctionForInferentialStatistics = (
+  rawData: StatisticalData[]
+) => {
+  if (!rawData.length) return [];
+
+  // Step 1: Calculate total number of unique papers with da_label across ALL years
+  // Equivalent to: df_query_7_2.drop_duplicates(subset=['paper'])['da_label'].count()
+  const uniquePapersWithDaLabel = new Set<string>();
+  rawData.forEach((item) => {
+    if (item.paper && item.da_label) {
+      uniquePapersWithDaLabel.add(item.paper);
+    }
+  });
+  const number_of_all_papers_with_da = uniquePapersWithDaLabel.size;
+
+  // Step 2: Extract unique years and convert to numbers
+  const years = [...new Set(rawData.map((item) => Number(item.year)))].sort(
+    (a, b) => a - b
+  );
+
+  // Step 3: Get all unique test values across all data (for unstack columns)
+  // Equivalent to: df_query_7_2.groupby('year')['test'].value_counts().unstack()
+  const uniqueTestValues = new Set<string>();
+  rawData.forEach((item) => {
+    if (item.test && typeof item.test === 'string' && item.test.trim()) {
+      uniqueTestValues.add(item.test.trim());
+    }
+  });
+  const testColumns = Array.from(uniqueTestValues).sort();
+
+  // Step 4: Process data per year (groupby year) and count occurrences of each test
+  const processedData = years.map((year) => {
+    const filteredData = rawData.filter((item) => Number(item.year) === year);
+    const result: { year: number; rowSum: number; [key: string]: number } = {
+      year: Number(year),
+      rowSum: 0,
+    };
+
+    // Count occurrences of each test value for this year
+    // Equivalent to: value_counts() per year
+    testColumns.forEach((testValue) => {
+      const count = filteredData.filter(
+        (item) => item.test && item.test.trim() === testValue
+      ).length;
+
+      // Use test value as column name (sanitize for JSON keys)
+      const columnName = testValue.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+      result[columnName] = count;
+      result.rowSum += count;
+
+      // Normalize: divide by total papers with da_label (across all years)
+      // Equivalent to: (result[column] / number_of_all_papers_with_da).round(3)
+      result[`normalized_${columnName}`] =
+        number_of_all_papers_with_da > 0
+          ? Number((count / number_of_all_papers_with_da).toFixed(3))
+          : 0;
+    });
+
+    // Normalize rowSum
+    result.normalized_rowSum =
+      number_of_all_papers_with_da > 0
+        ? Number((result.rowSum / number_of_all_papers_with_da).toFixed(3))
+        : 0;
+
+    return result;
+  });
+  console.log(processedData);
+
+  const finalData = processedData.map((item) => {
+    // Python script: (result[column] / number_of_all_papers_with_da).round(3)
+    // normalized_rowSum is already calculated as (rowSum / number_of_all_papers_with_da).toFixed(3)
+    // So we just need to ensure it's rounded to 3 decimals and handle edge case where > 0 but rounds to 0
+    let normalizedRatio = item.normalized_rowSum;
+
+    // If rowSum > 0 but normalized_rowSum rounds to 0.000, set to 0.001 to ensure bar has width
+    if (item.rowSum > 0 && normalizedRatio === 0) {
+      normalizedRatio = 0.001;
+    }
+
+    // Round to 3 decimal places (matching Python's .round(3))
+    normalizedRatio = Number((normalizedRatio * 100).toFixed(3));
+
+    return {
+      year: Number(item.year),
+      normalizedRatio,
+      count: item.rowSum,
+    };
+  });
+  console.log(finalData);
+  return finalData;
+};
+
+export const Query7DataProcessingFunctionForDescriptiveStatistics = (
+  rawData: StatisticalData[]
+) => {
   if (!rawData.length) return [];
   // Extract unique years
   const years = [...new Set(rawData.map((item) => item.year))];
@@ -369,7 +466,9 @@ export const Query7DataProcessingFunction = (rawData: StatisticalData[]) => {
     const totalPapersWithDaLabel = filteredData.filter(
       (item) => item.da_label
     ).length;
-    const result: { year: number; [key: string]: number } = { year };
+    const result: { year: number; [key: string]: number } = {
+      year: Number(year),
+    };
 
     methodKeys.forEach((method) => {
       // Convert encoded string into a numeric value (count of occurrences)
@@ -725,7 +824,7 @@ export const Query14DataProcessingFunction = (
         normalizedRatio[method] = count;
         // Normalize to percentage (0-100 range) and round to 2 decimals
         normalizedRatio[`normalized_${method}`] = parseFloat(
-          (count / totalPapers).toFixed(2)
+          ((count / totalPapers) * 100).toFixed(2)
         );
       });
 
@@ -786,7 +885,7 @@ export const Query15DataProcessingFunction = (
     numberOfMethodsUsed: key,
     count: value,
     normalizedRatio:
-      Number(((value as number) / countedData.length).toFixed(2)) || 0,
+      Number((((value as number) * 100) / countedData.length).toFixed(2)) || 0,
   }));
 
   return arrayResult;
@@ -859,7 +958,7 @@ export const Query16DataProcessingFunction = (
       Object.entries(counts).forEach(([methodKey, count]) => {
         result[methodKey] = count;
         result[`normalized_${methodKey}`] = parseFloat(
-          (count / totalByYear[year]).toFixed(2)
+          ((count / totalByYear[year]) * 100).toFixed(2)
         );
       });
 

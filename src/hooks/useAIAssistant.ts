@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 
 interface UseAIAssistantProps {
   query: Query;
@@ -411,15 +411,13 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
       const { text, reasoning } = response;
 
-      // Start streaming the response
-      let streamedText = '';
-      for await (const chunk of text) {
-        streamedText += chunk;
-        setStreamingText(streamedText);
-      }
+      // Handle text as string (not stream)
+      // Ensure text is always a string to prevent undefined errors
+      const textString =
+        typeof text === 'string' ? text : text ? String(text) : '';
 
       // Clean up the response if it contains markdown code blocks
-      const cleanedText = streamedText
+      const cleanedText = (textString || '')
         .replace(/```html\n/g, '')
         .replace(/```\n/g, '')
         .replace(/```html/g, '')

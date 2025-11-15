@@ -4,7 +4,7 @@ import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 import QueryExecutionSection from './AI/QueryExecutionSection';
 import DataProcessingCodeSection from './AI/DataProcessingCodeSection';

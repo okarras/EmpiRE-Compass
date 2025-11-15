@@ -13,6 +13,7 @@ import { AIAssistantProvider } from './context/AIAssistantContext';
 import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
 import './styles/global.css';
 import AuthProvider from './auth/AuthProvider';
+import { Toaster } from 'react-hot-toast';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -55,6 +56,7 @@ function App() {
         <AIAssistantProvider>
           <DynamicQuestionProvider>
             <AppContent />
+            <Toaster />
           </DynamicQuestionProvider>
         </AIAssistantProvider>
       </ThemeProvider>

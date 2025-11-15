@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useAIService } from '../services/aiService';
+import { useAIService } from '../services/backendAIService';
 import { extractFromMarkdown } from '../utils/queryParser';
 
 export type DataProcessingFn = (

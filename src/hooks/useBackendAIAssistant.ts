@@ -156,8 +156,8 @@ Instructions:
     ]);
 
     try {
-      const response = await aiService.generateText({
-        prompt: `${generateSystemContext()}
+      const response = await aiService.generateText(
+        `${generateSystemContext()}
         User Question: ${structuredPrompt}
 
         Please provide a detailed and comprehensive answer to this structured question about the research data.
@@ -169,11 +169,12 @@ Instructions:
         4. Use clear and direct language
         5. Format your response using HTML tags (<p>, <ul>, <li>, <h3>, <h4>) to structure your response
         6. Do not include any markdown code blocks or backticks in your response
-        7. Provide specific insights and detailed explanations
-        `,
-        temperature: 0.3,
-        maxTokens: 2000,
-      });
+        7. Provide specific insights and detailed explanations`,
+        {
+          temperature: 0.3,
+          maxTokens: 2000,
+        }
+      );
 
       const { text, reasoning } = response;
 
@@ -226,8 +227,8 @@ Instructions:
           return;
         }
 
-        const { reasoning, text } = await aiService.generateText({
-          prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
+        const { reasoning, text } = await aiService.generateText(
+          `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
           <h1>Initial Analysis</h1>
 
           <h2>Question Overview</h2>
@@ -249,9 +250,11 @@ Instructions:
           <p>[Address any limitations or considerations in the research approach]</p>
 
           Context: ${generateSystemContext()}`,
-          temperature: 0.3,
-          maxTokens: 2000,
-        });
+          {
+            temperature: 0.3,
+            maxTokens: 2000,
+          }
+        );
 
         const cleanedText = text
           .replace(/```html\n/g, '')
@@ -306,8 +309,8 @@ Instructions:
     setMessages((prev) => [...prev, { content: prompt, isUser: true }]);
 
     try {
-      const response = await aiService.generateText({
-        prompt: `${generateSystemContext()}
+      const response = await aiService.generateText(
+        `${generateSystemContext()}
         User Question: ${prompt}
 
         Please provide a detailed and comprehensive answer to this question about the research data.
@@ -319,11 +322,12 @@ Instructions:
         4. Use clear and direct language
         5. Format your response using HTML tags (<p>, <ul>, <li>, <h3>, <h4>) to structure your response
         6. Do not include any markdown code blocks or backticks in your response
-        7. Provide specific insights and detailed explanations
-        `,
-        temperature: 0.3,
-        maxTokens: 2000,
-      });
+        7. Provide specific insights and detailed explanations`,
+        {
+          temperature: 0.3,
+          maxTokens: 2000,
+        }
+      );
 
       const { text, reasoning } = response;
 
@@ -371,8 +375,8 @@ Instructions:
       setLastCachedReasoning(undefined);
 
       // Trigger new analysis
-      const { reasoning, text } = await aiService.generateText({
-        prompt: `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
+      const { reasoning, text } = await aiService.generateText(
+        `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
         <h1>Initial Analysis</h1>
 
         <h2>Question Overview</h2>
@@ -394,9 +398,11 @@ Instructions:
         <p>[Address any limitations or considerations in the research approach]</p>
 
         Context: ${generateSystemContext()}`,
-        temperature: 0.3,
-        maxTokens: 2000,
-      });
+        {
+          temperature: 0.3,
+          maxTokens: 2000,
+        }
+      );
 
       const cleanedText = text
         .replace(/```html\n/g, '')

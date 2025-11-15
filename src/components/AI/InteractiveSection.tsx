@@ -23,7 +23,7 @@ import {
   History,
   Refresh,
 } from '@mui/icons-material';
-import { useAIService } from '../../services/aiService';
+import { useAIService } from '../../services/backendAIService';
 import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 
 interface InteractiveSectionProps {

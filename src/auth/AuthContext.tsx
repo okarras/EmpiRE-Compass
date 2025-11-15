@@ -7,6 +7,7 @@ import {
   type AuthContextType,
 } from './AuthContextTypes';
 import UserSync from '../firestore/UserSync';
+import { setKeycloakInstance } from './keycloakStore';
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -20,6 +21,13 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Derive authentication state from Keycloak only
   const isAuthenticated = keycloak?.authenticated || false;
   const isLoading = !initialized;
+
+  // Store Keycloak instance globally for non-React code to access
+  useEffect(() => {
+    if (keycloak && initialized) {
+      setKeycloakInstance(keycloak);
+    }
+  }, [keycloak, initialized]);
 
   // Save user data to Firebase when authenticated
   useEffect(() => {
@@ -39,23 +47,21 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
 
-          // Sync to Firebase with admin status check
-          const firebaseUser = await UserSync.syncUserToFirebase({
-            id: userInfo.id,
-            email: userInfo.email,
-            display_name: userInfo.display_name,
-          });
+          // Sync to Firebase with admin status check via backend API
+          const firebaseUser = await UserSync.syncUserToFirebase(
+            {
+              id: userInfo.id,
+              email: userInfo.email,
+              display_name: userInfo.display_name,
+            },
+            keycloak.token
+          );
 
           // Update local state with Firebase user data (includes is_admin)
           setUser({
             ...userInfo,
             is_admin: firebaseUser.is_admin,
           } as UserData);
-
-          console.log('✅ User authenticated:', {
-            name: firebaseUser.display_name,
-            isAdmin: firebaseUser.is_admin,
-          });
         } catch (firebaseError) {
           console.error('Failed to sync user to Firebase:', firebaseError);
           // Don't set error for Firebase failures - it's not critical for auth

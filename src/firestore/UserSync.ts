@@ -1,10 +1,10 @@
+import { syncUser as syncUserApi } from '../services/backendApi';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 /**
  * Firebase User Sync Service
- * Syncs ORKG/Keycloak users to Firebase Users collection
- * Enables Firebase security rules to check user permissions
+ * Now uses backend API for write operations, Firebase for reads
  */
 
 export interface FirebaseUser {
@@ -36,11 +36,16 @@ export const isAdminUser = (email: string): boolean => {
 };
 
 /**
- * Get user from Firebase
+ * Get user from Firebase (read operation - still uses direct Firestore)
  */
 export const getFirebaseUser = async (
   userId: string
 ): Promise<FirebaseUser | null> => {
+  if (!db) {
+    console.warn('Firebase is not initialized. Cannot fetch user.');
+    return null;
+  }
+
   try {
     const userRef = doc(db, 'Users', userId);
     const userSnap = await getDoc(userRef);
@@ -56,55 +61,26 @@ export const getFirebaseUser = async (
 };
 
 /**
- * Sync ORKG user to Firebase Users collection
+ * Sync ORKG user to Firebase Users collection via backend API
  * This ensures Firebase rules can check user permissions
  */
-export const syncUserToFirebase = async (orkgUser: {
-  id: string;
-  email: string;
-  display_name: string;
-}): Promise<FirebaseUser> => {
+export const syncUserToFirebase = async (
+  orkgUser: {
+    id: string;
+    email: string;
+    display_name: string;
+  },
+  keycloakToken?: string
+): Promise<FirebaseUser> => {
   try {
-    const userId = orkgUser.id;
-    const userRef = doc(db, 'Users', userId);
-
-    // Check if user already exists
-    const existingUser = await getDoc(userRef);
-
-    // Check if user is admin based on email
-    const isAdmin = isAdminUser(orkgUser.email);
-
-    if (existingUser.exists()) {
-      // Update existing user (update last_login, preserve other fields)
-      const userData = existingUser.data() as FirebaseUser;
-      const updatedUser: FirebaseUser = {
-        ...userData,
-        email: orkgUser.email,
-        display_name: orkgUser.display_name,
-        last_login: new Date().toISOString(),
-        is_admin: isAdmin, // Update admin status
-      };
-
-      await setDoc(userRef, updatedUser, { merge: true });
-      return updatedUser;
-    } else {
-      // Create new user
-      const newUser: FirebaseUser = {
-        id: userId,
-        email: orkgUser.email,
-        display_name: orkgUser.display_name,
-        created_at: new Date().toISOString(),
-        last_login: new Date().toISOString(),
-        is_admin: isAdmin,
-        is_curation_allowed: false,
-        observatory_id: null,
-        organization_id: null,
-      };
-
-      await setDoc(userRef, newUser);
-
-      return newUser;
-    }
+    // Use backend API for syncing user
+    const firebaseUser = await syncUserApi(
+      orkgUser,
+      orkgUser.id,
+      orkgUser.email,
+      keycloakToken
+    );
+    return firebaseUser as FirebaseUser;
   } catch (error) {
     console.error('Error syncing user to Firebase:', error);
     throw error;

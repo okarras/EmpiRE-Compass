@@ -37,7 +37,6 @@ const Team = () => {
           const priorityB = b.priority ?? 999;
           return priorityA - priorityB;
         });
-        console.log('members', sortedMembers);
         setTeamMembers(sortedMembers);
       } catch (err) {
         console.error('Error fetching team members:', err);
@@ -95,17 +94,6 @@ const Team = () => {
               }}
             >
               Our Team
-            </Typography>
-            <Typography
-              variant="h6"
-              sx={{
-                color: 'text.secondary',
-                maxWidth: '600px',
-                mx: 'auto',
-                fontSize: { xs: '0.95rem', sm: '1.1rem' },
-              }}
-            >
-              Meet the talented individuals behind EmpirE-Compass
             </Typography>
           </Box>
 

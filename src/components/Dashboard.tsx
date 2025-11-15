@@ -60,20 +60,21 @@ const Dashboard = () => {
   return (
     <Box
       sx={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
         width: '100%',
         flexGrow: 1,
+        display: 'flex',
         flexDirection: 'column',
+        alignItems: 'center',
+        px: { xs: 2, sm: 3, md: 4 },
+        py: { xs: 3, md: 6 },
       }}
     >
       {/* Template Info Box */}
       <Box
         sx={{
-          width: '90%',
-          mb: 3,
-          mt: 5,
+          width: '100%',
+          maxWidth: '1000px',
+          mb: { xs: 3, md: 4 },
         }}
       >
         <Paper
@@ -160,23 +161,19 @@ const Dashboard = () => {
         </Paper>
       </Box>
       {Object.values(mergedQuestions).map((query: Query) => (
-        <>
-          <div
-            style={{
-              width: '92%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'column',
-              padding: '16px',
-            }}
-            id={`question-${query.id}`}
-          >
-            {queries.find((q) => q.id === query.id) && (
-              <QuestionAccordion key={`question-${query.uid}`} query={query} />
-            )}
-          </div>
-        </>
+        <Box
+          key={`question-wrapper-${query.uid}`}
+          id={`question-${query.id}`}
+          sx={{
+            width: '100%',
+            maxWidth: '1000px',
+            mb: { xs: 2.5, md: 3.5 },
+          }}
+        >
+          {queries.find((q) => q.id === query.id) && (
+            <QuestionAccordion query={query} />
+          )}
+        </Box>
       ))}
     </Box>
   );
