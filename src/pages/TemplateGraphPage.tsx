@@ -121,7 +121,8 @@ const TemplateGraphPage = () => {
         setError(null);
 
         // Load template flow starting from the main empirical research practice template
-        const mainTemplateId = 'R186491'; // Empirical Research Practice template ID
+        // const mainTemplateId = 'R186491'; // Empirical Research Practice template ID
+        const mainTemplateId = 'R1544125';
         const templateFlow = await loadTemplateFlowByID(
           mainTemplateId,
           new Set()
