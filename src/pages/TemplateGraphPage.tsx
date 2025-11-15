@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import TemplateGraph from '../components/Graph/TemplateGraph';
 import { loadTemplateFlowByID } from '../api/get_template_data';
@@ -21,10 +22,8 @@ interface ApiTemplate {
     min_count: number | null;
     max_count: number | null;
     path: {
-      id: {
-        id: string;
-        label: string;
-      };
+      id: string;
+      label: string;
     };
     class?: {
       id: string;
@@ -79,25 +78,14 @@ const adaptTemplate = (apiTemplate: ApiTemplate): GraphTemplate => ({
   },
   properties: apiTemplate.properties?.map((prop) => ({
     id: prop.id || '',
-    label:
-      prop.description ||
-      (typeof prop.path?.id === 'object'
-        ? prop.path.id.label
-        : prop.path?.id) ||
-      'Unnamed Property',
+    label: prop.description || prop.path?.label || 'Unnamed Property',
     description: prop.description,
     order: prop.order,
     min_count: prop.min_count || 0,
     max_count: prop.max_count || null,
     path: {
-      id:
-        typeof prop.path?.id === 'object'
-          ? prop.path.id.id
-          : prop.path?.id || '',
-      label:
-        typeof prop.path?.id === 'object'
-          ? prop.path.id.label
-          : prop.path?.id || 'Unknown Path',
+      id: prop.path?.id || '',
+      label: prop.path?.label || 'Unknown Path',
     },
     class: prop.class
       ? {
@@ -123,22 +111,26 @@ const adaptTemplate = (apiTemplate: ApiTemplate): GraphTemplate => ({
 });
 
 const TemplateGraphPage = () => {
+  const { templateId } = useParams<{ templateId: string }>();
   const [templates, setTemplates] = useState<GraphTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTemplateData = async () => {
+      // Early return if templateId is not available
+      if (!templateId) {
+        setError('Template ID is required');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
 
-        // Load template flow starting from the main empirical research practice template
-        const mainTemplateId = 'R186491'; // Empirical Research Practice template ID
-        const templateFlow = await loadTemplateFlowByID(
-          mainTemplateId,
-          new Set()
-        );
+        // Load template flow using the templateId from URL
+        const templateFlow = await loadTemplateFlowByID(templateId, new Set());
 
         // Extract all templates from the flow (including the main template and its neighbors)
         const allTemplates: GraphTemplate[] = [];
@@ -191,7 +183,7 @@ const TemplateGraphPage = () => {
     };
 
     loadTemplateData();
-  }, []);
+  }, [templateId]);
 
   return (
     <Box sx={{ flex: 1, height: 'calc(100vh - 64px)' }}>

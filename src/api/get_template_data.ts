@@ -119,6 +119,8 @@ const templateApiRequest = async <T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    // Add cache-busting to avoid stale service worker cache
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
@@ -145,6 +147,8 @@ const statementApiRequest = async <T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    // Add cache-busting to avoid stale service worker cache
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
