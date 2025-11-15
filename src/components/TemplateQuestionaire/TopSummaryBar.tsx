@@ -5,7 +5,9 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import AIConfigurationButton from '../AI/AIConfigurationButton';
 
 const TopSummaryBar: React.FC<{
   templateSpec: any;
@@ -46,6 +48,14 @@ const TopSummaryBar: React.FC<{
           <Button
             size="small"
             variant="outlined"
+            startIcon={<UploadIcon />}
+            onClick={exportAnswers}
+          >
+            Import
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={exportAnswers}
           >
@@ -60,6 +70,12 @@ const TopSummaryBar: React.FC<{
             Validate {missingCount > 0 ? `(${missingCount})` : ''}
           </Button>
         </Box>
+      </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, mt: 2 }}>
+        <AIConfigurationButton />
+        <Typography variant="body2" color="text.secondary">
+          Configure AI settings to use OpenAI or Groq models
+        </Typography>
       </Box>
     </Paper>
   );
