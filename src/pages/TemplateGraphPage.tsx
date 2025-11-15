@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Box } from '@mui/material';
 import TemplateGraph from '../components/Graph/TemplateGraph';
 import { loadTemplateFlowByID } from '../api/get_template_data';
@@ -110,23 +111,26 @@ const adaptTemplate = (apiTemplate: ApiTemplate): GraphTemplate => ({
 });
 
 const TemplateGraphPage = () => {
+  const { templateId } = useParams<{ templateId: string }>();
   const [templates, setTemplates] = useState<GraphTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTemplateData = async () => {
+      // Early return if templateId is not available
+      if (!templateId) {
+        setError('Template ID is required');
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
 
-        // Load template flow starting from the main empirical research practice template
-        // const mainTemplateId = 'R186491'; // Empirical Research Practice template ID
-        const mainTemplateId = 'R1544125';
-        const templateFlow = await loadTemplateFlowByID(
-          mainTemplateId,
-          new Set()
-        );
+        // Load template flow using the templateId from URL
+        const templateFlow = await loadTemplateFlowByID(templateId, new Set());
 
         // Extract all templates from the flow (including the main template and its neighbors)
         const allTemplates: GraphTemplate[] = [];
@@ -179,7 +183,7 @@ const TemplateGraphPage = () => {
     };
 
     loadTemplateData();
-  }, []);
+  }, [templateId]);
 
   return (
     <Box sx={{ flex: 1, height: 'calc(100vh - 64px)' }}>
