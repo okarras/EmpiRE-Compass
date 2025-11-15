@@ -41,6 +41,11 @@ export const isAdminUser = (email: string): boolean => {
 export const getFirebaseUser = async (
   userId: string
 ): Promise<FirebaseUser | null> => {
+  if (!db) {
+    console.warn('Firebase is not initialized. Cannot fetch user.');
+    return null;
+  }
+
   try {
     const userRef = doc(db, 'Users', userId);
     const userSnap = await getDoc(userRef);

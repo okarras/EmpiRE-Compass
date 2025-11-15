@@ -312,18 +312,23 @@ router.post(
     try {
       const { templateId } = req.params;
       const questionData: QuestionData = req.body;
+      const questionDocId =
+        questionData.uid && questionData.uid.trim().length > 0
+          ? questionData.uid
+          : String(questionData.id);
+
       const questionRef = db
         .collection('Templates')
         .doc(templateId)
         .collection('Questions')
-        .doc(String(questionData.id));
+        .doc(questionDocId);
 
       await questionRef.set(questionData);
 
       await logRequest(
         'write',
         `Templates/${templateId}/Questions`,
-        String(questionData.id),
+        questionDocId,
         true,
         req.userId,
         req.userEmail,
@@ -371,6 +376,35 @@ router.put(
 
       const doc = await questionRef.get();
       if (!doc.exists) {
+        // Fallback: try to locate question by numeric id for backward compatibility
+        const questionsCollection = db
+          .collection('Templates')
+          .doc(templateId)
+          .collection('Questions');
+        const legacyDoc = await questionsCollection
+          .where('id', '==', Number(questionId))
+          .limit(1)
+          .get();
+
+        if (!legacyDoc.empty) {
+          const legacyDocRef = legacyDoc.docs[0].ref;
+          await legacyDocRef.update(req.body);
+
+          await logRequest(
+            'update',
+            `Templates/${templateId}/Questions`,
+            legacyDocRef.id,
+            true,
+            req.userId,
+            req.userEmail,
+            undefined,
+            { method: 'PUT' },
+            req.body
+          );
+
+          return res.json({ id: legacyDocRef.id, ...req.body });
+        }
+
         return res.status(404).json({ error: 'Question not found' });
       }
 
@@ -426,6 +460,32 @@ router.delete(
 
       const doc = await questionRef.get();
       if (!doc.exists) {
+        // Fallback for legacy numeric IDs
+        const questionsCollection = db
+          .collection('Templates')
+          .doc(templateId)
+          .collection('Questions');
+        const legacyDoc = await questionsCollection
+          .where('id', '==', Number(questionId))
+          .limit(1)
+          .get();
+
+        if (!legacyDoc.empty) {
+          const legacyDocRef = legacyDoc.docs[0].ref;
+          await legacyDocRef.delete();
+
+          await logRequest(
+            'delete',
+            `Templates/${templateId}/Questions`,
+            legacyDocRef.id,
+            true,
+            req.userId,
+            req.userEmail
+          );
+
+          return res.json({ success: true });
+        }
+
         return res.status(404).json({ error: 'Question not found' });
       }
 

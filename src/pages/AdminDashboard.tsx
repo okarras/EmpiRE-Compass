@@ -102,6 +102,15 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     setError(null);
+
+    if (!db) {
+      setError(
+        'Firebase is not configured. Please set up Firebase environment variables.'
+      );
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch Users
       const usersSnapshot = await getDocs(

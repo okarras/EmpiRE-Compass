@@ -19,12 +19,49 @@ router.get('/', async (req, res) => {
     const doc = await docRef.get();
 
     if (doc.exists) {
-      res.json(doc.data());
+      const data = doc.data();
+
+      await logRequest(
+        'read',
+        'HomeContent',
+        'sections',
+        true,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        data
+      );
+
+      res.json(data);
     } else {
+      // Return 404 - frontend will handle default content
+      await logRequest(
+        'read',
+        'HomeContent',
+        'sections',
+        false,
+        undefined,
+        undefined,
+        'Home content not found'
+      );
+
       res.status(404).json({ error: 'Home content not found' });
     }
   } catch (error) {
     console.error('Error fetching home content:', error);
+
+    await logRequest(
+      'read',
+      'HomeContent',
+      'sections',
+      false,
+      undefined,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+
     res.status(500).json({ error: 'Failed to fetch home content' });
   }
 });

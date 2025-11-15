@@ -31,7 +31,8 @@ const COLLECTIONS_TO_BACKUP = [
   'Templates',
   'Users',
   'HomeContent',
-  'RequestLogs',
+  'FirebaseRequestLogs',
+  'Team',
 ];
 
 /**
@@ -42,6 +43,12 @@ const backupNestedCollections = async (
   documentId: string,
   subcollections: string[]
 ): Promise<Record<string, DocumentData[]>> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const nestedData: Record<string, DocumentData[]> = {};
 
   for (const subcollectionName of subcollections) {
@@ -80,6 +87,12 @@ const backupNestedCollections = async (
 const backupCollection = async (
   collectionName: string
 ): Promise<DocumentData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   try {
     const collectionRef = collection(db, collectionName);
     const querySnapshot = await getDocs(collectionRef);

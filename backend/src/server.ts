@@ -40,8 +40,10 @@ const sanitizeEnvVar = (
 // Initialize AI service
 const aiConfig: AIConfig = {
   provider:
-    (sanitizeEnvVar(process.env.AI_PROVIDER, 'groq') as 'openai' | 'groq') ||
-    'groq',
+    (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
+      | 'openai'
+      | 'groq'
+      | 'mistral') || 'mistral',
   openaiModel:
     (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
       | 'gpt-4o-mini'
@@ -52,8 +54,16 @@ const aiConfig: AIConfig = {
       | 'deepseek-r1-distill-llama-70b'
       | 'llama-3-70b-8192'
       | 'mixtral-8x7b-32768') || 'deepseek-r1-distill-llama-70b',
+  mistralModel:
+    (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
+      | 'mistral-large-latest'
+      | 'mistral-medium-latest'
+      | 'mistral-small-latest'
+      | 'pixtral-large-latest'
+      | 'open-mistral-nemo') || 'mistral-large-latest',
   openaiApiKey: sanitizeEnvVar(process.env.OPENAI_API_KEY, ''),
   groqApiKey: sanitizeEnvVar(process.env.GROQ_API_KEY, ''),
+  mistralApiKey: sanitizeEnvVar(process.env.MISTRAL_API_KEY, ''),
 };
 
 const aiService = new AIService(aiConfig);

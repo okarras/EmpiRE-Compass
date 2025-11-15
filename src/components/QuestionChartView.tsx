@@ -47,6 +47,13 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       );
     }
     if (type === 'dataCollection') {
+      if (chartSettings.detailedChartHeading) {
+        //replace {label} with chart.label
+        return chartSettings.detailedChartHeading.replace(
+          '{label}',
+          chart.label
+        );
+      }
       return 'number of ' + chart.label + ' used for data collection';
     } else if (type === 'dataAnalysis') {
       return 'number of ' + chart.label + ' used for data analysis';

@@ -104,6 +104,12 @@ export const createTemplate = async (
 export const getTemplate = async (
   templateId: string
 ): Promise<TemplateData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const templateRef = doc(db, 'Templates', templateId);
   const templateSnap = await getDoc(templateRef);
 
@@ -116,6 +122,12 @@ export const getTemplate = async (
 export const getAllTemplates = async (): Promise<
   Record<string, TemplateData>
 > => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const templatesSnapshot = await getDocs(collection(db, 'Templates'));
   const templates: Record<string, TemplateData> = {};
 
@@ -175,6 +187,12 @@ export const getQuestion = async (
   templateId: string,
   questionId: string
 ): Promise<QuestionData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
   const questionSnap = await getDoc(questionRef);
 
@@ -187,6 +205,12 @@ export const getQuestion = async (
 export const getAllQuestions = async (
   templateId: string
 ): Promise<QuestionData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const questionsSnapshot = await getDocs(
     collection(db, 'Templates', templateId, 'Questions')
   );
@@ -260,6 +284,12 @@ export const getStatistic = async (
   templateId: string,
   statisticId: string
 ): Promise<StatisticData | null> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const statisticRef = doc(
     db,
     'Templates',
@@ -278,6 +308,12 @@ export const getStatistic = async (
 export const getAllStatistics = async (
   templateId: string
 ): Promise<StatisticData[]> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
   const statisticsSnapshot = await getDocs(
     collection(db, 'Templates', templateId, 'Statistics')
   );
