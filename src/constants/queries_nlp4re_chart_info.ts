@@ -12,6 +12,7 @@ import {
 import { Query2DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query3DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
 import { Query4DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import { Query } from './queries_chart_info';
 
 const chartStyles = {
   [`& .${axisClasses.directionY} .${axisClasses.label}`]: {
@@ -31,54 +32,6 @@ function xAxisSettings(dataKey = 'year', label = 'Year') {
       label: label,
     },
   ];
-}
-
-export interface ChartSetting {
-  heading?: string;
-  seriesHeadingTemplate?: string;
-  className?: string;
-  colors?: string[];
-  xAxis?: any;
-  yAxis: any;
-  width?: number;
-  series: any;
-  height: number;
-  sx: Record<string, unknown>;
-  barLabel?: string;
-  layout?: string;
-  margin?: Record<string, unknown>;
-  noHeadingInSeries?: boolean;
-  barCategoryGap?: number;
-  barGap?: number;
-  barWidth?: number;
-  tabs?: {
-    tab1_name: string;
-    tab2_name: string;
-  };
-}
-export interface Query {
-  title: string;
-  id: number;
-  uid: string; // data collection
-  uid_2?: string; // data analysis
-  uid_2_merge?: string; // merged query 1 and 2 (for Question 15 and 16) TODO: need refactoring
-  chartSettings2?: ChartSetting;
-  chartSettings?: ChartSetting;
-  chartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter';
-  //TODO: fix types
-  dataProcessingFunction2?: (data: any, data2?: any) => any[];
-  dataProcessingFunction?: (
-    data: any,
-    query_id?: string,
-    options?: Record<string, unknown>
-  ) => any[];
-  dataAnalysisInformation: {
-    question: string;
-    questionExplanation?: string;
-    dataAnalysis?: string;
-    dataInterpretation?: string;
-    requiredDataForAnalysis?: string;
-  };
 }
 
 export const queries: Query[] = [
@@ -214,7 +167,6 @@ export const queries: Query[] = [
         {
           scaleType: 'band',
           dataKey: 'label',
-          label: 'Baseline Type',
         },
       ],
 
@@ -224,6 +176,7 @@ export const queries: Query[] = [
       margin: {
         left: 150,
       },
+      doesntHaveNormalization: true,
     },
     dataProcessingFunction: Query4DataProcessingFunction,
     dataAnalysisInformation: {

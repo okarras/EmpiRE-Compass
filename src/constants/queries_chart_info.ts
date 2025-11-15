@@ -41,6 +41,7 @@ export interface ChartSetting {
   barWidth?: number;
   hideDetailedChartLegend?: boolean;
   detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
+  doesntHaveNormalization?: boolean;
 }
 export interface Query {
   title?: string;
