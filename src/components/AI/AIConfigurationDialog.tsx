@@ -324,7 +324,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                             <Typography sx={{ fontWeight: 500 }}>
                               {model}
                             </Typography>
-                            {model === 'deepseek-r1-distill-llama-70b' && (
+                            {model === 'llama-3.1-8b-instant' && (
                               <Chip
                                 label="Recommended"
                                 size="small"
@@ -333,8 +333,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                               />
                             )}
                             {(model.includes('70b') ||
-                              model.includes('405b')) &&
-                              model !== 'deepseek-r1-distill-llama-70b' && (
+                              model.includes('405b') ||
+                              model.includes('120b')) &&
+                              model !== 'llama-3.1-8b-instant' && (
                                 <Chip
                                   label="Large"
                                   size="small"
