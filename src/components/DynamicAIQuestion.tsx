@@ -16,6 +16,7 @@ import { parseSparqlBlocks } from '../utils/queryParser';
 import { processDynamicData } from '../utils/dataTransform';
 import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
 import { useLocation } from 'react-router-dom';
+import { PredicatesMapping } from '../components/Graph/types';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -516,7 +517,6 @@ const DynamicAIQuestion = () => {
         queryError={error}
         onQuestionChange={updateQuestion}
         onSparqlChange={updateSparqlQuery}
-        onSparqlTranslationChange={updateSparqlTranslation}
         onGenerateAndRun={handleGenerateAndRun}
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
@@ -527,6 +527,8 @@ const DynamicAIQuestion = () => {
         currentIteration={currentIteration}
         maxIterations={maxIterations}
         iterationHistory={iterationHistory}
+        templateMapping={state.templateMapping as PredicatesMapping | undefined}
+        targetClassId={state.targetClassId}
       />
 
       <DataProcessingCodeSection

@@ -7,10 +7,8 @@ import {
 } from '../utils/queryParser';
 import fetchSPARQLData from '../helpers/fetch_query';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
-import {
-  generateDynamicSPARQLPrompt,
-  PredicatesMapping,
-} from '../utils/promptGenerator';
+import { generateDynamicSPARQLPrompt } from '../utils/promptGenerator';
+import { PredicatesMapping } from '../components/Graph/types';
 
 interface QueryEvaluation {
   needsImprovement: boolean;

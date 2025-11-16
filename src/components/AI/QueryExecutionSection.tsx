@@ -29,6 +29,7 @@ import SPARQLQuerySection from './SPARQLQuerySection';
 import ResourceIdInputButton from './ResourceIdInputButton';
 import { HistoryItem } from './HistoryManager';
 import { IterationDetail } from '../../hooks/useQueryGeneration';
+import { PredicatesMapping } from '../Graph/types';
 
 interface QueryExecutionSectionProps {
   question: string;
@@ -39,7 +40,6 @@ interface QueryExecutionSectionProps {
   queryError: string | null;
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
-  onSparqlTranslationChange: (translation: string) => void;
   onGenerateAndRun: () => void;
   onRunEditedQuery: () => void;
   onOpenHistory: (type: HistoryItem['type']) => void;
@@ -50,6 +50,8 @@ interface QueryExecutionSectionProps {
   currentIteration?: number;
   maxIterations?: number;
   iterationHistory?: IterationDetail[];
+  templateMapping?: PredicatesMapping;
+  targetClassId?: string | null;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -61,7 +63,6 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   queryError,
   onQuestionChange,
   onSparqlChange,
-  onSparqlTranslationChange,
   onGenerateAndRun,
   onRunEditedQuery,
   onOpenHistory,
@@ -72,6 +73,8 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   currentIteration,
   maxIterations,
   iterationHistory = [],
+  templateMapping,
+  targetClassId,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -445,10 +448,12 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
         queryError={queryError}
         onQuestionChange={onQuestionChange}
         onSparqlChange={onSparqlChange}
-        onSparqlTranslationChange={onSparqlTranslationChange}
         onGenerateAndRun={onGenerateAndRun}
         onRunEditedQuery={onRunEditedQuery}
         onOpenHistory={onOpenHistory}
+        templateMapping={templateMapping}
+        templateId={currentTemplateId}
+        targetClassId={targetClassId}
       />
     </>
   );

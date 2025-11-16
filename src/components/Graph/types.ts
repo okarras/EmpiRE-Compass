@@ -29,11 +29,25 @@ export type TemplateGraphProps = {
 };
 
 export type PropertyMapping = {
+  /**
+   * Human-friendly label that has historically been used across prompts/graphs.
+   * For object properties this is typically the target class label.
+   */
   label: string;
   cardinality: string;
   description: string;
-  subtemplate_id?: string;
+  /**
+   * Explicit predicate label (always derived from the path label).
+   * Helps explain predicates even when they point to subtemplates.
+   */
+  predicate_label?: string;
+  /**
+   * Optional metadata about the target class/subtemplate.
+   */
   class_id?: string;
+  class_label?: string;
+  subtemplate_id?: string;
+  subtemplate_label?: string;
   subtemplate_properties?: Record<string, PropertyMapping>;
 };
 
