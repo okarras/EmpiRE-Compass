@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Paper,
@@ -18,6 +18,8 @@ import {
   ListItem,
   Divider,
   Chip,
+  Stack,
+  Grid,
 } from '@mui/material';
 import {
   Edit,
@@ -28,6 +30,7 @@ import {
   Refresh,
   Restore,
   Close,
+  Info,
 } from '@mui/icons-material';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 
@@ -39,10 +42,13 @@ import {
 } from '../../context/DynamicQuestionContext';
 import { PREFIXES } from '../../api/SPARQL_QUERIES';
 import { CodeEditor } from '../CodeEditor';
+import { PredicatesMapping, PropertyMapping } from '../Graph/types';
+import { getTemplate } from '../../api/get_template_data';
 
 interface SPARQLQuerySectionProps {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   loading: boolean;
   queryResults?: Record<string, unknown>[];
   queryError?: string | null;
@@ -51,11 +57,157 @@ interface SPARQLQuerySectionProps {
   onGenerateAndRun: () => void;
   onRunEditedQuery: () => void;
   onOpenHistory: (type: 'query' | 'sparql') => void;
+  templateMapping?: PredicatesMapping;
+  templateId?: string | null;
+  targetClassId?: string | null;
 }
+
+interface PredicateDetail {
+  id: string;
+  label: string;
+  description: string;
+  cardinality: string;
+  predicateLabel?: string;
+  classId?: string;
+  classLabel?: string;
+  subtemplateId?: string;
+  subtemplateLabel?: string;
+  nestedProperties: Array<{
+    id: string;
+    label: string;
+    classLabel?: string;
+  }>;
+  usageSamples: string[];
+}
+
+interface ClassDetail {
+  id: string;
+  label: string;
+  viaPredicates: string[];
+  subtemplateId?: string;
+  subtemplateLabel?: string;
+}
+
+interface ResourceDetail {
+  id: string;
+  label?: string;
+  description?: string;
+  type: 'active' | 'template' | 'inline';
+  introducedBy?: string;
+}
+
+interface ClassMetadata {
+  label?: string;
+  viaPredicates: string[];
+  subtemplateId?: string;
+  subtemplateLabel?: string;
+}
+
+const extractPredicateIds = (query: string): string[] => {
+  const regex = /orkgp:(P\d+)/gi;
+  const seen = new Set<string>();
+  const result: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(query)) !== null) {
+    const id = match[1].toUpperCase();
+    if (!seen.has(id)) {
+      seen.add(id);
+      result.push(id);
+    }
+  }
+  return result;
+};
+
+const extractClassIds = (query: string): string[] => {
+  const regex = /orkgc:(C\d+)/gi;
+  const seen = new Set<string>();
+  const result: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(query)) !== null) {
+    const id = match[1].toUpperCase();
+    if (!seen.has(id)) {
+      seen.add(id);
+      result.push(id);
+    }
+  }
+  return result;
+};
+
+const extractResourceIds = (query: string): string[] => {
+  const regex = /orkgr:(R\d+)/gi;
+  const seen = new Set<string>();
+  const result: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(query)) !== null) {
+    const id = match[1].toUpperCase();
+    if (!seen.has(id)) {
+      seen.add(id);
+      result.push(id);
+    }
+  }
+  return result;
+};
+
+const getPredicateUsageSamples = (
+  query: string,
+  predicateId: string,
+  maxSamples = 3
+): string[] => {
+  const lowerId = `orkgp:${predicateId.toLowerCase()}`;
+  return query
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.toLowerCase().includes(lowerId))
+    .slice(0, maxSamples);
+};
+
+const walkMappingForClass = (
+  mapping: PropertyMapping | undefined,
+  predicateChain: string[],
+  targetClassId: string
+): ClassMetadata | null => {
+  if (!mapping) return null;
+
+  if (mapping.class_id === targetClassId) {
+    return {
+      label: mapping.class_label ?? mapping.label,
+      viaPredicates: predicateChain,
+      subtemplateId: mapping.subtemplate_id,
+      subtemplateLabel: mapping.subtemplate_label,
+    };
+  }
+
+  if (!mapping.subtemplate_properties) return null;
+
+  for (const [childPredicateId, childMapping] of Object.entries(
+    mapping.subtemplate_properties
+  )) {
+    const childChain = [...predicateChain, childPredicateId];
+    const result = walkMappingForClass(childMapping, childChain, targetClassId);
+    if (result) return result;
+  }
+
+  return null;
+};
+
+const resolveClassMetadata = (
+  classId: string,
+  templateMapping?: PredicatesMapping
+): ClassMetadata | null => {
+  if (!templateMapping) return null;
+
+  for (const [predicateId, mapping] of Object.entries(templateMapping)) {
+    const result = walkMappingForClass(mapping, [predicateId], classId);
+    if (result) return result;
+  }
+
+  return null;
+};
 
 const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   question,
   sparqlQuery,
+  sparqlTranslation,
   loading,
   queryResults = [],
   queryError,
@@ -64,6 +216,9 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   onGenerateAndRun,
   onRunEditedQuery,
   onOpenHistory,
+  templateMapping: propTemplateMapping,
+  templateId: propTemplateId,
+  targetClassId: propTargetClassId,
 }) => {
   const { renderHistoryButton } = useHistoryManager();
   const aiService = useAIService();
@@ -76,6 +231,346 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [explanationDialogOpen, setExplanationDialogOpen] = useState(false);
+  const [resourceMetadata, setResourceMetadata] = useState<
+    Map<string, { label: string; description?: string }>
+  >(new Map());
+  const [loadingResources, setLoadingResources] = useState<Set<string>>(
+    new Set()
+  );
+  const [predicateMetadata, setPredicateMetadata] = useState<
+    Map<string, { label: string; description?: string }>
+  >(new Map());
+  const [loadingPredicates, setLoadingPredicates] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Use prop templateMapping if provided, otherwise fall back to context
+  const templateMapping = (propTemplateMapping ??
+    state.templateMapping ??
+    undefined) as PredicatesMapping | undefined;
+  const templateId = propTemplateId ?? state.templateId ?? undefined;
+  const targetClassId = propTargetClassId ?? state.targetClassId ?? undefined;
+
+  const templateInsights = useMemo(() => {
+    const hasTemplateContext =
+      !!templateMapping && Object.keys(templateMapping).length > 0;
+
+    if (!sparqlQuery) {
+      return {
+        predicateDetails: [] as PredicateDetail[],
+        classDetails: [] as ClassDetail[],
+        resourceDetails: [] as ResourceDetail[],
+        hasTemplateContext,
+      };
+    }
+
+    const predicateIds = extractPredicateIds(sparqlQuery);
+    const predicateDetails: PredicateDetail[] = predicateIds.map(
+      (predicateId) => {
+        // Try to find mapping - check both with and without P prefix, and case variations
+        const normalizedId = predicateId.toUpperCase();
+        const idWithoutP = normalizedId.startsWith('P')
+          ? normalizedId.substring(1)
+          : normalizedId;
+        const idWithP = normalizedId.startsWith('P')
+          ? normalizedId
+          : `P${normalizedId}`;
+
+        const mapping =
+          templateMapping?.[normalizedId] ||
+          templateMapping?.[idWithoutP] ||
+          templateMapping?.[idWithP] ||
+          templateMapping?.[predicateId.toLowerCase()] ||
+          templateMapping?.[predicateId];
+
+        // Check fetched metadata
+        const fetchedMeta =
+          predicateMetadata.get(normalizedId) ||
+          predicateMetadata.get(idWithP) ||
+          predicateMetadata.get(idWithoutP);
+
+        const nestedProperties = mapping?.subtemplate_properties
+          ? Object.entries(mapping.subtemplate_properties)
+              .slice(0, 6)
+              .map(([childId, childMapping]) => ({
+                id: childId,
+                label:
+                  childMapping.predicate_label ?? childMapping.label ?? childId,
+                classLabel: childMapping.class_label ?? childMapping.label,
+              }))
+          : [];
+
+        return {
+          id: predicateId,
+          label:
+            mapping?.predicate_label ??
+            mapping?.label ??
+            fetchedMeta?.label ??
+            `Predicate ${predicateId}`,
+          description:
+            mapping?.description ||
+            fetchedMeta?.description ||
+            mapping?.predicate_label ||
+            mapping?.label ||
+            `Predicate ${predicateId} from ORKG`,
+          cardinality: mapping?.cardinality ?? 'unknown',
+          predicateLabel:
+            mapping?.predicate_label ?? mapping?.label ?? fetchedMeta?.label,
+          classId: mapping?.class_id,
+          classLabel: mapping?.class_label ?? mapping?.label,
+          subtemplateId: mapping?.subtemplate_id,
+          subtemplateLabel: mapping?.subtemplate_label,
+          nestedProperties,
+          usageSamples: getPredicateUsageSamples(sparqlQuery, predicateId),
+        };
+      }
+    );
+
+    const orderedClassIds: string[] = [];
+    const seenClasses = new Set<string>();
+    const pushClass = (value?: string | null) => {
+      if (!value) return;
+      const normalized = value.toUpperCase();
+      if (seenClasses.has(normalized)) return;
+      seenClasses.add(normalized);
+      orderedClassIds.push(normalized);
+    };
+
+    pushClass(targetClassId);
+    extractClassIds(sparqlQuery).forEach((classId) => pushClass(classId));
+
+    const classDetails: ClassDetail[] = orderedClassIds.map((classId) => {
+      const metadata = resolveClassMetadata(classId, templateMapping);
+      return {
+        id: classId,
+        label: metadata?.label ?? `Class ${classId}`,
+        viaPredicates: metadata?.viaPredicates ?? [],
+        subtemplateId: metadata?.subtemplateId,
+        subtemplateLabel: metadata?.subtemplateLabel,
+      };
+    });
+
+    const inlineResources = extractResourceIds(sparqlQuery);
+    const resourceMap = new Map<string, ResourceDetail>();
+    const activeTemplateId = templateId?.toUpperCase();
+
+    if (activeTemplateId) {
+      resourceMap.set(activeTemplateId, {
+        id: activeTemplateId,
+        label: 'Active template',
+        type: 'active',
+      });
+    }
+
+    predicateDetails.forEach((detail) => {
+      if (detail.subtemplateId) {
+        const resourceId = detail.subtemplateId.toUpperCase();
+        if (!resourceMap.has(resourceId)) {
+          resourceMap.set(resourceId, {
+            id: resourceId,
+            label: detail.subtemplateLabel,
+            type: 'template',
+            introducedBy: detail.id,
+          });
+        }
+      }
+    });
+
+    inlineResources.forEach((resourceId) => {
+      const normalized = resourceId.toUpperCase();
+      if (!resourceMap.has(normalized)) {
+        resourceMap.set(normalized, {
+          id: normalized,
+          type: 'inline',
+        });
+      }
+    });
+
+    // Enhance resource details with fetched metadata
+    const enhancedResourceDetails = Array.from(resourceMap.values()).map(
+      (resource) => {
+        const metadata = resourceMetadata.get(resource.id);
+        return {
+          ...resource,
+          label: resource.label || metadata?.label,
+          description: metadata?.description,
+        };
+      }
+    );
+
+    return {
+      predicateDetails,
+      classDetails,
+      resourceDetails: enhancedResourceDetails,
+      hasTemplateContext,
+    };
+  }, [
+    sparqlQuery,
+    templateMapping,
+    targetClassId,
+    templateId,
+    resourceMetadata,
+    predicateMetadata,
+  ]);
+
+  // Fetch predicate metadata using SPARQL if not in templateMapping
+  React.useEffect(() => {
+    const fetchPredicateMetadata = async () => {
+      if (!sparqlQuery || !templateInsights.predicateDetails.length) return;
+
+      const missingPredicates = templateInsights.predicateDetails
+        .filter((p) => {
+          const normalizedId = p.id.toUpperCase();
+          const idWithoutP = normalizedId.startsWith('P')
+            ? normalizedId.substring(1)
+            : normalizedId;
+          const idWithP = normalizedId.startsWith('P')
+            ? normalizedId
+            : `P${normalizedId}`;
+
+          const hasMapping =
+            templateMapping?.[normalizedId] ||
+            templateMapping?.[idWithoutP] ||
+            templateMapping?.[idWithP] ||
+            templateMapping?.[p.id.toLowerCase()] ||
+            templateMapping?.[p.id];
+
+          return (
+            !hasMapping &&
+            !predicateMetadata.has(normalizedId) &&
+            !predicateMetadata.has(idWithP) &&
+            !predicateMetadata.has(idWithoutP)
+          );
+        })
+        .map((p) => p.id.toUpperCase());
+
+      if (missingPredicates.length === 0) return;
+
+      const newMetadata = new Map(predicateMetadata);
+      const loadingSet = new Set(loadingPredicates);
+
+      for (const predicateId of missingPredicates) {
+        if (loadingSet.has(predicateId)) continue;
+        loadingSet.add(predicateId);
+        setLoadingPredicates(new Set(loadingSet));
+
+        try {
+          // Fetch predicate metadata using SPARQL
+          const query = `
+PREFIX orkgp: <http://orkg.org/orkg/predicate/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?label ?description WHERE {
+  orkgp:${predicateId} rdfs:label ?label .
+  OPTIONAL { orkgp:${predicateId} rdfs:comment ?description . }
+}
+LIMIT 1`;
+
+          const response = await fetch('https://orkg.org/triplestore', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              Accept: 'application/sparql-results+json',
+            },
+            body: new URLSearchParams({ query }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.results?.bindings?.length > 0) {
+              const binding = data.results.bindings[0];
+              newMetadata.set(predicateId, {
+                label: binding.label?.value || `Predicate ${predicateId}`,
+                description: binding.description?.value,
+              });
+            } else {
+              // Fallback: try fetching from ORKG properties API
+              try {
+                const propResponse = await fetch(
+                  `https://orkg.org/api/properties/${predicateId}`,
+                  {
+                    headers: { Accept: 'application/json' },
+                  }
+                );
+                if (propResponse.ok) {
+                  const propData = await propResponse.json();
+                  newMetadata.set(predicateId, {
+                    label: propData.label || `Predicate ${predicateId}`,
+                    description: propData.description,
+                  });
+                }
+              } catch {
+                // Ignore API fetch errors
+              }
+            }
+          }
+        } catch (err) {
+          console.warn(
+            `Failed to fetch metadata for predicate ${predicateId}:`,
+            err
+          );
+        } finally {
+          loadingSet.delete(predicateId);
+          setLoadingPredicates(new Set(loadingSet));
+        }
+      }
+
+      if (newMetadata.size > predicateMetadata.size) {
+        setPredicateMetadata(newMetadata);
+      }
+    };
+
+    if (sparqlQuery && templateInsights.predicateDetails.length > 0) {
+      fetchPredicateMetadata();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sparqlQuery, templateInsights.predicateDetails.length, templateMapping]);
+
+  // Fetch resource metadata for resources that don't have labels
+  React.useEffect(() => {
+    const fetchMissingMetadata = async () => {
+      const resourceIds = templateInsights.resourceDetails
+        .filter((r) => !r.label && r.id.startsWith('R'))
+        .map((r) => r.id);
+
+      if (resourceIds.length === 0) return;
+
+      const newMetadata = new Map(resourceMetadata);
+      const loadingSet = new Set(loadingResources);
+
+      for (const resourceId of resourceIds) {
+        if (loadingSet.has(resourceId) || newMetadata.has(resourceId)) continue;
+        loadingSet.add(resourceId);
+        setLoadingResources(new Set(loadingSet));
+
+        try {
+          const template = await getTemplate(resourceId);
+          newMetadata.set(resourceId, {
+            label: template.label,
+            description: template.description,
+          });
+        } catch (err) {
+          console.warn(`Failed to fetch metadata for ${resourceId}:`, err);
+          newMetadata.set(resourceId, {
+            label: `Resource ${resourceId}`,
+          });
+        } finally {
+          loadingSet.delete(resourceId);
+          setLoadingResources(new Set(loadingSet));
+        }
+      }
+
+      if (newMetadata.size > resourceMetadata.size) {
+        setResourceMetadata(newMetadata);
+      }
+    };
+
+    if (sparqlQuery && templateInsights.resourceDetails.length > 0) {
+      fetchMissingMetadata();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sparqlQuery, templateInsights.resourceDetails.length]);
 
   const handleEdit = () => {
     setEditContent(sparqlQuery);
@@ -298,6 +793,412 @@ Modified SPARQL Query:`;
         </Box>
       </Paper>
 
+      {/* Query Explanation Dialog */}
+      <Dialog
+        open={explanationDialogOpen}
+        onClose={() => setExplanationDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            maxHeight: '90vh',
+          },
+        }}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Info sx={{ color: '#e86161' }} />
+            <Typography variant="h6" sx={{ color: '#e86161', fontWeight: 600 }}>
+              Query Explanation
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {sparqlQuery && (
+            <>
+              <Grid container spacing={1.5} sx={{ mt: 0.5 }}>
+                {/* Predicates Column */}
+                {templateInsights.predicateDetails.length > 0 && (
+                  <Grid item xs={12} md={6}>
+                    <Box>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        sx={{ mb: 1 }}
+                      >
+                        <Chip
+                          label={templateInsights.predicateDetails.length}
+                          size="small"
+                          sx={{
+                            backgroundColor: '#e86161',
+                            color: 'white',
+                            fontWeight: 600,
+                            height: '20px',
+                            fontSize: '0.7rem',
+                          }}
+                        />
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          Predicates
+                        </Typography>
+                      </Stack>
+                      <Stack spacing={0.75}>
+                        {templateInsights.predicateDetails.map((predicate) => (
+                          <Box
+                            key={predicate.id}
+                            sx={{
+                              p: 0.75,
+                              borderRadius: 1,
+                              backgroundColor: 'rgba(248, 249, 250, 0.6)',
+                              border: '1px solid rgba(232, 97, 97, 0.1)',
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              <Chip
+                                component="a"
+                                href={`https://orkg.org/properties/${predicate.id.startsWith('P') ? predicate.id : `P${predicate.id}`}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                label={`orkgp:${predicate.id}`}
+                                size="small"
+                                clickable
+                                onClick={(e: React.MouseEvent) => {
+                                  e.stopPropagation();
+                                }}
+                                sx={{
+                                  backgroundColor: '#e86161',
+                                  color: 'white',
+                                  fontWeight: 500,
+                                  fontSize: '0.7rem',
+                                  height: '20px',
+                                  cursor: 'pointer',
+                                  textDecoration: 'none',
+                                  '&:hover': {
+                                    backgroundColor: '#d45151',
+                                    textDecoration: 'none',
+                                  },
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  fontWeight: 600,
+                                  fontSize: '0.875rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                }}
+                              >
+                                {predicate.label}
+                                {loadingPredicates.has(
+                                  predicate.id.toUpperCase()
+                                ) && <CircularProgress size={10} />}
+                              </Typography>
+                            </Stack>
+                            {predicate.description &&
+                              predicate.description !==
+                                `Predicate ${predicate.id} from ORKG` && (
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  sx={{
+                                    display: 'block',
+                                    mt: 0.5,
+                                    fontSize: '0.75rem',
+                                  }}
+                                >
+                                  {predicate.description}
+                                </Typography>
+                              )}
+                            {(predicate.classLabel ||
+                              predicate.subtemplateLabel) && (
+                              <Stack
+                                direction="row"
+                                spacing={0.75}
+                                flexWrap="wrap"
+                                mt={0.5}
+                              >
+                                {predicate.classLabel && (
+                                  <Chip
+                                    label={`Class: ${predicate.classLabel}${predicate.classId ? ` (${predicate.classId})` : ''}`}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      fontSize: '0.65rem',
+                                      height: '18px',
+                                      mt: 0.25,
+                                    }}
+                                  />
+                                )}
+                                {predicate.subtemplateLabel && (
+                                  <Chip
+                                    label={`Template: ${predicate.subtemplateLabel}${predicate.subtemplateId ? ` (${predicate.subtemplateId})` : ''}`}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{
+                                      fontSize: '0.65rem',
+                                      height: '18px',
+                                      mt: 0.25,
+                                    }}
+                                  />
+                                )}
+                              </Stack>
+                            )}
+                            {predicate.nestedProperties.length > 0 && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  mt: 0.5,
+                                  display: 'block',
+                                }}
+                              >
+                                Nested:{' '}
+                                {predicate.nestedProperties
+                                  .slice(0, 3)
+                                  .map((n) => n.label)
+                                  .join(', ')}
+                                {predicate.nestedProperties.length > 3 && '...'}
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Grid>
+                )}
+
+                {/* Classes & Resources Column */}
+                {(templateInsights.classDetails.length > 0 ||
+                  templateInsights.resourceDetails.length > 0) && (
+                  <Grid item xs={12} md={6}>
+                    <Box>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        alignItems="center"
+                        sx={{ mb: 1 }}
+                      >
+                        <Chip
+                          label={
+                            templateInsights.classDetails.length +
+                            templateInsights.resourceDetails.length
+                          }
+                          size="small"
+                          sx={{
+                            backgroundColor: '#e86161',
+                            color: 'white',
+                            fontWeight: 600,
+                            height: '20px',
+                            fontSize: '0.7rem',
+                          }}
+                        />
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                        >
+                          Classes & Resources
+                        </Typography>
+                      </Stack>
+                      <Stack spacing={0.75}>
+                        {templateInsights.classDetails.map((cls) => (
+                          <Box
+                            key={cls.id}
+                            sx={{
+                              p: 0.75,
+                              borderRadius: 1,
+                              backgroundColor: 'rgba(248, 249, 250, 0.6)',
+                              border: '1px dashed rgba(232, 97, 97, 0.15)',
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              <Chip
+                                component="a"
+                                href={`https://orkg.org/classes/${cls.id.startsWith('C') ? cls.id : `C${cls.id}`}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                label={`orkgc:${cls.id}`}
+                                size="small"
+                                variant="outlined"
+                                clickable
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  height: '20px',
+                                  cursor: 'pointer',
+                                  textDecoration: 'none',
+                                  '&:hover': {
+                                    backgroundColor: 'rgba(232, 97, 97, 0.1)',
+                                    textDecoration: 'none',
+                                  },
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                              >
+                                {cls.label}
+                              </Typography>
+                            </Stack>
+                            {cls.viaPredicates.length > 0 && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  mt: 0.5,
+                                  display: 'block',
+                                }}
+                              >
+                                via{' '}
+                                {cls.viaPredicates
+                                  .map((pid) => `orkgp:${pid}`)
+                                  .join(' → ')}
+                              </Typography>
+                            )}
+                            {cls.subtemplateLabel && (
+                              <Chip
+                                label={`Template: ${cls.subtemplateLabel}${cls.subtemplateId ? ` (${cls.subtemplateId})` : ''}`}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontSize: '0.65rem',
+                                  height: '18px',
+                                  mt: 0.5,
+                                }}
+                              />
+                            )}
+                          </Box>
+                        ))}
+                        {templateInsights.resourceDetails.map((resource) => (
+                          <Box
+                            key={resource.id}
+                            sx={{
+                              p: 0.75,
+                              borderRadius: 1,
+                              backgroundColor: 'rgba(248, 249, 250, 0.6)',
+                              border: '1px solid rgba(0,0,0,0.08)',
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              alignItems="center"
+                              flexWrap="wrap"
+                            >
+                              <Chip
+                                label={resource.id}
+                                size="small"
+                                sx={{
+                                  backgroundColor:
+                                    resource.type === 'active'
+                                      ? '#e86161'
+                                      : resource.type === 'template'
+                                        ? '#4CAF50'
+                                        : '#757575',
+                                  color: 'white',
+                                  fontWeight: 500,
+                                  fontSize: '0.7rem',
+                                  height: '20px',
+                                }}
+                              />
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, fontSize: '0.875rem' }}
+                              >
+                                {resource.label ||
+                                  (loadingResources.has(resource.id)
+                                    ? 'Loading...'
+                                    : 'Loading metadata...')}
+                              </Typography>
+                              {loadingResources.has(resource.id) && (
+                                <CircularProgress size={12} sx={{ ml: 1 }} />
+                              )}
+                            </Stack>
+                            {resource.description && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  mt: 0.5,
+                                  display: 'block',
+                                }}
+                              >
+                                {resource.description}
+                              </Typography>
+                            )}
+                            {resource.introducedBy && (
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{
+                                  fontSize: '0.7rem',
+                                  mt: 0.5,
+                                  display: 'block',
+                                }}
+                              >
+                                Introduced by orkgp:{resource.introducedBy}
+                              </Typography>
+                            )}
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Box>
+                  </Grid>
+                )}
+              </Grid>
+
+              {/* Natural Language Translation */}
+              {sparqlTranslation && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 1,
+                      backgroundColor: 'rgba(248, 249, 250, 0.6)',
+                      border: '1px solid rgba(232, 97, 97, 0.15)',
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontWeight: 600, mb: 0.5, display: 'block' }}
+                    >
+                      Natural Language Summary:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontStyle: 'italic', lineHeight: 1.6 }}
+                    >
+                      {sparqlTranslation}
+                    </Typography>
+                  </Box>
+                </>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setExplanationDialogOpen(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* SPARQL Query Section */}
       {sparqlQuery && (
         <Paper
@@ -411,6 +1312,20 @@ Modified SPARQL Query:`;
                       <SmartToy />
                     </IconButton>
                   </Tooltip>
+                  <Tooltip title="View query explanation">
+                    <IconButton
+                      onClick={() => setExplanationDialogOpen(true)}
+                      size="small"
+                      sx={{
+                        color: '#e86161',
+                        '&:hover': {
+                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                        },
+                      }}
+                    >
+                      <Info />
+                    </IconButton>
+                  </Tooltip>
                   {getSparqlHistory().length > 0 && (
                     <Tooltip
                       title={`View ${getSparqlHistory().length} previous versions`}
@@ -429,7 +1344,6 @@ Modified SPARQL Query:`;
                       </IconButton>
                     </Tooltip>
                   )}
-                  {/* Remove the problematic renderHistoryButton that causes rendering issues */}
                 </>
               )}
             </Box>

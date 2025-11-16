@@ -16,6 +16,7 @@ import { parseSparqlBlocks } from '../utils/queryParser';
 import { processDynamicData } from '../utils/dataTransform';
 import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
 import { useLocation } from 'react-router-dom';
+import { PredicatesMapping } from '../components/Graph/types';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -23,6 +24,7 @@ const DynamicAIQuestion = () => {
     state,
     updateQuestion,
     updateSparqlQuery,
+    updateSparqlTranslation,
     updateQueryResults,
     updateChartHtml,
     updateQuestionInterpretation,
@@ -254,6 +256,7 @@ const DynamicAIQuestion = () => {
     updateDataCollectionInterpretation('');
     updateDataAnalysisInterpretation('');
     updateSparqlQuery('');
+    updateSparqlTranslation('');
     updateQueryResults([]);
     setDynamicQuery(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
@@ -508,6 +511,7 @@ const DynamicAIQuestion = () => {
       <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
+        sparqlTranslation={state.sparqlTranslation}
         loading={loading}
         queryResults={state.queryResults}
         queryError={error}
@@ -523,6 +527,8 @@ const DynamicAIQuestion = () => {
         currentIteration={currentIteration}
         maxIterations={maxIterations}
         iterationHistory={iterationHistory}
+        templateMapping={state.templateMapping as PredicatesMapping | undefined}
+        targetClassId={state.targetClassId}
       />
 
       <DataProcessingCodeSection

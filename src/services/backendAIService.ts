@@ -448,7 +448,7 @@ export const useBackendAIService = () => {
   return new BackendAIService({
     provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
-    groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
     // API keys are never sent to backend - backend uses its own environment keys
@@ -462,7 +462,7 @@ export const useAIService = () => {
   return new UnifiedAIService({
     provider: aiConfig.provider || 'mistral',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
-    groqModel: aiConfig.groqModel || 'deepseek-r1-distill-llama-70b',
+    groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
@@ -476,7 +476,7 @@ export const createDefaultBackendAIService = () => {
   return new BackendAIService({
     provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
-    groqModel: 'deepseek-r1-distill-llama-70b',
+    groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     useEnvironmentKeys: true,
   });
@@ -486,7 +486,7 @@ export const createDefaultAIService = () => {
   return new UnifiedAIService({
     provider: 'mistral',
     openaiModel: 'gpt-4o-mini',
-    groqModel: 'deepseek-r1-distill-llama-70b',
+    groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     openaiApiKey: '',
     groqApiKey: '',
