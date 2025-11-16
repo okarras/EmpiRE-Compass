@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.9.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.2...v1.9.0) (2025-11-16)
+
+### Features
+
+- add chart for inferential statistics in query 7 ([f8a5a7a](https://github.com/okarras/EmpiRE-Compass/commit/f8a5a7ac93001bf5914d1553eec5cfad6daa6043))
+- added new models to groq api ([8bcb9d8](https://github.com/okarras/EmpiRE-Compass/commit/8bcb9d8bb12522826495ce7a90716bf3a04b5b07))
+- html handle in keyfeatures ([bd5f0b8](https://github.com/okarras/EmpiRE-Compass/commit/bd5f0b8467001e97323e1ef06655838f99a5ef61))
+
 ### [1.8.2](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.1...v1.8.2) (2025-11-10)
 
 ### Bug Fixes
