@@ -55,7 +55,7 @@ const KeyFeatures = ({ content }: KeyFeaturesProps) => {
               >
                 {feature.title}
               </Box>
-              {feature.description}
+              <Box dangerouslySetInnerHTML={{ __html: feature.description }} />
             </Typography>
           ))}
         </Typography>
