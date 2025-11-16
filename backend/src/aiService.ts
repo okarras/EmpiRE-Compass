@@ -10,15 +10,12 @@ export type GroqModel =
   | 'llama-3.1-70b-versatile'
   | 'llama-3.1-405b-reasoning'
   | 'llama-3.3-70b-versatile'
-  | 'meta-llama/llama-guard-4-12b'
   | 'openai/gpt-oss-120b'
   | 'openai/gpt-oss-20b'
   | 'whisper-large-v3'
-  | 'whisper-large-v3-turbo'
   | 'deepseek-r1-distill-llama-70b'
   | 'llama-3-70b-8192'
-  | 'mixtral-8x7b-32768'
-  | 'gemma-7b-it';
+  | 'mixtral-8x7b-32768';
 export type MistralModel =
   | 'mistral-large-latest'
   | 'mistral-medium-latest'
