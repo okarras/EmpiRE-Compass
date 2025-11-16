@@ -17,9 +17,7 @@ export const GROQ_MODELS = [
   'openai/gpt-oss-120b',
   'openai/gpt-oss-20b',
   'whisper-large-v3',
-  'whisper-large-v3-turbo',
   'mixtral-8x7b-32768',
-  'gemma-7b-it',
   'deepseek-r1-distill-llama-70b',
 ] as const;
 
