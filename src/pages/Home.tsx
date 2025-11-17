@@ -15,6 +15,7 @@ import KeyFeatures from '../components/Home/KeyFeatures';
 import FutureDevelopment from '../components/Home/FutureDevelopment';
 import Contact from '../components/Home/Contact';
 import Partners from '../components/Home/Partners';
+import Footer from '../components/Home/Footer';
 import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 
 const Home = () => {
@@ -98,6 +99,7 @@ const Home = () => {
                   <Contact content={homeContent.contact} />
                 </Stack>
                 <Partners content={homeContent.partners} />
+                <Footer />
               </>
             )}
           </Stack>
