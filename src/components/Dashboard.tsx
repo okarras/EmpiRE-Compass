@@ -124,7 +124,9 @@ const Dashboard = () => {
               lineHeight: 1.6,
             }}
           >
-            {templateInfoBox.description}
+            <Box
+              dangerouslySetInnerHTML={{ __html: templateInfoBox.description }}
+            />
           </Typography>
 
           <Box
