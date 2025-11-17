@@ -125,7 +125,7 @@ const templateApiRequest = async <T>(
 
   if (!response.ok) {
     throw new Error(
-      `Template API request failed: ${response.status} ${response.statusText}`
+      `Schema API request failed: ${response.status} ${response.statusText}`
     );
   }
 
@@ -284,7 +284,7 @@ export const loadTemplateFlowByID = (
             return {};
           } catch (error) {
             console.warn(
-              `Failed to load template for class ${ps.class!.id}:`,
+              `Failed to load schema for class ${ps.class!.id}:`,
               error
             );
             return {};
