@@ -54,7 +54,7 @@ const Dashboard = () => {
     templateId as string
   ] || {
     title: templateConfig.title,
-    description: `This template contains ${queries.length} research questions designed to help you explore and analyze data related to ${templateConfig.title.toLowerCase()}. Each question is carefully crafted to provide insights into different aspects of your research domain.`,
+    description: '',
   };
 
   return (
