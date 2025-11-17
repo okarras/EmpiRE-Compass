@@ -434,10 +434,10 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
       >
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '18px', marginBottom: '8px' }}>
-            Loading template data...
+            Loading Schema data...
           </div>
           <div style={{ fontSize: '14px', color: '#9ca3af' }}>
-            Fetching template information from ORKG
+            Fetching schema information from ORKG
           </div>
         </div>
       </div>
@@ -462,7 +462,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
           <div
             style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}
           >
-            Error loading templates
+            Error loading schemas
           </div>
           <div style={{ fontSize: '14px', color: '#9ca3af' }}>{error}</div>
         </div>
