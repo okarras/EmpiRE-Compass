@@ -8,6 +8,7 @@ import tibLogo from '../../assets/TIB.png';
 import orkgLogo from '../../assets/ORKG.png';
 import orkgaskLogo from '../../assets/ORKGask.png';
 import KGEmpireLogo from '../../assets/KGEmpire.png';
+import NLP4RELogo from '../../assets/NLP4RE.png';
 
 interface PartnersProps {
   content: PartnersContent;
@@ -19,6 +20,7 @@ const logoMap: Record<string, string> = {
   '/src/assets/ORKG.png': orkgLogo,
   '/src/assets/ORKGask.png': orkgaskLogo,
   '/src/assets/KGEmpire.png': KGEmpireLogo,
+  '/src/assets/NLP4RE.png': NLP4RELogo,
 };
 
 const Partners = ({ content }: PartnersProps) => {
