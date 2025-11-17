@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.10.0...v1.11.0) (2025-11-17)
+
+### Features
+
+- add footer to everypage ([4ad00ec](https://github.com/okarras/EmpiRE-Compass/commit/4ad00ec138451d215260eb78e910c15449ef980d))
+- change template to theme ([2f00fba](https://github.com/okarras/EmpiRE-Compass/commit/2f00fba5f968a02bd2be689cdceadc161be1cf08))
+- html handling in all questions page ([584fe5a](https://github.com/okarras/EmpiRE-Compass/commit/584fe5a17f2762486ed5a332c39987aea8d0661d))
+
+### Bug Fixes
+
+- added year to copyright ([e81066a](https://github.com/okarras/EmpiRE-Compass/commit/e81066a37855f88feef478604a578529da458aea))
+- change bullet points styles in home ([202dc74](https://github.com/okarras/EmpiRE-Compass/commit/202dc74e5d1eea7b8b127c5ee01801dd417de046))
+- change nlp4re class id to resource id ([4fcfa3e](https://github.com/okarras/EmpiRE-Compass/commit/4fcfa3e1bdb27293b9aba3cc37bb9a491a4dcb8f))
+- fixed some style problems ([5aaaba3](https://github.com/okarras/EmpiRE-Compass/commit/5aaaba3591568c7c0bf453b0631f308783e22dfa))
+- template info box default text ([547bfc9](https://github.com/okarras/EmpiRE-Compass/commit/547bfc900a25ac44174d4cfd23b072b836a52db3))
+
 ## [1.10.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.9.0...v1.10.0) (2025-11-16)
 
 ### Features
