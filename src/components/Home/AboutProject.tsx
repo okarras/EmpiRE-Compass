@@ -54,14 +54,9 @@ const AboutProject = ({ content }: AboutProjectProps) => {
                 display: 'flex',
                 alignItems: 'center',
                 '&:before': {
-                  content: '""',
-                  width: '6px',
-                  height: '6px',
-                  minWidth: '6px',
-                  backgroundColor: '#e86161',
-                  borderRadius: '50%',
+                  content: '"🏷️"',
                   display: 'inline-block',
-                  mr: 2,
+                  mr: 1.5,
                 },
               }}
             >
