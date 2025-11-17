@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Header from '../components/Header';
 import MenuDrawer from '../components/MenuDrawer';
 import ScrollTop from '../components/ScrollTop';
+import Footer from '../components/Home/Footer';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { fetchQuestionsFromFirebase } from '../store/slices/questionSlice';
 import { useDispatch } from 'react-redux';
@@ -46,6 +47,8 @@ const Layout = () => {
         sx={{
           flexGrow: 1,
           width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
           transition: (theme) =>
             theme.transitions.create('margin', {
               easing: theme.transitions.easing.sharp,
@@ -61,7 +64,10 @@ const Layout = () => {
           }),
         }}
       >
-        <Outlet />
+        <Box sx={{ flexGrow: 1 }}>
+          <Outlet />
+        </Box>
+        <Footer />
       </Box>
 
       <ScrollTop>
