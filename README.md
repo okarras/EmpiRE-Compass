@@ -37,20 +37,13 @@
 
 # About the Project
 
-EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, replication, and reuse of empirical research knowledge from **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering (RE). By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
+EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, synthesis, and reuse of empirical research knowledge in Requirements Engineering (RE) 
 
-The platform serves as a **central hub for empirical research data management**. It provides interactive diagrams connected to live ORKG data, supports reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. An integrated **Study Designer Knowledge Base** helps users find similar research and receive design recommendations aligned with ACM standards.
+. By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
 
-The project includes a comprehensive **Storybook design system** that documents all UI components, making it easy for developers to understand, reuse, and contribute to the component library.
+EmpiRE-Compass is a knowledge exploration tool designed to support empirical research in Requirements Engineering (RE). It integrates two complementary layers: A symbolic layer based on the [Open Research Knowledge Graph (ORKG)](https://orkg.org) for structured, machine-actionable knowledge, and a neural layer leveraging large language models (LLMs) to answer both predefined and custom competency questions. This dual approach enables researchers to navigate the evolving knowledge landscape of empirical research in RE, identify reusable insights across publications, and promote Open Science through transparent, interoperable knowledge representations. EmpiRE-Compass currently focuses on two themes: Empirical research practices in RE using [KG-EmpiRE](https://www.oliver-karras.de/portfolio/kg-empire/), and empirical research practices in Natural Language Processing for RE using the [NLP4RE ID Card](https://zenodo.org/records/14197338).
 
-Key capabilities include:
-
-1. **Dashboard Display** – Visualizes 16 competency questions and their answers with interactive diagrams, providing an overview of KG-EmpiRE data.
-2. **Live Interactive Diagrams** – Dynamically fetches real-time data from ORKG. Users can click diagram elements to explore related research papers and insights.
-3. **Reproduction & Comparison** – Allows reviewing historical published states of KG-EmpiRE and comparing them with the current live data to understand how research evolves.
-4. **Statistics & Metrics** – Displays real-time counts of conferences, papers, triples, resources, and literals to keep track of the KG-EmpiRE scope.
-5. **Data Contribution Workflow** – Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
-6. **Study Designer Knowledge Base** – Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
+EmpiRE-Compass offers a rich set of capabilities to support exploration, synthesis, and reuse of empirical research in RE. Its exploratory visual analytics provide detailed insights into the state and evolution of the field through interactive charts and distributions. The platform’s neuro-symbolic synthesis combines structured knowledge graphs with neural large language models to answer competency questions, interpret findings, and support contextual knowledge integration. All structured data, SPARQL queries, analyses, and interpretations are openly available to foster replicable research and long-term reuse. EmpiRE-Compass is built on FAIR principles — ensuring that knowledge is findable, accessible, interoperable, and reusable — and is grounded in Open Science values of transparency, ethical attribution, and collaborative maintenance. Developed on top of the ORKG and supported by TIB, the platform is designed for community-driven contributions and long-term sustainability.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
