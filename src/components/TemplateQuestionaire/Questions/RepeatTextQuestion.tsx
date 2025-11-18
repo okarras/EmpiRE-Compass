@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import NodeWrapper from '../NodeWrapper';
 import BufferedTextField from '../BufferedTextField';
 import Box from '@mui/material/Box';
@@ -9,6 +9,9 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Typography from '@mui/material/Typography';
 import InfoTooltip from '../InfoTooltip';
+import SuggestButton, { type SuggestButtonRef } from '../SuggestButton';
+import SuggestionBox from '../SuggestionBox';
+import type { Suggestion } from '../../../utils/suggestions';
 
 const RepeatTextQuestion: React.FC<{
   q: any;
@@ -16,23 +19,171 @@ const RepeatTextQuestion: React.FC<{
   onChange: (v: any) => void;
   idAttr?: string;
   level?: number;
-}> = ({ q, value, onChange, idAttr, level = 0 }) => {
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
+}> = ({
+  q,
+  value,
+  onChange,
+  idAttr,
+  level = 0,
+  pdfContent,
+  onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
+}) => {
   const arr: string[] = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
 
+  const suggestButtonRef = useRef<SuggestButtonRef>(null);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSuggestionsGenerated = (newSuggestions: Suggestion[]) => {
+    setSuggestions(newSuggestions);
+    setShowSuggestions(true);
+    setIsCollapsed(false);
+    setError(null);
+    setLoading(false);
+  };
+
+  const handleError = (errorMessage: string) => {
+    setError(errorMessage);
+    setShowSuggestions(true);
+    setSuggestions([]);
+    setLoading(false);
+  };
+
+  const parseSuggestionText = (text: string): string[] => {
+    const separators = ['\n', ';', ',', '|'];
+
+    for (const separator of separators) {
+      if (text.includes(separator)) {
+        return text
+          .split(separator)
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+      }
+    }
+
+    return [text.trim()];
+  };
+
+  const handleApplySuggestion = (suggestion: Suggestion) => {
+    const suggestedItems = parseSuggestionText(suggestion.text);
+    onChange([...arr, ...suggestedItems]);
+    setShowSuggestions(false);
+  };
+
+  const handleCloseSuggestions = () => {
+    setShowSuggestions(false);
+  };
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const handleRegenerate = async () => {
+    setSuggestions([]);
+    setError(null);
+    setIsCollapsed(false);
+    setLoading(true);
+    if (suggestButtonRef.current) {
+      await suggestButtonRef.current.triggerGeneration();
+    }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setShowSuggestions(false);
+  };
+
+  const handleFeedback = (suggestionId: string, feedback: any) => {
+    console.log('Feedback received:', { suggestionId, feedback });
+  };
+
+  const handleNavigateToPage = (pageNumber: number) => {
+    if (onNavigateToPage) {
+      onNavigateToPage(pageNumber);
+    }
+  };
+
   return (
     <NodeWrapper level={level}>
-      <Box>
+      <Box
+        role="group"
+        aria-labelledby={idAttr ? `${idAttr}-label` : undefined}
+        aria-describedby={desc ? `${idAttr}-description` : undefined}
+      >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-          <Typography variant="subtitle2">
+          <Typography
+            variant="subtitle2"
+            id={idAttr ? `${idAttr}-label` : undefined}
+          >
             {q.label}
             {q.required ? ' *' : ''}
           </Typography>
           <InfoTooltip desc={desc} />
+          <Box
+            sx={{ display: suggestions.length === 0 ? 'inline-block' : 'none' }}
+          >
+            <SuggestButton
+              ref={suggestButtonRef}
+              questionText={q.label}
+              questionType="repeat_text"
+              onSuggestionsGenerated={handleSuggestionsGenerated}
+              onError={handleError}
+              pdfContent={pdfContent}
+            />
+          </Box>
         </Box>
-        <Stack spacing={1}>
+        {desc && (
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            id={idAttr ? `${idAttr}-description` : undefined}
+            sx={{ display: 'none' }}
+          >
+            {desc}
+          </Typography>
+        )}
+        {showSuggestions && (
+          <Box sx={{ mb: 1 }}>
+            <SuggestionBox
+              suggestions={suggestions}
+              onApply={handleApplySuggestion}
+              onClose={handleCloseSuggestions}
+              onFeedback={handleFeedback}
+              onNavigateToPage={handleNavigateToPage}
+              questionId={q.id || q.label}
+              isCollapsed={isCollapsed}
+              onToggleCollapse={handleToggleCollapse}
+              onRegenerate={handleRegenerate}
+              onHighlightsChange={onHighlightsChange}
+              pdfUrl={pdfUrl}
+              pageWidth={pageWidth}
+              loading={loading}
+              error={error}
+              onRetry={handleRetry}
+            />
+          </Box>
+        )}
+        <Stack spacing={1} role="list" aria-label={`${q.label} items`}>
           {arr.map((v, i) => (
-            <Box key={i} sx={{ display: 'flex', gap: 1 }}>
+            <Box key={i} sx={{ display: 'flex', gap: 1 }} role="listitem">
               <BufferedTextField
                 id={`${idAttr ?? 'repeat_text'}-${i}`}
                 value={String(v ?? '')}
@@ -44,6 +195,8 @@ const RepeatTextQuestion: React.FC<{
                 size="small"
                 fullWidth
                 commitOnBlurOnly
+                aria-label={`${q.label} item ${i + 1}`}
+                aria-required={q.required}
               />
               <IconButton
                 size="small"
@@ -54,6 +207,7 @@ const RepeatTextQuestion: React.FC<{
                   onChange(copy);
                 }}
                 onMouseDown={(e) => e.stopPropagation()}
+                aria-label={`Delete ${q.label} item ${i + 1}`}
               >
                 <DeleteOutlineIcon />
               </IconButton>
@@ -68,6 +222,7 @@ const RepeatTextQuestion: React.FC<{
               onChange([...arr, '']);
             }}
             onMouseDown={(e) => e.stopPropagation()}
+            aria-label={`Add new ${q.label} item`}
           >
             Add
           </Button>

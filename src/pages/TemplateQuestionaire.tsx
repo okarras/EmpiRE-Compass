@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, Snackbar, Alert } from '@mui/material';
 
 import SectionAccordion from '../components/TemplateQuestionaire/SectionAccordion';
 import TopSummaryBar from '../components/TemplateQuestionaire/TopSummaryBar';
 import ValidateDialog from '../components/TemplateQuestionaire/ValidateDialog';
+import ImportDialog from '../components/TemplateQuestionaire/ImportDialog';
 
 /* types & constants */
 type TemplateSpec = any;
@@ -11,6 +12,18 @@ type Props = {
   templateSpec: TemplateSpec | null;
   answers: Record<string, any>;
   setAnswers: (next: Record<string, any>) => void;
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+  pdfExtractionError?: Error | null;
+  onRetryExtraction?: () => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
 };
 
 const STORAGE_PREFIX = 'template_answers_v1_';
@@ -31,6 +44,13 @@ const TemplateQuestionaire: React.FC<Props> = ({
   templateSpec,
   answers,
   setAnswers,
+  pdfContent,
+  onNavigateToPage,
+  pdfExtractionError,
+  onRetryExtraction,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
 }) => {
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
   const setExpandedKey = (key: string, value: boolean) =>
@@ -42,6 +62,19 @@ const TemplateQuestionaire: React.FC<Props> = ({
     Array<{ id: string; label: string }>
   >([]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [importFileName, setImportFileName] = useState('');
+  const [importData, setImportData] = useState<Record<string, any> | null>(
+    null
+  );
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isValidatingImport, setIsValidatingImport] = useState(false);
+  const [importSnackbar, setImportSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     if (!templateSpec) return;
@@ -142,6 +175,307 @@ const TemplateQuestionaire: React.FC<Props> = ({
     a.click();
     URL.revokeObjectURL(url);
   }, [answers, templateSpec]);
+
+  const handleImportConfirm = useCallback(
+    (mode: 'replace' | 'merge') => {
+      if (!importData) {
+        setImportSnackbar({
+          open: true,
+          message: 'Import failed: No data to import',
+          severity: 'error',
+        });
+        return;
+      }
+
+      try {
+        const importedCount = Object.keys(importData).length;
+        const existingCount = Object.keys(answers).length;
+
+        if (mode === 'replace') {
+          overwriteAnswers(importData);
+
+          let message = `Successfully imported ${importedCount} answer field${importedCount !== 1 ? 's' : ''}`;
+          if (existingCount > 0) {
+            message += ` (replaced ${existingCount} existing field${existingCount !== 1 ? 's' : ''})`;
+          }
+
+          setImportSnackbar({
+            open: true,
+            message,
+            severity: 'success',
+          });
+        } else {
+          const mergedAnswers = { ...answers, ...importData };
+          const newFieldsCount =
+            importedCount -
+            Object.keys(answers).filter((key) => key in importData).length;
+          const updatedFieldsCount = importedCount - newFieldsCount;
+
+          overwriteAnswers(mergedAnswers);
+
+          let message = `Successfully merged ${importedCount} answer field${importedCount !== 1 ? 's' : ''}`;
+          if (newFieldsCount > 0 && updatedFieldsCount > 0) {
+            message += ` (${newFieldsCount} new, ${updatedFieldsCount} updated)`;
+          } else if (newFieldsCount > 0) {
+            message += ` (${newFieldsCount} new field${newFieldsCount !== 1 ? 's' : ''})`;
+          } else if (updatedFieldsCount > 0) {
+            message += ` (${updatedFieldsCount} field${updatedFieldsCount !== 1 ? 's' : ''} updated)`;
+          }
+
+          setImportSnackbar({
+            open: true,
+            message,
+            severity: 'success',
+          });
+        }
+
+        setImportDialogOpen(false);
+        setImportData(null);
+        setImportFileName('');
+        setImportError(null);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : 'An unexpected error occurred during import';
+
+        setImportSnackbar({
+          open: true,
+          message: `Import failed: ${errorMessage}`,
+          severity: 'error',
+        });
+
+        console.error('Import error:', error);
+      }
+    },
+    [importData, answers, overwriteAnswers]
+  );
+
+  const validateImportData = useCallback(
+    (
+      data: any
+    ): {
+      valid: boolean;
+      error: string | null;
+      answers: Record<string, any> | null;
+    } => {
+      if (data === null || data === undefined) {
+        return {
+          valid: false,
+          error: 'Invalid JSON file: File is empty or contains null data',
+          answers: null,
+        };
+      }
+
+      if (typeof data !== 'object') {
+        return {
+          valid: false,
+          error: `Invalid JSON file: Expected an object, but got ${typeof data}`,
+          answers: null,
+        };
+      }
+
+      if (Array.isArray(data)) {
+        return {
+          valid: false,
+          error:
+            'Invalid JSON file: Root element must be an object, not an array. Expected format: {"answers": {...}} or direct answer object',
+          answers: null,
+        };
+      }
+
+      const importedAnswers = data.answers || data;
+
+      if (!importedAnswers || typeof importedAnswers !== 'object') {
+        return {
+          valid: false,
+          error:
+            'Invalid JSON file: Could not find valid answers data. Expected an object with answer fields',
+          answers: null,
+        };
+      }
+
+      if (Array.isArray(importedAnswers)) {
+        return {
+          valid: false,
+          error:
+            'Invalid JSON file: Answers must be an object with field IDs as keys, not an array',
+          answers: null,
+        };
+      }
+
+      const keys = Object.keys(importedAnswers);
+      if (keys.length === 0) {
+        return {
+          valid: false,
+          error:
+            'Invalid JSON file: No answer fields found. The file appears to be empty',
+          answers: null,
+        };
+      }
+
+      let hasValidData = false;
+      let invalidKeys: string[] = [];
+
+      for (const key of keys) {
+        const value = importedAnswers[key];
+        if (
+          value !== undefined &&
+          typeof value !== 'function' &&
+          typeof value !== 'symbol'
+        ) {
+          hasValidData = true;
+        } else if (typeof value === 'function') {
+          invalidKeys.push(key);
+        }
+      }
+
+      if (invalidKeys.length > 0) {
+        return {
+          valid: false,
+          error: `Invalid JSON file: Found invalid data types in fields: ${invalidKeys.slice(0, 3).join(', ')}${invalidKeys.length > 3 ? '...' : ''}`,
+          answers: null,
+        };
+      }
+
+      if (!hasValidData) {
+        return {
+          valid: false,
+          error:
+            'Invalid JSON file: No valid answer data found. All fields appear to be empty or invalid',
+          answers: null,
+        };
+      }
+
+      return {
+        valid: true,
+        error: null,
+        answers: importedAnswers,
+      };
+    },
+    []
+  );
+
+  const importAnswers = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json,.json';
+
+    input.onchange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+
+      if (!file) return;
+
+      if (!file.name.toLowerCase().endsWith('.json')) {
+        setImportFileName(file.name);
+        setImportError('Invalid file type: Please select a JSON file (.json)');
+        setIsValidatingImport(false);
+        setImportData(null);
+        setImportDialogOpen(true);
+        return;
+      }
+
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        setImportFileName(file.name);
+        setImportError(
+          `File too large: Maximum file size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`
+        );
+        setIsValidatingImport(false);
+        setImportData(null);
+        setImportDialogOpen(true);
+        return;
+      }
+
+      if (file.size === 0) {
+        setImportFileName(file.name);
+        setImportError('Invalid file: The selected file is empty');
+        setIsValidatingImport(false);
+        setImportData(null);
+        setImportDialogOpen(true);
+        return;
+      }
+
+      // Reset state
+      setImportFileName(file.name);
+      setIsValidatingImport(true);
+      setImportError(null);
+      setImportData(null);
+
+      try {
+        let text: string;
+        try {
+          text = await file.text();
+        } catch (readError) {
+          setImportError(
+            `Error reading file: ${readError instanceof Error ? readError.message : 'Could not read file contents'}`
+          );
+          setIsValidatingImport(false);
+          setImportDialogOpen(true);
+          return;
+        }
+
+        if (!text || text.trim().length === 0) {
+          setImportError(
+            'Invalid JSON file: File is empty or contains only whitespace'
+          );
+          setIsValidatingImport(false);
+          setImportDialogOpen(true);
+          return;
+        }
+
+        let parsed;
+        try {
+          parsed = JSON.parse(text);
+        } catch (parseError) {
+          let errorMessage = 'Invalid JSON file: Could not parse the file.';
+
+          if (parseError instanceof SyntaxError) {
+            const syntaxError = parseError as SyntaxError;
+            const match = syntaxError.message.match(/position (\d+)/i);
+            if (match) {
+              errorMessage += ` Syntax error at position ${match[1]}.`;
+            } else {
+              errorMessage += ` ${syntaxError.message}`;
+            }
+          }
+
+          errorMessage +=
+            ' Please check the file format and ensure it contains valid JSON.';
+
+          setImportError(errorMessage);
+          setIsValidatingImport(false);
+          setImportDialogOpen(true);
+          return;
+        }
+
+        const validation = validateImportData(parsed);
+
+        if (!validation.valid) {
+          setImportError(validation.error);
+          setIsValidatingImport(false);
+          setImportDialogOpen(true);
+          return;
+        }
+
+        setImportData(validation.answers);
+        setIsValidatingImport(false);
+        setImportDialogOpen(true);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? `Unexpected error: ${error.message}`
+            : 'An unexpected error occurred while processing the file';
+
+        setImportError(errorMessage);
+        setIsValidatingImport(false);
+        setImportDialogOpen(true);
+      }
+    };
+
+    input.click();
+  }, [validateImportData]);
 
   const computeSectionProgress = (sec: any) => {
     if (!sec) return '';
@@ -560,18 +894,30 @@ const TemplateQuestionaire: React.FC<Props> = ({
 
   return (
     <Box sx={{ position: 'relative' }}>
-      <Box sx={{ position: 'sticky', top: 8, zIndex: 1400 }}>
+      <Box sx={{ position: 'sticky', top: 8, zIndex: 1200 }}>
         <TopSummaryBar
           templateSpec={templateSpec}
           requiredSummary={requiredSummary}
           exportAnswers={exportAnswers}
+          importAnswers={importAnswers}
           missingCount={missing.length}
           onValidate={handleValidate}
+          pdfExtractionError={pdfExtractionError}
+          onRetryExtraction={onRetryExtraction}
         />
         <ValidateDialog
           open={validateDialogOpen}
           onClose={() => setValidateDialogOpen(false)}
           validateList={validateList}
+        />
+        <ImportDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          onConfirm={handleImportConfirm}
+          fileName={importFileName}
+          importData={importData}
+          error={importError}
+          isValidating={isValidatingImport}
         />
       </Box>
 
@@ -596,12 +942,32 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   isManySection={isManySection}
                   setExpandedKey={setExpandedKey}
                   isExpandedKey={isExpandedKey}
+                  pdfContent={pdfContent}
+                  onNavigateToPage={onNavigateToPage}
+                  onHighlightsChange={onHighlightsChange}
+                  pdfUrl={pdfUrl}
+                  pageWidth={pageWidth}
                 />
               </Box>
             ))}
           </Box>
         </Box>
       </Box>
+
+      <Snackbar
+        open={importSnackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setImportSnackbar({ ...importSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setImportSnackbar({ ...importSnackbar, open: false })}
+          severity={importSnackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {importSnackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

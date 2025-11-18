@@ -12,7 +12,28 @@ const QuestionRenderer: React.FC<{
   onChange: (v: any) => void;
   idAttr?: string;
   level?: number;
-}> = ({ q, value, onChange, idAttr, level = 0 }) => {
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
+}> = ({
+  q,
+  value,
+  onChange,
+  idAttr,
+  level = 0,
+  pdfContent,
+  onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
+}) => {
   if (q.type === 'text' || q.type === 'url' || !q.type) {
     return (
       <TextQuestion
@@ -21,6 +42,11 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
       />
     );
   }
@@ -36,6 +62,11 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
       />
     );
   }
@@ -47,6 +78,11 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
       />
     );
   }
@@ -58,6 +94,11 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
       />
     );
   }
@@ -84,7 +125,6 @@ const QuestionRenderer: React.FC<{
     );
   }
 
-  // fallback inline simple text field
   return (
     <TextQuestion
       q={q}
@@ -92,6 +132,11 @@ const QuestionRenderer: React.FC<{
       onChange={onChange}
       idAttr={idAttr}
       level={level}
+      pdfContent={pdfContent}
+      onNavigateToPage={onNavigateToPage}
+      onHighlightsChange={onHighlightsChange}
+      pdfUrl={pdfUrl}
+      pageWidth={pageWidth}
     />
   );
 };

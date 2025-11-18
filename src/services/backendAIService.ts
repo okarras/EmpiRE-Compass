@@ -7,6 +7,14 @@ import type {
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
 import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
+import {
+  isAuthError,
+  isRateLimitError,
+  isConfigError,
+  type AppError,
+  type GenerateSuggestionsRequest,
+  type GenerateSuggestionsResponse,
+} from '../utils/suggestions';
 
 export interface BackendAIConfig {
   provider: AIProvider;
@@ -256,6 +264,140 @@ export class BackendAIService {
     }>('/api/health');
   }
 
+  public async generateSuggestions(
+    request: GenerateSuggestionsRequest
+  ): Promise<GenerateSuggestionsResponse> {
+    try {
+      if (!request.questionText || typeof request.questionText !== 'string') {
+        throw new Error('questionText is required and must be a string');
+      }
+
+      if (!request.pdfContent || typeof request.pdfContent !== 'string') {
+        throw new Error('pdfContent is required and must be a string');
+      }
+
+      if (!request.questionType || typeof request.questionType !== 'string') {
+        throw new Error('questionType is required and must be a string');
+      }
+
+      // Build the AI prompt for suggestion generation
+      const systemPrompt = `You are an AI assistant helping researchers extract information from academic papers.
+Your task is to analyze the provided PDF content and suggest answers to specific questions.
+
+For each suggestion:
+1. Provide a clear, concise answer
+2. Include supporting evidence with exact page numbers and text excerpts
+3. Rank suggestions by relevance and confidence
+
+Generate exactly 3 suggestions in the following JSON format:
+{
+  "suggestions": [
+    {
+      "rank": 1,
+      "text": "suggested answer",
+      "confidence": 0.95,
+      "evidence": [
+        {
+          "pageNumber": 3,
+          "excerpt": "relevant text from page 3"
+        }
+      ]
+    }
+  ]
+}`;
+
+      const optionsText =
+        request.questionOptions &&
+        Array.isArray(request.questionOptions) &&
+        request.questionOptions.length > 0
+          ? `\nAvailable Options: ${request.questionOptions.join(', ')}`
+          : '';
+
+      const metadataText = request.pdfMetadata
+        ? `\nPDF Filename: ${request.pdfMetadata.filename}\nTotal Pages: ${request.pdfMetadata.totalPages}`
+        : '';
+
+      const userPrompt = `${metadataText}
+
+Question: ${request.questionText}
+Question Type: ${request.questionType}${optionsText}
+
+PDF Content:
+${request.pdfContent}
+
+Generate exactly 3 suggestions with supporting evidence from the PDF content above.`;
+
+      const result = await this.generateText(userPrompt, {
+        provider: (request.provider as AIProvider) || this.config.provider,
+        temperature: 0.3,
+        maxTokens: 2000,
+        systemContext: systemPrompt,
+      });
+
+      const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No JSON found in AI response');
+      }
+
+      const parsedResponse = JSON.parse(jsonMatch[0]);
+
+      if (
+        !parsedResponse.suggestions ||
+        !Array.isArray(parsedResponse.suggestions)
+      ) {
+        throw new Error('Expected suggestions array in response');
+      }
+
+      const suggestions = parsedResponse.suggestions
+        .slice(0, 3)
+        .map((suggestion: any, index: number) => ({
+          id: `suggestion-${Date.now()}-${index}`,
+          rank: suggestion.rank || index + 1,
+          text: suggestion.text || '',
+          confidence: suggestion.confidence || 0.5,
+          evidence: Array.isArray(suggestion.evidence)
+            ? suggestion.evidence
+            : [],
+          createdAt: Date.now(),
+        }));
+
+      return {
+        suggestions,
+        reasoning: result.reasoning,
+      };
+    } catch (error) {
+      console.error('Error generating suggestions:', error);
+
+      if (isAuthError(error)) {
+        const authError = new Error(
+          'Authentication required. Please log in to generate suggestions.'
+        ) as AppError;
+        authError.status = 401;
+        authError.requiresAuth = true;
+        throw authError;
+      }
+
+      if (isRateLimitError(error)) {
+        const err = error as AppError;
+        const rateLimitError = new Error(
+          'Rate limit exceeded. Please try again later.'
+        ) as AppError;
+        rateLimitError.status = 429;
+        if (err.resetIn) rateLimitError.resetIn = err.resetIn;
+        if (err.resetAt) rateLimitError.resetAt = err.resetAt;
+        throw rateLimitError;
+      }
+
+      if (isConfigError(error)) {
+        throw new Error(
+          'AI service is not properly configured. Please check your settings.'
+        );
+      }
+
+      throw error;
+    }
+  }
+
   public isConfigured(): boolean {
     // for backend service, assume its configured if we can reach backend
     // actual config is handled in backend
@@ -401,6 +543,12 @@ export class UnifiedAIService {
     // Otherwise use backend service (for shared/environment keys)
     const backendService = this.getBackendService();
     return backendService.generateText(prompt, options);
+  }
+
+  public async generateSuggestions(
+    request: GenerateSuggestionsRequest
+  ): Promise<GenerateSuggestionsResponse> {
+    return this.getBackendService().generateSuggestions(request);
   }
 
   public async getConfiguration(): Promise<AIConfigResponse> {

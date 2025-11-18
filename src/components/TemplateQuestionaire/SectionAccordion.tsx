@@ -34,6 +34,16 @@ type Props = {
   isManySection: (sec: any) => boolean;
   setExpandedKey: (k: string, v: boolean) => void;
   isExpandedKey: (k: string) => boolean;
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
 };
 
 const SectionAccordion: React.FC<Props> = ({
@@ -50,6 +60,11 @@ const SectionAccordion: React.FC<Props> = ({
   isManySection,
   setExpandedKey,
   isExpandedKey,
+  pdfContent,
+  onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
 }) => {
   const many = isManySection(sec);
   const secKey = sec.id ?? String(si);
@@ -140,6 +155,11 @@ const SectionAccordion: React.FC<Props> = ({
                   onChange={(v) => setSingleAnswer(q.id, v)}
                   idAttr={`q-${q.id}`}
                   level={1}
+                  pdfContent={pdfContent}
+                  onNavigateToPage={onNavigateToPage}
+                  onHighlightsChange={onHighlightsChange}
+                  pdfUrl={pdfUrl}
+                  pageWidth={pageWidth}
                 />
               );
             })}
@@ -207,6 +227,11 @@ const SectionAccordion: React.FC<Props> = ({
                               }
                               idAttr={`sec-${sec.id}-entry-${idx}-q-${q.id}`}
                               level={1}
+                              pdfContent={pdfContent}
+                              onNavigateToPage={onNavigateToPage}
+                              onHighlightsChange={onHighlightsChange}
+                              pdfUrl={pdfUrl}
+                              pageWidth={pageWidth}
                             />
                           );
                         })}

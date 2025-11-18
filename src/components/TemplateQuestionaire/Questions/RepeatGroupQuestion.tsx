@@ -20,7 +20,17 @@ const RepeatGroupQuestion: React.FC<{
   onChange: (v: any) => void;
   idAttr?: string;
   level?: number;
-}> = ({ q, value, onChange, idAttr, level = 0 }) => {
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+}> = ({
+  q,
+  value,
+  onChange,
+  idAttr,
+  level = 0,
+  pdfContent,
+  onNavigateToPage,
+}) => {
   const arr = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
@@ -102,6 +112,8 @@ const RepeatGroupQuestion: React.FC<{
                         }}
                         idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
                         level={level + 1}
+                        pdfContent={pdfContent}
+                        onNavigateToPage={onNavigateToPage}
                       />
                     ))}
                   </Box>

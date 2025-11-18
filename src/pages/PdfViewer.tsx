@@ -5,13 +5,16 @@ import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-import { findMatchesInDocument } from './PdfHighlights';
+import { pdfTextExtractor } from '../utils/pdf';
 
 type Props = {
   refContainer: React.RefObject<HTMLDivElement>;
   pdfUrl?: string | null;
   pageWidth?: number | null;
   registerCommands?: (cmds: { goToPage: (p: number) => void }) => void;
+  onTextExtracted?: (text: string) => void;
+  onExtractionError?: (error: Error) => void;
+  highlights?: Record<number, Rect[]>;
 };
 
 type Rect = { left: number; top: number; width: number; height: number };
@@ -21,14 +24,12 @@ const PdfViewer: React.FC<Props> = ({
   pdfUrl,
   pageWidth,
   registerCommands,
+  onTextExtracted,
+  onExtractionError,
+  highlights: externalHighlights,
 }) => {
   const [numPages, setNumPages] = React.useState<number | null>(null);
   const [loading, setLoading] = React.useState(false);
-
-  const [pdfDoc, setPdfDoc] = React.useState<PDFDocumentProxy | null>(null);
-  const [highlights, setHighlights] = React.useState<Record<number, Rect[]>>(
-    {}
-  );
 
   const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
@@ -36,6 +37,13 @@ const PdfViewer: React.FC<Props> = ({
     if (registerCommands) {
       registerCommands({
         goToPage: (p: number) => {
+          if (!numPages || p < 1 || p > numPages) {
+            console.warn(
+              `Invalid page number: ${p}. Valid range is 1-${numPages || 'unknown'}`
+            );
+            return;
+          }
+
           const el = pageRefs.current[p];
           if (el && el.scrollIntoView) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -45,38 +53,45 @@ const PdfViewer: React.FC<Props> = ({
         },
       });
     }
-  }, [registerCommands]);
+  }, [registerCommands, numPages]);
 
   useEffect(() => {
     setNumPages(null);
     setLoading(false);
-    setPdfDoc(null);
-    setHighlights({});
   }, [pdfUrl]);
 
   useEffect(() => {
-    if (!pdfDoc || !pageWidth) return;
+    if (!pdfUrl || !onTextExtracted) {
+      console.log(
+        '[PdfViewer] Skipping extraction - missing pdfUrl or onTextExtracted callback',
+        { pdfUrl: !!pdfUrl, onTextExtracted: !!onTextExtracted }
+      );
+      return;
+    }
 
     let cancelled = false;
 
     (async () => {
       try {
-        const map = await findMatchesInDocument(pdfDoc, pageWidth, 'UGEN-V', {
-          caseInsensitive: true,
-        });
+        const extractedText = await pdfTextExtractor.extractFullText(pdfUrl);
 
-        if (!cancelled) {
-          setHighlights(map);
+        if (!cancelled && onTextExtracted) {
+          onTextExtracted(extractedText);
         }
       } catch (err) {
-        console.error('Error generating highlights', err);
+        console.error('[PdfViewer] Error extracting PDF text:', err);
+        if (!cancelled && onExtractionError) {
+          onExtractionError(
+            err instanceof Error ? err : new Error('Failed to extract PDF text')
+          );
+        }
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [pdfDoc, pageWidth]);
+  }, [pdfUrl, onTextExtracted, onExtractionError]);
 
   useEffect(() => {
     const styleId = 'pdf-highlight-flash-style';
@@ -131,7 +146,6 @@ const PdfViewer: React.FC<Props> = ({
         file={pdfUrl}
         onLoadSuccess={(pdf: PDFDocumentProxy) => {
           setNumPages(pdf.numPages);
-          setPdfDoc(pdf);
           setLoading(false);
         }}
         onLoadError={(err) => {
@@ -166,22 +180,23 @@ const PdfViewer: React.FC<Props> = ({
                 />
 
                 {/* Highlight overlays for this page */}
-                {/* {(highlights[pageNumber] || []).map((r, idx) => (
-                  <Box
-                    key={`hl_${pageNumber}_${idx}`}
-                    sx={{
-                      position: 'absolute',
-                      left: r.left,
-                      top: r.top,
-                      width: r.width,
-                      height: r.height,
-                      pointerEvents: 'none',
-                      bgcolor: 'rgba(255,235,59,0.45)', // translucent yellow
-                      borderRadius: '2px',
-                      mixBlendMode: 'multiply',
-                    }}
-                  />
-                ))} */}
+                {externalHighlights &&
+                  (externalHighlights[pageNumber] || []).map((r, idx) => (
+                    <Box
+                      key={`hl_${pageNumber}_${idx}`}
+                      sx={{
+                        position: 'absolute',
+                        left: r.left,
+                        top: r.top,
+                        width: r.width,
+                        height: r.height,
+                        pointerEvents: 'none',
+                        bgcolor: 'rgba(255,235,59,0.45)', // translucent yellow
+                        borderRadius: '2px',
+                        mixBlendMode: 'multiply',
+                      }}
+                    />
+                  ))}
               </Box>
             );
           })}

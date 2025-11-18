@@ -25,13 +25,12 @@ function itemToViewportRect(
 
   const xPdf = tx[4] ?? 0;
   const yBaselinePdf = tx[5] ?? 0;
-  const yTopPdf = yBaselinePdf;
-  const yBottomPdf = yBaselinePdf + fontHeight;
+  const yTopPdf = yBaselinePdf - fontHeight * 0;
+  const yBottomPdf = yBaselinePdf - fontHeight * 0.15;
 
   const wPdf =
     (item.width as number) ??
     Math.max(1, fontHeight * (item.str?.length ?? 1) * 0.5);
-  const hPdf = fontHeight;
 
   const vpRect = viewport.convertToViewportRectangle([
     xPdf,
@@ -45,11 +44,15 @@ function itemToViewportRect(
   let right = Math.max(vpRect[0], vpRect[2]);
   let bottom = Math.max(vpRect[1], vpRect[3]);
 
-  const tweakFactor = 0.12;
-  const tweak = hPdf * tweakFactor * (viewport.scale ?? 1);
+  const verticalPadding = 15;
+  const horizontalPadding = -13;
 
-  top = Math.max(0, top - tweak);
-  const widthPx = right - left;
+  top = Math.max(0, top - verticalPadding);
+  bottom = bottom + 5;
+  left = Math.max(0, left - horizontalPadding);
+  right = right + horizontalPadding;
+
+  const widthPx = right - left + 32;
   const heightPx = bottom - top;
 
   return { left, top, width: widthPx, height: heightPx };
@@ -61,7 +64,6 @@ export async function extractPageTextAndRects(
 ): Promise<{
   fullText: string;
   charToItem: { itemIndex: number; offsetInItem: number }[];
-  items: PdfTextItem[];
   itemRects: Rect[];
 }> {
   const baseViewport = page.getViewport({ scale: 1 });
@@ -86,7 +88,7 @@ export async function extractPageTextAndRects(
     }
   });
 
-  return { fullText, charToItem, items, itemRects };
+  return { fullText, charToItem, itemRects };
 }
 
 export async function findMatchesOnPage(
@@ -95,51 +97,149 @@ export async function findMatchesOnPage(
   search: string | RegExp,
   options?: { caseInsensitive?: boolean }
 ): Promise<Rect[]> {
-  const { fullText, charToItem, items, itemRects } =
-    await extractPageTextAndRects(page, pageWidth);
+  const { fullText, charToItem, itemRects } = await extractPageTextAndRects(
+    page,
+    pageWidth
+  );
 
-  const flags = options?.caseInsensitive ? 'gi' : 'g';
-  let re: RegExp;
+  const rects: Rect[] = [];
+
   if (typeof search === 'string') {
-    const esc = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    re = new RegExp(esc, flags);
+    // MATCHING RULES:
+    // 1. Keep only alphanumeric characters (letters and numbers)
+    // 2. Remove all special characters (-, _, :, ., ,, /, etc.)
+    // 3. Remove all whitespace (spaces, tabs, newlines)
+    // 4. Case-insensitive matching
+
+    const normalize = (text: string) =>
+      text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+    const normalizedSearch = normalize(search);
+    const normalizedPdf = normalize(fullText);
+    // Find match in normalized text
+    const matchIndex = normalizedPdf.indexOf(normalizedSearch);
+
+    if (matchIndex >= 0) {
+      console.log(
+        '[PdfHighlights] ✓ Found match at normalized index:',
+        matchIndex
+      );
+
+      // Map back to original text positions
+      // Count how many alphanumeric chars we need to skip
+      let originalStart = 0;
+      let normalizedCount = 0;
+
+      // Find start position in original text
+      // We want to find the position where the matchIndex-th alphanumeric char starts
+      while (originalStart < fullText.length) {
+        const char = fullText[originalStart];
+        if (/[a-zA-Z0-9]/.test(char)) {
+          if (normalizedCount === matchIndex) {
+            break;
+          }
+          normalizedCount++;
+        }
+        originalStart++;
+      }
+
+      // Find end position in original text
+      let originalEnd = originalStart;
+      let matchedChars = 0;
+      while (
+        matchedChars < normalizedSearch.length &&
+        originalEnd < fullText.length
+      ) {
+        const char = fullText[originalEnd];
+        if (/[a-zA-Z0-9]/.test(char)) {
+          matchedChars++;
+        }
+        originalEnd++;
+      }
+
+      // Trim leading whitespace/newlines to avoid highlighting extra lines
+      while (
+        originalStart < originalEnd &&
+        /\s/.test(fullText[originalStart])
+      ) {
+        originalStart++;
+      }
+
+      // Trim trailing whitespace/newlines
+      while (
+        originalEnd > originalStart &&
+        /\s/.test(fullText[originalEnd - 1])
+      ) {
+        originalEnd--;
+      }
+
+      console.log('[PdfHighlights] Mapped to original positions:', {
+        originalStart,
+        originalEnd,
+      });
+      console.log(
+        '[PdfHighlights] Matched text in PDF:',
+        fullText.substring(originalStart, originalEnd).replace(/\n/g, '\\n')
+      );
+
+      // Get rectangles for this range - create individual rectangles per text item
+      const startChar = charToItem[originalStart];
+      const endChar = charToItem[originalEnd - 1];
+
+      if (startChar && endChar) {
+        const startItem = startChar.itemIndex;
+        const endItem = endChar.itemIndex;
+
+        // Create a rectangle for each text item in the range
+        for (let ii = startItem; ii <= endItem; ii++) {
+          const r = itemRects[ii];
+          if (!r) continue;
+          rects.push({
+            left: r.left,
+            top: r.top,
+            width: r.width,
+            height: r.height,
+          });
+        }
+      }
+    } else {
+      console.warn('[PdfHighlights] ✗ No match found');
+      console.warn('  - Normalized search:', normalizedSearch);
+      console.warn(
+        '  - Normalized PDF (first 500):',
+        normalizedPdf.substring(0, 500)
+      );
+    }
   } else {
+    // RegExp search - use original approach
     const f =
       (search.flags.includes('g') ? search.flags : search.flags + 'g') +
       (options?.caseInsensitive && !search.flags.includes('i') ? 'i' : '');
-    re = new RegExp(search.source, f);
-  }
+    const re = new RegExp(search.source, f);
 
-  const rects: Rect[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(fullText)) !== null) {
-    const start = match.index;
-    const end = start + match[0].length;
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(fullText)) !== null) {
+      const start = match.index;
+      const end = start + match[0].length;
 
-    const startChar = charToItem[start];
-    const endChar = charToItem[end - 1];
-    if (!startChar || !endChar) {
-      continue;
+      const startChar = charToItem[start];
+      const endChar = charToItem[end - 1];
+      if (!startChar || !endChar) continue;
+
+      const startItem = startChar.itemIndex;
+      const endItem = endChar.itemIndex;
+
+      for (let ii = startItem; ii <= endItem; ii++) {
+        const r = itemRects[ii];
+        if (!r) continue;
+        rects.push({
+          left: r.left,
+          top: r.top,
+          width: r.width,
+          height: r.height,
+        });
+      }
     }
-    const startItem = startChar.itemIndex;
-    const endItem = endChar.itemIndex;
-
-    let left = Number.POSITIVE_INFINITY;
-    let top = Number.POSITIVE_INFINITY;
-    let right = Number.NEGATIVE_INFINITY;
-    let bottom = Number.NEGATIVE_INFINITY;
-
-    for (let ii = startItem; ii <= endItem; ii++) {
-      const r = itemRects[ii];
-      if (!r) continue;
-      left = Math.min(left, r.left);
-      top = Math.min(top, r.top);
-      right = Math.max(right, r.left + r.width);
-      bottom = Math.max(bottom, r.top + r.height);
-    }
-
-    if (!isFinite(left)) continue;
-    rects.push({ left, top, width: right - left, height: bottom - top });
   }
 
   return rects;

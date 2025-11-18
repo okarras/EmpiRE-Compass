@@ -15,7 +15,17 @@ const GroupQuestion: React.FC<{
   onChange: (v: any) => void;
   idAttr?: string;
   level?: number;
-}> = ({ q, value, onChange, idAttr, level = 0 }) => {
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+}> = ({
+  q,
+  value,
+  onChange,
+  idAttr,
+  level = 0,
+  pdfContent,
+  onNavigateToPage,
+}) => {
   const obj = value ?? {};
   const [expanded, setExpanded] = useState(false);
   const desc = q.desc ?? q.description ?? '';
@@ -49,6 +59,8 @@ const GroupQuestion: React.FC<{
                 onChange={(nv) => onChange({ ...(obj ?? {}), [f.id]: nv })}
                 idAttr={`${idAttr ?? q.id}-g-${f.id}`}
                 level={level + 1}
+                pdfContent={pdfContent}
+                onNavigateToPage={onNavigateToPage}
               />
             ))}
           </Box>

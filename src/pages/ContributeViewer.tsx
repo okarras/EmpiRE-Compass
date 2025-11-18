@@ -32,6 +32,18 @@ const ContributeViewer: React.FC = () => {
   const [leftWidthPx, setLeftWidthPx] = useState<number | null>(null);
   const [pageWidth, setPageWidth] = useState<number | null>(null);
   const [localPdfUrl, setLocalPdfUrl] = useState<string | null>(null);
+  const [extractedPdfText, setExtractedPdfText] = useState<string | undefined>(
+    undefined
+  );
+  const [pdfExtractionError, setPdfExtractionError] = useState<Error | null>(
+    null
+  );
+  const [pdfHighlights, setPdfHighlights] = useState<
+    Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  >({});
   const rightCmdRef = useRef<{ goToPage?: (p: number) => void } | null>(null);
   const pdfUrl = locState.pdfUrl ?? localPdfUrl ?? null;
 
@@ -120,6 +132,52 @@ const ContributeViewer: React.FC = () => {
     if (rightCmdRef.current?.goToPage) rightCmdRef.current.goToPage(pageNum);
   };
 
+  // Handle highlight updates from suggestion box
+  const handleHighlightsChange = (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => {
+    setPdfHighlights(highlights);
+  };
+
+  // Handle PDF text extraction
+  const handleTextExtracted = (text: string) => {
+    console.log('[ContributeViewer] PDF text extracted, length:', text.length);
+    setExtractedPdfText(text);
+    // Set a global flag for debugging (can be removed later)
+    if (typeof window !== 'undefined') {
+      (window as any).__pdfTextExtracted = true;
+      (window as any).__pdfTextLength = text.length;
+    }
+  };
+
+  const handleExtractionError = (error: Error) => {
+    console.error('PDF text extraction failed:', error);
+    setPdfExtractionError(error);
+    // Keep extractedPdfText as undefined so suggestions won't work without it
+    setExtractedPdfText(undefined);
+  };
+
+  const handleRetryExtraction = () => {
+    // Clear the error state
+    setPdfExtractionError(null);
+
+    // Force re-extraction by clearing the cache and resetting the PDF URL
+    if (pdfUrl) {
+      const { pdfTextExtractor } = require('../utils/pdf');
+      pdfTextExtractor.clearDocumentCache(pdfUrl);
+
+      // Trigger re-extraction by temporarily clearing and resetting the URL
+      const currentUrl = pdfUrl;
+      setLocalPdfUrl(null);
+      setTimeout(() => {
+        setLocalPdfUrl(currentUrl);
+      }, 100);
+    }
+  };
+
   return (
     <Paper
       ref={containerRef}
@@ -151,6 +209,13 @@ const ContributeViewer: React.FC = () => {
           templateSpec={templateSpec}
           answers={answers}
           setAnswers={setAnswers}
+          pdfContent={extractedPdfText}
+          onNavigateToPage={handleGoToPage}
+          pdfExtractionError={pdfExtractionError}
+          onRetryExtraction={handleRetryExtraction}
+          onHighlightsChange={handleHighlightsChange}
+          pdfUrl={pdfUrl}
+          pageWidth={pageWidth}
         />
       </Box>
 
@@ -220,6 +285,9 @@ const ContributeViewer: React.FC = () => {
           registerCommands={(cmds) => {
             rightCmdRef.current = cmds;
           }}
+          onTextExtracted={handleTextExtracted}
+          onExtractionError={handleExtractionError}
+          highlights={pdfHighlights}
         />
       </Box>
     </Paper>

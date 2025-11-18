@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
+import { Box } from '@mui/material';
 import NodeWrapper from '../NodeWrapper';
 import FieldRow from '../FieldRow';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import MenuItem from '@mui/material/MenuItem';
+import SuggestButton, { type SuggestButtonRef } from '../SuggestButton';
+import SuggestionBox from '../SuggestionBox';
+import type { Suggestion } from '../../../utils/suggestions';
 
 const SelectQuestion: React.FC<{
   q: any;
@@ -12,7 +16,27 @@ const SelectQuestion: React.FC<{
   onChange: (v: any) => void;
   idAttr?: string;
   level?: number;
-}> = ({ q, value, onChange, level = 0 }) => {
+  pdfContent?: string;
+  onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
+}> = ({
+  q,
+  value,
+  onChange,
+  level = 0,
+  pdfContent,
+  onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
+}) => {
   const commonLabel = q.label ?? q.title ?? '';
   const desc = q.desc ?? q.description ?? '';
   const opts =
@@ -22,23 +46,165 @@ const SelectQuestion: React.FC<{
         ? ['yes', 'no']
         : [];
 
+  const suggestButtonRef = useRef<SuggestButtonRef>(null);
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSuggestionsGenerated = (newSuggestions: Suggestion[]) => {
+    setSuggestions(newSuggestions);
+    setShowSuggestions(true);
+    setIsCollapsed(false);
+    setError(null);
+    setLoading(false);
+  };
+
+  const handleError = (errorMessage: string) => {
+    setError(errorMessage);
+    setShowSuggestions(true);
+    setSuggestions([]);
+    setLoading(false);
+  };
+
+  const handleApplySuggestion = (suggestion: Suggestion) => {
+    const suggestionLower = suggestion.text.toLowerCase().trim();
+    const matchedOption = opts.find(
+      (opt: string) => opt.toLowerCase().trim() === suggestionLower
+    );
+
+    if (matchedOption) {
+      onChange(matchedOption);
+    } else {
+      const partialMatch = opts.find(
+        (opt: string) =>
+          opt.toLowerCase().includes(suggestionLower) ||
+          suggestionLower.includes(opt.toLowerCase())
+      );
+
+      if (partialMatch) {
+        onChange(partialMatch);
+      } else {
+        console.warn(
+          'Suggestion does not match any available options:',
+          suggestion.text
+        );
+        onChange(suggestion.text);
+      }
+    }
+
+    setShowSuggestions(false);
+  };
+
+  const handleCloseSuggestions = () => {
+    setShowSuggestions(false);
+  };
+
+  const handleToggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const handleRegenerate = async () => {
+    setSuggestions([]);
+    setError(null);
+    setIsCollapsed(false);
+    setLoading(true);
+    if (suggestButtonRef.current) {
+      await suggestButtonRef.current.triggerGeneration();
+    }
+  };
+
+  const handleRetry = () => {
+    setError(null);
+    setShowSuggestions(false);
+  };
+
+  const handleFeedback = (suggestionId: string, feedback: any) => {
+    console.log('Feedback received:', { suggestionId, feedback });
+  };
+
+  const handleNavigateToPage = (pageNumber: number) => {
+    if (onNavigateToPage) {
+      onNavigateToPage(pageNumber);
+    }
+  };
+
   return (
     <NodeWrapper level={level}>
       <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
-        <FormControl fullWidth size="small">
-          <Select
-            value={value ?? ''}
-            onChange={(e) => onChange((e.target as any).value)}
-            displayEmpty
-            input={<OutlinedInput />}
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'flex-start',
+            flexDirection: 'column',
+            width: '100%',
+          }}
+          role="group"
+          aria-labelledby={q.id ? `${q.id}-label` : undefined}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              alignItems: 'center',
+              width: '100%',
+            }}
           >
-            {opts.map((opt: string) => (
-              <MenuItem key={opt} value={opt}>
-                {opt}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <FormControl fullWidth size="small">
+              <Select
+                value={value ?? ''}
+                onChange={(e) => onChange((e.target as any).value)}
+                displayEmpty
+                input={<OutlinedInput />}
+                aria-label={commonLabel}
+                aria-required={q.required}
+                aria-describedby={desc ? `${q.id}-description` : undefined}
+                inputProps={{
+                  'aria-label': commonLabel,
+                }}
+              >
+                {opts.map((opt: string) => (
+                  <MenuItem key={opt} value={opt}>
+                    {opt}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <Box sx={{ display: suggestions.length === 0 ? 'block' : 'none' }}>
+              <SuggestButton
+                ref={suggestButtonRef}
+                questionText={commonLabel}
+                questionType="select"
+                questionOptions={opts}
+                onSuggestionsGenerated={handleSuggestionsGenerated}
+                onError={handleError}
+                pdfContent={pdfContent}
+              />
+            </Box>
+          </Box>
+          {showSuggestions && (
+            <SuggestionBox
+              suggestions={suggestions}
+              onApply={handleApplySuggestion}
+              onClose={handleCloseSuggestions}
+              onFeedback={handleFeedback}
+              onNavigateToPage={handleNavigateToPage}
+              questionId={q.id || commonLabel}
+              isCollapsed={isCollapsed}
+              onToggleCollapse={handleToggleCollapse}
+              onRegenerate={handleRegenerate}
+              onHighlightsChange={onHighlightsChange}
+              pdfUrl={pdfUrl}
+              pageWidth={pageWidth}
+              loading={loading}
+              error={error}
+              onRetry={handleRetry}
+            />
+          )}
+        </Box>
       </FieldRow>
     </NodeWrapper>
   );
