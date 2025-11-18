@@ -1,0 +1,63 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: EmpiRE-Compass
+message: ' A Neuro-Symbolic Dashboard for Navigating the Knowledge Landscape of Empirical Research in Requirements Engineering'
+type: software
+authors:
+  - given-names: Oliver
+    family-names: Karras
+    email: oliver.karras@tib.eu
+    affiliation: >-
+      TIB - Leibniz Information Centre for Science and
+      Technology
+    orcid: 'https://orcid.org/0000-0001-5336-6899'
+  - given-names: Amirreza
+    family-names: Alasti
+    email: amirrezaalasti@gmail.com
+    affiliation: Leibniz University Hannover
+  - given-names: Sushant
+    family-names: Aggarwal
+    email: aggarwalsushant27@gmail.com
+    affiliation: Leibniz University Hannover
+  - given-names: Yücel
+    family-names: Celik
+    email: yucel.celik@stud.uni-hannover.de
+    affiliation: Leibniz University Hannover
+  - given-names: Lena
+    family-names: John
+    email: lena.john@tib.eu
+    affiliation: >-
+      TIB - Leibniz Information Centre for Science and
+      Technology
+    orcid: 'https://orcid.org/0009-0007-2097-9761'
+repository-code: 'https://github.com/okarras/EmpiRE-Compass'
+url: 'https://empire-compass.vercel.app/R186491/team'
+abstract: >-
+  EmpiRE-Compass is a neuro-symbolic dashboard that
+  facilitates the exploration, synthesis, and reuse of
+  empirical research knowledge in Requirements Engineering
+  (RE). It integrates two complementary layers: A symbolic
+  layer based on the Open Research Knowledge Graph (ORKG)
+  for structured, machine-actionable knowledge, and a neural
+  layer leveraging large language models (LLMs) to answer
+  both predefined and custom competency questions. This dual
+  approach enables researchers to navigate the evolving
+  knowledge landscape of empirical research in RE, identify
+  reusable insights across publications, and promote Open
+  Science through transparent, interoperable knowledge
+  representations. EmpiRE-Compass currently focuses on two
+  themes: Empirical research practices in RE using
+  KG-EmpiRE, and empirical research practices in Natural
+  Language Processing for RE using the NLP4RE ID Card.
+keywords:
+  - empirical research
+  - requirements engineering
+  - neuro-symbolic dashboard
+  - knowledge graph
+  - large language model
+license: MIT
+commit: 44af8533a0fbd18191d03f8c59fab5cc09b67ac6
+version: 1.4.0
+date-released: '2025-10-05'
