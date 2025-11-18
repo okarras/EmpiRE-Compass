@@ -6,51 +6,41 @@
   </a>
 
 <h2 align="center" style="font-weight: normal">EmpiRE-Compass<br/>
-<i>"Navigating the Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
+<i>"A Neuro-Symbolic Dashboard for Navigating the Knowledge Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
 
 [![GitHub - Project](https://img.shields.io/badge/GitHub-Project-2ea44f)](https://github.com/okarras/EmpiRE-Compass) [![Issues - Bug Report](https://img.shields.io/badge/Issues-Bug_Report-2ea44f)](https://github.com/okarras/EmpiRE-Compass/issues) [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-
 </div>
+
+> [!IMPORTANT]  
+> Visit the live version of [EmpiRE-Compass](https://empire-compass.vercel.app/R186491/).
 
 # Table of Contents
 
 <details>
   <summary>Contents</summary>
   <ol>
-    <li><a href="#overview">Overview</a></li>
+    <li><a href="#about-the-project">About the Project</a></li>
     <li><a href="#key-features">Key Features</a></li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ol>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ol>
-    </li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#folder-structure-and-files">Folder Structure and Files</a></li>
+    <li><a href="#installation-instructions">Installation Instructions</a></li>
     <li><a href="#design-system--storybook">Design System & Storybook</a></li>
     <li><a href="#firebase-setup">Firebase Setup</a></li>
     <li><a href="#statistics-automation">Statistics Automation</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#repository-links">Repository Links</a></li>
+    <li><a href="#related-publications">Related Publications</a></li>
+    <li><a href="#corresponding-author">Corresponding Author</a></li>
+    <li><a href="#how-to-cite">How to Cite</a></li>
   </ol>
 </details>
 
 # About the Project
 
-EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, replication, and reuse of empirical research knowledge from **KG-EmpiRE** – a community-maintainable knowledge graph on the state and evolution of empirical research in requirements engineering (RE). By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
+EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, synthesis, and reuse of empirical research knowledge in Requirements Engineering (RE). It integrates two complementary layers: A symbolic layer based on the [Open Research Knowledge Graph (ORKG)](https://orkg.org) for structured, machine-actionable knowledge, and a neural layer leveraging large language models (LLMs) to answer both predefined and custom competency questions. This dual approach enables researchers to navigate the evolving knowledge landscape of empirical research in RE, identify reusable insights across publications, and promote Open Science through transparent, interoperable knowledge representations. EmpiRE-Compass currently focuses on two themes: Empirical research practices in RE using [KG-EmpiRE](https://www.oliver-karras.de/portfolio/kg-empire/), and empirical research practices in Natural Language Processing for RE using the [NLP4RE ID Card](https://zenodo.org/records/14197338).
 
-The platform serves as a **central hub for empirical research data management**. It provides interactive diagrams connected to live ORKG data, supports reproducibility and comparison of different KG-EmpiRE states, displays statistics on conferences and papers, and includes a survey-based data contribution workflow for new research submissions. An integrated **Study Designer Knowledge Base** helps users find similar research and receive design recommendations aligned with ACM standards.
+<p align="right">(<a href="#top">back to top</a>)</p>
 
-The project includes a comprehensive **Storybook design system** that documents all UI components, making it easy for developers to understand, reuse, and contribute to the component library.
-
-Key capabilities include:
-
-1. **Dashboard Display** – Visualizes 16 competency questions and their answers with interactive diagrams, providing an overview of KG-EmpiRE data.
-2. **Live Interactive Diagrams** – Dynamically fetches real-time data from ORKG. Users can click diagram elements to explore related research papers and insights.
-3. **Reproduction & Comparison** – Allows reviewing historical published states of KG-EmpiRE and comparing them with the current live data to understand how research evolves.
-4. **Statistics & Metrics** – Displays real-time counts of conferences, papers, triples, resources, and literals to keep track of the KG-EmpiRE scope.
-5. **Data Contribution Workflow** – Includes a survey system for structured empirical research data submissions (paper DOIs, contact details, etc.), which undergo curator approval before being integrated into ORKG.
-6. **Study Designer Knowledge Base** – Helps users identify similar studies and provides design recommendations based on existing empirical research and ACM standards.
+# Key Features
+EmpiRE-Compass offers a rich set of capabilities to support exploration, synthesis, and reuse of empirical research in RE. Its exploratory visual analytics provide detailed insights into the state and evolution of the field through interactive charts and distributions. The platform’s neuro-symbolic synthesis combines structured knowledge graphs with neural large language models to answer competency questions, interpret findings, and support contextual knowledge integration. All structured data, SPARQL queries, analyses, and interpretations are openly available to foster replicable research and long-term reuse. EmpiRE-Compass is built on FAIR principles — ensuring that knowledge is findable, accessible, interoperable, and reusable — and is grounded in Open Science values of transparency, ethical attribution, and collaborative maintenance. Developed on top of the ORKG and supported by TIB, the platform is designed for community-driven contributions and long-term sustainability.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -230,6 +220,7 @@ EmpiRE-Compass/
 ┣━ vitest.*.d.ts
 ┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
 ```
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Description of the Folders and Files
 
@@ -339,19 +330,6 @@ http://localhost:5173
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-# Usage Instructions
-
-The dashboard offers an immediate view of **16 competency questions** with their answers and corresponding diagrams.  
-Users can:
-
-- Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.
-- Reproduce and compare historical states of KG-EmpiRE to monitor data evolution.
-- View up-to-date metrics such as the number of conferences, papers, and triples on the statistics page.
-- Submit new data via a survey (including paper DOIs and research details) for curator review.
-- Use the **Study Designer Knowledge Base** to find similar research and receive design recommendations aligned with ACM standards.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 # Design System & Storybook
 
 EmpiRE-Compass includes a comprehensive design system documented in Storybook, providing a complete library of reusable UI components.
@@ -398,7 +376,7 @@ npm run deploy:chromatic
 export CHROMATIC_PROJECT_TOKEN=your-token-here
 ```
 
-**Setup Instructions:**
+## **Setup Instructions:**
 
 1. Sign up at [chromatic.com](https://chromatic.com)
 2. Create a new project for EmpiRE-Compass
@@ -414,6 +392,8 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 - ♿ **Accessibility Testing** - Built-in a11y checks
 - 📱 **Responsive Design** - Mobile-first component library
 - 🔧 **Developer Tools** - Props controls and code examples
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 # Firebase Setup
 
@@ -447,6 +427,8 @@ python firebase_integration.py
 # Run statistics update locally
 python empire-statistics.py --service_account path/to/service-account.json --limit 5
 ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 # Statistics Automation
 
@@ -487,8 +469,60 @@ python scripts/empire-statistics.py --no_firebase
 - Check results in **Firebase Console** → **Firestore Database**
 - Download CSV reports from workflow artifacts
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 # Repository Links
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
 EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
-Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs) -->
+Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+# Related Publications
+The first version of KG-EmpiRE based on **570 papers** from the [IEEE International Conference on Requirement Engineering](https://requirements-engineering.org/) from 2000 to 2022 and the first analysis of the sustainable literature review on the state and evolution of empirical research in RE have been published in:
+
+>Oliver Karras, Felix Wernlein, Jil Klünder, and Sören Auer:<br/>
+>[__Divide and Conquer the EmpiRE: A Community-Maintainable Knowledge Graph of Empirical Research in Requirements Engineering__](https://doi.org/10.1109/ESEM56168.2023.10304795),
+>In: 2023 ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (ESEM), New Orleans, LA, USA, 2023, pp. 1-12.<br/>
+>
+>The publication received the  [![Award - Best Paper](https://custom-icon-badges.demolab.com/badge/Award-Best_Paper-D4AF37?logo=trophy&logoColor=fff)](https://www.oliver-karras.de/wp-content/uploads/2023/10/acm_ieee_esem2023_certificate_best_paper_award.pdf) of the 17th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement 2023.
+
+The second version KG-EmpiRE based on **680 papers** from the [IEEE International Conference on Requirement Engineering](https://requirements-engineering.org/) from 1994 to 2022 and the analysis of the sustainable literature review on the state and evolution of empirical research in RE have been published in:
+
+>Oliver Karras:<br/>
+>[__KG-EmpiRE: A Community-Maintainable Knowledge Graph for a Sustainable Literature Review on the State and Evolution of Empirical Research in Requirements Engineering__](https://doi.org/10.1109/RE59067.2024.00063),
+>In: 2024 IEEE International Requirements Engineering Conference (RE), Reykjavík, Iceland, 2024.<br/>
+>
+>The artifact received the [![Badge - Available](https://custom-icon-badges.demolab.com/badge/Badge-Available-B4CEA0?logo=award&logoSource=feather)](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts#Submission-Instructions), the [![Badge - Reusable](https://custom-icon-badges.demolab.com/badge/Badge-Reusable-F09D9F?logo=award&logoSource=feather)](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts#Submission-Instructions), and [![Award - Best Artifact](https://custom-icon-badges.demolab.com/badge/Award-Best_Artifact-D4AF37?logo=trophy&logoColor=fff)](https://www.oliver-karras.de/wp-content/uploads/2024/06/IEEE_RE2024_Certifiacte_Best_Artifact_Award.pdf) from the [Artifact Evaluation track](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts) of the [32nd IEEE International Requirements Engineering Conference 2024](https://conf.researchr.org/home/RE-2024).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+# Corresponding Author
+
+[Dr. rer. nat. Oliver Karras](https://www.oliver-karras.de)
+
+Researcher and Data Scientist - Open Research Knowledge Graph
+
+TIB - Leibniz Information Centre for Science and Technology
+
+Welfengarten 1B
+
+30167 Hannover
+
+E-Mail: [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+# How to Cite
+If you want to cite this project, we suggest using the following reference:
+>Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/>
+>[__EmpiRE-Compass__](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
+>
+You can also use the "**Cite this repository**" function in the top right menu, resulting from the included [citation file format file](CITATION.cff) for human- and machine-readable citation information for software and datasets. Further information can be found on the [Citation File Format (CFF) website](https://citation-file-format.github.io/).
+
+If you want to cite the related publications, use the references in the section <a href="#related-publications">related publications</a>.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+Released under [MIT](/LICENSE) by [Oliver Karras](https://github.com/OKarras).
