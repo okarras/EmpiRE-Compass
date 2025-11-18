@@ -9,8 +9,10 @@
 <i>"A Neuro-Symbolic Dashboard for Navigating the Knowledge Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
 
 [![GitHub - Project](https://img.shields.io/badge/GitHub-Project-2ea44f)](https://github.com/okarras/EmpiRE-Compass) [![Issues - Bug Report](https://img.shields.io/badge/Issues-Bug_Report-2ea44f)](https://github.com/okarras/EmpiRE-Compass/issues) [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
-
 </div>
+
+> [!IMPORTANT]  
+> Visit the live version of [EmpiRE-Compass](https://empire-compass.vercel.app/R186491/).
 
 # Table of Contents
 
@@ -25,6 +27,8 @@
     <li><a href="#firebase-setup">Firebase Setup</a></li>
     <li><a href="#statistics-automation">Statistics Automation</a></li>
     <li><a href="#repository-links">Repository Links</a></li>
+    <li><a href="#related-publications">Related Publications</a></li>
+    <li><a href="#corresponding-author">Corresponding Author</a></li>
   </ol>
 </details>
 
@@ -474,3 +478,37 @@ Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+# Related Publications
+The first version of KG-EmpiRE based on **570 papers** from the [IEEE International Conference on Requirement Engineering](https://requirements-engineering.org/) from 2000 to 2022 and the first analysis of the sustainable literature review on the state and evolution of empirical research in RE have been published in:
+
+>Oliver Karras, Felix Wernlein, Jil Klünder, and Sören Auer:<br/>
+>[__Divide and Conquer the EmpiRE: A Community-Maintainable Knowledge Graph of Empirical Research in Requirements Engineering__](https://doi.org/10.1109/ESEM56168.2023.10304795),
+>In: 2023 ACM/IEEE International Symposium on Empirical Software Engineering and Measurement (ESEM), New Orleans, LA, USA, 2023, pp. 1-12.<br/>
+>
+>The publication received the  [![Award - Best Paper](https://custom-icon-badges.demolab.com/badge/Award-Best_Paper-D4AF37?logo=trophy&logoColor=fff)](https://www.oliver-karras.de/wp-content/uploads/2023/10/acm_ieee_esem2023_certificate_best_paper_award.pdf) of the 17th ACM/IEEE International Symposium on Empirical Software Engineering and Measurement 2023.
+
+The second version KG-EmpiRE based on **680 papers** from the [IEEE International Conference on Requirement Engineering](https://requirements-engineering.org/) from 1994 to 2022 and the analysis of the sustainable literature review on the state and evolution of empirical research in RE have been published in:
+
+>Oliver Karras:<br/>
+>[__KG-EmpiRE: A Community-Maintainable Knowledge Graph for a Sustainable Literature Review on the State and Evolution of Empirical Research in Requirements Engineering__](https://doi.org/10.1109/RE59067.2024.00063),
+>In: 2024 IEEE International Requirements Engineering Conference (RE), Reykjavík, Iceland, 2024.<br/>
+>
+>The artifact received the [![Badge - Available](https://custom-icon-badges.demolab.com/badge/Badge-Available-B4CEA0?logo=award&logoSource=feather)](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts#Submission-Instructions), the [![Badge - Reusable](https://custom-icon-badges.demolab.com/badge/Badge-Reusable-F09D9F?logo=award&logoSource=feather)](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts#Submission-Instructions), and [![Award - Best Artifact](https://custom-icon-badges.demolab.com/badge/Award-Best_Artifact-D4AF37?logo=trophy&logoColor=fff)](https://www.oliver-karras.de/wp-content/uploads/2024/06/IEEE_RE2024_Certifiacte_Best_Artifact_Award.pdf) from the [Artifact Evaluation track](https://conf.researchr.org/track/RE-2024/RE-2024-artifacts) of the [32nd IEEE International Requirements Engineering Conference 2024](https://conf.researchr.org/home/RE-2024).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+# Corresponding Author
+
+[Dr. rer. nat. Oliver Karras](https://www.oliver-karras.de)
+
+Researcher and Data Scientist - Open Research Knowledge Graph
+
+TIB - Leibniz Information Centre for Science and Technology
+
+Welfengarten 1B
+
+30167 Hannover
+
+E-Mail: [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
