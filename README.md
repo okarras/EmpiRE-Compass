@@ -19,13 +19,8 @@
   <ol>
     <li><a href="#about-the-project">About the Project</a></li>
     <li><a href="#key-features">Key Features</a></li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ol>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ol>
-    </li>
+    <li><a href="#folder-strcture-and-files">Folder Structure and Files</a></li>
+    <li><a href="#installation-instructions">Installation Instructions</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#design-system--storybook">Design System & Storybook</a></li>
     <li><a href="#firebase-setup">Firebase Setup</a></li>
@@ -37,11 +32,9 @@
 
 # About the Project
 
-EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, synthesis, and reuse of empirical research knowledge in Requirements Engineering (RE) 
+EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, synthesis, and reuse of empirical research knowledge in Requirements Engineering (RE). It integrates two complementary layers: A symbolic layer based on the [Open Research Knowledge Graph (ORKG)](https://orkg.org) for structured, machine-actionable knowledge, and a neural layer leveraging large language models (LLMs) to answer both predefined and custom competency questions. This dual approach enables researchers to navigate the evolving knowledge landscape of empirical research in RE, identify reusable insights across publications, and promote Open Science through transparent, interoperable knowledge representations. EmpiRE-Compass currently focuses on two themes: Empirical research practices in RE using [KG-EmpiRE](https://www.oliver-karras.de/portfolio/kg-empire/), and empirical research practices in Natural Language Processing for RE using the [NLP4RE ID Card](https://zenodo.org/records/14197338).
 
-. By leveraging live data from KG-EmpiRE stored in the [Open Research Knowledge Graph (ORKG)](https://orkg.org), EmpiRE-Compass offers researchers a suite of tools for **data visualization**, **comparative analysis**, and **structured data contribution**.
-
-EmpiRE-Compass is a knowledge exploration tool designed to support empirical research in Requirements Engineering (RE). It integrates two complementary layers: A symbolic layer based on the [Open Research Knowledge Graph (ORKG)](https://orkg.org) for structured, machine-actionable knowledge, and a neural layer leveraging large language models (LLMs) to answer both predefined and custom competency questions. This dual approach enables researchers to navigate the evolving knowledge landscape of empirical research in RE, identify reusable insights across publications, and promote Open Science through transparent, interoperable knowledge representations. EmpiRE-Compass currently focuses on two themes: Empirical research practices in RE using [KG-EmpiRE](https://www.oliver-karras.de/portfolio/kg-empire/), and empirical research practices in Natural Language Processing for RE using the [NLP4RE ID Card](https://zenodo.org/records/14197338).
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 # Key Features
 EmpiRE-Compass offers a rich set of capabilities to support exploration, synthesis, and reuse of empirical research in RE. Its exploratory visual analytics provide detailed insights into the state and evolution of the field through interactive charts and distributions. The platform’s neuro-symbolic synthesis combines structured knowledge graphs with neural large language models to answer competency questions, interpret findings, and support contextual knowledge integration. All structured data, SPARQL queries, analyses, and interpretations are openly available to foster replicable research and long-term reuse. EmpiRE-Compass is built on FAIR principles — ensuring that knowledge is findable, accessible, interoperable, and reusable — and is grounded in Open Science values of transparency, ethical attribution, and collaborative maintenance. Developed on top of the ORKG and supported by TIB, the platform is designed for community-driven contributions and long-term sustainability.
@@ -224,6 +217,7 @@ EmpiRE-Compass/
 ┣━ vitest.*.d.ts
 ┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
 ```
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Description of the Folders and Files
 
@@ -333,19 +327,6 @@ http://localhost:5173
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-# Usage Instructions
-
-The dashboard offers an immediate view of **16 competency questions** with their answers and corresponding diagrams.  
-Users can:
-
-- Interact with diagrams to navigate empirical research data and discover relevant papers from ORKG.
-- Reproduce and compare historical states of KG-EmpiRE to monitor data evolution.
-- View up-to-date metrics such as the number of conferences, papers, and triples on the statistics page.
-- Submit new data via a survey (including paper DOIs and research details) for curator review.
-- Use the **Study Designer Knowledge Base** to find similar research and receive design recommendations aligned with ACM standards.
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 # Design System & Storybook
 
 EmpiRE-Compass includes a comprehensive design system documented in Storybook, providing a complete library of reusable UI components.
@@ -392,7 +373,7 @@ npm run deploy:chromatic
 export CHROMATIC_PROJECT_TOKEN=your-token-here
 ```
 
-**Setup Instructions:**
+## **Setup Instructions:**
 
 1. Sign up at [chromatic.com](https://chromatic.com)
 2. Create a new project for EmpiRE-Compass
@@ -408,6 +389,8 @@ export CHROMATIC_PROJECT_TOKEN=your-token-here
 - ♿ **Accessibility Testing** - Built-in a11y checks
 - 📱 **Responsive Design** - Mobile-first component library
 - 🔧 **Developer Tools** - Props controls and code examples
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 # Firebase Setup
 
@@ -441,6 +424,8 @@ python firebase_integration.py
 # Run statistics update locally
 python empire-statistics.py --service_account path/to/service-account.json --limit 5
 ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 # Statistics Automation
 
@@ -481,8 +466,13 @@ python scripts/empire-statistics.py --no_firebase
 - Check results in **Firebase Console** → **Firestore Database**
 - Download CSV reports from workflow artifacts
 
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 # Repository Links
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
 EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
-Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs) -->
+Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
