@@ -5,6 +5,7 @@
 export const ADMIN_USER_EMAILS = [
   'amirrezaalasti@gmail.com', // Amirreza Alasti
   'oliver.karras@tib.eu', // Oliver Karras
+  'sushant.aggarwal@stud.uni-hannover.de', // Sushant Aggarwal
 ];
 
 /**
