@@ -85,6 +85,7 @@ const processQuery = (
     if (excludeValues.includes(label)) continue;
     counts.set(label, (counts.get(label) ?? 0) + 1);
   }
+
   for (const req of requiredValues) {
     if (!counts.has(req)) counts.set(req, 0);
   }
@@ -109,6 +110,7 @@ export const Query1DataProcessingFunction = (
     paperKey: 'paper',
     labelKey: 'evaluation_metricLabel',
     topK: 3,
+    dedupeByPaper: false,
   });
 
 export const Query2DataProcessingFunction = (
@@ -134,6 +136,7 @@ export const Query3DataProcessingFunction = (
   processQuery(rawData, {
     paperKey: 'paper',
     labelKey: 'NLPTaskInputLabel',
+    dedupeByPaper: false,
   });
 
 export const Query4DataProcessingFunction = (
@@ -143,6 +146,7 @@ export const Query4DataProcessingFunction = (
     paperKey: 'paper',
     labelKey: 'baseline_typeLabel',
     excludeValues: ['None'],
+    dedupeByPaper: false,
   });
 
 export const Query5DataProcessingFunction = (
@@ -152,6 +156,7 @@ export const Query5DataProcessingFunction = (
     paperKey: 'paper',
     labelKey: 'NLPdataformatLabel',
     excludeValues: [''],
+    dedupeByPaper: false,
   });
 
 export const Query6DataProcessingFunction = (
@@ -161,6 +166,7 @@ export const Query6DataProcessingFunction = (
     paperKey: 'paper',
     labelKey: 'intercoderReliabilityMetricLabel',
     excludeValues: [''],
+    dedupeByPaper: false,
   });
 
 export const Query7DataProcessingFunction = (
