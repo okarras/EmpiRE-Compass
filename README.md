@@ -19,13 +19,11 @@
   <ol>
     <li><a href="#about-the-project">About the Project</a></li>
     <li><a href="#key-features">Key Features</a></li>
-    <li><a href="#folder-strcture-and-files">Folder Structure and Files</a></li>
+    <li><a href="#folder-structure-and-files">Folder Structure and Files</a></li>
     <li><a href="#installation-instructions">Installation Instructions</a></li>
-    <li><a href="#usage">Usage</a></li>
     <li><a href="#design-system--storybook">Design System & Storybook</a></li>
     <li><a href="#firebase-setup">Firebase Setup</a></li>
     <li><a href="#statistics-automation">Statistics Automation</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#repository-links">Repository Links</a></li>
   </ol>
 </details>
