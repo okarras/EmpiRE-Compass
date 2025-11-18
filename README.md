@@ -29,6 +29,7 @@
     <li><a href="#repository-links">Repository Links</a></li>
     <li><a href="#related-publications">Related Publications</a></li>
     <li><a href="#corresponding-author">Corresponding Author</a></li>
+    <li><a href="#how-to-cite">How to Cite</a></li>
   </ol>
 </details>
 
@@ -512,3 +513,16 @@ Welfengarten 1B
 E-Mail: [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
+# How to Cite
+If you want to cite this project, we suggest using the following reference:
+>Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/>
+>[__EmpiRE-Compass__](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
+>
+You can also use the "**Cite this repository**" function in the top right menu, resulting from the included [citation file format file](CITATION.cff) for human- and machine-readable citation information for software and datasets. Further information can be found on the [Citation File Format (CFF) website](https://citation-file-format.github.io/).
+
+If you want to cite the related publications, use the references in the section <a href="#related-publications">related publications</a>.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+Released under [MIT](/LICENSE) by [Oliver Karras](https://github.com/OKarras).
