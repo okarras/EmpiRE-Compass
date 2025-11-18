@@ -6,7 +6,7 @@
   </a>
 
 <h2 align="center" style="font-weight: normal">EmpiRE-Compass<br/>
-<i>"Navigating the Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
+<i>"A Neuro-Symbolic Dashboard for Navigating the Knowledge Landscape of Empirical Research in Requirements Engineering"</i></h2><br/>
 
 [![GitHub - Project](https://img.shields.io/badge/GitHub-Project-2ea44f)](https://github.com/okarras/EmpiRE-Compass) [![Issues - Bug Report](https://img.shields.io/badge/Issues-Bug_Report-2ea44f)](https://github.com/okarras/EmpiRE-Compass/issues) [![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
