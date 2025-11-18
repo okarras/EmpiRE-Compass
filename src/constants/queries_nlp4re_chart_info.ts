@@ -116,11 +116,6 @@ export const queries: Query[] = [
       className: 'fullWidth',
       heading: 'Distribution of Input Granularity Levels Used in NLP Tasks',
       series: [{ dataKey: 'normalizedRatio' }],
-      // yAxis: [
-      //   {
-      //     label: 'Number of Papers',
-      //   },
-      // ],
       xAxis: [
         {
           label: 'Number of Papers',
@@ -207,7 +202,6 @@ export const queries: Query[] = [
         {
           scaleType: 'band',
           dataKey: 'label',
-          label: 'Data Format Type',
         },
       ],
 
