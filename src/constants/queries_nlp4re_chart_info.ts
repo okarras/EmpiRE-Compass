@@ -372,6 +372,7 @@ export const queries: Query[] = [
       heading: 'Number of annotators per NLP Task',
       className: 'fullWidth fixText',
       maxLabelLength: 'auto',
+      hideDetailedCharts: true,
       xAxis: [
         {
           label: 'NLP task type',
@@ -463,6 +464,7 @@ export const queries: Query[] = [
       ],
       height: chartHeight,
       margin: { left: 150, right: 120, top: 100 },
+      doesntHaveNormalization: true,
     },
     dataProcessingFunction: Query10DataProcessingFunction,
     dataAnalysisInformation: {

@@ -43,6 +43,7 @@ export interface ChartSetting {
   detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
   doesntHaveNormalization?: boolean;
   maxLabelLength?: number | 'auto';
+  hideDetailedCharts?: boolean; // Hide individual series charts even when series.length > 1
 }
 export interface Query {
   title?: string;

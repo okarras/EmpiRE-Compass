@@ -111,7 +111,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       </>
 
       {/* Charts Section */}
-      {series.length > 1 && (
+      {series.length > 1 && !chartSettings.hideDetailedCharts && (
         <>
           <Typography
             variant="h5"
