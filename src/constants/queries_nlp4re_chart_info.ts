@@ -306,7 +306,7 @@ export const queries: Query[] = [
     uid: 'query_8',
     chartType: 'heatmap',
     chartSettings: {
-      heading: 'Distribution of datasets in NLP4RE Papers',
+      heading: 'Combinations of RE and NLP tasks',
       className: 'fullWidth fixText',
       yAxis: [
         {
@@ -350,7 +350,7 @@ export const queries: Query[] = [
       width: 1000,
       sx: chartStyles,
       margin: {
-        left: 150,
+        left: 80,
       },
     },
     dataProcessingFunction: Query9DataProcessingFunction,
@@ -384,13 +384,13 @@ export const queries: Query[] = [
         },
       ],
       colors: [
-        '#4C72B0', // blue
-        '#DD8452', // orange
-        '#55A868', // green
-        '#C44E52', // red
-        '#8172B2', // purple
-        '#937860', // brown
-        '#64B5CD', // teal/cyan
+        '#4C72B0',
+        '#DD8452',
+        '#55A868',
+        '#C44E52',
+        '#8172B2',
+        '#937860',
+        '#64B5CD',
       ],
       sx: chartStyles,
       series: [

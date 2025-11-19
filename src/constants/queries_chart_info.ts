@@ -42,6 +42,7 @@ export interface ChartSetting {
   hideDetailedChartLegend?: boolean;
   detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
   doesntHaveNormalization?: boolean;
+  maxLabelLength?: number | 'auto';
 }
 export interface Query {
   title?: string;
