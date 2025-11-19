@@ -131,7 +131,7 @@ export default function CustomHeatMap({
   const leftMargin = Math.max(250, Math.min(400, yLabels * 12));
   const bottomMargin = Math.max(150, Math.min(250, xLabels * 8));
   const rightMargin = 120;
-  const topMargin = 40;
+  const topMargin = 60; // Increased to prevent overlap with rotated labels
 
   return (
     <Box
@@ -176,7 +176,7 @@ export default function CustomHeatMap({
         <ResponsiveHeatMap
           data={heatMapData}
           margin={{
-            top: 120,
+            top: 140,
             right: rightMargin,
             bottom: bottomMargin,
             left: leftMargin,
@@ -205,7 +205,7 @@ export default function CustomHeatMap({
             tickPadding: 8,
             tickRotation: -60,
             legend: chartSetting?.xAxis?.[0]?.label ?? '',
-            legendOffset: -55,
+            legendOffset: -80,
             legendPosition: 'middle',
             tickValues: undefined, // Let nivo auto-calculate
             format: (value) => labelFormatter(value),
