@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ScatterChart } from '@mui/x-charts/ScatterChart';
+import { createLabelFormatter } from '../../utils/chartUtils';
 
 interface CustomScatterInterface {
   dataset: any[];
@@ -16,6 +17,57 @@ const CustomScatterChart = ({
   normalized = false,
   loading,
 }: CustomScatterInterface) => {
+  const labelFormatter = createLabelFormatter(chartSetting, dataset.length);
+  const xAxisWithFormatter = chartSetting.xAxis?.map((axis: any) => {
+    const originalFormatter = axis.valueFormatter;
+    return {
+      ...axis,
+      valueFormatter: originalFormatter
+        ? (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return originalFormatter
+                ? originalFormatter(value, context)
+                : String(value);
+            }
+            const formatted = originalFormatter
+              ? originalFormatter(value, context)
+              : String(value);
+            return labelFormatter(formatted);
+          }
+        : (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return String(value);
+            }
+            return labelFormatter(value);
+          },
+    };
+  });
+
+  const yAxisWithFormatter = chartSetting.yAxis?.map((axis: any) => {
+    const originalFormatter = axis.valueFormatter;
+    return {
+      ...axis,
+      valueFormatter: originalFormatter
+        ? (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return originalFormatter
+                ? originalFormatter(value, context)
+                : String(value);
+            }
+            const formatted = originalFormatter
+              ? originalFormatter(value, context)
+              : String(value);
+            return labelFormatter(formatted);
+          }
+        : (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return String(value);
+            }
+            return labelFormatter(value);
+          },
+    };
+  });
+
   return (
     <div
       className={chartSetting.className}
@@ -27,7 +79,8 @@ const CustomScatterChart = ({
     >
       {!chartSetting.noHeadingInSeries && (
         <h4 style={{ textAlign: 'center' }}>
-          {normalized ? 'Relative ' : 'Absolute '}
+          {!chartSetting.doesntHaveNormalization &&
+            (normalized ? 'Relative ' : 'Absolute ')}
           {chartSetting.heading}
         </h4>
       )}
@@ -35,6 +88,8 @@ const CustomScatterChart = ({
       <ScatterChart
         dataset={dataset}
         {...chartSetting}
+        xAxis={xAxisWithFormatter}
+        yAxis={yAxisWithFormatter}
         series={chartSetting.series}
         grid={{ vertical: true, horizontal: true }}
         height={chartSetting.height ?? 360}

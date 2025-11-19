@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { ResponsiveHeatMap } from '@nivo/heatmap';
+import { createLabelFormatter } from '../../utils/chartUtils';
 
 interface HeatDatum {
   xLabel: string;
@@ -18,6 +19,9 @@ interface CustomHeatMapInterface {
     height?: number;
     className?: string;
     heading?: string;
+    maxLabelLength?: number | 'auto';
+    layout?: string;
+    margin?: Record<string, unknown>;
   };
   question_id?: string;
   loading?: boolean;
@@ -92,6 +96,11 @@ export default function CustomHeatMap({
   }, [dataset, chartSetting]);
 
   const height = chartSetting.height ?? 600;
+
+  const labelFormatter = createLabelFormatter(
+    chartSetting as any,
+    dataset.length
+  );
 
   if (loading)
     return <Box sx={{ textAlign: 'center', p: 2 }}>Loading heatmap...</Box>;
@@ -199,11 +208,7 @@ export default function CustomHeatMap({
             legendOffset: -55,
             legendPosition: 'middle',
             tickValues: undefined, // Let nivo auto-calculate
-            format: (value) => {
-              // Truncate long labels
-              const str = String(value);
-              return str.length > 30 ? str.substring(0, 17) + '...' : str;
-            },
+            format: (value) => labelFormatter(value),
           }}
           axisLeft={{
             tickSize: 5,
@@ -212,11 +217,7 @@ export default function CustomHeatMap({
             legend: chartSetting?.yAxis?.[0]?.label ?? '',
             legendPosition: 'middle',
             legendOffset: -Math.max(120, leftMargin - 50),
-            format: (value) => {
-              // Truncate long labels
-              const str = String(value);
-              return str.length > 30 ? str.substring(0, 27) + '...' : str;
-            },
+            format: (value) => labelFormatter(value),
           }}
           axisRight={null}
           axisBottom={null}

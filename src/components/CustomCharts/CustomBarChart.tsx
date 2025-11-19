@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BarChart } from '@mui/x-charts/BarChart';
+import { createLabelFormatter } from '../../utils/chartUtils';
 
 interface CustomBarChartInterface {
   dataset: any[];
@@ -21,6 +22,58 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
   } = props;
   const hasMultipleSubCharts = chartSetting.series.length > 1;
 
+  const labelFormatter = createLabelFormatter(chartSetting, dataset.length);
+
+  const xAxisWithFormatter = chartSetting.xAxis?.map((axis: any) => {
+    const originalFormatter = axis.valueFormatter;
+    return {
+      ...axis,
+      valueFormatter: originalFormatter
+        ? (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return originalFormatter
+                ? originalFormatter(value, context)
+                : String(value);
+            }
+            const formatted = originalFormatter
+              ? originalFormatter(value, context)
+              : String(value);
+            return labelFormatter(formatted);
+          }
+        : (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return String(value);
+            }
+            return labelFormatter(value);
+          },
+    };
+  });
+
+  const yAxisWithFormatter = chartSetting.yAxis?.map((axis: any) => {
+    const originalFormatter = axis.valueFormatter;
+    return {
+      ...axis,
+      valueFormatter: originalFormatter
+        ? (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return originalFormatter
+                ? originalFormatter(value, context)
+                : String(value);
+            }
+            const formatted = originalFormatter
+              ? originalFormatter(value, context)
+              : String(value);
+            return labelFormatter(formatted);
+          }
+        : (value: any, context: any) => {
+            if (context?.location === 'tooltip') {
+              return String(value);
+            }
+            return labelFormatter(value);
+          },
+    };
+  });
+
   return (
     <div
       className={chartSetting.className}
@@ -32,13 +85,16 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     >
       {!chartSetting.noHeadingInSeries && (
         <h4 style={{ textAlign: 'center' }}>
-          {normalized ? 'Relative ' : 'Absolute '}
+          {!chartSetting.doesntHaveNormalization &&
+            (normalized ? 'Relative ' : 'Absolute ')}
           {chartSetting.heading}
         </h4>
       )}
       <BarChart
         dataset={dataset}
         {...chartSetting}
+        xAxis={xAxisWithFormatter}
+        yAxis={yAxisWithFormatter}
         series={chartSetting.series.map((s: Record<string, unknown>) => ({
           ...s,
           dataKey:

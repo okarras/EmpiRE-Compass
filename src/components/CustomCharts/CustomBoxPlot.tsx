@@ -8,6 +8,7 @@ import {
   VictoryLabel,
   VictoryScatter,
 } from 'victory';
+import { createLabelFormatter } from '../../utils/chartUtils';
 
 type BoxItem = { label: string; values: number[] };
 
@@ -25,7 +26,7 @@ type MarginSetting = Partial<{
 
 type TextAnchor = 'start' | 'middle' | 'end' | 'inherit';
 
-interface ChartSetting {
+interface BoxPlotChartSetting {
   height?: number;
   width?: number;
   margin?: MarginSetting;
@@ -38,13 +39,16 @@ interface ChartSetting {
   xAxis?: AxisSetting[];
   yAxis?: AxisSetting[];
   series?: Array<{ dataKey?: string }>;
+  maxLabelLength?: number | 'auto';
+  layout?: string;
+  sx?: Record<string, unknown>;
 }
 
 type RawDatum = Record<string, unknown>;
 
 interface Props {
   dataset: RawDatum[];
-  chartSetting?: ChartSetting;
+  chartSetting?: BoxPlotChartSetting;
   question_id?: string;
   loading?: boolean;
 }
@@ -102,7 +106,7 @@ export default function CustomBoxPlot({
   question_id = 'boxplot',
   loading = false,
 }: Props) {
-  const config: ChartSetting = chartSetting ?? {};
+  const config: BoxPlotChartSetting = chartSetting ?? {};
   const labelKey = config.xAxis?.[0]?.dataKey ?? 'label';
   const valuesKey = config.series?.[0]?.dataKey ?? 'values';
 
@@ -247,6 +251,8 @@ export default function CustomBoxPlot({
   const xAxisLabel = config.xAxis?.[0]?.label;
   const yAxisLabel = config.yAxis?.[0]?.label;
 
+  const labelFormatter = createLabelFormatter(config as any, series.length);
+
   return (
     <Box
       id={`chart-${question_id}`}
@@ -291,6 +297,7 @@ export default function CustomBoxPlot({
               ticks: { size: 0 },
             }}
             tickValues={series.map((s) => s.label)}
+            tickFormat={(tick: string) => labelFormatter(tick)}
             label={xAxisLabel}
             axisLabelComponent={<VictoryLabel dy={55} />}
           />
@@ -298,7 +305,7 @@ export default function CustomBoxPlot({
             dependentAxis
             tickCount={6}
             tickFormat={(tick: number) =>
-              Number.isFinite(tick) ? tick.toFixed(0) : '0'
+              Number.isFinite(tick) ? labelFormatter(tick.toFixed(0)) : '0'
             }
             style={{
               axisLabel: { fontSize: 14, fontWeight: 600, padding: 50 },
