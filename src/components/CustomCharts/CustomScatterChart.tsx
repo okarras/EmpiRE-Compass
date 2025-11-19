@@ -20,6 +20,8 @@ const CustomScatterChart = ({
   const labelFormatter = createLabelFormatter(chartSetting, dataset.length);
   const xAxisWithFormatter = chartSetting.xAxis?.map((axis: any) => {
     const originalFormatter = axis.valueFormatter;
+    const labelMap = axis.labelMap;
+
     return {
       ...axis,
       valueFormatter: originalFormatter
@@ -36,9 +38,21 @@ const CustomScatterChart = ({
           }
         : (value: any, context: any) => {
             if (context?.location === 'tooltip') {
+              if (labelMap) {
+                const key = String(Math.round(value));
+                return labelMap[key] || String(value);
+              }
               return String(value);
             }
-            return labelFormatter(value);
+            let displayValue = String(value);
+            if (labelMap) {
+              const key = String(Math.round(value));
+              if (!labelMap[key]) {
+                return '';
+              }
+              displayValue = labelMap[key];
+            }
+            return labelFormatter(displayValue);
           },
     };
   });

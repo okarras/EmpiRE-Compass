@@ -371,11 +371,24 @@ export const queries: Query[] = [
     chartSettings: {
       heading: 'Number of annotators per NLP Task',
       className: 'fullWidth fixText',
+      maxLabelLength: 'auto',
       xAxis: [
         {
-          label: 'NLP task',
+          label: 'NLP task type',
           scaleType: 'linear',
-          domain: [0, 'dataMax'],
+          min: 0.5,
+          max: 7.5,
+          tickNumber: 7,
+          tickMinStep: 1,
+          labelMap: {
+            '1': 'Classification',
+            '2': 'Information retrieval',
+            '3': 'Information extraction',
+            '4': 'Language modeling',
+            '5': 'Translation',
+            '6': 'Similar Requirements Clustering Coreference Resolution',
+            '7': 'Extraction of concepts based on a conceptual schema aka ontology',
+          },
         },
       ],
       yAxis: [
@@ -403,7 +416,7 @@ export const queries: Query[] = [
           },
         },
         {
-          label: 'Information_retrieval',
+          label: 'Information retrieval',
           datasetKeys: {
             id: 'id',
             x: 'Information_retrieval_x',
@@ -411,7 +424,7 @@ export const queries: Query[] = [
           },
         },
         {
-          label: 'Information_extraction',
+          label: 'Information extraction',
           datasetKeys: {
             id: 'id',
             x: 'Information_extraction_x',
@@ -419,7 +432,7 @@ export const queries: Query[] = [
           },
         },
         {
-          label: 'language_modeling',
+          label: 'Language modeling',
           datasetKeys: {
             id: 'id',
             x: 'language_modeling_x',
@@ -431,7 +444,7 @@ export const queries: Query[] = [
           datasetKeys: { id: 'id', x: 'Translation_x', y: 'Translation_y' },
         },
         {
-          label: 'Similar_Requirements_Clustering__Coreference_Resolution',
+          label: 'Similar Requirements Clustering Coreference Resolution',
           datasetKeys: {
             id: 'id',
             x: 'Similar_Requirements_Clustering__Coreference_Resolution_x',
@@ -440,7 +453,7 @@ export const queries: Query[] = [
         },
         {
           label:
-            'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology',
+            'Extraction of concepts based on a conceptual schema aka ontology',
           datasetKeys: {
             id: 'id',
             x: 'Extraction_of_concepts_based_on_a_conceptual_schema_aka_ontology_x',
