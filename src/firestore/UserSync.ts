@@ -20,20 +20,10 @@ export interface FirebaseUser {
 }
 
 /**
- * Admin user emails (only these users can edit data)
- * Using email is more reliable than user IDs
+ * Note: Admin emails are defined in backend/src/config/constants.ts
+ * The frontend relies on the is_admin flag from Firebase, which is
+ * synced by the backend based on ADMIN_USER_EMAILS.
  */
-const ADMIN_USER_EMAILS = [
-  'amirrezaalasti@gmail.com', // Amirreza Alasti
-  'oliver.karras@tib.eu', // Oliver Karras
-];
-
-/**
- * Check if a user email is an admin
- */
-export const isAdminUser = (email: string): boolean => {
-  return ADMIN_USER_EMAILS.includes(email.toLowerCase());
-};
 
 /**
  * Get user from Firebase (read operation - still uses direct Firestore)
@@ -100,19 +90,10 @@ export const checkUserIsAdmin = async (userId: string): Promise<boolean> => {
   }
 };
 
-/**
- * Check if email is an admin email
- */
-export const checkEmailIsAdmin = (email: string): boolean => {
-  return isAdminUser(email);
-};
-
 const UserSync = {
   syncUserToFirebase,
   getFirebaseUser,
-  isAdminUser,
   checkUserIsAdmin,
-  checkEmailIsAdmin,
 };
 
 export default UserSync;

@@ -119,11 +119,13 @@ const templateApiRequest = async <T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    // Add cache-busting to avoid stale service worker cache
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
     throw new Error(
-      `Template API request failed: ${response.status} ${response.statusText}`
+      `Schema API request failed: ${response.status} ${response.statusText}`
     );
   }
 
@@ -145,6 +147,8 @@ const statementApiRequest = async <T>(
   const response = await fetch(url, {
     ...options,
     headers,
+    // Add cache-busting to avoid stale service worker cache
+    cache: 'no-cache',
   });
 
   if (!response.ok) {
@@ -280,7 +284,7 @@ export const loadTemplateFlowByID = (
             return {};
           } catch (error) {
             console.warn(
-              `Failed to load template for class ${ps.class!.id}:`,
+              `Failed to load schema for class ${ps.class!.id}:`,
               error
             );
             return {};

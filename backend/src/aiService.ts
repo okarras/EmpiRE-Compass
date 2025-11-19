@@ -6,6 +6,13 @@ import { createMistral } from '@ai-sdk/mistral';
 export type AIProvider = 'openai' | 'groq' | 'mistral';
 export type OpenAIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
 export type GroqModel =
+  | 'llama-3.1-8b-instant'
+  | 'llama-3.1-70b-versatile'
+  | 'llama-3.1-405b-reasoning'
+  | 'llama-3.3-70b-versatile'
+  | 'openai/gpt-oss-120b'
+  | 'openai/gpt-oss-20b'
+  | 'whisper-large-v3'
   | 'deepseek-r1-distill-llama-70b'
   | 'llama-3-70b-8192'
   | 'mixtral-8x7b-32768';

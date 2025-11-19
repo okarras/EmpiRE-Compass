@@ -46,7 +46,7 @@ OPENAI_API_KEY=your_openai_key
 GROQ_API_KEY=your_groq_key
 MISTRAL_API_KEY=your_mistral_key
 OPENAI_MODEL=gpt-4o-mini
-GROQ_MODEL=deepseek-r1-distill-llama-70b
+GROQ_MODEL=llama-3.1-8b-instant
 MISTRAL_MODEL=mistral-large-latest
 ```
 

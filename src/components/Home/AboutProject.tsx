@@ -33,7 +33,14 @@ const AboutProject = ({ content }: AboutProjectProps) => {
         {content.title}
       </Typography>
 
-      <Box dangerouslySetInnerHTML={{ __html: content.content }} />
+      <Box
+        sx={{
+          fontSize: { xs: '1rem', sm: '1.1rem' },
+          lineHeight: 1.7,
+          mb: 3,
+        }}
+        dangerouslySetInnerHTML={{ __html: content.content }}
+      />
 
       <Box sx={{ pl: { xs: 2, sm: 3, md: 4 } }}>
         <Typography component="ul" sx={{ listStyle: 'none', p: 0 }}>
@@ -47,14 +54,9 @@ const AboutProject = ({ content }: AboutProjectProps) => {
                 display: 'flex',
                 alignItems: 'center',
                 '&:before': {
-                  content: '""',
-                  width: '8px',
-                  height: '8px',
-                  minWidth: '8px',
-                  backgroundColor: '#e86161',
-                  borderRadius: '50%',
+                  content: '"🏷️"',
                   display: 'inline-block',
-                  mr: 2,
+                  mr: 1.5,
                 },
               }}
             >

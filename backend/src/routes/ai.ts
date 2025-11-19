@@ -57,13 +57,17 @@ const getAIService = (): AIService => {
           | 'gpt-4o'
           | 'gpt-4-turbo') || 'gpt-4o-mini',
       groqModel:
-        (sanitizeEnvVar(
-          process.env.GROQ_MODEL,
-          'deepseek-r1-distill-llama-70b'
-        ) as
+        (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
+          | 'llama-3.1-8b-instant'
+          | 'llama-3.1-70b-versatile'
+          | 'llama-3.1-405b-reasoning'
+          | 'llama-3.3-70b-versatile'
+          | 'openai/gpt-oss-120b'
+          | 'openai/gpt-oss-20b'
+          | 'whisper-large-v3'
           | 'deepseek-r1-distill-llama-70b'
           | 'llama-3-70b-8192'
-          | 'mixtral-8x7b-32768') || 'deepseek-r1-distill-llama-70b',
+          | 'mixtral-8x7b-32768') || 'llama-3.1-8b-instant',
       mistralModel:
         (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
           | 'mistral-large-latest'

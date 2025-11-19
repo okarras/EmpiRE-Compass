@@ -164,7 +164,10 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
         const propertyMapping: PropertyMapping = {
           label: property.class?.label ?? property.path.label,
           cardinality,
-          description: property.description || property.label,
+          description:
+            property.description || property.label || property.path.label,
+          predicate_label: property.path.label,
+          class_label: property.class?.label,
         };
 
         // If property has a class (object property), it's a subtemplate
@@ -172,6 +175,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
           const targetTemplate = templateMap.get(property.class.id);
           if (targetTemplate) {
             propertyMapping.subtemplate_id = targetTemplate.id;
+            propertyMapping.subtemplate_label = targetTemplate.label;
             propertyMapping.class_id = property.class.id;
 
             // Recursively process subtemplate properties
@@ -196,7 +200,12 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                 const subPropertyMapping: PropertyMapping = {
                   label: subProperty.class?.label ?? subProperty.path.label,
                   cardinality: subCardinality,
-                  description: subProperty.description || subProperty.label,
+                  description:
+                    subProperty.description ||
+                    subProperty.label ||
+                    subProperty.path.label,
+                  predicate_label: subProperty.path.label,
+                  class_label: subProperty.class?.label,
                 };
 
                 // Check if this sub-property also has a class (nested subtemplate)
@@ -206,6 +215,8 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                   );
                   if (subTargetTemplate) {
                     subPropertyMapping.subtemplate_id = subTargetTemplate.id;
+                    subPropertyMapping.subtemplate_label =
+                      subTargetTemplate.label;
                     subPropertyMapping.class_id = subProperty.class.id;
 
                     // Process nested subtemplate properties
@@ -237,7 +248,10 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                             cardinality: nestedCardinality,
                             description:
                               nestedProperty.description ||
-                              nestedProperty.label,
+                              nestedProperty.label ||
+                              nestedProperty.path.label,
+                            predicate_label: nestedProperty.path.label,
+                            class_label: nestedProperty.class?.label,
                           };
                         }
                       });
@@ -420,10 +434,10 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
       >
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '18px', marginBottom: '8px' }}>
-            Loading template data...
+            Loading Schema data...
           </div>
           <div style={{ fontSize: '14px', color: '#9ca3af' }}>
-            Fetching template information from ORKG
+            Fetching schema information from ORKG
           </div>
         </div>
       </div>
@@ -448,7 +462,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
           <div
             style={{ fontSize: '18px', marginBottom: '8px', color: '#ef4444' }}
           >
-            Error loading templates
+            Error loading schemas
           </div>
           <div style={{ fontSize: '14px', color: '#9ca3af' }}>{error}</div>
         </div>

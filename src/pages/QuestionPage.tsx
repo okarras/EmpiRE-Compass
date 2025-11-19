@@ -1,39 +1,14 @@
-import {
-  Container,
-  ThemeProvider,
-  Typography,
-  Box,
-  Paper,
-} from '@mui/material';
-import { useParams } from 'react-router';
+import { Container, ThemeProvider, Typography, Box } from '@mui/material';
+import { useParams, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
 import type { RootState } from '../store';
 import { getTemplateConfig } from '../constants/template_config';
 import theme from '../utils/theme';
 import Question from '../components/Question';
 import { mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
-
-const ErrorState = ({ message }: { message: string }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 4,
-      mt: 4,
-      textAlign: 'center',
-      backgroundColor: 'rgba(232, 97, 97, 0.05)',
-      border: '1px solid rgba(232, 97, 97, 0.1)',
-      borderRadius: 2,
-    }}
-  >
-    <Typography variant="h5" color="error" gutterBottom>
-      {message}
-    </Typography>
-    <Typography color="text.secondary">
-      Please try again later or contact support if the problem persists.
-    </Typography>
-  </Paper>
-);
 
 const QuestionPage = () => {
   const params = useParams();
@@ -50,8 +25,14 @@ const QuestionPage = () => {
   const queries = getTemplateConfig(templateId).queries;
   const targetQuery = queries?.find((query) => query.id === Number(id));
 
+  useEffect(() => {
+    if (!targetQuery) {
+      toast.error('Question not found');
+    }
+  }, [targetQuery]);
+
   if (!targetQuery) {
-    return <ErrorState message="Question not found" />;
+    return <Navigate to={`/${templateId}/allquestions`} replace />;
   }
 
   const firebaseTargetQuery = Object.values(firebaseQuestions).find(
