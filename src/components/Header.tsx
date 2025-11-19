@@ -71,7 +71,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const handleTemplateChange = (event: SelectChangeEvent<string>) => {
     const newTemplate = event.target.value;
     setSelectedTemplate(newTemplate);
-    toast.success(`Template changed to ${templateConfig[newTemplate]?.title}`);
+    toast.success(`Theme changed to ${templateConfig[newTemplate]?.title}`);
 
     // Navigate to new template, preserving the rest of the path
     const pathSegments = location.pathname.split('/').filter(Boolean);
@@ -88,7 +88,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       const templateId = paths[0];
       const template = templates.find((t) => t.id === templateId);
       const templateName =
-        template?.title || templateConfig[templateId]?.title || 'Template';
+        template?.title || templateConfig[templateId]?.title || 'Theme';
       breadcrumbs.push({
         path: `/${templateId}/`,
         label: templateName,
@@ -327,11 +327,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               },
             }}
           >
-            <InputLabel id="header-templates-select-label">Template</InputLabel>
+            <InputLabel id="header-templates-select-label">Theme</InputLabel>
             <Select
               labelId="header-templates-select-label"
               value={selectedTemplate}
-              label="Template"
+              label="Theme"
               onChange={handleTemplateChange}
               size="small"
               id="header-templates-select"

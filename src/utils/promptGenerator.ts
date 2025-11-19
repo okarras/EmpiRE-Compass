@@ -1,17 +1,8 @@
-import { Template } from '../components/Graph/types';
-
-export interface PropertyMapping {
-  label: string;
-  cardinality: string;
-  description: string;
-  subtemplate_id?: string;
-  class_id?: string;
-  subtemplate_properties?: Record<string, PropertyMapping>;
-}
-
-export interface PredicatesMapping {
-  [key: string]: PropertyMapping;
-}
+import {
+  Template,
+  PropertyMapping,
+  PredicatesMapping,
+} from '../components/Graph/types';
 
 export interface TemplateSpecificGuidance {
   templateId: string;
@@ -257,7 +248,10 @@ export const generateTemplateMapping = (
       const propertyMapping: PropertyMapping = {
         label: property.class?.label ?? property.path.label,
         cardinality,
-        description: property.description || property.label,
+        description:
+          property.description || property.label || property.path.label,
+        predicate_label: property.path.label,
+        class_label: property.class?.label,
       };
 
       // If property has a class (object property), it's a subtemplate
@@ -265,6 +259,7 @@ export const generateTemplateMapping = (
         const targetTemplate = templateMap.get(property.class.id);
         if (targetTemplate) {
           propertyMapping.subtemplate_id = targetTemplate.id;
+          propertyMapping.subtemplate_label = targetTemplate.label;
           propertyMapping.class_id = property.class.id;
 
           // Recursively process subtemplate properties
@@ -286,7 +281,12 @@ export const generateTemplateMapping = (
               const subPropertyMapping: PropertyMapping = {
                 label: subProperty.class?.label ?? subProperty.path.label,
                 cardinality: subCardinality,
-                description: subProperty.description || subProperty.label,
+                description:
+                  subProperty.description ||
+                  subProperty.label ||
+                  subProperty.path.label,
+                predicate_label: subProperty.path.label,
+                class_label: subProperty.class?.label,
               };
 
               // Check if this sub-property also has a class (nested subtemplate)
@@ -294,6 +294,8 @@ export const generateTemplateMapping = (
                 const subTargetTemplate = templateMap.get(subProperty.class.id);
                 if (subTargetTemplate) {
                   subPropertyMapping.subtemplate_id = subTargetTemplate.id;
+                  subPropertyMapping.subtemplate_label =
+                    subTargetTemplate.label;
                   subPropertyMapping.class_id = subProperty.class.id;
 
                   // Process nested subtemplate properties
@@ -324,7 +326,11 @@ export const generateTemplateMapping = (
                             nestedProperty.path.label,
                           cardinality: nestedCardinality,
                           description:
-                            nestedProperty.description || nestedProperty.label,
+                            nestedProperty.description ||
+                            nestedProperty.label ||
+                            nestedProperty.path.label,
+                          predicate_label: nestedProperty.path.label,
+                          class_label: nestedProperty.class?.label,
                         };
                       }
                     });
@@ -573,6 +579,37 @@ Before writing any SPARQL:
 - For multiple queries addressing ambiguity, add a comment at the top of each code block explaining its specific purpose
 - Each query should have an \`# id: queryname\` comment for identification
 - If a question cannot be answered with the provided schema, return a SPARQL query containing only a comment explaining the limitation
+
+### MANDATORY: Add Comments Explaining Each Line
+**CRITICAL REQUIREMENT:** Every SPARQL query line MUST have a comment above it explaining what that line does. This is mandatory for code readability and understanding.
+
+**Format:**
+\`\`\`sparql
+# Comment explaining what this line does
+SPARQL line here
+# Another comment explaining the next line
+Another SPARQL line
+\`\`\`
+
+**Example with proper comments:**
+\`\`\`sparql
+# Select the paper resource and publication year
+SELECT ?paper ?year WHERE {
+  # Link the paper to its contribution using the P31 predicate
+  ?paper orkgp:P31 ?contribution .
+  # Declare that the contribution is of type Empirical Research Practice (C27001)
+  ?contribution a orkgc:C27001 .
+  # Get the publication year of the paper
+  ?paper orkgp:P29 ?year .
+}
+\`\`\`
+
+**Rules for comments:**
+- Every SPARQL statement (triple pattern, FILTER, OPTIONAL, etc.) must have a comment above it
+- Comments should be concise but descriptive
+- Explain WHAT the line does, not just repeat the syntax
+- Group related lines with a single comment if they form a logical unit
+- Prefix declarations (PREFIX statements) don't need individual comments, but can have a group comment
 
 ## Query Generation Strategy
 

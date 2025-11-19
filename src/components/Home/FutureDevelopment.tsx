@@ -66,7 +66,7 @@ const FutureDevelopment = ({ content }: FutureDevelopmentProps) => {
               >
                 {item.phase}
               </Box>
-              {item.goal}
+              <Box dangerouslySetInnerHTML={{ __html: item.goal }} />
             </Typography>
           ))}
         </Typography>

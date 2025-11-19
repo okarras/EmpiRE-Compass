@@ -20,20 +20,12 @@ export function computeHierarchicalLayout(
   const horizontalSpacing = 400; // Horizontal spacing between levels (now x-axis)
   const verticalSpacing = 300; // Vertical spacing between nodes at same level (now y-axis)
 
-  // Find the root node (Empirical Research Practice)
-  const rootTemplate = templates.find(
-    (t) =>
-      t.target_class?.id === 'C27001' ||
-      t.label === 'Empirical Research Practice'
-  );
+  // Find the root node - use the first template as it's always the main template
+  // The main template is guaranteed to be first in the array by TemplateGraphPage
+  const rootTemplate = templates[0];
 
   if (!rootTemplate) {
-    // Fallback to first template if root not found
-    const firstTemplate = templates[0];
-    if (firstTemplate) {
-      const nodeId = firstTemplate.target_class?.id ?? firstTemplate.id;
-      positions[nodeId] = { x: 0, y: 0 };
-    }
+    // If no templates, return empty positions
     return positions;
   }
 
@@ -111,13 +103,19 @@ export function computeHierarchicalLayout(
   });
 
   // Handle any remaining unvisited nodes (disconnected components)
+  let disconnectedNodeIndex = 0;
   templates.forEach((t) => {
     const nodeId = t.target_class?.id ?? t.id;
     if (!visited.has(nodeId)) {
-      // Position disconnected nodes to the right
-      const maxX = Math.max(...Object.values(positions).map((p) => p.x), 0);
-      const maxY = Math.max(...Object.values(positions).map((p) => p.y), 0);
-      positions[nodeId] = { x: maxX + horizontalSpacing, y: maxY };
+      // Position disconnected nodes to the right, spaced vertically
+      const positionedXValues = Object.values(positions).map((p) => p.x);
+      const maxX =
+        positionedXValues.length > 0 ? Math.max(...positionedXValues) : 0;
+      const disconnectedX = maxX + horizontalSpacing;
+      const disconnectedY =
+        disconnectedNodeIndex * verticalSpacing - verticalSpacing / 2;
+      positions[nodeId] = { x: disconnectedX, y: disconnectedY };
+      disconnectedNodeIndex++;
     }
   });
 

@@ -94,7 +94,7 @@ export const useTemplateLoader = ({
             // Ignore storage errors
           }
         } catch (err) {
-          console.error('❌ Error loading template data:', err);
+          console.error('❌ Error loading schema data:', err);
           // Continue with static prompt if template loading fails
         }
       } else {

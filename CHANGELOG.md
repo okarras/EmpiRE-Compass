@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.11.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.10.0...v1.11.0) (2025-11-17)
+
+### Features
+
+- add footer to everypage ([4ad00ec](https://github.com/okarras/EmpiRE-Compass/commit/4ad00ec138451d215260eb78e910c15449ef980d))
+- change template to theme ([2f00fba](https://github.com/okarras/EmpiRE-Compass/commit/2f00fba5f968a02bd2be689cdceadc161be1cf08))
+- html handling in all questions page ([584fe5a](https://github.com/okarras/EmpiRE-Compass/commit/584fe5a17f2762486ed5a332c39987aea8d0661d))
+
+### Bug Fixes
+
+- added year to copyright ([e81066a](https://github.com/okarras/EmpiRE-Compass/commit/e81066a37855f88feef478604a578529da458aea))
+- change bullet points styles in home ([202dc74](https://github.com/okarras/EmpiRE-Compass/commit/202dc74e5d1eea7b8b127c5ee01801dd417de046))
+- change nlp4re class id to resource id ([4fcfa3e](https://github.com/okarras/EmpiRE-Compass/commit/4fcfa3e1bdb27293b9aba3cc37bb9a491a4dcb8f))
+- fixed some style problems ([5aaaba3](https://github.com/okarras/EmpiRE-Compass/commit/5aaaba3591568c7c0bf453b0631f308783e22dfa))
+- template info box default text ([547bfc9](https://github.com/okarras/EmpiRE-Compass/commit/547bfc900a25ac44174d4cfd23b072b836a52db3))
+
+## [1.10.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.9.0...v1.10.0) (2025-11-16)
+
+### Features
+
+- added complete sparql query translation ([9b36323](https://github.com/okarras/EmpiRE-Compass/commit/9b36323c70e2ae85ef210934a3f8c13e06f48f90))
+- added query explanation ([3961d11](https://github.com/okarras/EmpiRE-Compass/commit/3961d11b107767d3e9cdc039baa4f5287513dffa))
+- added sparql query identifier linking and translation ([19e4228](https://github.com/okarras/EmpiRE-Compass/commit/19e4228f792bdf0c5ec3921accb4c8807331fb43))
+
+### Bug Fixes
+
+- bfs sorting works properly now for every template id ([db59cc3](https://github.com/okarras/EmpiRE-Compass/commit/db59cc323325acaf23e9451d634d850540082556))
+- graph viewer now reads templateId from the /:templateId/graph route ([7511b2c](https://github.com/okarras/EmpiRE-Compass/commit/7511b2cc65530ccd40c45c135080c4a367cd5ba8))
+- missing property ([4d84caa](https://github.com/okarras/EmpiRE-Compass/commit/4d84caa5356bc8e0be6c8eddb889d437f571cf80))
+- resolved bug where labels were not properly fetched from orkg api ([a26cad0](https://github.com/okarras/EmpiRE-Compass/commit/a26cad0493e342ceb2675270281c95fa88ddc49e))
+- update the models ([37747d8](https://github.com/okarras/EmpiRE-Compass/commit/37747d886b1712ab9a8f270fd8c64cc2e6b7ea09))
+
+## [1.9.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.2...v1.9.0) (2025-11-16)
+
+### Features
+
+- add chart for inferential statistics in query 7 ([f8a5a7a](https://github.com/okarras/EmpiRE-Compass/commit/f8a5a7ac93001bf5914d1553eec5cfad6daa6043))
+- added new models to groq api ([8bcb9d8](https://github.com/okarras/EmpiRE-Compass/commit/8bcb9d8bb12522826495ce7a90716bf3a04b5b07))
+- html handle in keyfeatures ([bd5f0b8](https://github.com/okarras/EmpiRE-Compass/commit/bd5f0b8467001e97323e1ef06655838f99a5ef61))
+
 ### [1.8.2](https://github.com/okarras/EmpiRE-Compass/compare/v1.8.1...v1.8.2) (2025-11-10)
 
 ### Bug Fixes

@@ -29,10 +29,12 @@ import SPARQLQuerySection from './SPARQLQuerySection';
 import ResourceIdInputButton from './ResourceIdInputButton';
 import { HistoryItem } from './HistoryManager';
 import { IterationDetail } from '../../hooks/useQueryGeneration';
+import { PredicatesMapping } from '../Graph/types';
 
 interface QueryExecutionSectionProps {
   question: string;
   sparqlQuery: string;
+  sparqlTranslation: string;
   loading: boolean;
   queryResults: Record<string, unknown>[];
   queryError: string | null;
@@ -48,11 +50,14 @@ interface QueryExecutionSectionProps {
   currentIteration?: number;
   maxIterations?: number;
   iterationHistory?: IterationDetail[];
+  templateMapping?: PredicatesMapping;
+  targetClassId?: string | null;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   question,
   sparqlQuery,
+  sparqlTranslation,
   loading,
   queryResults,
   queryError,
@@ -68,6 +73,8 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   currentIteration,
   maxIterations,
   iterationHistory = [],
+  templateMapping,
+  targetClassId,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -435,6 +442,7 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
       <SPARQLQuerySection
         question={question}
         sparqlQuery={sparqlQuery}
+        sparqlTranslation={sparqlTranslation}
         loading={loading}
         queryResults={queryResults}
         queryError={queryError}
@@ -443,6 +451,9 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
         onGenerateAndRun={onGenerateAndRun}
         onRunEditedQuery={onRunEditedQuery}
         onOpenHistory={onOpenHistory}
+        templateMapping={templateMapping}
+        templateId={currentTemplateId}
+        targetClassId={targetClassId}
       />
     </>
   );

@@ -199,7 +199,7 @@ export const defaultHomeContent: HomeContentData = {
       description:
         'This template contains research questions designed to help you explore and analyze data related to empirical research practices. Each question is carefully crafted to provide insights into different aspects of your research domain.',
     },
-    C121001: {
+    R1544125: {
       title: 'NLP for Requirements Engineering (NLP4RE)',
       description:
         'This template contains research questions designed to help you explore and analyze data related to NLP for requirements engineering. Each question is carefully crafted to provide insights into different aspects of your research domain.',
