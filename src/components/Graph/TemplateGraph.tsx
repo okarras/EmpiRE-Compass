@@ -16,7 +16,7 @@ import { toPng } from 'html-to-image';
 import { PredicatesMapping, Template, TemplateGraphProps } from './types';
 import { PropertyMapping } from './types';
 
-import { computeHierarchicalLayout } from './utils';
+import { computeHierarchicalLayout, calculateNodeHeight } from './utils';
 import { TemplateNode } from './TemplateNode';
 
 const nodeTypes = { templateNode: TemplateNode } as const;
@@ -43,10 +43,24 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
     return map;
   }, [templates]);
 
-  // Compute hierarchical positions
+  // Calculate node heights for dynamic layout
+  const nodeHeights = useMemo(() => {
+    const heights = new Map<string, number>();
+    templates.forEach((t) => {
+      const nodeId = t.target_class?.id ?? t.id;
+      heights.set(nodeId, calculateNodeHeight(t));
+    });
+    return heights;
+  }, [templates]);
+
+  // Compute hierarchical positions with node heights
   const positions = useMemo(() => {
-    return computeHierarchicalLayout(templates, targetClassIdToTemplate);
-  }, [templates, targetClassIdToTemplate]);
+    return computeHierarchicalLayout(
+      templates,
+      targetClassIdToTemplate,
+      nodeHeights
+    );
+  }, [templates, targetClassIdToTemplate, nodeHeights]);
 
   const initialNodes = useMemo<Node[]>(() => {
     const templateNodes = templates.map((t) => {
