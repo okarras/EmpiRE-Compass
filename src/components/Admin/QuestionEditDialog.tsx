@@ -14,6 +14,8 @@ import {
   Divider,
   Tooltip,
   IconButton,
+  Switch,
+  FormControlLabel,
 } from '@mui/material';
 import { Info, Code as CodeIcon } from '@mui/icons-material';
 import { QuestionData } from '../../firestore/TemplateManagement';
@@ -1060,6 +1062,35 @@ const QuestionEditDialog = ({
                 }
                 helperText="Column to automatically group by in grid statistics (e.g., year)"
                 placeholder="year"
+              />
+
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={form.gridOptions?.defaultUseUniquePapers ?? true}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        gridOptions: {
+                          ...form.gridOptions,
+                          defaultUseUniquePapers: e.target.checked,
+                        },
+                      })
+                    }
+                    color="success"
+                  />
+                }
+                label={
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      Default: Count by Unique Papers
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Set the default state for the "Count by Unique Papers"
+                      switch in grid statistics
+                    </Typography>
+                  </Box>
+                }
               />
 
               <Box
