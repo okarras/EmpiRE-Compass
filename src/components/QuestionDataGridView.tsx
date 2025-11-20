@@ -7,6 +7,7 @@ interface QuestionDataGridViewProps {
   gridOptions?: {
     defaultColumns?: string[];
     defaultGroupBy?: string;
+    defaultUseUniquePapers?: boolean;
   };
 }
 

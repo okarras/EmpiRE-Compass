@@ -8,6 +8,7 @@ interface Props {
   gridOptions?: {
     defaultColumns?: string[];
     defaultGroupBy?: string;
+    defaultUseUniquePapers?: boolean;
   };
 }
 
