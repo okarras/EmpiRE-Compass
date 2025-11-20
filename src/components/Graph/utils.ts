@@ -10,15 +10,32 @@ export function formatCardinality(
   return `[${min}, ${max}]`;
 }
 
+export function calculateNodeHeight(template: Template): number {
+  const headerHeight = 45; // Header with padding and border
+  const propertiesListPadding = 8; // Top padding of the properties list
+  const propertyRowHeight = 35; // Each property row (padding + margin + content)
+  const minNodeHeight = 50; // Minimum height for very small nodes
+  const heightBuffer = 0; // Additional padding
+  const propertyCount = template.properties?.length ?? 0;
+  const calculatedHeight =
+    headerHeight +
+    propertiesListPadding +
+    propertyCount * propertyRowHeight +
+    heightBuffer;
+
+  return Math.max(calculatedHeight, minNodeHeight);
+}
+
 // Hierarchical tree layout algorithm (left-to-right orientation)
 export function computeHierarchicalLayout(
   templates: Template[],
-  targetClassIdToTemplate: Map<string, Template>
+  targetClassIdToTemplate: Map<string, Template>,
+  nodeHeights?: Map<string, number>
 ): Record<string, { x: number; y: number }> {
   const positions: Record<string, { x: number; y: number }> = {};
   const visited = new Set<string>();
   const horizontalSpacing = 400; // Horizontal spacing between levels (now x-axis)
-  const verticalSpacing = 300; // Vertical spacing between nodes at same level (now y-axis)
+  const minVerticalSpacing = 150; // Minimum vertical spacing between nodes (padding to prevent overlap)
 
   // Find the root node - use the first template as it's always the main template
   // The main template is guaranteed to be first in the array by TemplateGraphPage
@@ -90,32 +107,56 @@ export function computeHierarchicalLayout(
     });
   }
 
+  // Calculate node heights if not provided
+  const heights = nodeHeights ?? new Map<string, number>();
+  if (!nodeHeights) {
+    templates.forEach((t) => {
+      const nodeId = t.target_class?.id ?? t.id;
+      heights.set(nodeId, calculateNodeHeight(t));
+    });
+  }
+
   // Position nodes level by level (left-to-right orientation)
+  // Use dynamic spacing based on node heights
   levelNodes.forEach((nodes, level) => {
     const x = level * horizontalSpacing; // x increases with level (left to right)
-    const totalHeight = (nodes.length - 1) * verticalSpacing;
-    const startY = -totalHeight / 2; // center nodes vertically within each level
 
-    nodes.forEach((nodeId, index) => {
-      const y = startY + index * verticalSpacing;
-      positions[nodeId] = { x, y };
+    // Calculate cumulative positions based on actual node heights
+    let currentY = 0;
+    const nodePositions: Array<{ nodeId: string; y: number }> = [];
+
+    nodes.forEach((nodeId) => {
+      const nodeHeight = heights.get(nodeId) ?? 100;
+      // Position node at current Y (centered on the node's height)
+      nodePositions.push({ nodeId, y: currentY - nodeHeight / 2 });
+      // Move to next position: current node's bottom + spacing
+      currentY += nodeHeight + minVerticalSpacing;
+    });
+
+    // Center all nodes vertically around 0
+    const totalHeight = currentY - minVerticalSpacing; // Remove last spacing
+    const offset = -totalHeight / 2;
+
+    nodePositions.forEach(({ nodeId, y }) => {
+      positions[nodeId] = { x, y: y + offset };
     });
   });
 
   // Handle any remaining unvisited nodes (disconnected components)
-  let disconnectedNodeIndex = 0;
+  let disconnectedYOffset = 0;
   templates.forEach((t) => {
     const nodeId = t.target_class?.id ?? t.id;
     if (!visited.has(nodeId)) {
-      // Position disconnected nodes to the right, spaced vertically
+      // Position disconnected nodes to the right, spaced vertically based on their heights
       const positionedXValues = Object.values(positions).map((p) => p.x);
       const maxX =
         positionedXValues.length > 0 ? Math.max(...positionedXValues) : 0;
       const disconnectedX = maxX + horizontalSpacing;
-      const disconnectedY =
-        disconnectedNodeIndex * verticalSpacing - verticalSpacing / 2;
+      const nodeHeight = heights.get(nodeId) ?? 100;
+      const disconnectedY = disconnectedYOffset - nodeHeight / 2;
       positions[nodeId] = { x: disconnectedX, y: disconnectedY };
-      disconnectedNodeIndex++;
+      // Move offset for next disconnected node
+      disconnectedYOffset += nodeHeight + minVerticalSpacing;
     }
   });
 
