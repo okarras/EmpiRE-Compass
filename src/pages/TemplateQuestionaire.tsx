@@ -3,8 +3,12 @@ import { Box, Typography, Paper, Snackbar, Alert } from '@mui/material';
 
 import SectionAccordion from '../components/TemplateQuestionaire/SectionAccordion';
 import TopSummaryBar from '../components/TemplateQuestionaire/TopSummaryBar';
-import ValidateDialog from '../components/TemplateQuestionaire/ValidateDialog';
 import ImportDialog from '../components/TemplateQuestionaire/ImportDialog';
+import { parseValidationRules, validateValue } from '../utils/validationRules';
+import {
+  useAIService,
+  type AIVerificationResult,
+} from '../services/backendAIService';
 
 /* types & constants */
 type TemplateSpec = any;
@@ -57,10 +61,6 @@ const TemplateQuestionaire: React.FC<Props> = ({
     setExpandedMap((s) => ({ ...s, [key]: value }));
   const isExpandedKey = (key: string) => !!expandedMap[key];
 
-  const [validateDialogOpen, setValidateDialogOpen] = useState(false);
-  const [validateList, setValidateList] = useState<
-    Array<{ id: string; label: string }>
-  >([]);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -75,6 +75,27 @@ const TemplateQuestionaire: React.FC<Props> = ({
     message: string;
     severity: 'success' | 'error';
   }>({ open: false, message: '', severity: 'success' });
+
+  const aiService = useAIService();
+  type ExtendedAIVerificationResult = Omit<AIVerificationResult, 'status'> & {
+    status: 'pending' | 'verified' | 'needs_improvement' | 'error';
+  };
+
+  const [aiVerifications, setAiVerifications] = useState<
+    Record<string, ExtendedAIVerificationResult>
+  >({});
+  const [aiVerificationStatus, setAiVerificationStatus] = useState<
+    'not_started' | 'in_progress' | 'complete'
+  >('not_started');
+
+  const questionRefs = React.useRef<Record<string, HTMLElement | null>>({});
+
+  const handleRegisterQuestionRef = useCallback(
+    (questionId: string, element: HTMLElement | null) => {
+      questionRefs.current[questionId] = element;
+    },
+    []
+  );
 
   useEffect(() => {
     if (!templateSpec) return;
@@ -765,7 +786,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
           if (!Array.isArray(value) || value.length === 0) {
             out.push({
               id: `${idPrefix}-${q.id}`,
-              label: `${pathLabel} → ${q.label}`,
+              label: `${pathLabel} → ${q.label || q.title || 'Untitled'}`,
             });
           }
         }
@@ -776,13 +797,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
         const fields = q.item_fields ?? q.subquestions ?? [];
         fields.forEach((f: any) => {
           const fv = value ? value[f.id] : undefined;
+          const groupName = q.label || q.title;
+          const newPathLabel = groupName
+            ? `${pathLabel} → ${groupName}`
+            : pathLabel;
           out.push(
-            ...collectMissing(
-              f,
-              fv,
-              `${pathLabel} → ${q.label}`,
-              `${idPrefix}-${q.id}`
-            )
+            ...collectMissing(f, fv, newPathLabel, `${idPrefix}-${q.id}-g`)
           );
         });
         return out;
@@ -801,11 +821,12 @@ const TemplateQuestionaire: React.FC<Props> = ({
               f.type === 'repeat_text'
             ) {
               const nestedValue = item?.[f.id];
+              const groupName = q.label || q.title || 'Group';
               out.push(
                 ...collectMissing(
                   f,
                   nestedValue,
-                  `${pathLabel} → ${q.label} #${idx + 1}`,
+                  `${pathLabel} → ${groupName} #${idx + 1}`,
                   `${idPrefix}-${q.id}-item-${idx}`
                 )
               );
@@ -813,9 +834,11 @@ const TemplateQuestionaire: React.FC<Props> = ({
               if (f.required) {
                 const fv = item?.[f.id];
                 if (isEmptyPrimitive(fv)) {
+                  const groupName = q.label || q.title || 'Group';
+                  const fieldName = f.label || f.title || 'Untitled';
                   out.push({
                     id: `${idPrefix}-${q.id}-item-${idx}-f-${f.id}`,
-                    label: `${pathLabel} → ${q.label} #${idx + 1} → ${f.label}`,
+                    label: `${pathLabel} → ${groupName} #${idx + 1} → ${fieldName}`,
                   });
                 }
               }
@@ -829,7 +852,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
         if (isEmptyPrimitive(value)) {
           out.push({
             id: `${idPrefix}-${q.id}`,
-            label: `${pathLabel} → ${q.label}`,
+            label: `${pathLabel} → ${q.label || q.title || 'Untitled'}`,
           });
         }
       }
@@ -878,11 +901,334 @@ const TemplateQuestionaire: React.FC<Props> = ({
 
   const missing = computeMissing();
 
-  const handleValidate = () => {
-    const m = computeMissing();
-    setValidateList(m);
-    setValidateDialogOpen(true);
-  };
+  const missingFieldsForButton = useMemo(() => {
+    return missing.map((m) => {
+      const parts = m.label.split(' → ');
+      const sectionTitle = parts[0] || '';
+      const questionLabel = parts.slice(1).join(' → ') || m.label;
+
+      return {
+        questionId: m.id,
+        questionLabel: questionLabel,
+        sectionId: m.id.split('-')[0] || '',
+        sectionTitle: sectionTitle,
+      };
+    });
+  }, [missing]);
+
+  const computeInvalidFields = useCallback(() => {
+    const invalidFields: Array<{
+      questionId: string;
+      questionLabel: string;
+      errorMessage: string;
+      sectionId: string;
+      sectionTitle: string;
+    }> = [];
+
+    if (!templateSpec) return invalidFields;
+
+    const validateQuestion = (
+      question: any,
+      value: any,
+      sectionTitle: string,
+      sectionId: string,
+      pathLabel: string = ''
+    ) => {
+      if (!question) return;
+
+      const isStructural =
+        question.type === 'group' ||
+        question.type === 'repeat_group' ||
+        question.type === 'repeat_text';
+
+      const rules = parseValidationRules(question);
+
+      if (!isStructural && rules.length > 0) {
+        const result = validateValue(value, rules);
+        if (
+          !result.isValid &&
+          result.error &&
+          result.error !== 'This field is required'
+        ) {
+          const label = pathLabel
+            ? `${pathLabel} → ${question.label || question.title || 'Untitled'}`
+            : question.label || question.title || 'Untitled';
+          invalidFields.push({
+            questionId: question.id,
+            questionLabel: label,
+            errorMessage: result.error,
+            sectionId: sectionId,
+            sectionTitle: sectionTitle,
+          });
+        }
+      }
+
+      if (question.type === 'group') {
+        const fields = question.item_fields ?? question.subquestions ?? [];
+        fields.forEach((field: any) => {
+          const fieldValue = value ? value[field.id] : undefined;
+          const groupName = question.label || question.title;
+          const newPath = groupName
+            ? pathLabel
+              ? `${pathLabel} → ${groupName}`
+              : groupName
+            : pathLabel;
+          validateQuestion(field, fieldValue, sectionTitle, sectionId, newPath);
+        });
+      } else if (question.type === 'repeat_group') {
+        const arr = Array.isArray(value) ? value : [];
+        arr.forEach((item: any, idx: number) => {
+          (question.item_fields || []).forEach((field: any) => {
+            const fieldValue = item?.[field.id];
+            const groupName = question.label || question.title || 'Group';
+            const newPath = pathLabel
+              ? `${pathLabel} → ${groupName} #${idx + 1}`
+              : `${groupName} #${idx + 1}`;
+            validateQuestion(
+              field,
+              fieldValue,
+              sectionTitle,
+              sectionId,
+              newPath
+            );
+          });
+        });
+      }
+    };
+
+    (templateSpec.sections || []).forEach((sec: any) => {
+      const many = isManySection(sec);
+
+      if (!many) {
+        (sec.questions || []).forEach((q: any) => {
+          const value = answers[q.id];
+          validateQuestion(q, value, sec.title, sec.id);
+        });
+      } else {
+        const arr = Array.isArray(answers[sec.id]) ? answers[sec.id] : [];
+        arr.forEach((entry: any, idx: number) => {
+          (sec.questions || []).forEach((q: any) => {
+            const entryValue = entry?.[q.id];
+            validateQuestion(q, entryValue, `${sec.title} #${idx + 1}`, sec.id);
+          });
+        });
+      }
+    });
+
+    return invalidFields;
+  }, [templateSpec, answers]);
+
+  const invalidFields = useMemo(
+    () => computeInvalidFields(),
+    [computeInvalidFields]
+  );
+
+  const invalidFieldsPerSection = useMemo(() => {
+    const sectionCounts: Record<string, number> = {};
+    invalidFields.forEach((field) => {
+      sectionCounts[field.sectionId] =
+        (sectionCounts[field.sectionId] || 0) + 1;
+    });
+    return sectionCounts;
+  }, [invalidFields]);
+
+  const validationErrorsByQuestion = useMemo(() => {
+    const errorMap: Record<string, string> = {};
+    invalidFields.forEach((field) => {
+      errorMap[field.questionId] = field.errorMessage;
+    });
+    return errorMap;
+  }, [invalidFields]);
+
+  const handleVerificationComplete = useCallback(
+    (result: AIVerificationResult) => {
+      setAiVerifications((prev) => ({
+        ...prev,
+        [result.questionId]: result,
+      }));
+    },
+    []
+  );
+
+  const collectQuestionsForVerification = useCallback(() => {
+    const questionsToVerify: Array<{
+      questionId: string;
+      questionText: string;
+      currentAnswer: string;
+      questionType?: string;
+    }> = [];
+
+    if (!templateSpec) return questionsToVerify;
+
+    const collectFromQuestion = (
+      question: any,
+      value: any,
+      questionId: string,
+      pathPrefix: string = ''
+    ) => {
+      if (!question) return;
+      const hasAnswer =
+        value !== undefined &&
+        value !== null &&
+        value !== '' &&
+        (!Array.isArray(value) || value.length > 0);
+
+      if (!hasAnswer) return;
+
+      if (question.type === 'group') {
+        const fields = question.item_fields ?? question.subquestions ?? [];
+        fields.forEach((field: any) => {
+          const fieldValue = value ? value[field.id] : undefined;
+          collectFromQuestion(
+            field,
+            fieldValue,
+            field.id,
+            `${pathPrefix}${question.label} → `
+          );
+        });
+      } else if (question.type === 'repeat_group') {
+        const arr = Array.isArray(value) ? value : [];
+        arr.forEach((item: any, idx: number) => {
+          (question.item_fields || []).forEach((field: any) => {
+            const fieldValue = item?.[field.id];
+            collectFromQuestion(
+              field,
+              fieldValue,
+              `${questionId}[${idx}].${field.id}`,
+              `${pathPrefix}${question.label} #${idx + 1} → `
+            );
+          });
+        });
+      } else if (question.type === 'repeat_text') {
+        if (Array.isArray(value)) {
+          value.forEach((entry, idx) => {
+            if (entry && String(entry).trim()) {
+              questionsToVerify.push({
+                questionId: `${questionId}[${idx}]`,
+                questionText: `${pathPrefix}${question.label} #${idx + 1}`,
+                currentAnswer: String(entry),
+                questionType: question.type,
+              });
+            }
+          });
+        }
+      } else {
+        const answerText = Array.isArray(value)
+          ? value.join(', ')
+          : String(value);
+        if (answerText.trim()) {
+          questionsToVerify.push({
+            questionId: questionId,
+            questionText: `${pathPrefix}${question.label}`,
+            currentAnswer: answerText,
+            questionType: question.type,
+          });
+        }
+      }
+    };
+
+    (templateSpec.sections || []).forEach((sec: any) => {
+      const many = isManySection(sec);
+
+      if (!many) {
+        (sec.questions || []).forEach((q: any) => {
+          const value = answers[q.id];
+          collectFromQuestion(q, value, q.id);
+        });
+      } else {
+        const arr = Array.isArray(answers[sec.id]) ? answers[sec.id] : [];
+        arr.forEach((entry: any, idx: number) => {
+          (sec.questions || []).forEach((q: any) => {
+            const entryValue = entry?.[q.id];
+            collectFromQuestion(
+              q,
+              entryValue,
+              `${sec.id}[${idx}].${q.id}`,
+              `${sec.title} #${idx + 1} → `
+            );
+          });
+        });
+      }
+    });
+
+    return questionsToVerify;
+  }, [templateSpec, answers]);
+
+  const handleRunAIVerification = useCallback(async () => {
+    setAiVerificationStatus('in_progress');
+
+    try {
+      const questionsToVerify = collectQuestionsForVerification();
+
+      if (questionsToVerify.length === 0) {
+        setImportSnackbar({
+          open: true,
+          message: 'No answers to verify',
+          severity: 'error',
+        });
+        setAiVerificationStatus('not_started');
+        return;
+      }
+
+      const pendingVerifications: Record<string, ExtendedAIVerificationResult> =
+        {};
+      questionsToVerify.forEach((q) => {
+        pendingVerifications[q.questionId] = {
+          questionId: q.questionId,
+          status: 'pending' as const,
+          confidence: 0,
+        };
+      });
+      setAiVerifications(pendingVerifications);
+
+      const results = await aiService.verifyAnswersBatch(questionsToVerify);
+      const verificationResults: Record<string, ExtendedAIVerificationResult> =
+        {};
+      results.forEach((result) => {
+        verificationResults[result.questionId] =
+          result as ExtendedAIVerificationResult;
+      });
+      setAiVerifications(verificationResults);
+
+      setAiVerificationStatus('complete');
+      const verifiedCount = results.filter(
+        (r) => r.status === 'verified'
+      ).length;
+      const needsImprovementCount = results.filter(
+        (r) => r.status === 'needs_improvement'
+      ).length;
+      const errorCount = results.filter((r) => r.status === 'error').length;
+
+      let message = `Verified ${results.length} answer${results.length !== 1 ? 's' : ''}`;
+      if (verifiedCount > 0) {
+        message += ` (${verifiedCount} verified`;
+        if (needsImprovementCount > 0) {
+          message += `, ${needsImprovementCount} need${needsImprovementCount === 1 ? 's' : ''} improvement`;
+        }
+        if (errorCount > 0) {
+          message += `, ${errorCount} error${errorCount !== 1 ? 's' : ''}`;
+        }
+        message += ')';
+      }
+
+      setImportSnackbar({
+        open: true,
+        message,
+        severity: errorCount === results.length ? 'error' : 'success',
+      });
+    } catch (error) {
+      console.error('Error running AI verification:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to verify answers';
+      setAiVerificationStatus('not_started');
+
+      setImportSnackbar({
+        open: true,
+        message: `Verification failed: ${errorMessage}`,
+        severity: 'error',
+      });
+    }
+  }, [aiService, collectQuestionsForVerification]);
 
   if (!templateSpec) {
     return (
@@ -900,15 +1246,13 @@ const TemplateQuestionaire: React.FC<Props> = ({
           requiredSummary={requiredSummary}
           exportAnswers={exportAnswers}
           importAnswers={importAnswers}
-          missingCount={missing.length}
-          onValidate={handleValidate}
           pdfExtractionError={pdfExtractionError}
           onRetryExtraction={onRetryExtraction}
-        />
-        <ValidateDialog
-          open={validateDialogOpen}
-          onClose={() => setValidateDialogOpen(false)}
-          validateList={validateList}
+          missingFields={missingFieldsForButton}
+          invalidFields={invalidFields}
+          aiVerificationStatus={aiVerificationStatus}
+          aiVerifications={aiVerifications}
+          onRunAIVerification={handleRunAIVerification}
         />
         <ImportDialog
           open={importDialogOpen}
@@ -947,6 +1291,11 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   onHighlightsChange={onHighlightsChange}
                   pdfUrl={pdfUrl}
                   pageWidth={pageWidth}
+                  invalidFieldCount={invalidFieldsPerSection[sec.id] || 0}
+                  validationErrors={validationErrorsByQuestion}
+                  onRegisterQuestionRef={handleRegisterQuestionRef}
+                  onAIVerificationComplete={handleVerificationComplete}
+                  aiVerifications={aiVerifications}
                 />
               </Box>
             ))}

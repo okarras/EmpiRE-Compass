@@ -8,9 +8,12 @@ import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
-import SuggestButton, { type SuggestButtonRef } from '../SuggestButton';
+import AIAssistantButton, {
+  type AIAssistantButtonRef,
+} from '../AIAssistantButton';
 import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
+import type { AIVerificationResult } from '../../../services/backendAIService';
 
 const MultiSelectQuestion: React.FC<{
   q: any;
@@ -28,6 +31,8 @@ const MultiSelectQuestion: React.FC<{
   ) => void;
   pdfUrl?: string | null;
   pageWidth?: number | null;
+  questionRef?: (element: HTMLElement | null) => void;
+  onAIVerificationComplete?: (result: AIVerificationResult) => void;
 }> = ({
   q,
   value,
@@ -38,12 +43,14 @@ const MultiSelectQuestion: React.FC<{
   onHighlightsChange,
   pdfUrl,
   pageWidth,
+  questionRef,
+  onAIVerificationComplete,
 }) => {
   const commonLabel = q.label ?? q.title ?? '';
   const desc = q.desc ?? q.description ?? '';
   const opts = q.options ?? [];
 
-  const suggestButtonRef = useRef<SuggestButtonRef>(null);
+  const aiAssistantRef = useRef<AIAssistantButtonRef>(null);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -116,8 +123,7 @@ const MultiSelectQuestion: React.FC<{
       );
       onChange(suggestedItems);
     }
-
-    setShowSuggestions(false);
+    setIsCollapsed(true);
   };
 
   const handleCloseSuggestions = () => {
@@ -133,8 +139,8 @@ const MultiSelectQuestion: React.FC<{
     setError(null);
     setIsCollapsed(false);
     setLoading(true);
-    if (suggestButtonRef.current) {
-      await suggestButtonRef.current.triggerGeneration();
+    if (aiAssistantRef.current) {
+      await aiAssistantRef.current.triggerSuggestion();
     }
   };
 
@@ -143,9 +149,7 @@ const MultiSelectQuestion: React.FC<{
     setShowSuggestions(false);
   };
 
-  const handleFeedback = (suggestionId: string, feedback: any) => {
-    console.log('Feedback received:', { suggestionId, feedback });
-  };
+  const handleFeedback = (_suggestionId: string, _feedback: any) => {};
 
   const handleNavigateToPage = (pageNumber: number) => {
     if (onNavigateToPage) {
@@ -154,7 +158,7 @@ const MultiSelectQuestion: React.FC<{
   };
 
   return (
-    <NodeWrapper level={level}>
+    <NodeWrapper level={level} ref={questionRef}>
       <FieldRow label={commonLabel + (q.required ? ' *' : '')} desc={desc}>
         <Box
           sx={{
@@ -215,17 +219,21 @@ const MultiSelectQuestion: React.FC<{
                 ))}
               </Select>
             </FormControl>
-            <Box sx={{ display: suggestions.length === 0 ? 'block' : 'none' }}>
-              <SuggestButton
-                ref={suggestButtonRef}
-                questionText={commonLabel}
-                questionType="multi_select"
-                questionOptions={opts}
-                onSuggestionsGenerated={handleSuggestionsGenerated}
-                onError={handleError}
-                pdfContent={pdfContent}
-              />
-            </Box>
+            <AIAssistantButton
+              ref={aiAssistantRef}
+              questionId={q.id || commonLabel}
+              questionText={commonLabel}
+              questionType="multi_select"
+              questionOptions={opts}
+              currentAnswer={
+                Array.isArray(value) ? value.join(', ') : String(value ?? '')
+              }
+              onSuggestionsGenerated={handleSuggestionsGenerated}
+              onVerificationComplete={onAIVerificationComplete}
+              onError={handleError}
+              pdfContent={pdfContent}
+              hasSuggestions={suggestions.length > 0}
+            />
           </Box>
           {showSuggestions && (
             <SuggestionBox

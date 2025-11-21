@@ -13,6 +13,7 @@ import Button from '@mui/material/Button';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import Stack from '@mui/material/Stack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import QuestionRenderer from './Questions/QuestionRenderer';
 
 type Props = {
@@ -44,6 +45,14 @@ type Props = {
   ) => void;
   pdfUrl?: string | null;
   pageWidth?: number | null;
+  invalidFieldCount?: number;
+  validationErrors?: Record<string, string>;
+  onRegisterQuestionRef?: (
+    questionId: string,
+    element: HTMLElement | null
+  ) => void;
+  onAIVerificationComplete?: (result: any) => void;
+  aiVerifications?: Record<string, any>;
 };
 
 const SectionAccordion: React.FC<Props> = ({
@@ -65,13 +74,31 @@ const SectionAccordion: React.FC<Props> = ({
   onHighlightsChange,
   pdfUrl,
   pageWidth,
+  invalidFieldCount = 0,
+  validationErrors = {},
+  onRegisterQuestionRef,
+  onAIVerificationComplete,
+  aiVerifications = {},
 }) => {
   const many = isManySection(sec);
   const secKey = sec.id ?? String(si);
 
+  const progressText = computeSectionProgress(sec);
+
   const SectionHeaderRight = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Chip size="small" label={`${computeSectionProgress(sec)}`} />
+      <Chip size="small" label={progressText} color="default" />
+      {invalidFieldCount > 0 && (
+        <Chip
+          size="small"
+          icon={<WarningAmberIcon />}
+          label={`${invalidFieldCount} invalid`}
+          color="primary"
+          sx={{
+            fontWeight: 500,
+          }}
+        />
+      )}
       {many && (
         <Button
           size="small"
@@ -147,19 +174,27 @@ const SectionAccordion: React.FC<Props> = ({
           <Box sx={{ display: 'grid', gap: 2 }}>
             {(sec.questions || []).map((q: any, qi: number) => {
               const val = answers[q.id];
+              const questionId = `q-${q.id}`;
               return (
                 <QuestionRenderer
                   key={q.id ?? qi}
                   q={q}
                   value={val}
                   onChange={(v) => setSingleAnswer(q.id, v)}
-                  idAttr={`q-${q.id}`}
+                  idAttr={questionId}
                   level={1}
                   pdfContent={pdfContent}
                   onNavigateToPage={onNavigateToPage}
                   onHighlightsChange={onHighlightsChange}
                   pdfUrl={pdfUrl}
                   pageWidth={pageWidth}
+                  validationError={validationErrors[q.id] || null}
+                  questionRef={
+                    onRegisterQuestionRef
+                      ? (el) => onRegisterQuestionRef(questionId, el)
+                      : undefined
+                  }
+                  onAIVerificationComplete={onAIVerificationComplete}
                 />
               );
             })}
@@ -217,6 +252,7 @@ const SectionAccordion: React.FC<Props> = ({
                       <Box sx={{ display: 'grid', gap: 1 }}>
                         {(sec.questions || []).map((q: any, qi: number) => {
                           const v = entry?.[q.id];
+                          const questionId = `sec-${sec.id}-entry-${idx}-q-${q.id}`;
                           return (
                             <QuestionRenderer
                               key={q.id ?? qi}
@@ -225,13 +261,23 @@ const SectionAccordion: React.FC<Props> = ({
                               onChange={(nv) =>
                                 setSectionEntryValue(sec.id, idx, q.id, nv)
                               }
-                              idAttr={`sec-${sec.id}-entry-${idx}-q-${q.id}`}
+                              idAttr={questionId}
                               level={1}
                               pdfContent={pdfContent}
                               onNavigateToPage={onNavigateToPage}
                               onHighlightsChange={onHighlightsChange}
                               pdfUrl={pdfUrl}
                               pageWidth={pageWidth}
+                              validationError={validationErrors[q.id] || null}
+                              questionRef={
+                                onRegisterQuestionRef
+                                  ? (el) =>
+                                      onRegisterQuestionRef(questionId, el)
+                                  : undefined
+                              }
+                              onAIVerificationComplete={
+                                onAIVerificationComplete
+                              }
                             />
                           );
                         })}

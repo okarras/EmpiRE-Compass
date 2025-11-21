@@ -9,9 +9,12 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Typography from '@mui/material/Typography';
 import InfoTooltip from '../InfoTooltip';
-import SuggestButton, { type SuggestButtonRef } from '../SuggestButton';
+import AIAssistantButton, {
+  type AIAssistantButtonRef,
+} from '../AIAssistantButton';
 import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
+import type { AIVerificationResult } from '../../../services/backendAIService';
 
 const RepeatTextQuestion: React.FC<{
   q: any;
@@ -29,6 +32,8 @@ const RepeatTextQuestion: React.FC<{
   ) => void;
   pdfUrl?: string | null;
   pageWidth?: number | null;
+  questionRef?: (element: HTMLElement | null) => void;
+  onAIVerificationComplete?: (result: AIVerificationResult) => void;
 }> = ({
   q,
   value,
@@ -40,11 +45,13 @@ const RepeatTextQuestion: React.FC<{
   onHighlightsChange,
   pdfUrl,
   pageWidth,
+  questionRef,
+  onAIVerificationComplete,
 }) => {
   const arr: string[] = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
 
-  const suggestButtonRef = useRef<SuggestButtonRef>(null);
+  const aiAssistantRef = useRef<AIAssistantButtonRef>(null);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -85,7 +92,7 @@ const RepeatTextQuestion: React.FC<{
   const handleApplySuggestion = (suggestion: Suggestion) => {
     const suggestedItems = parseSuggestionText(suggestion.text);
     onChange([...arr, ...suggestedItems]);
-    setShowSuggestions(false);
+    setIsCollapsed(true);
   };
 
   const handleCloseSuggestions = () => {
@@ -101,8 +108,8 @@ const RepeatTextQuestion: React.FC<{
     setError(null);
     setIsCollapsed(false);
     setLoading(true);
-    if (suggestButtonRef.current) {
-      await suggestButtonRef.current.triggerGeneration();
+    if (aiAssistantRef.current) {
+      await aiAssistantRef.current.triggerSuggestion();
     }
   };
 
@@ -111,9 +118,7 @@ const RepeatTextQuestion: React.FC<{
     setShowSuggestions(false);
   };
 
-  const handleFeedback = (suggestionId: string, feedback: any) => {
-    console.log('Feedback received:', { suggestionId, feedback });
-  };
+  const handleFeedback = (_suggestionId: string, _feedback: any) => {};
 
   const handleNavigateToPage = (pageNumber: number) => {
     if (onNavigateToPage) {
@@ -122,7 +127,7 @@ const RepeatTextQuestion: React.FC<{
   };
 
   return (
-    <NodeWrapper level={level}>
+    <NodeWrapper level={level} ref={questionRef}>
       <Box
         role="group"
         aria-labelledby={idAttr ? `${idAttr}-label` : undefined}
@@ -138,13 +143,20 @@ const RepeatTextQuestion: React.FC<{
           </Typography>
           <InfoTooltip desc={desc} />
           <Box
-            sx={{ display: suggestions.length === 0 ? 'inline-block' : 'none' }}
+            sx={{
+              display: 'inline-block',
+            }}
           >
-            <SuggestButton
-              ref={suggestButtonRef}
+            <AIAssistantButton
+              ref={aiAssistantRef}
+              questionId={idAttr || q.id || q.label}
               questionText={q.label}
               questionType="repeat_text"
+              currentAnswer={
+                Array.isArray(value) ? value.join(', ') : String(value ?? '')
+              }
               onSuggestionsGenerated={handleSuggestionsGenerated}
+              onVerificationComplete={onAIVerificationComplete}
               onError={handleError}
               pdfContent={pdfContent}
             />

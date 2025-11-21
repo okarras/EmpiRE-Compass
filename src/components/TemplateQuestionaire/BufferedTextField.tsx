@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import TextField from '@mui/material/TextField';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
 
 type Props = {
   value: string;
@@ -10,6 +10,11 @@ type Props = {
   placeholder?: string;
   debounceMs?: number;
   commitOnBlurOnly?: boolean;
+  error?: boolean;
+  sx?: TextFieldProps['sx'];
+  'aria-label'?: string;
+  'aria-required'?: boolean;
+  'aria-describedby'?: string;
 };
 
 const BufferedTextField: React.FC<Props> = ({
@@ -21,6 +26,11 @@ const BufferedTextField: React.FC<Props> = ({
   placeholder,
   debounceMs = 500,
   commitOnBlurOnly = false,
+  error = false,
+  sx,
+  'aria-label': ariaLabel,
+  'aria-required': ariaRequired,
+  'aria-describedby': ariaDescribedBy,
 }) => {
   const [local, setLocal] = useState<string>(value ?? '');
 
@@ -47,7 +57,13 @@ const BufferedTextField: React.FC<Props> = ({
       onBlur={() => {
         if ((value ?? '') !== local) onCommit(local);
       }}
-      inputProps={{ 'aria-label': id }}
+      inputProps={{
+        'aria-label': ariaLabel || id,
+        'aria-required': ariaRequired,
+        'aria-describedby': ariaDescribedBy,
+      }}
+      error={error}
+      sx={sx}
     />
   );
 };

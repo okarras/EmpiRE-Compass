@@ -5,6 +5,7 @@ import MultiSelectQuestion from './MultiSelectQuestion';
 import RepeatTextQuestion from './RepeatTextQuestion';
 import RepeatGroupQuestion from './RepeatGroupQuestion';
 import GroupQuestion from './GroupQuestion';
+import type { AIVerificationResult } from '../../../services/backendAIService';
 
 const QuestionRenderer: React.FC<{
   q: any;
@@ -22,6 +23,9 @@ const QuestionRenderer: React.FC<{
   ) => void;
   pdfUrl?: string | null;
   pageWidth?: number | null;
+  validationError?: string | null;
+  questionRef?: (element: HTMLElement | null) => void;
+  onAIVerificationComplete?: (result: AIVerificationResult) => void;
 }> = ({
   q,
   value,
@@ -33,6 +37,9 @@ const QuestionRenderer: React.FC<{
   onHighlightsChange,
   pdfUrl,
   pageWidth,
+  validationError,
+  questionRef,
+  onAIVerificationComplete,
 }) => {
   if (q.type === 'text' || q.type === 'url' || !q.type) {
     return (
@@ -47,6 +54,9 @@ const QuestionRenderer: React.FC<{
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
+        validationError={validationError}
+        questionRef={questionRef}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }
@@ -67,6 +77,8 @@ const QuestionRenderer: React.FC<{
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
+        questionRef={questionRef}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }
@@ -83,6 +95,8 @@ const QuestionRenderer: React.FC<{
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
+        questionRef={questionRef}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }
@@ -99,6 +113,8 @@ const QuestionRenderer: React.FC<{
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
+        questionRef={questionRef}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }
@@ -137,6 +153,9 @@ const QuestionRenderer: React.FC<{
       onHighlightsChange={onHighlightsChange}
       pdfUrl={pdfUrl}
       pageWidth={pageWidth}
+      validationError={validationError}
+      questionRef={questionRef}
+      onAIVerificationComplete={onAIVerificationComplete}
     />
   );
 };

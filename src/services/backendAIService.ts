@@ -51,6 +51,43 @@ export interface AIConfigResponse {
   apiKeyConfigured: boolean;
 }
 
+export interface VerificationEvidence {
+  pageNumber: number;
+  excerpt: string;
+  supportsAnswer: boolean;
+}
+
+export interface AIVerificationResult {
+  questionId: string;
+  status: 'verified' | 'needs_improvement' | 'error';
+  feedback?: string;
+  suggestions?: string[];
+  confidence: number;
+  qualityScore?: number;
+  evidence?: VerificationEvidence[];
+}
+
+export interface VerifyAnswerRequest {
+  questionId: string;
+  questionText: string;
+  currentAnswer: string;
+  questionType?: string;
+  context?: string;
+  pdfContent?: string;
+}
+
+export interface VerifyAnswerResponse {
+  result: AIVerificationResult;
+}
+
+export interface BatchVerifyRequest {
+  verifications: VerifyAnswerRequest[];
+}
+
+export interface BatchVerifyResponse {
+  results: AIVerificationResult[];
+}
+
 /**
  * Get Keycloak token if available
  * Uses the global Keycloak store
@@ -262,6 +299,136 @@ export class BackendAIService {
       timestamp: string;
       aiConfigured: boolean;
     }>('/api/health');
+  }
+
+  /**
+   * Verify a single answer for quality and completeness
+   */
+  public async verifyAnswer(
+    request: VerifyAnswerRequest
+  ): Promise<AIVerificationResult> {
+    try {
+      const systemContext = `You are an expert research methodology reviewer. Your task is to verify if answers to research questionnaire questions are supported by evidence from the provided research paper.
+
+Your evaluation should:
+1. Check if the answer is supported by evidence in the paper
+2. Identify specific evidence (with page numbers and excerpts) that supports or contradicts the answer
+3. Assess the quality and completeness of the answer
+4. Provide constructive suggestions for improvement if needed
+
+Respond in JSON format with the following structure:
+{
+  "qualityScore": <number 0-100>,
+  "status": "<verified|needs_improvement|incomplete>",
+  "feedback": "<constructive feedback about the answer and its alignment with the paper>",
+  "suggestions": ["<specific suggestion 1>", "<specific suggestion 2>", ...],
+  "evidence": [
+    {
+      "pageNumber": <number>,
+      "excerpt": "<relevant text from the paper>",
+      "supportsAnswer": <true|false>
+    }
+  ]
+}`;
+
+      const pdfSection = request.pdfContent
+        ? `\n\nResearch Paper Content:\n${request.pdfContent}\n\nPlease verify the answer against the evidence in this paper.`
+        : '\n\nNote: No PDF content provided. Evaluate based on general research methodology standards.';
+
+      const prompt = `Question: ${request.questionText}
+
+Current Answer: ${request.currentAnswer}
+
+${request.context ? `Additional Context: ${request.context}\n` : ''}${pdfSection}
+
+Please evaluate this answer and provide your assessment in JSON format with supporting evidence from the paper.`;
+
+      const result = await this.generateText(prompt, {
+        systemContext,
+        temperature: 0.3,
+        maxTokens: 2000,
+      });
+
+      let verification;
+      try {
+        const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          verification = JSON.parse(jsonMatch[0]);
+        } else {
+          verification = {
+            qualityScore: 50,
+            status: 'needs_improvement',
+            feedback: result.text,
+            suggestions: [],
+            evidence: [],
+          };
+        }
+      } catch (parseError) {
+        console.error('Error parsing AI verification response:', parseError);
+        verification = {
+          qualityScore: 50,
+          status: 'needs_improvement',
+          feedback: result.text,
+          suggestions: [],
+          evidence: [],
+        };
+      }
+
+      return {
+        questionId: request.questionId,
+        status:
+          verification.status === 'incomplete'
+            ? 'needs_improvement'
+            : verification.status,
+        feedback: verification.feedback || 'Unable to verify answer',
+        suggestions: verification.suggestions || [],
+        confidence: (verification.qualityScore || 50) / 100,
+        qualityScore: (verification.qualityScore || 50) / 100,
+        evidence: verification.evidence || [],
+      };
+    } catch (error) {
+      console.error('Error verifying answer:', error);
+      return {
+        questionId: request.questionId,
+        status: 'error',
+        feedback:
+          error instanceof Error ? error.message : 'Verification failed',
+        confidence: 0,
+      };
+    }
+  }
+
+  /**
+   * Verify multiple answers in batch
+   */
+  public async verifyAnswersBatch(
+    requests: VerifyAnswerRequest[]
+  ): Promise<AIVerificationResult[]> {
+    const results: AIVerificationResult[] = [];
+
+    for (const request of requests) {
+      try {
+        const result = await this.verifyAnswer(request);
+        results.push(result);
+        if (requests.indexOf(request) < requests.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        }
+      } catch (error) {
+        console.error(
+          `Error verifying answer for question ${request.questionId}:`,
+          error
+        );
+        results.push({
+          questionId: request.questionId,
+          status: 'error',
+          feedback:
+            error instanceof Error ? error.message : 'Verification failed',
+          confidence: 0,
+        });
+      }
+    }
+
+    return results;
   }
 
   public async generateSuggestions(
@@ -586,6 +753,20 @@ export class UnifiedAIService {
     }
     const backendService = this.getBackendService();
     return backendService.getCurrentConfig();
+  }
+
+  public async verifyAnswer(
+    request: VerifyAnswerRequest
+  ): Promise<AIVerificationResult> {
+    const backendService = this.getBackendService();
+    return backendService.verifyAnswer(request);
+  }
+
+  public async verifyAnswersBatch(
+    requests: VerifyAnswerRequest[]
+  ): Promise<AIVerificationResult[]> {
+    const backendService = this.getBackendService();
+    return backendService.verifyAnswersBatch(requests);
   }
 }
 

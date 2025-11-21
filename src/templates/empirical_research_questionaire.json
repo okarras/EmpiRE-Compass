@@ -15,7 +15,11 @@
           "choice_type": "no",
           "options": [],
           "evidence_fields": ["pages", "quote"],
-          "desc": "Digital Object Identifier of the paper (e.g., 10.1145/1234567 or a https://doi.org/… link)."
+          "desc": "Digital Object Identifier of the paper (e.g., 10.1145/1234567 or a https://doi.org/… link).",
+          "validation": {
+            "format": "url",
+            "formatError": "Please enter a valid DOI or URL (e.g., 10.1145/1234567 or https://doi.org/10.1145/1234567)"
+          }
         },
         {
           "id": "venue_series",
@@ -33,7 +37,11 @@
               "cardinality": "one to one"
             }
           ],
-          "desc": "Name of the recurring conference or journal series where the paper appeared (e.g., ESEM, RE, ICSE)."
+          "desc": "Name of the recurring conference or journal series where the paper appeared (e.g., ESEM, RE, ICSE).",
+          "validation": {
+            "minLength": 2,
+            "minLengthError": "Venue name must be at least 2 characters"
+          }
         },
         {
           "id": "contact_email",
@@ -42,7 +50,11 @@
           "required": false,
           "choice_type": "no",
           "options": [],
-          "desc": "Email of the person completing this questionnaire (for clarification if needed; not for publication)."
+          "desc": "Email of the person completing this questionnaire (for clarification if needed; not for publication).",
+          "validation": {
+            "format": "email",
+            "formatError": "Please enter a valid email address (e.g., user@example.com)"
+          }
         }
       ]
     },
@@ -112,7 +124,11 @@
                   "property_id": "P44139",
                   "cardinality": "one to one"
                 }
-              ]
+              ],
+              "validation": {
+                "minLength": 10,
+                "minLengthError": "Research question should be at least 10 characters"
+              }
             },
             {
               "id": "rq_highlighted",
@@ -198,7 +214,11 @@
                       "property_id": "P44139",
                       "cardinality": "one to one"
                     }
-                  ]
+                  ],
+                  "validation": {
+                    "minLength": 10,
+                    "minLengthError": "Sub-question should be at least 10 characters"
+                  }
                 },
                 {
                   "id": "subq_type",
@@ -332,7 +352,13 @@
                   "cardinality": "one to one"
                 }
               ],
-              "desc": "Provide the name used in the paper."
+              "desc": "Provide the name used in the paper.",
+              "validation": {
+                "minLength": 2,
+                "maxLength": 100,
+                "minLengthError": "Method name must be at least 2 characters",
+                "maxLengthError": "Method name must be no more than 100 characters"
+              }
             }
           ],
           "links_via_field": {
@@ -403,7 +429,11 @@
                   "cardinality": "one to many"
                 }
               ],
-              "desc": "Provide links or DOIs where the data can be accessed (e.g., repository, dataset DOI, appendix)."
+              "desc": "Provide links or DOIs where the data can be accessed (e.g., repository, dataset DOI, appendix).",
+              "validation": {
+                "format": "url",
+                "formatError": "Please enter a valid URL (e.g., https://example.com/data)"
+              }
             }
           ],
           "links_via_field": {
@@ -622,7 +652,11 @@
                       "property_id": "P56046",
                       "cardinality": "one to one"
                     }
-                  ]
+                  ],
+                  "validation": {
+                    "minLength": 15,
+                    "minLengthError": "Hypothesis statement should be at least 15 characters"
+                  }
                 },
                 {
                   "id": "hypothesis_type",

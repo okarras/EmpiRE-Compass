@@ -2,14 +2,37 @@ import React from 'react';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Alert from '@mui/material/Alert';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import AIConfigurationButton from '../AI/AIConfigurationButton';
+import ValidationStatusButton from './ValidationStatusButton';
+
+interface MissingField {
+  questionId: string;
+  questionLabel: string;
+  sectionId: string;
+  sectionTitle: string;
+}
+
+interface InvalidField {
+  questionId: string;
+  questionLabel: string;
+  errorMessage: string;
+  sectionId: string;
+  sectionTitle: string;
+}
+
+interface AIVerification {
+  questionId: string;
+  status: 'pending' | 'verified' | 'needs_improvement' | 'error';
+  feedback?: string;
+  suggestions?: string[];
+  confidence: number;
+  qualityScore?: number;
+}
 
 interface TopSummaryBarProps {
   templateSpec: any;
@@ -20,10 +43,13 @@ interface TopSummaryBarProps {
   };
   exportAnswers: () => void;
   importAnswers: () => void;
-  missingCount: number;
-  onValidate: () => void;
   pdfExtractionError?: Error | null;
   onRetryExtraction?: () => void;
+  missingFields?: MissingField[];
+  invalidFields?: InvalidField[];
+  aiVerificationStatus?: 'not_started' | 'in_progress' | 'complete';
+  aiVerifications?: Record<string, AIVerification>;
+  onRunAIVerification?: () => Promise<void>;
 }
 
 const TopSummaryBar: React.FC<TopSummaryBarProps> = ({
@@ -31,10 +57,13 @@ const TopSummaryBar: React.FC<TopSummaryBarProps> = ({
   requiredSummary,
   exportAnswers,
   importAnswers,
-  missingCount,
-  onValidate,
   pdfExtractionError,
   onRetryExtraction,
+  missingFields = [],
+  invalidFields = [],
+  aiVerificationStatus = 'not_started',
+  aiVerifications = {},
+  onRunAIVerification,
 }) => {
   return (
     <Paper variant="outlined" sx={{ p: 1, mx: 0, mb: 2 }}>
@@ -47,12 +76,6 @@ const TopSummaryBar: React.FC<TopSummaryBarProps> = ({
             {templateSpec?.version ? `v${templateSpec.version}` : ''}
           </Typography>
         </Box>
-
-        <Chip
-          icon={<CheckCircleOutlineIcon />}
-          label={`${requiredSummary.answeredRequired}/${requiredSummary.totalRequired} required`}
-          variant="outlined"
-        />
 
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
@@ -71,14 +94,15 @@ const TopSummaryBar: React.FC<TopSummaryBarProps> = ({
           >
             Export
           </Button>
-          <Button
-            size="small"
-            color={missingCount ? 'error' : 'primary'}
-            variant="contained"
-            onClick={onValidate}
-          >
-            Validate {missingCount > 0 ? `(${missingCount})` : ''}
-          </Button>
+          <ValidationStatusButton
+            totalRequired={requiredSummary.totalRequired}
+            answeredRequired={requiredSummary.answeredRequired}
+            missingFields={missingFields}
+            invalidFields={invalidFields}
+            aiVerificationStatus={aiVerificationStatus}
+            aiVerifications={aiVerifications}
+            onRunAIVerification={onRunAIVerification}
+          />
         </Box>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, mt: 2 }}>
