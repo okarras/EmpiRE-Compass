@@ -130,14 +130,44 @@ export const Query2DataProcessingFunction = (
     ],
   });
 
-export const Query3DataProcessingFunction = (
-  rawData: RawDataItem[] = []
-): CommonResult[] =>
-  processQuery(rawData, {
-    paperKey: 'paper',
-    labelKey: 'NLPTaskInputLabel',
-    dedupeByPaper: false,
+export const Query3DataProcessingFunction = (rawData: RawDataItem[] = []) => {
+  if (!Array.isArray(rawData) || rawData.length === 0) return [];
+
+  const RE_KEY = 'RETaskLabel';
+  const NLP_KEY = 'NLPTaskInputLabel';
+  const CONTRIB_KEY = 'contribution';
+  const pairMap = new Map<string, Set<string>>();
+
+  rawData.forEach((row, idx) => {
+    const re = String(row[RE_KEY] ?? '').trim();
+    const nlp = String(row[NLP_KEY] ?? '').trim();
+    if (!re || !nlp) return;
+    const contrib = String(row[CONTRIB_KEY] ?? `__row_${idx}`).trim();
+
+    const key = `${re}||${nlp}`;
+    if (!pairMap.has(key)) pairMap.set(key, new Set<string>());
+    pairMap.get(key)!.add(contrib);
   });
+
+  const result = Array.from(pairMap.entries()).map(([key, set]) => {
+    const [re, nlp] = key.split('||');
+    return { xLabel: re, yLabel: nlp, value: set.size };
+  });
+
+  result.sort((a, b) =>
+    a.yLabel < b.yLabel
+      ? -1
+      : a.yLabel > b.yLabel
+        ? 1
+        : a.xLabel < b.xLabel
+          ? -1
+          : a.xLabel > b.xLabel
+            ? 1
+            : 0
+  );
+
+  return result;
+};
 
 export const Query4DataProcessingFunction = (
   rawData: RawDataItem[] = []
