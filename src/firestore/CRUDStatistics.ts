@@ -4,10 +4,7 @@ import {
   updateStatistic as updateStatisticApi,
   createStatistic as createStatisticApi,
 } from '../services/backendApi';
-
-const statisticsKeys = {
-  R186491: 'empire-statistics',
-};
+import { getTemplateConfig } from '../constants/template_config';
 
 /**
  * UPDATED: Now uses backend API instead of direct Firestore access
@@ -20,9 +17,8 @@ const statisticsKeys = {
  */
 const getStatistics = async (templateId = 'R186491') => {
   try {
-    const statisticId =
-      statisticsKeys[templateId as keyof typeof statisticsKeys] ||
-      'empire-statistics';
+    const config = getTemplateConfig(templateId);
+    const statisticId = config.statisticsKey;
 
     // Get all statistics from backend
     const statisticsList = await getStatisticsApi(templateId);
