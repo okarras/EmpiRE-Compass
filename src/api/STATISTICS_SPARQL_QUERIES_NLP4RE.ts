@@ -64,11 +64,8 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   WHERE { 
     ?paper orkgp:P31 ?contribution .
     ?contribution a orkgc:C121001 .
-    OPTIONAL {
-      ?contribution orkgp:P135046 ?serie .
-      ?serie rdfs:label ?venue .
-    }
-    FILTER(BOUND(?venue))
+    ?paper orkgp:HAS_VENUE ?venueResource .
+    ?venueResource rdfs:label ?venue .
   }
   GROUP BY ?venue`,
   VALUES_COUNT_QUERY: `
@@ -76,11 +73,8 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   WHERE {
     ?paper orkgp:P31 ?contribution .
     ?contribution a orkgc:C121001 .
-    OPTIONAL {
-      ?contribution orkgp:P135046 ?serie .
-      ?serie rdfs:label ?venue .
-    }
-    FILTER(BOUND(?venue))
+    ?paper orkgp:HAS_VENUE ?venueResource .
+    ?venueResource rdfs:label ?venue .
   }`,
 };
 
