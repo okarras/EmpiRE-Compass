@@ -56,219 +56,79 @@ In the following, we first show a graphical overview of the folder structure and
 EmpiRE-Compass/
 ┣━ .github/
 ┃   ┗━ workflows/
-┃       ┗━ update-statistics.yml
 ┣━ .husky/
-┃   ┣━ _/
-┃   ┣━ commit-msg
-┃   ┗━ pre-commit
-┣━ .idea/
 ┣━ .storybook/
 ┃   ├── main.ts
 ┃   ├── preview.ts
 ┃   └── vitest.setup.ts
-┣━ data/
-┃   ├── questions.json
-┃   ├── sample_data.json
-┃   ├── query_1_data_2024-07-26.json
-┃   ├── query_2.1_data_2024-07-26.json
-┃   ├── query_6.1_data_2024-07-26.json
-┃   ├── query_10_data_2025-02-27.json
-┃   ├── query_11_data_2025-02-27.json
-┃   ├── query_12_data_2025-02-27.json
-┃   ├── query_13_data_2025-02-27.json
-┃   ├── query_14_data_2025-02-27.json
-┃   ├── query_15.1_data_2025-02-27.json
-┃   ├── query_15.2_data_2025-02-27.json
-┃   ├── query_4.1_data_2025-02-27.json
-┃   ├── query_4.2_data_2025-02-27.json
-┃   ├── query_5_data_2025-02-27.json
-┃   ├── query_7.1_data_2025-02-27.json
-┃   ├── query_8_data_2025-02-27.json
-┃   └── query_9_data_2025-02-27.json
-┣━ dev-dist/
-┃   ├── registerSW.js
-┃   ├── sw.js
-┃   └── workbox-6244ca5c.js
-┣━ docs/
-┃   ├── CONTRIBUTING.md
-┃   ├── FIREBASE_QUICK_SETUP.md
-┃   ├── FIREBASE_SETUP.md
-┃   ├── GITHUB_FIREBASE_SETUP.md
-┃   ├── STORYBOOK_PUBLISHING.md
-┃   └── VERSIONING.md
-┣━ empire-compass-dashboard/
-┃   └── src/ (macOS .DS_Store files)
-┣━ scripts/
-┃   ├── empire-statistics.py
-┃   ├── firebase_integration.py
-┃   ├── firebase-service-account.json.template
-┃   ├── daily_results_incremental.csv
-┃   ├── requirements.txt
-┃   ├── update_statistics_dummy.txt
-┃   └── orkg-cache/
-┃       ├── .gitkeep
-┃       ├── <many cached ORKG *.json files> …
-┃       └── (hundreds of hashed cache entries)
+┣━ backend/                 # Backend API server
+┣━ backups/                 # Firebase backups
+┣━ dev-dist/                # Service worker files
+┣━ docs/                    # Project documentation
+┣━ public/                  # Public static assets
+┣━ scripts/                 # Python statistics & maintenance scripts
 ┣━ src/
-┃   ├── api/
-┃   │   ├── SPARQL_QUERIES.ts
-┃   │   └── STATISTICS_SPARQL_QUERIES.ts
-┃   ├── assets/
-┃   │   ├── KGEmpire.png
-┃   │   ├── ORKG.png
-┃   │   ├── ORKGask.png
-┃   │   └── TIB.png
+┃   ├── api/                # SPARQL query definitions
+┃   ├── assets/             # Static image assets
+┃   ├── auth/               # Authentication (Keycloak)
 ┃   ├── components/
-┃   │   ├── AI/
-┃   │   │   ├── AIAssistant.tsx
-┃   │   │   ├── AIConfigurationButton.tsx
-┃   │   │   ├── AIConfigurationDialog.tsx
-┃   │   │   ├── AIContentGenerator.tsx
-┃   │   │   ├── ChatMessage.tsx
-┃   │   │   ├── CodeBlock.tsx
-┃   │   │   ├── DynamicQuestionManager.tsx
-┃   │   │   ├── FloatingAIAssistant.tsx
-┃   │   │   ├── HistoryManager.tsx
-┃   │   │   ├── HTMLRenderer.tsx
-┃   │   │   ├── InitialAnalysis.tsx
-┃   │   │   ├── InteractiveSection.tsx
-┃   │   │   ├── LLMContextHistoryDialog.tsx
-┃   │   │   ├── MessageContent.tsx
-┃   │   │   ├── ReasoningSection.tsx
-┃   │   │   ├── ResponseDisplay.tsx
-┃   │   │   ├── SPARQLQuerySection.tsx
-┃   │   │   └── TextSkeleton.tsx
-┃   │   ├── CustomCharts/
-┃   │   │   ├── ChartParamsSelector.tsx
-┃   │   │   ├── ChartTypeSelector.tsx
-┃   │   │   ├── ChartWrapper.tsx
-┃   │   │   ├── CustomBarChart.tsx
-┃   │   │   ├── CustomGaugeChart.tsx
-┃   │   │   ├── CustomPieChart.tsx
-┃   │   │   └── StatsChartTypeSelector.tsx
-┃   │   ├── Home/
-┃   │   │   ├── AboutProject.tsx
-┃   │   │   ├── Contact.tsx
-┃   │   │   ├── FutureDevelopment.tsx
-┃   │   │   ├── Header.tsx
-┃   │   │   └── KeyFeatures.tsx
-┃   │   ├── Layout pieces (Header.tsx, MenuDrawer.tsx, ScrollTop.tsx)
-┃   │   ├── Question*.tsx (Question, Dialog, Accordion, Views)
-┃   │   ├── Dashboard.tsx
-┃   │   ├── CustomGrid.tsx
-┃   │   ├── ErrorState.tsx
-┃   │   ├── LoadingState.tsx
-┃   │   ├── SectionSelector.tsx
-┃   │   ├── StatCard.tsx
-┃   │   └── StatisticsPageLoadingSkeleton.tsx
-┃   ├── constants/
-┃   │   ├── data_processing_helper_functions.ts
-┃   │   └── queries_chart_info.ts
-┃   ├── context/
-┃   │   ├── AIAssistantContext.tsx
-┃   │   └── DynamicQuestionContext.tsx
-┃   ├── contexts/ (ThemeContext.tsx)
-┃   ├── firestore/
-┃   │   ├── CRUDQuestions.ts
-┃   │   └── CRUDStatistics.ts
-┃   ├── helpers/
-┃   │   ├── fetch_query.ts
-┃   │   ├── query.ts
-┃   │   └── statistics_calculator.ts
-┃   ├── hooks/ (useAIAssistant.ts)
-┃   ├── pages/
-┃   │   ├── DynamicQuestionPage.tsx
-┃   │   ├── QuestionDashboardPage.tsx
-┃   │   ├── QuestionPage.tsx
-┃   │   ├── Statistics.tsx
-┃   │   ├── Home.tsx
-┃   │   ├── Layout.tsx
-┃   │   ├── ErrorFallback.tsx
-┃   │   └── NotFound.tsx
-┃   ├── prompts/ (GENERATE_SPARQL.txt)
-┃   ├── services/ (aiService.ts)
-┃   ├── store/
-┃   │   ├── hooks.ts
-┃   │   ├── index.ts
-┃   │   └── slices/
-┃   │       ├── aiSlice.ts
-┃   │       └── questionSlice.ts
-┃   ├── styles/ (global.css)
-┃   ├── types/ (chart.d.ts)
-┃   ├── utils/ (theme.ts)
-┃   ├── App.tsx
-┃   ├── Router.tsx
-┃   ├── firebase.ts
-┃   ├── main.css
-┃   ├── main.tsx
-┃   └── vite-env.d.ts
-┣━ stories/
-┃   ├── AI/ …
-┃   ├── DataVisualization/ …
-┃   ├── Home/ …
-┃   ├── Layout/ …
-┃   ├── Questions/ …
-┃   └── Utility/ …
-┣━ docs/ (see above)
-┣━ index.html
-┣━ logo.png
-┣━ LICENSE
-┣━ README.md
-┣━ package.json
-┣━ package-lock.json
-┣━ tsconfig*.json
-┣━ vercel.json
-┣━ vite.config.ts
-┣━ vitest.*.d.ts
-┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
+┃   │   ├── Admin/          # Admin dashboard components
+┃   │   ├── AI/             # AI Assistant & Chat components
+┃   │   ├── CustomCharts/   # Visualization components
+┃   │   ├── Home/           # Landing page components
+┃   │   ├── Layout/         # Layout components
+┃   │   └── ...             # Shared components
+┃   ├── constants/          # Configuration constants
+┃   ├── context/            # React Context Providers
+┃   ├── firestore/          # Firebase CRUD services
+┃   ├── helpers/            # Helper functions
+┃   ├── hooks/              # Custom React hooks
+┃   ├── pages/              # Route page components
+┃   ├── prompts/            # AI Prompt templates
+┃   ├── services/           # API services
+┃   ├── store/              # Redux state management
+┃   ├── stories/            # Storybook stories
+┃   ├── styles/             # Global CSS
+┃   ├── templates/          # JSON templates for domains
+┃   ├── types/              # TypeScript definitions
+┃   ├── utils/              # Utility functions
+┃   ├── App.tsx             # Main App component
+┃   ├── Router.tsx          # Routing configuration
+┃   ├── firebase.ts         # Firebase initialization
+┃   └── main.tsx            # Entry point
+┣━ stories/                 # Storybook component stories
+┣━ templates/               # Template definition files
+┣━ .env                     # Environment variables
+┣━ package.json             # Dependencies and scripts
+┣━ README.md                # Project documentation
+┣━ tsconfig.json            # TypeScript configuration
+┗━ vite.config.ts           # Vite configuration
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Description of the Folders and Files
 
-| **Directory / File**                                         | **Description**                                               |
-| ------------------------------------------------------------ | ------------------------------------------------------------- |
-| [.storybook/](.storybook/)                                   | Storybook configuration files used to document UI components. |
-| [.storybook/main.js](.storybook/main.js)                     | Main Storybook configuration (addons, stories).               |
-| [.storybook/preview.js](.storybook/preview.js)               | Global settings, decorators, and parameters for Storybook.    |
-| [.storybook/manager.js](.storybook/manager.js)               | Custom Storybook UI configuration.                            |
-| [public/](public/)                                           | Static files served by the app.                               |
-| [public/logo.png](public/logo.png)                           | Logo of the project.                                          |
-| [src/assets/](src/assets/)                                   | Contains static project assets.                               |
-| [src/assets/images/](src/assets/images/)                     | Image files for UI.                                           |
-| [src/assets/styles/](src/assets/styles/)                     | CSS/SCSS files for asset styling.                             |
-| [src/components/](src/components/)                           | All reusable and page-specific components.                    |
-| [src/components/Dashboard/](src/components/Dashboard/)       | Components for dashboard display.                             |
-| [src/components/Charts/](src/components/Charts/)             | Chart.js and diagram components.                              |
-| [src/components/Forms/](src/components/Forms/)               | Form components for data input.                               |
-| [src/components/Shared/](src/components/Shared/)             | Shared UI elements like buttons and modals.                   |
-| [src/hooks/](src/hooks/)                                     | Custom React hooks for reusable logic.                        |
-| [src/hooks/useFetchData.js](src/hooks/useFetchData.js)       | Data fetching logic for ORKG queries.                         |
-| [src/hooks/usePagination.js](src/hooks/usePagination.js)     | Hook for pagination logic.                                    |
-| [src/pages/](src/pages/)                                     | Page-level React components for routing.                      |
-| [src/pages/HomePage.js](src/pages/HomePage.js)               | Landing page.                                                 |
-| [src/pages/DashboardPage.js](src/pages/DashboardPage.js)     | Dashboard overview page.                                      |
-| [src/pages/StatisticsPage.js](src/pages/StatisticsPage.js)   | Statistics visualization page.                                |
-| [src/services/](src/services/)                               | Service layer for API interactions.                           |
-| [src/services/api.js](src/services/api.js)                   | Base API setup.                                               |
-| [src/services/orkgService.js](src/services/orkgService.js)   | ORKG-specific API requests.                                   |
-| [src/store/](src/store/)                                     | Global state management with Zustand.                         |
-| [src/store/comparisonStore.js](src/store/comparisonStore.js) | Zustand store for comparisons.                                |
-| [src/styles/](src/styles/)                                   | Global style definitions.                                     |
-| [src/styles/globals.css](src/styles/globals.css)             | Base global styles.                                           |
-| [src/styles/theme.css](src/styles/theme.css)                 | Theme definitions and color variables.                        |
-| [src/tests/](src/tests/)                                     | Unit and integration tests.                                   |
-| [src/tests/App.test.js](src/tests/App.test.js)               | Main app test.                                                |
-| [src/tests/utils.test.js](src/tests/utils.test.js)           | Utility function tests.                                       |
-| [src/utils/](src/utils/)                                     | Helper functions.                                             |
-| [src/utils/fetchData.js](src/utils/fetchData.js)             | Fetch data helper.                                            |
-| [src/utils/formatData.js](src/utils/formatData.js)           | Data formatting helper.                                       |
-| [src/index.js](src/index.js)                                 | Entry point for the React app.                                |
-| [.gitignore](.gitignore)                                     | Git ignore rules.                                             |
-| [package.json](package.json)                                 | Project dependencies and scripts.                             |
-| [README.md](README.md)                                       | Project documentation.                                        |
-| [LICENSE](LICENSE)                                           | Project license.                                              |
+| **Directory / File**                                         | **Description**                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| [.storybook/](.storybook/)                                   | Storybook configuration files.                          |
+| [backend/](backend/)                                         | Node.js backend server for API handling.                |
+| [scripts/](scripts/)                                         | Python scripts for data processing and statistics.      |
+| [src/api/](src/api/)                                         | SPARQL query constants and definitions.                 |
+| [src/auth/](src/auth/)                                       | Keycloak authentication logic and contexts.             |
+| [src/components/](src/components/)                           | Reusable React components.                              |
+| [src/components/Admin/](src/components/Admin/)               | Components for the administration dashboard.            |
+| [src/components/AI/](src/components/AI/)                     | AI Assistant, Chat interface, and Logic.                |
+| [src/components/CustomCharts/](src/components/CustomCharts/) | Custom visualization components using Recharts/MUI.     |
+| [src/firestore/](src/firestore/)                             | Services for interacting with Firebase Firestore.       |
+| [src/hooks/](src/hooks/)                                     | Custom React hooks (e.g., `useAIAssistant`, `useAuth`). |
+| [src/pages/](src/pages/)                                     | Top-level page components corresponding to routes.      |
+| [src/services/](src/services/)                               | API services for Backend and AI integration.            |
+| [src/store/](src/store/)                                     | Redux store slices (`aiSlice`, `questionSlice`).        |
+| [src/templates/](src/templates/)                             | JSON schemas defining research domain templates.        |
+| [src/utils/](src/utils/)                                     | Utility functions for data formatting and processing.   |
+| [package.json](package.json)                                 | Project dependencies and npm scripts.                   |
+| [vite.config.ts](vite.config.ts)                             | Configuration for the Vite build tool.                  |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -278,7 +138,7 @@ In the following, we explain how to install and run the project locally using a 
 
 ## 1. Ensure prerequisites are installed
 
-- **Node.js** (version 14 or higher)
+- **Node.js** (version 18 or higher recommended)
 - **Modern web browser** (e.g., Chrome, Firefox)
 - **Git** (optional, for version control)
 
@@ -339,21 +199,22 @@ EmpiRE-Compass includes a comprehensive design system documented in Storybook, p
 
 ## 📚 **Storybook (Component Library)**
 
-**Live Documentation**: [https://your-storybook-url.chromatic.com](https://your-storybook-url.chromatic.com) <!-- TODO: Update with actual Storybook URL -->
+**Live Documentation**: [https://empire-compass-storybooks.vercel.app](https://empire-compass-storybooks.vercel.app)
 
 ## **Component Categories**
 
 - **🏠 Home Components**: Hero sections, feature highlights, contact forms
 - **📊 Data Visualization**: Custom charts, statistics cards, interactive graphs
 - **🤖 AI Components**: AI assistant interface, chat messages, dynamic questions
+- **🛡️ Admin Components**: Dashboard tools, settings, data management
 - **🔧 Layout Components**: Headers, navigation, responsive containers
 - **⚙️ Utility Components**: Loading states, error handling, form elements
 
 ## **Technology Stack**
 
 - **React 18** with TypeScript
-- **Material-UI** component library
-- **Storybook 7** for documentation
+- **Material-UI (MUI)** component library
+- **Storybook 7+** for documentation
 - **Chromatic** for visual testing (planned)
 
 ## **Local Development**
@@ -368,33 +229,6 @@ npm run build-storybook
 # Preview built Storybook
 npm run preview:storybook
 ```
-
-## **Deployment to Chromatic**
-
-```bash
-# Deploy to Chromatic (requires CHROMATIC_PROJECT_TOKEN)
-npm run deploy:chromatic
-
-# Set up Chromatic project token as environment variable
-export CHROMATIC_PROJECT_TOKEN=your-token-here
-```
-
-## **Setup Instructions:**
-
-1. Sign up at [chromatic.com](https://chromatic.com)
-2. Create a new project for EmpiRE-Compass
-3. Get your project token from the Chromatic dashboard
-4. Add the token to your environment variables
-5. Run `npm run deploy:chromatic` to publish your Storybook
-6. Update the URLs in `Header.tsx` and `README.md` with your Chromatic URL
-
-## **Features**
-
-- 📖 **Interactive Documentation** - Live component examples with controls
-- 🎨 **Design Tokens** - Consistent colors, typography, and spacing
-- ♿ **Accessibility Testing** - Built-in a11y checks
-- 📱 **Responsive Design** - Mobile-first component library
-- 🔧 **Developer Tools** - Props controls and code examples
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
