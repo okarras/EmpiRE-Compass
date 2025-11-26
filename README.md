@@ -520,7 +520,7 @@ E-Mail: [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)
 
 If you want to cite this project, we suggest using the following reference:
 
-> Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/> >[**EmpiRE-Compass**](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
+> Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/> [**EmpiRE-Compass**](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
 >
 > You can also use the "**Cite this repository**" function in the top right menu, resulting from the included [citation file format file](CITATION.cff) for human- and machine-readable citation information for software and datasets. Further information can be found on the [Citation File Format (CFF) website](https://citation-file-format.github.io/).
 
