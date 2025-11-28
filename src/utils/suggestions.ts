@@ -42,6 +42,8 @@ export interface FeedbackData {
   comment?: string;
   timestamp: number;
   userId?: string;
+  suggestionText?: string;
+  suggestionRank?: number;
 }
 
 export interface GenerateSuggestionsRequest {
@@ -55,6 +57,7 @@ export interface GenerateSuggestionsRequest {
   };
   provider?: string;
   model?: string;
+  previousFeedback?: FeedbackData[];
 }
 
 export interface GenerateSuggestionsResponse {
@@ -214,6 +217,26 @@ export class FeedbackService {
     } catch (error) {
       console.error('Failed to retrieve feedback:', error);
       return [];
+    }
+  }
+
+  static getFeedbackForQuestion(questionId: string): FeedbackData[] {
+    try {
+      const allFeedback = this.getAllFeedback();
+      return allFeedback.filter((f) => f.questionId === questionId);
+    } catch (error) {
+      console.error('Failed to retrieve feedback for question:', error);
+      return [];
+    }
+  }
+
+  static clearFeedbackForQuestion(questionId: string): void {
+    try {
+      const allFeedback = this.getAllFeedback();
+      const filtered = allFeedback.filter((f) => f.questionId !== questionId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to clear feedback for question:', error);
     }
   }
 }

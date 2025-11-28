@@ -1,12 +1,17 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAIService } from '../services/backendAIService';
-import { formatErrorMessage, type Suggestion } from '../utils/suggestions';
+import {
+  formatErrorMessage,
+  type Suggestion,
+  FeedbackService,
+} from '../utils/suggestions';
 
 interface UseSuggestionGeneratorProps {
   questionText: string;
   questionType: string;
   questionOptions?: string[];
   pdfContent?: string;
+  questionId?: string;
 }
 
 interface UseSuggestionGeneratorReturn {
@@ -43,6 +48,7 @@ const useSuggestionGenerator = ({
   questionType,
   questionOptions,
   pdfContent,
+  questionId,
 }: UseSuggestionGeneratorProps): UseSuggestionGeneratorReturn => {
   const aiService = useAIService();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -77,11 +83,17 @@ const useSuggestionGenerator = ({
     setRawError(null);
 
     try {
+      const previousFeedback = questionId
+        ? FeedbackService.getFeedbackForQuestion(questionId)
+        : [];
+
       const response = await aiService.generateSuggestions({
         questionText,
         questionType,
         questionOptions,
         pdfContent,
+        previousFeedback:
+          previousFeedback.length > 0 ? previousFeedback : undefined,
       });
 
       if (!response.suggestions?.length) {
@@ -106,6 +118,7 @@ const useSuggestionGenerator = ({
     questionType,
     questionOptions,
     pdfContent,
+    questionId,
     aiService,
     loading,
   ]);

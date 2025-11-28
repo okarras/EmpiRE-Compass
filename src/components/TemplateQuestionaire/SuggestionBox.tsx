@@ -298,12 +298,16 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
     Object.entries(feedbackStates).forEach(([suggestionId, feedback]) => {
       if (feedback?.rating) {
         try {
+          const suggestion = suggestions.find((s) => s.id === suggestionId);
+
           const feedbackData: FeedbackData = {
             suggestionId,
             questionId,
             rating: feedback.rating,
             comment: sharedFeedbackComment || undefined,
             timestamp: Date.now(),
+            suggestionText: suggestion?.text,
+            suggestionRank: suggestion?.rank,
           };
 
           FeedbackService.saveFeedback(feedbackData);

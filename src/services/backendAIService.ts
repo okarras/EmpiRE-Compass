@@ -447,6 +447,33 @@ Please evaluate this answer and provide your assessment in JSON format with supp
         throw new Error('questionType is required and must be a string');
       }
 
+      const feedbackContext =
+        request.previousFeedback && request.previousFeedback.length > 0
+          ? `
+
+IMPORTANT - Previous Suggestions and User Feedback:
+The user has already seen suggestions for this question and provided feedback. Use this to improve your new suggestions:
+
+${request.previousFeedback
+  .map(
+    (fb, idx) => `
+${idx + 1}. Previous Suggestion (Rank ${fb.suggestionRank || 'N/A'}):
+   Text: "${fb.suggestionText || 'Not available'}"
+   Rating: ${fb.rating === 'positive' ? '👍 HELPFUL' : '👎 NOT HELPFUL'}
+   ${fb.comment ? `User Comment: "${fb.comment}"` : 'No comment provided'}
+   Timestamp: ${new Date(fb.timestamp).toLocaleString()}`
+  )
+  .join('\n')}
+
+Based on this feedback:
+- If a suggestion was rated NEGATIVE, understand why it wasn't helpful and avoid similar approaches
+- If a suggestion was rated POSITIVE, build upon that approach but provide NEW and DIFFERENT suggestions
+- Pay attention to user comments for specific guidance on what to improve
+- DO NOT repeat previous suggestions - generate completely NEW ones
+- Address any concerns or issues mentioned in the feedback
+- Learn from what worked and what didn't to provide better suggestions this time`
+          : '';
+
       // Build the AI prompt for suggestion generation
       const systemPrompt = `You are an AI assistant helping researchers extract information from academic papers.
 Your task is to analyze the provided PDF content and suggest answers to specific questions.
@@ -455,6 +482,7 @@ For each suggestion:
 1. Provide a clear, concise answer
 2. Include supporting evidence with exact page numbers and text excerpts
 3. Rank suggestions by relevance and confidence
+${request.previousFeedback && request.previousFeedback.length > 0 ? '4. Learn from previous feedback to generate BETTER and DIFFERENT suggestions' : ''}
 
 Generate exactly 3 suggestions in the following JSON format:
 {
@@ -487,12 +515,12 @@ Generate exactly 3 suggestions in the following JSON format:
       const userPrompt = `${metadataText}
 
 Question: ${request.questionText}
-Question Type: ${request.questionType}${optionsText}
+Question Type: ${request.questionType}${optionsText}${feedbackContext}
 
 PDF Content:
 ${request.pdfContent}
 
-Generate exactly 3 suggestions with supporting evidence from the PDF content above.`;
+Generate exactly 3 ${request.previousFeedback && request.previousFeedback.length > 0 ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.`;
 
       const result = await this.generateText(userPrompt, {
         provider: (request.provider as AIProvider) || this.config.provider,

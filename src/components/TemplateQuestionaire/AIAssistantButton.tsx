@@ -99,6 +99,7 @@ const AIAssistantButton = React.forwardRef<
       questionType,
       questionOptions,
       pdfContent,
+      questionId,
     });
 
     const notifiedSuggestionsRef = useRef<string>('');
