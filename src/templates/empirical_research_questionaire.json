@@ -50,6 +50,7 @@
           "required": false,
           "choice_type": "no",
           "options": [],
+          "disable_ai_assistant": true,
           "desc": "Email of the person completing this questionnaire (for clarification if needed; not for publication).",
           "validation": {
             "format": "email",

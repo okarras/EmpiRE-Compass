@@ -73,6 +73,7 @@ const InlineValidationFeedback: React.FC<InlineValidationFeedbackProps> = ({
         backgroundColor: getBackgroundColor(),
         border: 1,
         borderColor: getColor(),
+        width: '100%',
       }}
       role="alert"
       aria-live="polite"

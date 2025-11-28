@@ -13,6 +13,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import Typography from '@mui/material/Typography';
 import InfoTooltip from '../InfoTooltip';
 import QuestionRenderer from './QuestionRenderer';
+import type { AIVerificationResult } from '../../../services/backendAIService';
 
 const RepeatGroupQuestion: React.FC<{
   q: any;
@@ -22,6 +23,15 @@ const RepeatGroupQuestion: React.FC<{
   level?: number;
   pdfContent?: string;
   onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
+  onAIVerificationComplete?: (result: AIVerificationResult) => void;
 }> = ({
   q,
   value,
@@ -30,12 +40,18 @@ const RepeatGroupQuestion: React.FC<{
   level = 0,
   pdfContent,
   onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
+  onAIVerificationComplete,
 }) => {
   const arr = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
   const [expandedMap, setExpandedMap] = useState<Record<string, boolean>>({});
+
+  // Initialize required repeat_group fields with one empty entry
   useEffect(() => {
-    if (Array.isArray(value) && value.length === 0) {
+    if (q.required && (!Array.isArray(value) || value.length === 0)) {
       const initEntry = q.item_fields
         ? q.item_fields.reduce((acc: any, f: any) => {
             acc[f.id] = f.type === 'multi_select' ? [] : '';
@@ -44,7 +60,7 @@ const RepeatGroupQuestion: React.FC<{
         : {};
       onChange([initEntry]);
     }
-  }, [q.id]);
+  }, [q.required, q.id]);
 
   const setExpandedKey = (k: string, v: boolean) =>
     setExpandedMap((s) => ({ ...s, [k]: v }));
@@ -85,6 +101,7 @@ const RepeatGroupQuestion: React.FC<{
                     <Box>
                       <IconButton
                         size="small"
+                        disabled={arr.length === 1 && q.required === true}
                         onClick={(e) => {
                           e.stopPropagation();
                           const copy = [...arr];
@@ -92,6 +109,19 @@ const RepeatGroupQuestion: React.FC<{
                           onChange(copy);
                         }}
                         onMouseDown={(e) => e.stopPropagation()}
+                        aria-label={
+                          arr.length === 1 && q.required === true
+                            ? `Cannot delete last required ${q.label} item`
+                            : `Delete ${q.label} item ${idx + 1}`
+                        }
+                        sx={{
+                          opacity:
+                            arr.length === 1 && q.required === true ? 0.4 : 1,
+                          cursor:
+                            arr.length === 1 && q.required === true
+                              ? 'not-allowed'
+                              : 'pointer',
+                        }}
                       >
                         <DeleteOutlineIcon />
                       </IconButton>
@@ -114,6 +144,10 @@ const RepeatGroupQuestion: React.FC<{
                         level={level + 1}
                         pdfContent={pdfContent}
                         onNavigateToPage={onNavigateToPage}
+                        onHighlightsChange={onHighlightsChange}
+                        pdfUrl={pdfUrl}
+                        pageWidth={pageWidth}
+                        onAIVerificationComplete={onAIVerificationComplete}
                       />
                     ))}
                   </Box>

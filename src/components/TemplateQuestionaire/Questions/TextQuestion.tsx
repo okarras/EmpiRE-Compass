@@ -185,18 +185,20 @@ const TextQuestion: React.FC<{
                 },
               }}
             />
-            <AIAssistantButton
-              ref={aiAssistantRef}
-              questionId={idAttr || q.id || commonLabel}
-              questionText={commonLabel}
-              questionType="text"
-              currentAnswer={String(value ?? '')}
-              onSuggestionsGenerated={handleSuggestionsGenerated}
-              onVerificationComplete={handleVerificationComplete}
-              onError={handleError}
-              pdfContent={pdfContent}
-              hasSuggestions={suggestions.length > 0}
-            />
+            {q.disable_ai_assistant !== true && (
+              <AIAssistantButton
+                ref={aiAssistantRef}
+                questionId={idAttr || q.id || commonLabel}
+                questionText={commonLabel}
+                questionType="text"
+                currentAnswer={String(value ?? '')}
+                onSuggestionsGenerated={handleSuggestionsGenerated}
+                onVerificationComplete={handleVerificationComplete}
+                onError={handleError}
+                pdfContent={pdfContent}
+                hasSuggestions={suggestions.length > 0}
+              />
+            )}
           </Box>
           {validationError && (
             <InlineValidationFeedback error={validationError} />

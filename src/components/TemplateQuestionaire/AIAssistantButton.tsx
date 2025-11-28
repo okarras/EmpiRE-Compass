@@ -366,7 +366,9 @@ const AIAssistantButton = React.forwardRef<
               secondary={
                 hasSuggestions
                   ? 'Suggestions already shown'
-                  : 'Generate from PDF'
+                  : !pdfContent || pdfContent.trim().length === 0
+                    ? 'No PDF content available'
+                    : 'Generate from PDF'
               }
             />
           </MenuItem>

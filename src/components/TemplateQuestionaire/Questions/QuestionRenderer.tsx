@@ -126,6 +126,12 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }
@@ -137,6 +143,12 @@ const QuestionRenderer: React.FC<{
         onChange={onChange}
         idAttr={idAttr}
         level={level}
+        pdfContent={pdfContent}
+        onNavigateToPage={onNavigateToPage}
+        onHighlightsChange={onHighlightsChange}
+        pdfUrl={pdfUrl}
+        pageWidth={pageWidth}
+        onAIVerificationComplete={onAIVerificationComplete}
       />
     );
   }

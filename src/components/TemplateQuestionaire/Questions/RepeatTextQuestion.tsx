@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import NodeWrapper from '../NodeWrapper';
 import BufferedTextField from '../BufferedTextField';
 import Box from '@mui/material/Box';
@@ -126,6 +126,13 @@ const RepeatTextQuestion: React.FC<{
     }
   };
 
+  // Initialize required repeat_text fields with one empty entry
+  useEffect(() => {
+    if (q.required && (!Array.isArray(value) || value.length === 0)) {
+      onChange(['']);
+    }
+  }, [q.required, q.id]);
+
   return (
     <NodeWrapper level={level} ref={questionRef}>
       <Box
@@ -142,25 +149,27 @@ const RepeatTextQuestion: React.FC<{
             {q.required ? ' *' : ''}
           </Typography>
           <InfoTooltip desc={desc} />
-          <Box
-            sx={{
-              display: 'inline-block',
-            }}
-          >
-            <AIAssistantButton
-              ref={aiAssistantRef}
-              questionId={idAttr || q.id || q.label}
-              questionText={q.label}
-              questionType="repeat_text"
-              currentAnswer={
-                Array.isArray(value) ? value.join(', ') : String(value ?? '')
-              }
-              onSuggestionsGenerated={handleSuggestionsGenerated}
-              onVerificationComplete={onAIVerificationComplete}
-              onError={handleError}
-              pdfContent={pdfContent}
-            />
-          </Box>
+          {q.disable_ai_assistant !== true && (
+            <Box
+              sx={{
+                display: 'inline-block',
+              }}
+            >
+              <AIAssistantButton
+                ref={aiAssistantRef}
+                questionId={idAttr || q.id || q.label}
+                questionText={q.label}
+                questionType="repeat_text"
+                currentAnswer={
+                  Array.isArray(value) ? value.join(', ') : String(value ?? '')
+                }
+                onSuggestionsGenerated={handleSuggestionsGenerated}
+                onVerificationComplete={onAIVerificationComplete}
+                onError={handleError}
+                pdfContent={pdfContent}
+              />
+            </Box>
+          )}
         </Box>
         {desc && (
           <Typography
@@ -194,37 +203,49 @@ const RepeatTextQuestion: React.FC<{
           </Box>
         )}
         <Stack spacing={1} role="list" aria-label={`${q.label} items`}>
-          {arr.map((v, i) => (
-            <Box key={i} sx={{ display: 'flex', gap: 1 }} role="listitem">
-              <BufferedTextField
-                id={`${idAttr ?? 'repeat_text'}-${i}`}
-                value={String(v ?? '')}
-                onCommit={(val) => {
-                  const copy = [...arr];
-                  copy[i] = val;
-                  onChange(copy);
-                }}
-                size="small"
-                fullWidth
-                commitOnBlurOnly
-                aria-label={`${q.label} item ${i + 1}`}
-                aria-required={q.required}
-              />
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const copy = [...arr];
-                  copy.splice(i, 1);
-                  onChange(copy);
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                aria-label={`Delete ${q.label} item ${i + 1}`}
-              >
-                <DeleteOutlineIcon />
-              </IconButton>
-            </Box>
-          ))}
+          {arr.map((v, i) => {
+            const canDelete = !q.required || arr.length > 1;
+            return (
+              <Box key={i} sx={{ display: 'flex', gap: 1 }} role="listitem">
+                <BufferedTextField
+                  id={`${idAttr ?? 'repeat_text'}-${i}`}
+                  value={String(v ?? '')}
+                  onCommit={(val) => {
+                    const copy = [...arr];
+                    copy[i] = val;
+                    onChange(copy);
+                  }}
+                  size="small"
+                  fullWidth
+                  commitOnBlurOnly
+                  aria-label={`${q.label} item ${i + 1}`}
+                  aria-required={q.required}
+                />
+                <IconButton
+                  size="small"
+                  disabled={!canDelete}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const copy = [...arr];
+                    copy.splice(i, 1);
+                    onChange(copy);
+                  }}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  aria-label={
+                    !canDelete
+                      ? `Cannot delete last required ${q.label} item`
+                      : `Delete ${q.label} item ${i + 1}`
+                  }
+                  sx={{
+                    opacity: canDelete ? 1 : 0.4,
+                    cursor: canDelete ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  <DeleteOutlineIcon />
+                </IconButton>
+              </Box>
+            );
+          })}
           <Button
             size="small"
             startIcon={<AddCircleOutlineIcon />}

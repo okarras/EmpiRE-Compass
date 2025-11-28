@@ -219,21 +219,23 @@ const MultiSelectQuestion: React.FC<{
                 ))}
               </Select>
             </FormControl>
-            <AIAssistantButton
-              ref={aiAssistantRef}
-              questionId={q.id || commonLabel}
-              questionText={commonLabel}
-              questionType="multi_select"
-              questionOptions={opts}
-              currentAnswer={
-                Array.isArray(value) ? value.join(', ') : String(value ?? '')
-              }
-              onSuggestionsGenerated={handleSuggestionsGenerated}
-              onVerificationComplete={onAIVerificationComplete}
-              onError={handleError}
-              pdfContent={pdfContent}
-              hasSuggestions={suggestions.length > 0}
-            />
+            {q.disable_ai_assistant !== true && (
+              <AIAssistantButton
+                ref={aiAssistantRef}
+                questionId={q.id || commonLabel}
+                questionText={commonLabel}
+                questionType="multi_select"
+                questionOptions={opts}
+                currentAnswer={
+                  Array.isArray(value) ? value.join(', ') : String(value ?? '')
+                }
+                onSuggestionsGenerated={handleSuggestionsGenerated}
+                onVerificationComplete={onAIVerificationComplete}
+                onError={handleError}
+                pdfContent={pdfContent}
+                hasSuggestions={suggestions.length > 0}
+              />
+            )}
           </Box>
           {showSuggestions && (
             <SuggestionBox

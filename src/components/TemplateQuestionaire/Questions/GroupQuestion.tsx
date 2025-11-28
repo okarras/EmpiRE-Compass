@@ -8,6 +8,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import InfoTooltip from '../InfoTooltip';
 import QuestionRenderer from './QuestionRenderer';
+import type { AIVerificationResult } from '../../../services/backendAIService';
 
 const GroupQuestion: React.FC<{
   q: any;
@@ -17,6 +18,15 @@ const GroupQuestion: React.FC<{
   level?: number;
   pdfContent?: string;
   onNavigateToPage?: (pageNumber: number) => void;
+  onHighlightsChange?: (
+    highlights: Record<
+      number,
+      { left: number; top: number; width: number; height: number }[]
+    >
+  ) => void;
+  pdfUrl?: string | null;
+  pageWidth?: number | null;
+  onAIVerificationComplete?: (result: AIVerificationResult) => void;
 }> = ({
   q,
   value,
@@ -25,6 +35,10 @@ const GroupQuestion: React.FC<{
   level = 0,
   pdfContent,
   onNavigateToPage,
+  onHighlightsChange,
+  pdfUrl,
+  pageWidth,
+  onAIVerificationComplete,
 }) => {
   const obj = value ?? {};
   const [expanded, setExpanded] = useState(false);
@@ -61,6 +75,10 @@ const GroupQuestion: React.FC<{
                 level={level + 1}
                 pdfContent={pdfContent}
                 onNavigateToPage={onNavigateToPage}
+                onHighlightsChange={onHighlightsChange}
+                pdfUrl={pdfUrl}
+                pageWidth={pageWidth}
+                onAIVerificationComplete={onAIVerificationComplete}
               />
             ))}
           </Box>
