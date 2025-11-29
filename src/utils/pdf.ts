@@ -2,6 +2,7 @@ import * as pdfjs from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import { findMatchesOnPage } from '../pages/PdfHighlights';
 import type { Evidence, EvidenceHighlight, HighlightRect } from './suggestions';
+import { preprocessSearchText } from './robustPdfMatcher';
 
 //  Service for extracting text from PDF documents with caching
 
@@ -212,9 +213,10 @@ export async function generateEvidenceHighlight(
       pageWidth,
     });
 
-    const searchText = evidence.excerpt.replace(/^["']|["']$/g, '').trim();
+    // Use robust preprocessing to clean the search text
+    const searchText = preprocessSearchText(evidence.excerpt);
 
-    console.log('[Evidence Highlighter] Cleaned search text:', searchText);
+    console.log('[Evidence Highlighter] Preprocessed search text:', searchText);
 
     let page = await pdfDoc.getPage(evidence.pageNumber);
     let rects = await findMatchesOnPage(page, pageWidth, searchText, {

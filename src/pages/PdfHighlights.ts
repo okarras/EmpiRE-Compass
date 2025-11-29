@@ -3,6 +3,10 @@ import type {
   PDFPageProxy,
   TextContent,
 } from 'pdfjs-dist/types/src/display/api';
+import {
+  findRobustMatch,
+  preprocessSearchText,
+} from '../utils/robustPdfMatcher';
 
 interface PdfTextItem {
   str: string;
@@ -105,75 +109,32 @@ export async function findMatchesOnPage(
   const rects: Rect[] = [];
 
   if (typeof search === 'string') {
-    // MATCHING RULES:
-    // 1. Keep only alphanumeric characters (letters and numbers)
-    // 2. Remove all special characters (-, _, :, ., ,, /, etc.)
-    // 3. Remove all whitespace (spaces, tabs, newlines)
-    // 4. Case-insensitive matching
+    // Use robust multi-strategy matching
+    const cleanedSearch = preprocessSearchText(search);
 
-    const normalize = (text: string) =>
-      text.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    console.log('[PdfHighlights] Using robust matcher for:', cleanedSearch);
 
-    const normalizedSearch = normalize(search);
-    const normalizedPdf = normalize(fullText);
-    // Find match in normalized text
-    const matchIndex = normalizedPdf.indexOf(normalizedSearch);
+    const matchResult = findRobustMatch(fullText, cleanedSearch, {
+      similarityThreshold: 0.85,
+      allowSkipReferences: true,
+      tryAllStrategies: false,
+      enablePartialMatch: true,
+    });
 
-    if (matchIndex >= 0) {
+    if (matchResult.found) {
       console.log(
-        '[PdfHighlights] ✓ Found match at normalized index:',
-        matchIndex
+        '[PdfHighlights] ✓ Match found using strategy:',
+        matchResult.strategy
+      );
+      console.log(
+        '[PdfHighlights] Confidence:',
+        (matchResult.confidence * 100).toFixed(1) + '%'
       );
 
-      // Map back to original text positions
-      // Count how many alphanumeric chars we need to skip
-      let originalStart = 0;
-      let normalizedCount = 0;
+      const originalStart = matchResult.startIndex;
+      const originalEnd = matchResult.endIndex;
 
-      // Find start position in original text
-      // We want to find the position where the matchIndex-th alphanumeric char starts
-      while (originalStart < fullText.length) {
-        const char = fullText[originalStart];
-        if (/[a-zA-Z0-9]/.test(char)) {
-          if (normalizedCount === matchIndex) {
-            break;
-          }
-          normalizedCount++;
-        }
-        originalStart++;
-      }
-
-      // Find end position in original text
-      let originalEnd = originalStart;
-      let matchedChars = 0;
-      while (
-        matchedChars < normalizedSearch.length &&
-        originalEnd < fullText.length
-      ) {
-        const char = fullText[originalEnd];
-        if (/[a-zA-Z0-9]/.test(char)) {
-          matchedChars++;
-        }
-        originalEnd++;
-      }
-
-      // Trim leading whitespace/newlines to avoid highlighting extra lines
-      while (
-        originalStart < originalEnd &&
-        /\s/.test(fullText[originalStart])
-      ) {
-        originalStart++;
-      }
-
-      // Trim trailing whitespace/newlines
-      while (
-        originalEnd > originalStart &&
-        /\s/.test(fullText[originalEnd - 1])
-      ) {
-        originalEnd--;
-      }
-
-      console.log('[PdfHighlights] Mapped to original positions:', {
+      console.log('[PdfHighlights] Match positions:', {
         originalStart,
         originalEnd,
       });
@@ -203,12 +164,9 @@ export async function findMatchesOnPage(
         }
       }
     } else {
-      console.warn('[PdfHighlights] ✗ No match found');
-      console.warn('  - Normalized search:', normalizedSearch);
-      console.warn(
-        '  - Normalized PDF (first 500):',
-        normalizedPdf.substring(0, 500)
-      );
+      console.warn('[PdfHighlights] ✗ No match found using robust matcher');
+      console.warn('  - Search text:', cleanedSearch);
+      console.warn('  - PDF text (first 500):', fullText.substring(0, 500));
     }
   } else {
     // RegExp search - use original approach

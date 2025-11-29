@@ -484,6 +484,15 @@ For each suggestion:
 3. Rank suggestions by relevance and confidence
 ${request.previousFeedback && request.previousFeedback.length > 0 ? '4. Learn from previous feedback to generate BETTER and DIFFERENT suggestions' : ''}
 
+CRITICAL INSTRUCTIONS FOR EVIDENCE EXCERPTS:
+- Extract EXACT text from the PDF - copy it word-for-word as it appears
+- DO NOT add punctuation (periods, commas) that isn't in the original text
+- DO NOT paraphrase or summarize - use the exact wording
+- Keep excerpts between 10-50 words for best highlighting results
+- Include enough context to be meaningful but not too much
+- If the text has references like [1] or [Smith 2020], include them as they appear
+- The excerpt will be used to highlight text in the PDF, so accuracy is critical
+
 Generate exactly 3 suggestions in the following JSON format:
 {
   "suggestions": [
@@ -494,7 +503,7 @@ Generate exactly 3 suggestions in the following JSON format:
       "evidence": [
         {
           "pageNumber": 3,
-          "excerpt": "relevant text from page 3"
+          "excerpt": "exact text copied from page 3 without modifications"
         }
       ]
     }
@@ -543,7 +552,9 @@ Question Type: ${request.questionType}${optionsText}${feedbackContext}${contextH
 PDF Content:
 ${request.pdfContent}
 
-Generate exactly 3 ${(request.previousFeedback && request.previousFeedback.length > 0) || (request.contextHistory && request.contextHistory.length > 0) ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.`;
+Generate exactly 3 ${(request.previousFeedback && request.previousFeedback.length > 0) || (request.contextHistory && request.contextHistory.length > 0) ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.
+
+REMEMBER: For evidence excerpts, copy the EXACT text from the PDF without adding or removing any punctuation. The excerpts will be used to highlight text in the PDF viewer, so they must match exactly.`;
 
       const result = await this.generateText(userPrompt, {
         provider: (request.provider as AIProvider) || this.config.provider,
