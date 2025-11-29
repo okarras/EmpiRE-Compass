@@ -512,15 +512,38 @@ Generate exactly 3 suggestions in the following JSON format:
         ? `\nPDF Filename: ${request.pdfMetadata.filename}\nTotal Pages: ${request.pdfMetadata.totalPages}`
         : '';
 
+      // Build context history section
+      const contextHistorySection =
+        request.contextHistory && request.contextHistory.length > 0
+          ? `
+
+CONTEXT - Previous Suggestions for Reference:
+${request.contextHistory
+  .map(
+    (item, idx) => `
+${idx + 1}. Previous Suggestion:
+   Content: "${item.content}"
+   ${item.metadata?.feedback ? `Feedback: ${item.metadata.feedback.rating === 'positive' ? '👍 HELPFUL' : '👎 NOT HELPFUL'}${item.metadata.feedback.comment ? ` - "${item.metadata.feedback.comment}"` : ''}` : 'No feedback provided'}
+   Generated: ${new Date(item.timestamp).toLocaleString()}`
+  )
+  .join('\n')}
+
+Use this context to:
+- Understand what has been suggested before
+- Avoid repeating the same suggestions
+- Build upon helpful suggestions with new variations
+- Learn from feedback to improve quality`
+          : '';
+
       const userPrompt = `${metadataText}
 
 Question: ${request.questionText}
-Question Type: ${request.questionType}${optionsText}${feedbackContext}
+Question Type: ${request.questionType}${optionsText}${feedbackContext}${contextHistorySection}
 
 PDF Content:
 ${request.pdfContent}
 
-Generate exactly 3 ${request.previousFeedback && request.previousFeedback.length > 0 ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.`;
+Generate exactly 3 ${(request.previousFeedback && request.previousFeedback.length > 0) || (request.contextHistory && request.contextHistory.length > 0) ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.`;
 
       const result = await this.generateText(userPrompt, {
         provider: (request.provider as AIProvider) || this.config.provider,

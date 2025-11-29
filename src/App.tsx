@@ -11,6 +11,7 @@ import { store } from './store';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { AIAssistantProvider } from './context/AIAssistantContext';
 import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
+import { QuestionnaireAIProvider } from './context/QuestionnaireAIContext';
 import './styles/global.css';
 import AuthProvider from './auth/AuthProvider';
 import { Toaster } from 'react-hot-toast';
@@ -55,8 +56,10 @@ function App() {
       <ThemeProvider>
         <AIAssistantProvider>
           <DynamicQuestionProvider>
-            <AppContent />
-            <Toaster />
+            <QuestionnaireAIProvider>
+              <AppContent />
+              <Toaster />
+            </QuestionnaireAIProvider>
           </DynamicQuestionProvider>
         </AIAssistantProvider>
       </ThemeProvider>

@@ -5,6 +5,7 @@ import {
   type Suggestion,
   FeedbackService,
 } from '../utils/suggestions';
+import { useQuestionnaireAI } from '../context/QuestionnaireAIContext';
 
 interface UseSuggestionGeneratorProps {
   questionText: string;
@@ -40,6 +41,20 @@ const generateCacheKey = (questionText: string, pdfContent: string): string => {
   return `suggestion_${questionHash}_${pdfHash}`;
 };
 
+// Get excluded items from localStorage
+const getExcludedItems = (): Set<string> => {
+  try {
+    const stored = localStorage.getItem('questionnaire_ai_excluded_items');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return new Set(parsed);
+    }
+  } catch (error) {
+    console.error('Failed to load excluded items:', error);
+  }
+  return new Set<string>();
+};
+
 //  Hook for generating AI-powered suggestions for questionnaire questions.
 //  Handles caching, validation, and error states.
 
@@ -51,6 +66,7 @@ const useSuggestionGenerator = ({
   questionId,
 }: UseSuggestionGeneratorProps): UseSuggestionGeneratorReturn => {
   const aiService = useAIService();
+  const { getHistoryByQuestion } = useQuestionnaireAI();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +103,16 @@ const useSuggestionGenerator = ({
         ? FeedbackService.getFeedbackForQuestion(questionId)
         : [];
 
+      const contextHistory = questionId ? getHistoryByQuestion(questionId) : [];
+
+      const excludedItems = getExcludedItems();
+
+      const includedContext = contextHistory.filter(
+        (item) => !excludedItems.has(item.id)
+      );
+
+      const contextToSend = includedContext;
+
       const response = await aiService.generateSuggestions({
         questionText,
         questionType,
@@ -94,6 +120,7 @@ const useSuggestionGenerator = ({
         pdfContent,
         previousFeedback:
           previousFeedback.length > 0 ? previousFeedback : undefined,
+        contextHistory: contextToSend.length > 0 ? contextToSend : undefined,
       });
 
       if (!response.suggestions?.length) {

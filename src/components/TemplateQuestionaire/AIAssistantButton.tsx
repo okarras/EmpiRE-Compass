@@ -16,6 +16,7 @@ import {
   ArrowDropDown,
   CheckCircle,
   Refresh,
+  History,
 } from '@mui/icons-material';
 import { useAppSelector } from '../../store/hooks';
 import AIConfigurationDialog from '../AI/AIConfigurationDialog';
@@ -29,6 +30,8 @@ import {
   isConfigError,
   type Suggestion,
 } from '../../utils/suggestions';
+import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
+import QuestionnaireAIHistoryDialog from './QuestionnaireAIHistoryDialog';
 
 interface AIAssistantButtonProps {
   questionId: string;
@@ -73,11 +76,13 @@ const AIAssistantButton = React.forwardRef<
   ) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [configDialogOpen, setConfigDialogOpen] = useState(false);
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
     const [showError, setShowError] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [lastError, setLastError] = useState<string | null>(null);
     const [verificationResult, setVerificationResult] =
       useState<AIVerificationResult | null>(null);
+    const { addToHistory } = useQuestionnaireAI();
     const [isVerifying, setIsVerifying] = useState(false);
     const { isConfigured } = useAppSelector((state) => state.ai);
     const aiService = useAIService();
@@ -112,13 +117,38 @@ const AIAssistantButton = React.forwardRef<
           onSuggestionsGenerated(suggestions);
           setShowSuccess(true);
           announce(`${suggestions.length} suggestions generated successfully`);
+
+          // Track suggestions in history
+          suggestions.forEach((suggestion) => {
+            addToHistory({
+              questionId,
+              questionText,
+              type: 'suggestion',
+              action: 'generated',
+              content: suggestion.text,
+              metadata: {
+                originalSuggestionId: suggestion.id,
+                suggestionRank: suggestion.rank,
+                confidence: suggestion.confidence,
+                evidence: suggestion.evidence,
+              },
+            });
+          });
+
           const timer = setTimeout(() => {
             setShowSuccess(false);
           }, 2000);
           return () => clearTimeout(timer);
         }
       }
-    }, [suggestions, onSuggestionsGenerated, announce]);
+    }, [
+      suggestions,
+      onSuggestionsGenerated,
+      announce,
+      addToHistory,
+      questionId,
+      questionText,
+    ]);
 
     React.useEffect(() => {
       if (error) {
@@ -216,6 +246,21 @@ const AIAssistantButton = React.forwardRef<
         });
 
         setVerificationResult(result);
+
+        // Track verification in history
+        addToHistory({
+          questionId,
+          questionText,
+          type: 'verification',
+          action: 'verified',
+          content: currentAnswer,
+          prompt: 'Verify answer quality and completeness',
+          metadata: {
+            verificationStatus: result.status,
+            confidence: result.confidence,
+            evidence: result.evidence,
+          },
+        });
 
         if (result.status === 'verified') {
           setShowSuccess(true);
@@ -382,11 +427,31 @@ const AIAssistantButton = React.forwardRef<
             </ListItemIcon>
             <ListItemText primary="Verify Answer" secondary="Check quality" />
           </MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleMenuClose();
+              setHistoryDialogOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <History fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary="Context History"
+              secondary="Manage AI context"
+            />
+          </MenuItem>
         </Menu>
 
         <AIConfigurationDialog
           open={configDialogOpen}
           onClose={handleCloseConfigDialog}
+        />
+
+        <QuestionnaireAIHistoryDialog
+          open={historyDialogOpen}
+          onClose={() => setHistoryDialogOpen(false)}
+          currentQuestionId={questionId}
         />
 
         <Snackbar

@@ -58,6 +58,13 @@ export interface GenerateSuggestionsRequest {
   provider?: string;
   model?: string;
   previousFeedback?: FeedbackData[];
+  contextHistory?: Array<{
+    id: string;
+    type: string;
+    content: string;
+    timestamp: number;
+    metadata?: any;
+  }>;
 }
 
 export interface GenerateSuggestionsResponse {

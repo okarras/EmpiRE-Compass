@@ -35,6 +35,7 @@ import {
   generateSingleEvidenceHighlightMap,
   loadPDFDocument,
 } from '../../utils/pdf';
+import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
 
 interface SuggestionBoxProps {
   suggestions: Suggestion[];
@@ -52,6 +53,7 @@ interface SuggestionBoxProps {
   error?: string | null;
   onRetry?: () => void;
   questionId: string;
+  questionText?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
   onRegenerate?: () => void;
@@ -77,6 +79,7 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
   error = null,
   onRetry,
   questionId,
+  questionText = '',
   isCollapsed = false,
   onToggleCollapse,
   onRegenerate,
@@ -86,20 +89,19 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
 }) => {
   const boxRef = useRef<HTMLDivElement>(null);
   const firstSuggestionRef = useRef<HTMLButtonElement>(null);
+  const { addToHistory, updateHistoryMetadata, state } = useQuestionnaireAI();
+  const suggestionToHistoryMap = useRef<Map<string, string>>(new Map());
 
   const [feedbackStates, setFeedbackStates] = useState<
     Record<
       string,
       {
         rating: 'positive' | 'negative' | null;
+        comment?: string;
       }
     >
   >({});
-  const [sharedFeedbackComment, setSharedFeedbackComment] =
-    useState<string>('');
-  const [showFeedbackConfirmation, setShowFeedbackConfirmation] =
-    useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [focusedSuggestionIndex, setFocusedSuggestionIndex] =
     useState<number>(0);
@@ -112,6 +114,65 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
     setAnnounceMessage(message);
     setTimeout(() => setAnnounceMessage(''), 100);
   }, []);
+
+  // Build mapping from suggestion IDs to history IDs
+  useEffect(() => {
+    if (suggestions.length > 0) {
+      // Find history items for these suggestions
+      const questionHistory = state.history.filter(
+        (h) => h.questionId === questionId && h.type === 'suggestion'
+      );
+
+      suggestions.forEach((suggestion) => {
+        // Primary method: Match by originalSuggestionId (most reliable)
+        let historyItem = questionHistory.find(
+          (h) => h.metadata?.originalSuggestionId === suggestion.id
+        );
+
+        // Fallback 1: Match by content and rank
+        if (!historyItem) {
+          historyItem = questionHistory.find(
+            (h) =>
+              h.content === suggestion.text &&
+              h.metadata?.suggestionRank === suggestion.rank
+          );
+        }
+
+        // Fallback 2: Match by rank only from recent items
+        if (!historyItem) {
+          const recentItems = questionHistory
+            .sort((a, b) => b.timestamp - a.timestamp)
+            .slice(0, suggestions.length);
+          historyItem = recentItems.find(
+            (h) => h.metadata?.suggestionRank === suggestion.rank
+          );
+        }
+
+        if (historyItem) {
+          suggestionToHistoryMap.current.set(suggestion.id, historyItem.id);
+          console.log(
+            `✓ Mapped suggestion ${suggestion.id} (rank ${suggestion.rank}) to history ${historyItem.id}`
+          );
+        } else {
+          console.warn(
+            `✗ Could not find history item for suggestion ${suggestion.id} (rank ${suggestion.rank})`
+          );
+        }
+      });
+
+      console.log(
+        'Final mapping:',
+        Array.from(suggestionToHistoryMap.current.entries())
+      );
+    }
+  }, [suggestions, questionId, state.history]);
+
+  // Clear feedback states when new suggestions arrive
+  useEffect(() => {
+    if (suggestions.length > 0) {
+      setFeedbackStates({});
+    }
+  }, [suggestions]);
 
   useEffect(() => {
     if (loading) {
@@ -281,6 +342,17 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
       const current = prev[suggestionId];
       const newRating = current?.rating === rating ? null : rating;
 
+      // Submit or remove feedback immediately
+      setTimeout(() => {
+        if (newRating) {
+          // Submit new feedback
+          submitSingleFeedback(suggestionId, newRating);
+        } else {
+          // Remove feedback (deselected)
+          removeSingleFeedback(suggestionId);
+        }
+      }, 0);
+
       return {
         ...prev,
         [suggestionId]: {
@@ -290,55 +362,133 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
     });
   };
 
-  const handleSharedCommentChange = (comment: string) => {
-    setSharedFeedbackComment(comment);
+  const handleCommentChange = (suggestionId: string, comment: string) => {
+    setFeedbackStates((prev) => ({
+      ...prev,
+      [suggestionId]: {
+        ...prev[suggestionId],
+        rating: prev[suggestionId]?.rating || null,
+        comment: comment || undefined,
+      },
+    }));
   };
 
-  const handleSubmitAllFeedback = () => {
-    Object.entries(feedbackStates).forEach(([suggestionId, feedback]) => {
-      if (feedback?.rating) {
-        try {
-          const suggestion = suggestions.find((s) => s.id === suggestionId);
-
-          const feedbackData: FeedbackData = {
-            suggestionId,
-            questionId,
-            rating: feedback.rating,
-            comment: sharedFeedbackComment || undefined,
-            timestamp: Date.now(),
-            suggestionText: suggestion?.text,
-            suggestionRank: suggestion?.rank,
-          };
-
-          FeedbackService.saveFeedback(feedbackData);
-
-          onFeedback(suggestionId, {
-            rating: feedback.rating,
-            comment: sharedFeedbackComment || undefined,
-          });
-        } catch (error) {
-          console.error('Failed to save feedback:', error);
-        }
-      }
-    });
-
-    const ratedCount = Object.values(feedbackStates).filter(
-      (f) => f?.rating
-    ).length;
-    if (ratedCount > 0) {
-      setFeedbackMessage(
-        `Thank you for rating ${ratedCount} suggestion${ratedCount !== 1 ? 's' : ''}!`
-      );
-      setShowFeedbackConfirmation(true);
+  const handleCommentBlur = (suggestionId: string) => {
+    const feedback = feedbackStates[suggestionId];
+    if (feedback?.rating) {
+      // Re-submit feedback with updated comment
+      submitSingleFeedback(suggestionId, feedback.rating);
     }
   };
 
-  const handleCloseFeedbackConfirmation = () => {
-    setShowFeedbackConfirmation(false);
+  const removeSingleFeedback = (suggestionId: string) => {
+    try {
+      const suggestion = suggestions.find((s) => s.id === suggestionId);
+
+      // Remove from FeedbackService
+      const allFeedback = FeedbackService.getAllFeedback();
+      const filteredFeedback = allFeedback.filter(
+        (f) => !(f.suggestionId === suggestionId && f.questionId === questionId)
+      );
+      localStorage.setItem(
+        'ai_suggestion_feedback',
+        JSON.stringify(filteredFeedback)
+      );
+
+      // Remove from history metadata
+      const historyId = suggestionToHistoryMap.current.get(suggestionId);
+      console.log(
+        `Removing feedback for suggestion ${suggestionId}, historyId: ${historyId}`
+      );
+
+      if (historyId) {
+        console.log(`Removing feedback from history ${historyId}`);
+        updateHistoryMetadata(historyId, {
+          feedback: undefined,
+        });
+      } else {
+        console.warn(
+          `No history ID found for suggestion ${suggestionId} (rank ${suggestion?.rank})`
+        );
+      }
+    } catch (error) {
+      console.error('Failed to remove feedback:', error);
+    }
+  };
+
+  const submitSingleFeedback = (
+    suggestionId: string,
+    rating: 'positive' | 'negative'
+  ) => {
+    try {
+      const suggestion = suggestions.find((s) => s.id === suggestionId);
+      const feedback = feedbackStates[suggestionId];
+      const comment = feedback?.comment;
+
+      const feedbackData: FeedbackData = {
+        suggestionId,
+        questionId,
+        rating,
+        comment: comment || undefined,
+        timestamp: Date.now(),
+        suggestionText: suggestion?.text,
+        suggestionRank: suggestion?.rank,
+      };
+
+      FeedbackService.saveFeedback(feedbackData);
+
+      onFeedback(suggestionId, {
+        rating,
+        comment: comment || undefined,
+      });
+
+      // Update history with feedback
+      const historyId = suggestionToHistoryMap.current.get(suggestionId);
+      console.log(
+        `Updating feedback for suggestion ${suggestionId}, historyId: ${historyId}`
+      );
+
+      if (historyId) {
+        console.log(`Updating history ${historyId} with feedback:`, {
+          rating,
+          comment,
+        });
+        updateHistoryMetadata(historyId, {
+          feedback: {
+            rating,
+            comment: comment || undefined,
+          },
+        });
+      } else {
+        console.warn(
+          `No history ID found for suggestion ${suggestionId} (rank ${suggestion?.rank})`
+        );
+      }
+    } catch (error) {
+      console.error('Failed to save feedback:', error);
+    }
   };
 
   const handleApply = (suggestion: Suggestion) => {
     onApply(suggestion);
+
+    // Track applied suggestion in history
+    const historyId = addToHistory({
+      questionId,
+      questionText,
+      type: 'answer',
+      action: 'applied',
+      content: suggestion.text,
+      metadata: {
+        originalSuggestionId: suggestion.id,
+        suggestionRank: suggestion.rank,
+        confidence: suggestion.confidence,
+        evidence: suggestion.evidence,
+      },
+    });
+
+    // Store mapping for potential feedback updates
+    suggestionToHistoryMap.current.set(suggestion.id, historyId);
   };
 
   const handlePageClick = async (evidence: Evidence, suggestionId: string) => {
@@ -899,50 +1049,37 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
                             </Tooltip>
                           </Box>
                         </Box>
+
+                        {/* Individual comment field for this suggestion */}
+                        {feedbackState?.rating && (
+                          <Box sx={{ mt: 1.5 }}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              multiline
+                              rows={2}
+                              placeholder={`Why was this ${feedbackState.rating === 'positive' ? 'helpful' : 'not helpful'}?`}
+                              value={feedbackState.comment || ''}
+                              onChange={(e) =>
+                                handleCommentChange(
+                                  suggestion.id,
+                                  e.target.value
+                                )
+                              }
+                              onBlur={() => handleCommentBlur(suggestion.id)}
+                              aria-label={`Feedback comment for suggestion ${index + 1}`}
+                              sx={{
+                                '& .MuiInputBase-input': {
+                                  fontSize: '0.8125rem',
+                                },
+                              }}
+                            />
+                          </Box>
+                        )}
                       </Box>
                     </Box>
                   );
                 })}
-
-                <Box
-                  sx={{
-                    mt: 3,
-                    pt: 2.5,
-                    borderTop: '2px solid',
-                    borderColor: 'divider',
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      display: 'block',
-                      mb: 1,
-                      fontWeight: 500,
-                    }}
-                    id="shared-feedback-label"
-                  >
-                    Additional feedback (optional)
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    multiline
-                    rows={3}
-                    placeholder="Share your thoughts on the suggestions..."
-                    value={sharedFeedbackComment}
-                    onChange={(e) => handleSharedCommentChange(e.target.value)}
-                    onBlur={handleSubmitAllFeedback}
-                    aria-label="Additional feedback for all suggestions"
-                    aria-describedby="shared-feedback-label"
-                    sx={{
-                      mb: 2,
-                      '& .MuiInputBase-input': {
-                        fontSize: '0.875rem',
-                      },
-                    }}
-                  />
-                </Box>
 
                 {onRegenerate && !loading && (
                   <Box
@@ -976,21 +1113,6 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
           </CardContent>
         </Collapse>
       </Card>
-
-      <Snackbar
-        open={showFeedbackConfirmation}
-        autoHideDuration={3000}
-        onClose={handleCloseFeedbackConfirmation}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseFeedbackConfirmation}
-          severity={feedbackMessage.includes('Failed') ? 'error' : 'success'}
-          sx={{ width: '100%', fontSize: '0.875rem' }}
-        >
-          {feedbackMessage}
-        </Alert>
-      </Snackbar>
 
       <Snackbar
         open={showSuccessMessage}
