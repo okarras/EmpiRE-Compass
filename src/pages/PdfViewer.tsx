@@ -1,5 +1,19 @@
-import React, { useEffect, useRef } from 'react';
-import { Box, Paper, Typography, CircularProgress } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Box,
+  Paper,
+  Typography,
+  CircularProgress,
+  IconButton,
+  TextField,
+  Tooltip,
+} from '@mui/material';
+import {
+  KeyboardArrowUp,
+  KeyboardArrowDown,
+  Remove,
+  Add,
+} from '@mui/icons-material';
 import { Document, Page } from 'react-pdf';
 import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
@@ -28,30 +42,71 @@ const PdfViewer: React.FC<Props> = ({
   onExtractionError,
   highlights: externalHighlights,
 }) => {
-  const [numPages, setNumPages] = React.useState<number | null>(null);
-  const [loading, setLoading] = React.useState(false);
-
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [zoom, setZoom] = useState(100);
+  const [pageInputValue, setPageInputValue] = useState('1');
   const pageRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  const scale = zoom / 100;
+
+  const goToPage = (p: number) => {
+    if (!numPages || p < 1 || p > numPages) return;
+    setCurrentPage(p);
+    setPageInputValue(String(p));
+    const el = pageRefs.current[p];
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const handlePageInputSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const pageNum = parseInt(pageInputValue, 10);
+    if (!isNaN(pageNum)) goToPage(pageNum);
+  };
+
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 10, 200));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 10, 50));
+
+  useEffect(() => {
+    if (!numPages || !refContainer.current) return;
+
+    const container = refContainer.current;
+
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const containerCenter = containerRect.top + containerRect.height / 2;
+
+      let closestPage = 1;
+      let closestDistance = Infinity;
+
+      Object.entries(pageRefs.current).forEach(([pageNum, el]) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const pageCenter = rect.top + rect.height / 2;
+        const distance = Math.abs(pageCenter - containerCenter);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestPage = parseInt(pageNum, 10);
+        }
+      });
+
+      if (closestPage !== currentPage) {
+        setCurrentPage(closestPage);
+        setPageInputValue(String(closestPage));
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [numPages, currentPage, refContainer]);
 
   useEffect(() => {
     if (registerCommands) {
-      registerCommands({
-        goToPage: (p: number) => {
-          if (!numPages || p < 1 || p > numPages) {
-            console.warn(
-              `Invalid page number: ${p}. Valid range is 1-${numPages || 'unknown'}`
-            );
-            return;
-          }
-
-          const el = pageRefs.current[p];
-          if (el && el.scrollIntoView) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('pdf-highlight-flash');
-            setTimeout(() => el.classList.remove('pdf-highlight-flash'), 800);
-          }
-        },
-      });
+      registerCommands({ goToPage });
     }
   }, [registerCommands, numPages]);
 
@@ -61,25 +116,13 @@ const PdfViewer: React.FC<Props> = ({
   }, [pdfUrl]);
 
   useEffect(() => {
-    if (!pdfUrl || !onTextExtracted) {
-      console.log(
-        '[PdfViewer] Skipping extraction - missing pdfUrl or onTextExtracted callback',
-        { pdfUrl: !!pdfUrl, onTextExtracted: !!onTextExtracted }
-      );
-      return;
-    }
-
+    if (!pdfUrl || !onTextExtracted) return;
     let cancelled = false;
-
     (async () => {
       try {
-        const extractedText = await pdfTextExtractor.extractFullText(pdfUrl);
-
-        if (!cancelled && onTextExtracted) {
-          onTextExtracted(extractedText);
-        }
+        const text = await pdfTextExtractor.extractFullText(pdfUrl);
+        if (!cancelled && onTextExtracted) onTextExtracted(text);
       } catch (err) {
-        console.error('[PdfViewer] Error extracting PDF text:', err);
         if (!cancelled && onExtractionError) {
           onExtractionError(
             err instanceof Error ? err : new Error('Failed to extract PDF text')
@@ -87,30 +130,10 @@ const PdfViewer: React.FC<Props> = ({
         }
       }
     })();
-
     return () => {
       cancelled = true;
     };
   }, [pdfUrl, onTextExtracted, onExtractionError]);
-
-  useEffect(() => {
-    const styleId = 'pdf-highlight-flash-style';
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement('style');
-    style.id = styleId;
-    style.innerHTML = `
-      .pdf-highlight-flash {
-        animation: pdfFlash 0.8s ease-in-out;
-      }
-      @keyframes pdfFlash {
-        0% { box-shadow: 0 0 0 4px rgba(255,235,59,0.0); }
-        30% { box-shadow: 0 0 8px 8px rgba(255,235,59,0.45); }
-        100% { box-shadow: none; }
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
 
   if (!pdfUrl) {
     return (
@@ -124,83 +147,192 @@ const PdfViewer: React.FC<Props> = ({
           p: 2,
         }}
       >
-        <Typography color="text.secondary">
-          No PDF available. Upload one elsewhere.
-        </Typography>
+        <Typography color="text.secondary">No PDF available.</Typography>
       </Paper>
     );
   }
 
   return (
     <Box
-      ref={refContainer}
-      sx={{ flex: 1, height: '100%', overflow: 'auto', position: 'relative' }}
+      sx={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      {loading && (
-        <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
-          <CircularProgress size={28} />
+      {/* Toolbar */}
+      {numPages && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1,
+            py: 0.5,
+            px: 1,
+            minHeight: 32,
+          }}
+        >
+          {/* Page Navigation */}
+          <Tooltip title="Previous Page">
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                sx={{ p: 0.25 }}
+              >
+                <KeyboardArrowUp fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Next Page">
+            <span>
+              <IconButton
+                size="small"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= (numPages || 1)}
+                sx={{ p: 0.25 }}
+              >
+                <KeyboardArrowDown fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Box
+            component="form"
+            onSubmit={handlePageInputSubmit}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            <TextField
+              size="small"
+              value={pageInputValue}
+              onChange={(e) => setPageInputValue(e.target.value)}
+              slotProps={{
+                htmlInput: {
+                  style: { textAlign: 'center', padding: '2px 4px', width: 30 },
+                },
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': { backgroundColor: 'transparent' },
+              }}
+            />
+            <Typography variant="body2" color="text.secondary">
+              / {numPages}
+            </Typography>
+          </Box>
+
+          <Tooltip title="Zoom Out">
+            <span>
+              <IconButton
+                size="small"
+                onClick={handleZoomOut}
+                disabled={zoom <= 50}
+                sx={{ p: 0.25 }}
+              >
+                <Remove fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Zoom In">
+            <span>
+              <IconButton
+                size="small"
+                onClick={handleZoomIn}
+                disabled={zoom >= 200}
+                sx={{ p: 0.25 }}
+              >
+                <Add fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ minWidth: 40, textAlign: 'center' }}
+          >
+            {zoom}%
+          </Typography>
         </Box>
       )}
 
-      <Document
-        file={pdfUrl}
-        onLoadSuccess={(pdf: PDFDocumentProxy) => {
-          setNumPages(pdf.numPages);
-          setLoading(false);
+      {/* PDF Container */}
+      <Box
+        ref={refContainer}
+        sx={{
+          flex: 1,
+          overflow: 'auto',
+          position: 'relative',
         }}
-        onLoadError={(err) => {
-          console.error('PDF load error', err);
-          setLoading(false);
-        }}
-        onLoadProgress={() => setLoading(true)}
       >
-        {numPages &&
-          pageWidth &&
-          Array.from({ length: numPages }, (_, i) => {
-            const pageNumber = i + 1;
-            return (
-              <Box
-                key={`page_wrapper_${pageNumber}`}
-                ref={(el) => {
-                  pageRefs.current[pageNumber] = el as HTMLDivElement | null;
-                }}
-                data-page={pageNumber}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  mb: 2,
-                  position: 'relative',
-                }}
-              >
-                <Page
-                  pageNumber={pageNumber}
-                  width={pageWidth}
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                />
+        {loading && (
+          <Box sx={{ position: 'absolute', top: 12, right: 12, zIndex: 10 }}>
+            <CircularProgress size={24} />
+          </Box>
+        )}
 
-                {/* Highlight overlays for this page */}
-                {externalHighlights &&
-                  (externalHighlights[pageNumber] || []).map((r, idx) => (
-                    <Box
-                      key={`hl_${pageNumber}_${idx}`}
-                      sx={{
-                        position: 'absolute',
-                        left: r.left,
-                        top: r.top,
-                        width: r.width,
-                        height: r.height,
-                        pointerEvents: 'none',
-                        bgcolor: 'rgba(255,235,59,0.45)', // translucent yellow
-                        borderRadius: '2px',
-                        mixBlendMode: 'multiply',
-                      }}
+        <Document
+          file={pdfUrl}
+          onLoadSuccess={(pdf: PDFDocumentProxy) => {
+            setNumPages(pdf.numPages);
+            setLoading(false);
+          }}
+          onLoadError={() => setLoading(false)}
+          onLoadProgress={() => setLoading(true)}
+        >
+          {numPages &&
+            pageWidth &&
+            Array.from({ length: numPages }, (_, i) => {
+              const pageNumber = i + 1;
+              const estimatedPageHeight = pageWidth * 1.414;
+              const scaledHeight = estimatedPageHeight * scale;
+              const extraHeight = scaledHeight - estimatedPageHeight;
+
+              return (
+                <Box
+                  key={pageNumber}
+                  data-page={pageNumber}
+                  ref={(el) => {
+                    pageRefs.current[pageNumber] = el as HTMLDivElement | null;
+                  }}
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    py: 1,
+                    position: 'relative',
+                    mb: extraHeight > 0 ? `${extraHeight}px` : 0,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      transform: `scale(${scale})`,
+                      transformOrigin: 'top center',
+                      position: 'relative',
+                    }}
+                  >
+                    <Page
+                      pageNumber={pageNumber}
+                      width={pageWidth}
+                      renderTextLayer
+                      renderAnnotationLayer
                     />
-                  ))}
-              </Box>
-            );
-          })}
-      </Document>
+                    {/* Highlights */}
+                    {externalHighlights?.[pageNumber]?.map((r, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          position: 'absolute',
+                          left: r.left - 16,
+                          top: r.top,
+                          width: r.width,
+                          height: r.height,
+                          bgcolor: 'rgba(255,235,59,0.45)',
+                          borderRadius: '2px',
+                          pointerEvents: 'none',
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              );
+            })}
+        </Document>
+      </Box>
     </Box>
   );
 };
