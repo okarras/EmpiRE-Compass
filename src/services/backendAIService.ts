@@ -3,6 +3,7 @@ import type {
   OpenAIModel,
   GroqModel,
   MistralModel,
+  GoogleModel,
 } from '../store/slices/aiSlice';
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
@@ -13,6 +14,7 @@ export interface BackendAIConfig {
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
   mistralModel: MistralModel;
+  googleModel: GoogleModel;
   useEnvironmentKeys: boolean;
   // NOTE: API keys are NEVER sent to backend - backend uses its own environment keys
 }
@@ -270,6 +272,8 @@ export class BackendAIService {
       model = this.config.groqModel;
     } else if (this.config.provider === 'mistral') {
       model = this.config.mistralModel;
+    } else if (this.config.provider === 'google') {
+      model = this.config.googleModel;
     } else {
       model = '';
     }
@@ -295,9 +299,11 @@ export class UnifiedAIService {
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
     mistralModel: MistralModel;
+    googleModel: GoogleModel;
     openaiApiKey: string;
     groqApiKey: string;
     mistralApiKey: string;
+    googleApiKey: string;
     useEnvironmentKeys: boolean;
   };
 
@@ -306,9 +312,11 @@ export class UnifiedAIService {
     openaiModel: OpenAIModel;
     groqModel: GroqModel;
     mistralModel: MistralModel;
+    googleModel: GoogleModel;
     openaiApiKey: string;
     groqApiKey: string;
     mistralApiKey: string;
+    googleApiKey: string;
     useEnvironmentKeys: boolean;
   }) {
     this.config = config;
@@ -331,6 +339,8 @@ export class UnifiedAIService {
       this.config.groqApiKey && this.config.groqApiKey.trim().length > 0;
     const hasMistralKey =
       this.config.mistralApiKey && this.config.mistralApiKey.trim().length > 0;
+    const hasGoogleKey =
+      this.config.googleApiKey && this.config.googleApiKey.trim().length > 0;
 
     // Use frontend if user has provided keys for the selected provider
     if (this.config.provider === 'openai' && hasOpenAIKey) {
@@ -340,6 +350,9 @@ export class UnifiedAIService {
       return true;
     }
     if (this.config.provider === 'mistral' && hasMistralKey) {
+      return true;
+    }
+    if (this.config.provider === 'google' && hasGoogleKey) {
       return true;
     }
 
@@ -354,9 +367,11 @@ export class UnifiedAIService {
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
         mistralModel: this.config.mistralModel,
+        googleModel: this.config.googleModel,
         openaiApiKey: this.config.openaiApiKey,
         groqApiKey: this.config.groqApiKey,
         mistralApiKey: this.config.mistralApiKey,
+        googleApiKey: this.config.googleApiKey,
         useEnvironmentKeys: false, // Always false for frontend service
       };
       this.frontendService = new AIService(frontendConfig);
@@ -371,6 +386,7 @@ export class UnifiedAIService {
         openaiModel: this.config.openaiModel,
         groqModel: this.config.groqModel,
         mistralModel: this.config.mistralModel,
+        googleModel: this.config.googleModel,
         useEnvironmentKeys: this.config.useEnvironmentKeys,
         // API keys are never sent to backend - backend uses its own environment keys
       });
@@ -450,6 +466,7 @@ export const useBackendAIService = () => {
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
+    googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
     // API keys are never sent to backend - backend uses its own environment keys
   });
@@ -464,9 +481,11 @@ export const useAIService = () => {
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
+    googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
     mistralApiKey: aiConfig.mistralApiKey || '',
+    googleApiKey: aiConfig.googleApiKey || '',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
   });
 };
@@ -478,6 +497,7 @@ export const createDefaultBackendAIService = () => {
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
+    googleModel: 'gemini-2.5-flash',
     useEnvironmentKeys: true,
   });
 };
@@ -488,9 +508,11 @@ export const createDefaultAIService = () => {
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
+    googleModel: 'gemini-2.5-flash',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',
+    googleApiKey: '',
     useEnvironmentKeys: true,
   });
 };

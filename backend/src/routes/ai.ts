@@ -50,7 +50,8 @@ const getAIService = (): AIService => {
         (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
           | 'openai'
           | 'groq'
-          | 'mistral') || 'mistral',
+          | 'mistral'
+          | 'google') || 'mistral',
       openaiModel:
         (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
           | 'gpt-4o-mini'
@@ -75,9 +76,17 @@ const getAIService = (): AIService => {
           | 'mistral-small-latest'
           | 'pixtral-large-latest'
           | 'open-mistral-nemo') || 'mistral-large-latest',
+      googleModel:
+        (sanitizeEnvVar(process.env.GOOGLE_MODEL, 'gemini-2.5-flash') as
+          | 'gemini-2.5-flash'
+          | 'gemma-3-27b-it') || 'gemini-2.5-flash',
       openaiApiKey: sanitizeEnvVar(process.env.OPENAI_API_KEY, ''),
       groqApiKey: sanitizeEnvVar(process.env.GROQ_API_KEY, ''),
       mistralApiKey: sanitizeEnvVar(process.env.MISTRAL_API_KEY, ''),
+      googleApiKey: sanitizeEnvVar(
+        process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+        ''
+      ),
     };
     aiService = new AIService(fallbackConfig);
   }
@@ -104,6 +113,8 @@ router.get(
         ...(process.env.NODE_ENV !== 'production' && {
           hasOpenAIKey: !!process.env.OPENAI_API_KEY,
           hasGroqKey: !!process.env.GROQ_API_KEY,
+          hasMistralKey: !!process.env.MISTRAL_API_KEY,
+          hasGoogleKey: !!process.env.GOOGLE_GENERATIVE_AI_API_KEY,
           provider: process.env.AI_PROVIDER || 'groq',
         }),
       });
