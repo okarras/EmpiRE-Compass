@@ -2,8 +2,9 @@ import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-export type AIProvider = 'openai' | 'groq' | 'mistral';
+export type AIProvider = 'openai' | 'groq' | 'mistral' | 'google';
 export type OpenAIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
 export type GroqModel =
   | 'llama-3.1-8b-instant'
@@ -22,15 +23,18 @@ export type MistralModel =
   | 'mistral-small-latest'
   | 'pixtral-large-latest'
   | 'open-mistral-nemo';
+export type GoogleModel = 'gemini-2.5-flash' | 'gemma-3-27b-it';
 
 export interface AIConfig {
   provider: AIProvider;
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
   mistralModel: MistralModel;
+  googleModel: GoogleModel;
   openaiApiKey: string;
   groqApiKey: string;
   mistralApiKey: string;
+  googleApiKey: string;
 }
 
 export interface GenerateTextRequest {
@@ -70,6 +74,8 @@ export class AIService {
       return this.config.groqApiKey;
     } else if (provider === 'mistral') {
       return this.config.mistralApiKey;
+    } else if (provider === 'google') {
+      return this.config.googleApiKey;
     }
     return '';
   }
@@ -87,6 +93,8 @@ export class AIService {
       return createGroq({ apiKey });
     } else if (provider === 'mistral') {
       return createMistral({ apiKey });
+    } else if (provider === 'google') {
+      return createGoogleGenerativeAI({ apiKey });
     }
     throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -109,6 +117,8 @@ export class AIService {
       defaultModel = this.config.groqModel;
     } else if (provider === 'mistral') {
       defaultModel = this.config.mistralModel;
+    } else if (provider === 'google') {
+      defaultModel = this.config.googleModel;
     } else {
       throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -225,6 +235,8 @@ export class AIService {
       model = this.config.groqModel;
     } else if (this.config.provider === 'mistral') {
       model = this.config.mistralModel;
+    } else if (this.config.provider === 'google') {
+      model = this.config.googleModel;
     } else {
       model = '';
     }

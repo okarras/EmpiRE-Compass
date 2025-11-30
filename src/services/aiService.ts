@@ -3,12 +3,14 @@ import { generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { useAppSelector } from '../store/hooks';
 import type {
   AIProvider,
   OpenAIModel,
   GroqModel,
   MistralModel,
+  GoogleModel,
 } from '../store/slices/aiSlice';
 
 export interface AIConfig {
@@ -16,9 +18,11 @@ export interface AIConfig {
   openaiModel: OpenAIModel;
   groqModel: GroqModel;
   mistralModel: MistralModel;
+  googleModel: GoogleModel;
   openaiApiKey: string;
   groqApiKey: string;
   mistralApiKey: string;
+  googleApiKey: string;
   useEnvironmentKeys: boolean;
 }
 
@@ -37,6 +41,8 @@ export class AIService {
         return import.meta.env.VITE_GROQ_API_KEY || '';
       } else if (provider === 'mistral') {
         return import.meta.env.VITE_MISTRAL_API_KEY || '';
+      } else if (provider === 'google') {
+        return import.meta.env.VITE_GOOGLE_GENERATIVE_AI_API_KEY || '';
       }
     }
     if (provider === 'openai') {
@@ -45,6 +51,8 @@ export class AIService {
       return this.config.groqApiKey;
     } else if (provider === 'mistral') {
       return this.config.mistralApiKey;
+    } else if (provider === 'google') {
+      return this.config.googleApiKey;
     }
     return '';
   }
@@ -62,6 +70,8 @@ export class AIService {
       return createGroq({ apiKey });
     } else if (provider === 'mistral') {
       return createMistral({ apiKey });
+    } else if (provider === 'google') {
+      return createGoogleGenerativeAI({ apiKey });
     }
     throw new Error(`Unsupported provider: ${provider}`);
   }
@@ -75,6 +85,8 @@ export class AIService {
       modelName = this.config.groqModel;
     } else if (provider === 'mistral') {
       modelName = this.config.mistralModel;
+    } else if (provider === 'google') {
+      modelName = this.config.googleModel;
     } else {
       throw new Error(`Unsupported provider: ${provider}`);
     }
@@ -145,6 +157,8 @@ export class AIService {
       model = this.config.groqModel;
     } else if (this.config.provider === 'mistral') {
       model = this.config.mistralModel;
+    } else if (this.config.provider === 'google') {
+      model = this.config.googleModel;
     } else {
       model = '';
     }
@@ -167,9 +181,11 @@ export const useAIService = () => {
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
+    googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
     mistralApiKey: aiConfig.mistralApiKey || '',
+    googleApiKey: aiConfig.googleApiKey || '',
     useEnvironmentKeys:
       aiConfig.useEnvironmentKeys !== undefined
         ? aiConfig.useEnvironmentKeys
@@ -186,9 +202,11 @@ export const createDefaultAIService = () => {
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
+    googleModel: 'gemini-2.5-flash',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',
+    googleApiKey: '',
     useEnvironmentKeys: true,
   });
 };
