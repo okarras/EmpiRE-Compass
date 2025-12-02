@@ -164,7 +164,7 @@ export const useAIService = () => {
   // Ensure we have valid configuration
   const config: AIConfig = {
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
+    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
@@ -183,7 +183,7 @@ export const useAIService = () => {
 export const createDefaultAIService = () => {
   return new AIService({
     provider: 'mistral',
-    openaiModel: 'gpt-4o-mini',
+    openaiModel: 'gpt-5-nano',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     openaiApiKey: '',

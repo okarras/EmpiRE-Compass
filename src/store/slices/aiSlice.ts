@@ -2,9 +2,21 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // Available models for each provider
 export const OPENAI_MODELS = [
+  // Frontier models - OpenAI's most advanced models
+  'gpt-5.1',
+  'gpt-5-mini',
+  'gpt-5-nano',
+  'gpt-5-pro',
+  'gpt-5',
+  'gpt-4.1',
+  // Previous generation models
   'gpt-4o',
   'gpt-4o-mini',
   'gpt-4-turbo',
+  'gpt-4o-2024-08-06',
+  'gpt-4-turbo-2024-04-09',
+  'o1-preview',
+  'o1-mini',
   'gpt-4',
   'gpt-3.5-turbo',
 ] as const;
@@ -54,7 +66,7 @@ const loadAIConfig = (): Partial<InitialState> => {
       const parsed = JSON.parse(savedConfig);
       return {
         provider: parsed.provider || 'mistral',
-        openaiModel: parsed.openaiModel || 'gpt-4o-mini',
+        openaiModel: parsed.openaiModel || 'gpt-5-nano',
         groqModel: parsed.groqModel || 'llama-3.1-8b-instant',
         mistralModel: parsed.mistralModel || 'mistral-large-latest',
         openaiApiKey: parsed.openaiApiKey || '',
@@ -84,7 +96,7 @@ const saveAIConfig = (config: InitialState) => {
 
 const defaultConfig: InitialState = {
   provider: 'mistral',
-  openaiModel: 'gpt-4o-mini',
+  openaiModel: 'gpt-5-nano',
   groqModel: 'llama-3.1-8b-instant',
   mistralModel: 'mistral-large-latest',
   openaiApiKey: '',

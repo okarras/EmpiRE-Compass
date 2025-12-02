@@ -447,7 +447,7 @@ export const useBackendAIService = () => {
 
   return new BackendAIService({
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
+    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
@@ -461,7 +461,7 @@ export const useAIService = () => {
 
   return new UnifiedAIService({
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
+    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
@@ -475,7 +475,7 @@ export const useAIService = () => {
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
     provider: 'mistral',
-    openaiModel: 'gpt-4o-mini',
+    openaiModel: 'gpt-5-nano',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     useEnvironmentKeys: true,
@@ -485,7 +485,7 @@ export const createDefaultBackendAIService = () => {
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
     provider: 'mistral',
-    openaiModel: 'gpt-4o-mini',
+    openaiModel: 'gpt-5-nano',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     openaiApiKey: '',

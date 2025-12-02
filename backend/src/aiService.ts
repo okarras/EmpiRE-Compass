@@ -4,7 +4,24 @@ import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
 
 export type AIProvider = 'openai' | 'groq' | 'mistral';
-export type OpenAIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
+export type OpenAIModel =
+  // Frontier models - OpenAI's most advanced models
+  | 'gpt-5.1'
+  | 'gpt-5-mini'
+  | 'gpt-5-nano'
+  | 'gpt-5-pro'
+  | 'gpt-5'
+  | 'gpt-4.1'
+  // Previous generation models
+  | 'gpt-4o-mini'
+  | 'gpt-4o'
+  | 'gpt-4-turbo'
+  | 'gpt-4o-2024-08-06'
+  | 'gpt-4-turbo-2024-04-09'
+  | 'o1-preview'
+  | 'o1-mini'
+  | 'gpt-4'
+  | 'gpt-3.5-turbo';
 export type GroqModel =
   | 'llama-3.1-8b-instant'
   | 'llama-3.1-70b-versatile'
