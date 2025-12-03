@@ -49,7 +49,7 @@ const DataProcessingCodeSection: React.FC<DataProcessingCodeSectionProps> = ({
   onRegenerateCode,
   // onOpenHistory = () => {},
 }) => {
-  const { getHistoryByType, updateProcessingFunctionCode } =
+  const { getHistoryByType, updateProcessingFunctionCode, state, updateCosts } =
     useDynamicQuestion();
   const aiService = useAIService();
 
@@ -171,6 +171,16 @@ function processData(rows) {
         const modifiedCode = jsMatch[1].trim();
         await onCodeChange(modifiedCode);
         updateProcessingFunctionCode(modifiedCode, modificationPrompt);
+
+        // Track cost for AI modification
+        if (result.cost) {
+          const costWithSection = {
+            ...result.cost,
+            section: 'AI Modification - Data Processing Code',
+          };
+          updateCosts([...state.costs, costWithSection]);
+        }
+
         setShowAIDialog(false);
         setAiPrompt('');
       } else {
