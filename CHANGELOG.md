@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.12.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.11.0...v1.12.0) (2025-12-03)
+
+### Features
+
+- add new open ai models ([27f236f](https://github.com/okarras/EmpiRE-Compass/commit/27f236f85e3218d3837e6624a1b07a12bb16e801))
+- added auto truncate in axis labels ([9308753](https://github.com/okarras/EmpiRE-Compass/commit/9308753d6fb4b19e1dbb4fb043061cfd78e80b45))
+- added cost calculator for dynamic ai question ([c2fa423](https://github.com/okarras/EmpiRE-Compass/commit/c2fa4231b86b5d509aa97c7e147a9a3e557128c9))
+- added hide detailed chart functionality in charts ([fdaa81b](https://github.com/okarras/EmpiRE-Compass/commit/fdaa81b8f184c3f3161ad590ed3528510c1a63dc))
+- added label feature in scater plot x axis ([bf46f87](https://github.com/okarras/EmpiRE-Compass/commit/bf46f87f52d44d83644d92160dd8eed4b8d839d8))
+- customize default unique papers in grid stats ([77c581b](https://github.com/okarras/EmpiRE-Compass/commit/77c581bab44b05918cd1e8c1da655b4143100056))
+- improve heatmap and boxplot ([03c4bd4](https://github.com/okarras/EmpiRE-Compass/commit/03c4bd47ac8db0da51ff488c580af660e5c48d71))
+
+### Bug Fixes
+
+- add sushant to admins ([dce4c7b](https://github.com/okarras/EmpiRE-Compass/commit/dce4c7b9264b4dd2a29cfd30965635278e20d97c))
+- added dynamic padding for graph nodes ([0f1e440](https://github.com/okarras/EmpiRE-Compass/commit/0f1e4409599fef08353c107b924aaac4469051c8))
+- added margin on top to fit heading ([9e4fe61](https://github.com/okarras/EmpiRE-Compass/commit/9e4fe6135df61525e04a74c13267826a95536f82))
+- fixed some styles ([35a0113](https://github.com/okarras/EmpiRE-Compass/commit/35a01137fdce8eb2458f03884cec271e1b1f9d5e))
+- fixed the data processing functions ([4656e24](https://github.com/okarras/EmpiRE-Compass/commit/4656e24a7ff375b0b7b66ec95ad1cd76fa9271b4))
+- fixing the map from bar to heat ([055a21f](https://github.com/okarras/EmpiRE-Compass/commit/055a21fe3e6a2d3f0d4e2da6e8302ed584776485))
+- spacing in the graphs ([b9adcf0](https://github.com/okarras/EmpiRE-Compass/commit/b9adcf02c7d79443e228f6a98713145e7797fa53))
+- typing issues ([1dd2a61](https://github.com/okarras/EmpiRE-Compass/commit/1dd2a61d75871b3f274803d0371351a36c9b4f54))
+- typing problem in build ([580d85b](https://github.com/okarras/EmpiRE-Compass/commit/580d85beba27ba5ec7dc5ead0b3b3d8a648eef00))
+- user sync logic ([bfa89dc](https://github.com/okarras/EmpiRE-Compass/commit/bfa89dc3d81700d99432597cdd499dbf16043961))
+- vercel not found error ([dcc6d2f](https://github.com/okarras/EmpiRE-Compass/commit/dcc6d2ffc77f189be3a07cd49d9621bcbea24e7c))
+
 ## [1.11.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.10.0...v1.11.0) (2025-11-17)
 
 ### Features
