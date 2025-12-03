@@ -17,7 +17,6 @@ import { processDynamicData } from '../utils/dataTransform';
 import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
 import { useLocation } from 'react-router-dom';
 import { PredicatesMapping } from '../components/Graph/types';
-import CostDisplay from './AI/CostDisplay';
 import type { CostBreakdown } from '../utils/costCalculator';
 
 const DynamicAIQuestion = () => {
@@ -556,7 +555,6 @@ const DynamicAIQuestion = () => {
         onRegenerateCode={handleRegenerateProcessingCode}
         onOpenHistory={handleOpenProcessingHistory}
       />
-
       <ResultsDisplaySection
         loading={loading}
         error={error}
@@ -571,6 +569,7 @@ const DynamicAIQuestion = () => {
         onContentGenerated={handleContentGenerated}
         onError={setError}
         onChartHtmlChange={updateChartHtml}
+        costs={state.costs}
       />
 
       <HistoryManager
@@ -584,8 +583,6 @@ const DynamicAIQuestion = () => {
         open={llmContextHistoryOpen}
         onClose={handleCloseLlmContextHistory}
       />
-
-      {state.costs.length > 0 && <CostDisplay costs={state.costs} />}
     </Box>
   );
 };
