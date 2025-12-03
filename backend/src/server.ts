@@ -45,7 +45,7 @@ const aiConfig: AIConfig = {
       | 'groq'
       | 'mistral') || 'mistral',
   openaiModel:
-    (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-5-nano') as
+    (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
       | 'gpt-5.1'
       | 'gpt-5-mini'
       | 'gpt-5-nano'
@@ -60,7 +60,7 @@ const aiConfig: AIConfig = {
       | 'o1-preview'
       | 'o1-mini'
       | 'gpt-4'
-      | 'gpt-3.5-turbo') || 'gpt-5-nano',
+      | 'gpt-3.5-turbo') || 'gpt-4o-mini',
   groqModel:
     (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
       | 'llama-3.1-8b-instant'

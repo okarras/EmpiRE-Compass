@@ -52,7 +52,7 @@ const getAIService = (): AIService => {
           | 'groq'
           | 'mistral') || 'mistral',
       openaiModel:
-        (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-5-nano') as
+        (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
           | 'gpt-5.1'
           | 'gpt-5-mini'
           | 'gpt-5-nano'
@@ -67,7 +67,7 @@ const getAIService = (): AIService => {
           | 'o1-preview'
           | 'o1-mini'
           | 'gpt-4'
-          | 'gpt-3.5-turbo') || 'gpt-5-nano',
+          | 'gpt-3.5-turbo') || 'gpt-4o-mini',
       groqModel:
         (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
           | 'llama-3.1-8b-instant'
@@ -251,7 +251,28 @@ router.post(
         // Backend uses environment keys only - never accepts user keys
       });
 
-      res.json(result);
+      // Calculate cost if usage information is available
+      let costInfo = undefined;
+      if (result.usage) {
+        const service = getAIService();
+        const config = service.getCurrentConfig();
+        const actualProvider = provider || config.provider;
+        const actualModel = model || config.model;
+
+        // Import cost calculator
+        const { calculateCost } = await import('../utils/costCalculator');
+        costInfo = calculateCost(
+          actualProvider,
+          actualModel,
+          result.usage.promptTokens,
+          result.usage.completionTokens
+        );
+      }
+
+      res.json({
+        ...result,
+        cost: costInfo,
+      });
     } catch (error) {
       console.error('Error generating text:', {
         error,

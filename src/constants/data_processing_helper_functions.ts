@@ -423,7 +423,6 @@ export const Query7DataProcessingFunctionForInferentialStatistics = (
 
     return result;
   });
-  console.log(processedData);
 
   const finalData = processedData.map((item) => {
     // Python script: (result[column] / number_of_all_papers_with_da).round(3)
@@ -445,7 +444,6 @@ export const Query7DataProcessingFunctionForInferentialStatistics = (
       count: item.rowSum,
     };
   });
-  console.log(finalData);
   return finalData;
 };
 
