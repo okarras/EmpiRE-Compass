@@ -141,6 +141,16 @@ export const CostDisplay = ({
                   </TableCell>
                   <TableCell align="right">
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {totalCost.promptTokens.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {totalCost.completionTokens.toLocaleString()}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
                       {totalCost.totalTokens.toLocaleString()}
                     </Typography>
                   </TableCell>
