@@ -125,10 +125,68 @@ export class AIService {
           ? JSON.stringify(reasoningVal)
           : undefined;
 
+    // Extract usage information - check multiple possible locations
+    // Type the usage as any to access properties that may vary by provider
+    let usage:
+      | {
+          promptTokens?: number;
+          completionTokens?: number;
+          inputTokens?: number;
+          outputTokens?: number;
+          totalTokens?: number;
+        }
+      | undefined = result.usage as any;
+
+    if (!usage && (result as any).response) {
+      usage = (result as any).response.usage;
+    }
+    if (!usage && (result as any).usageMetadata) {
+      usage = (result as any).usageMetadata;
+    }
+
+    // Normalize usage format
+    const normalizedUsage = usage
+      ? {
+          promptTokens: usage.promptTokens ?? usage.inputTokens ?? 0,
+          completionTokens: usage.completionTokens ?? usage.outputTokens ?? 0,
+          totalTokens:
+            usage.totalTokens ??
+            (usage.promptTokens ?? usage.inputTokens ?? 0) +
+              (usage.completionTokens ?? usage.outputTokens ?? 0),
+        }
+      : undefined;
+
+    // Calculate cost if usage information is available
+    let costInfo = undefined;
+    if (
+      normalizedUsage &&
+      (normalizedUsage.promptTokens > 0 || normalizedUsage.completionTokens > 0)
+    ) {
+      const { calculateCost } = await import('../utils/costCalculator');
+      const actualProvider = targetProvider;
+      let actualModel: string;
+      if (actualProvider === 'openai') {
+        actualModel = this.config.openaiModel;
+      } else if (actualProvider === 'groq') {
+        actualModel = this.config.groqModel;
+      } else if (actualProvider === 'mistral') {
+        actualModel = this.config.mistralModel;
+      } else {
+        actualModel = '';
+      }
+      costInfo = calculateCost(
+        actualProvider,
+        actualModel,
+        normalizedUsage.promptTokens,
+        normalizedUsage.completionTokens
+      );
+    }
+
     return {
       text: normalizedText,
       reasoning: normalizedReasoning,
-      usage: result.usage,
+      usage: normalizedUsage,
+      cost: costInfo,
     };
   }
 
@@ -164,7 +222,7 @@ export const useAIService = () => {
   // Ensure we have valid configuration
   const config: AIConfig = {
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
+    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
@@ -183,7 +241,7 @@ export const useAIService = () => {
 export const createDefaultAIService = () => {
   return new AIService({
     provider: 'mistral',
-    openaiModel: 'gpt-5-nano',
+    openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     openaiApiKey: '',

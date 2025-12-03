@@ -35,6 +35,16 @@ export interface GenerateTextResponse {
     completionTokens: number;
     totalTokens: number;
   };
+  cost?: {
+    model: string;
+    provider: AIProvider;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    inputCost: number;
+    outputCost: number;
+    totalCost: number;
+  };
 }
 
 export interface AIConfigResponse {
@@ -215,7 +225,12 @@ export class BackendAIService {
       provider?: AIProvider;
       systemContext?: string;
     }
-  ): Promise<{ text: string; reasoning?: string }> {
+  ): Promise<{
+    text: string;
+    reasoning?: string;
+    usage?: GenerateTextResponse['usage'];
+    cost?: GenerateTextResponse['cost'];
+  }> {
     const request: GenerateTextRequest = {
       prompt,
       provider: options?.provider || this.config.provider,
@@ -237,6 +252,8 @@ export class BackendAIService {
     return {
       text: response.text,
       reasoning: response.reasoning,
+      usage: response.usage,
+      cost: response.cost,
     };
   }
 
@@ -386,7 +403,12 @@ export class UnifiedAIService {
       provider?: AIProvider;
       systemContext?: string;
     }
-  ): Promise<{ text: string; reasoning?: string }> {
+  ): Promise<{
+    text: string;
+    reasoning?: string;
+    usage?: GenerateTextResponse['usage'];
+    cost?: GenerateTextResponse['cost'];
+  }> {
     // Use frontend service if user has provided their own API keys
     if (this.shouldUseFrontend()) {
       const frontendService = this.getFrontendService();
@@ -447,7 +469,7 @@ export const useBackendAIService = () => {
 
   return new BackendAIService({
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
+    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
@@ -461,7 +483,7 @@ export const useAIService = () => {
 
   return new UnifiedAIService({
     provider: aiConfig.provider || 'mistral',
-    openaiModel: aiConfig.openaiModel || 'gpt-5-nano',
+    openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     openaiApiKey: aiConfig.openaiApiKey || '',
@@ -475,7 +497,7 @@ export const useAIService = () => {
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
     provider: 'mistral',
-    openaiModel: 'gpt-5-nano',
+    openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     useEnvironmentKeys: true,
@@ -485,7 +507,7 @@ export const createDefaultBackendAIService = () => {
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
     provider: 'mistral',
-    openaiModel: 'gpt-5-nano',
+    openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     openaiApiKey: '',

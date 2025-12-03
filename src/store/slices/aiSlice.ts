@@ -66,7 +66,7 @@ const loadAIConfig = (): Partial<InitialState> => {
       const parsed = JSON.parse(savedConfig);
       return {
         provider: parsed.provider || 'mistral',
-        openaiModel: parsed.openaiModel || 'gpt-5-nano',
+        openaiModel: parsed.openaiModel || 'gpt-4o-mini',
         groqModel: parsed.groqModel || 'llama-3.1-8b-instant',
         mistralModel: parsed.mistralModel || 'mistral-large-latest',
         openaiApiKey: parsed.openaiApiKey || '',
@@ -96,7 +96,7 @@ const saveAIConfig = (config: InitialState) => {
 
 const defaultConfig: InitialState = {
   provider: 'mistral',
-  openaiModel: 'gpt-5-nano',
+  openaiModel: 'gpt-4o-mini',
   groqModel: 'llama-3.1-8b-instant',
   mistralModel: 'mistral-large-latest',
   openaiApiKey: '',
