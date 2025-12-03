@@ -47,7 +47,6 @@ const DynamicAIQuestion = () => {
   );
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
   const [maxIterations] = useState<number>(3);
-  const [costs, setCosts] = useState<CostBreakdown[]>([]);
 
   const { setContext } = useAIAssistantContext();
 
