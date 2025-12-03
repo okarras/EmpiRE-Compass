@@ -53,6 +53,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     updateQuestionInterpretation,
     updateDataCollectionInterpretation,
     updateDataAnalysisInterpretation,
+    updateCosts,
   } = useDynamicQuestion();
 
   const [editingSection, setEditingSection] = useState<
@@ -274,6 +275,15 @@ Modified ${sectionName}:`;
       const modifiedContent = result.text.trim();
       const updateFunction = getUpdateFunction(aiTargetSection);
       updateFunction(modifiedContent, aiPrompt);
+
+      // Track cost for AI modification
+      if (result.cost) {
+        const costWithSection = {
+          ...result.cost,
+          section: `AI Modification - ${sectionName}`,
+        };
+        updateCosts([...state.costs, costWithSection]);
+      }
 
       setShowAIDialog(false);
       setAiPrompt('');

@@ -52,7 +52,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   onContentChange,
 }) => {
   const aiService = useAIService();
-  const { state, getHistoryByType } = useDynamicQuestion();
+  const { state, getHistoryByType, updateCosts } = useDynamicQuestion();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isAIModifying, setIsAIModifying] = useState(false);
@@ -227,6 +227,15 @@ ${bodyMatch[0]}
       }
 
       onContentChange(modifiedHtml, aiPrompt);
+
+      // Track cost for AI modification
+      if (result.cost) {
+        const costWithSection = {
+          ...result.cost,
+          section: `AI Modification - ${title}`,
+        };
+        updateCosts([...state.costs, costWithSection]);
+      }
 
       setShowAIDialog(false);
       setAiPrompt('');
