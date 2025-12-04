@@ -59,19 +59,19 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
 
-      - name: Run empire statistics script
+      - name: Run Empire statistics
         run: |
           cd scripts
           export GOOGLE_APPLICATION_CREDENTIALS="firebase-service-account.json"
-          python empire-statistics.py
+          python orkg-statistics.py --template empire
         timeout-minutes: 60
         continue-on-error: true
 
-      - name: Run NLP4RE statistics script
+      - name: Run NLP4RE statistics
         run: |
           cd scripts
           export GOOGLE_APPLICATION_CREDENTIALS="firebase-service-account.json"
-          python nlp4re-statistics.py
+          python orkg-statistics.py --template nlp4re
         timeout-minutes: 60
         continue-on-error: true
 
