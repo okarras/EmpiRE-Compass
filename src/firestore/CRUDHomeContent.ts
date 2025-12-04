@@ -282,7 +282,6 @@ export const initializeHomeContent = async (
       const existingContent = await getHomeContentApi();
       // If we get content back and it's not the default, it exists
       if (existingContent && typeof existingContent === 'object') {
-        console.log('Home content already exists');
         return;
       }
     } catch (fetchError: unknown) {
@@ -301,7 +300,6 @@ export const initializeHomeContent = async (
 
     // Content doesn't exist, create it with defaults
     await setHomeContent(defaultHomeContent, userId, userEmail, keycloakToken);
-    console.log('Home content initialized with defaults');
   } catch (error) {
     console.error('Error initializing home content:', error);
     throw error;

@@ -53,6 +53,7 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     updateQuestionInterpretation,
     updateDataCollectionInterpretation,
     updateDataAnalysisInterpretation,
+    updateCosts,
   } = useDynamicQuestion();
 
   const [editingSection, setEditingSection] = useState<
@@ -230,6 +231,52 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
     }
   };
 
+  // Helper function to prepare data summary for AI processing
+  const prepareDataSummary = (data: Record<string, unknown>[]) => {
+    if (!data || data.length === 0) return 'No data available';
+
+    const columns = Object.keys(data[0] || {});
+    const summary: Record<
+      string,
+      {
+        type: string;
+        count: number;
+        min?: number;
+        max?: number;
+        unique_values: number;
+        sample_values?: unknown[];
+      }
+    > = {};
+
+    // For each column, provide a summary
+    columns.forEach((col) => {
+      const values = data
+        .map((row) => row[col])
+        .filter((val) => val !== null && val !== undefined);
+      const uniqueValues = [...new Set(values)];
+
+      if (typeof values[0] === 'number') {
+        const nums = values as number[];
+        summary[col] = {
+          type: 'numeric',
+          count: values.length,
+          min: Math.min(...nums),
+          max: Math.max(...nums),
+          unique_values: uniqueValues.length,
+        };
+      } else {
+        summary[col] = {
+          type: 'categorical',
+          count: values.length,
+          unique_values: uniqueValues.length,
+          sample_values: uniqueValues.slice(0, 10), // Show first 10 unique values
+        };
+      }
+    });
+
+    return JSON.stringify(summary, null, 2);
+  };
+
   const handleAIModify = async () => {
     if (!aiPrompt.trim() || !aiTargetSection) {
       setError('Please enter a prompt for the AI.');
@@ -253,16 +300,30 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
             ? 'data collection interpretation'
             : 'data analysis interpretation';
 
+      // Prepare data summary and full data for context
+      const queryResults = state.queryResults || [];
+      const dataSummary = prepareDataSummary(queryResults);
+      const fullData =
+        queryResults.length > 0
+          ? JSON.stringify(queryResults, null, 2)
+          : 'No data available';
+
       const contextPrompt = `You are modifying a ${sectionName} for a dynamic research question analysis.
 
 Current Research Question: "${state.question}"
+
+SPARQL Query Results:
+- Total rows: ${queryResults.length}
+- Columns: ${queryResults.length > 0 ? Object.keys(queryResults[0] || {}).join(', ') : 'N/A'}
+- Data Summary: ${dataSummary}
+- Full Data (all rows): ${fullData}
 
 Current ${sectionName}:
 ${currentContent}
 
 User Request: ${aiPrompt}
 
-Please modify the ${sectionName} according to the user's request. Return only the modified content, no explanations.
+Please modify the ${sectionName} according to the user's request. Consider the query results data when providing meaningful modifications. Return only the modified content, no explanations.
 
 Modified ${sectionName}:`;
 
@@ -274,6 +335,15 @@ Modified ${sectionName}:`;
       const modifiedContent = result.text.trim();
       const updateFunction = getUpdateFunction(aiTargetSection);
       updateFunction(modifiedContent, aiPrompt);
+
+      // Track cost for AI modification
+      if (result.cost) {
+        const costWithSection = {
+          ...result.cost,
+          section: `AI Modification - ${sectionName}`,
+        };
+        updateCosts([...state.costs, costWithSection]);
+      }
 
       setShowAIDialog(false);
       setAiPrompt('');

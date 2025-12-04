@@ -6,6 +6,8 @@ import AIContentGenerator from './AIContentGenerator';
 import SectionSelector from '../SectionSelector';
 import QuestionInformationView from '../QuestionInformationView';
 import QuestionDataGridView from '../QuestionDataGridView';
+import CostDisplay from './CostDisplay';
+import { CostBreakdown } from '../../utils/costCalculator';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -58,6 +60,7 @@ interface ResultsDisplaySectionProps {
   ) => void;
   onError: (error: string) => void;
   onChartHtmlChange: (html: string) => void;
+  costs: CostBreakdown[];
 }
 
 const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
@@ -74,6 +77,7 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
   onContentGenerated,
   onError,
   onChartHtmlChange,
+  costs,
 }) => {
   const renderErrorState = (errorMessage: string) => (
     <Box
@@ -144,6 +148,8 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
           )}
         </Paper>
       )}
+
+      {costs.length > 0 && <CostDisplay costs={costs} />}
 
       {queryResults.length > 0 && (
         <QuestionDataGridView

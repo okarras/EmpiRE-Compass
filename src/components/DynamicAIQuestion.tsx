@@ -17,6 +17,7 @@ import { processDynamicData } from '../utils/dataTransform';
 import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
 import { useLocation } from 'react-router-dom';
 import { PredicatesMapping } from '../components/Graph/types';
+import type { CostBreakdown } from '../utils/costCalculator';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -34,6 +35,7 @@ const DynamicAIQuestion = () => {
     updateTemplateId,
     updateTemplateMapping,
     updateTargetClassId,
+    updateCosts,
   } = useDynamicQuestion();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -260,13 +262,19 @@ const DynamicAIQuestion = () => {
     updateQueryResults([]);
     setDynamicQuery(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
+    updateCosts([]); // Reset costs for new generation
 
     try {
       // Generate query with iterative refinement
-      const { rawData } = await generateQueryWithRefinement(
+      const { rawData, costs: queryCosts } = await generateQueryWithRefinement(
         state.question,
         maxIterations
       );
+
+      // Set query generation costs
+      if (queryCosts && queryCosts.length > 0) {
+        updateCosts(queryCosts);
+      }
 
       if (!rawData || rawData.length === 0) {
         setError(
@@ -282,6 +290,9 @@ const DynamicAIQuestion = () => {
         state.question,
         false
       );
+
+      // Note: Processing function cost will be tracked separately if needed
+      // For now, we track costs from query generation iterations
 
       // Transform data
       let transformedData: Record<string, unknown>[] = [];
@@ -367,7 +378,8 @@ const DynamicAIQuestion = () => {
     _chartDescriptionContent: string,
     questionInterpretationContent: string,
     dataCollectionInterpretationContent: string,
-    dataAnalysisInterpretationContent: string
+    dataAnalysisInterpretationContent: string,
+    contentCosts?: CostBreakdown[]
   ) => {
     updateChartHtml(chartHtmlContent, 'AI generated chart HTML');
     updateQuestionInterpretation(
@@ -393,6 +405,11 @@ const DynamicAIQuestion = () => {
           dataAnalysis: dataAnalysisInterpretationContent,
         },
       });
+    }
+
+    // Add content generation costs to the total costs
+    if (contentCosts && contentCosts.length > 0) {
+      updateCosts([...state.costs, ...contentCosts]);
     }
   };
 
@@ -538,7 +555,6 @@ const DynamicAIQuestion = () => {
         onRegenerateCode={handleRegenerateProcessingCode}
         onOpenHistory={handleOpenProcessingHistory}
       />
-
       <ResultsDisplaySection
         loading={loading}
         error={error}
@@ -553,6 +569,7 @@ const DynamicAIQuestion = () => {
         onContentGenerated={handleContentGenerated}
         onError={setError}
         onChartHtmlChange={updateChartHtml}
+        costs={state.costs}
       />
 
       <HistoryManager
