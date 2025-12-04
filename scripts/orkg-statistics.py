@@ -57,21 +57,21 @@ TEMPLATE_CONFIGS = {
         "firebase_template_id": "R186491",
         "firebase_statistic_id": "empire-statistics",
         "sparql_query": """
-PREFIX r: <http://orkg.org/orkg/resource/>
-PREFIX c: <http://orkg.org/orkg/class/>
-PREFIX p: <http://orkg.org/orkg/predicate/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX r: <http://orkg.org/orkg/resource/>
+            PREFIX c: <http://orkg.org/orkg/class/>
+            PREFIX p: <http://orkg.org/orkg/predicate/>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?paper, ?doi
-WHERE {
-    ?paper p:P31 ?contri.
-    OPTIONAL{?paper p:P26 ?doi.} 
-    ?contri a c:C27001.
-    ?contri p:P135046 ?venue.
-    ?venue rdfs:label ?venue_name.
-  FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
-}
-"""
+            SELECT ?paper, ?doi
+            WHERE {
+                ?paper p:P31 ?contri.
+                OPTIONAL{?paper p:P26 ?doi.} 
+                ?contri a c:C27001.
+                ?contri p:P135046 ?venue.
+                ?venue rdfs:label ?venue_name.
+            FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
+            }
+            """
     },
     "nlp4re": {
         "name": "NLP4RE",
@@ -80,18 +80,18 @@ WHERE {
         "firebase_template_id": "R1544125",
         "firebase_statistic_id": "nlp4re-statistics",
         "sparql_query": """
-PREFIX r: <http://orkg.org/orkg/resource/>
-PREFIX c: <http://orkg.org/orkg/class/>
-PREFIX p: <http://orkg.org/orkg/predicate/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX r: <http://orkg.org/orkg/resource/>
+            PREFIX c: <http://orkg.org/orkg/class/>
+            PREFIX p: <http://orkg.org/orkg/predicate/>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
-SELECT ?paper, ?doi
-WHERE {
-    ?paper p:P31 ?contri.
-    OPTIONAL{?paper p:P26 ?doi.} 
-    ?contri a c:C121001.
-}
-"""
+            SELECT ?paper, ?doi
+            WHERE {
+                ?paper p:P31 ?contri.
+                OPTIONAL{?paper p:P26 ?doi.} 
+                ?contri a c:C121001.
+            }
+            """
     }
 }
 
