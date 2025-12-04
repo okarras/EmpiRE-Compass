@@ -70,6 +70,10 @@ export default function Statistics() {
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
+    // Reset loading state and statistics when template changes
+    setLoading(true);
+    setStatistics(DEFAULT_STATS);
+
     const fetchData = async () => {
       try {
         const templateConfig = getTemplateConfig(templateId);
@@ -81,7 +85,7 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, , , , , perVenueData, venuesData] = results;
+        const [paperData, perVenueData, venuesData] = results;
 
         setStatistics((prev) => ({
           ...prev,

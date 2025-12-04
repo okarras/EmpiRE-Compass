@@ -9,6 +9,8 @@ nlp4re-statistics.py
 5. Supports --reload_data to force re-fetching everything.
 6. Calculates global distinct counts across all papers.
 7. Handles paper deletions by removing them from CSV.
+
+!!! DEPRECATED: use orkg-statistics.py instead !!!
 """
 
 import os

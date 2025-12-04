@@ -47,6 +47,26 @@ export default defineConfig({
               },
             },
           },
+          {
+            // Cache statistics API calls (both relative and absolute URLs)
+            urlPattern: ({ url }) => {
+              return (
+                url.pathname.includes('/api/templates/') &&
+                url.pathname.includes('/statistics')
+              );
+            },
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'statistics-cache',
+              expiration: {
+                maxAgeSeconds: 1 * 60 * 60, // 1 hour - statistics don't change frequently
+                maxEntries: 50, // Limit cache entries
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
         ],
       },
     }),
