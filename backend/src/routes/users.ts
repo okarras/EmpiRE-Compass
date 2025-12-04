@@ -11,6 +11,56 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 const router = Router();
 
 /**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - id
+ *         - email
+ *         - display_name
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: Unique identifier originating from Keycloak
+ *         email:
+ *           type: string
+ *           format: email
+ *         display_name:
+ *           type: string
+ *       example:
+ *         id: 12345
+ *         email: user@example.com
+ *         display_name: Jane Doe
+ *
+ * /api/users/{userId}:
+ *   get:
+ *     summary: Get a user by ID
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the user to retrieve
+ *     responses:
+ *       '200':
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '404':
+ *         description: User not found
+ *       '500':
+ *         description: Failed to fetch user
+ */
+/**
  * POST /api/users/sync
  * Sync Keycloak user to Firebase
  */
