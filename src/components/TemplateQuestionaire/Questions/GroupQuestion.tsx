@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import InfoTooltip from '../InfoTooltip';
 import QuestionRenderer from './QuestionRenderer';
 import type { AIVerificationResult } from '../../../services/backendAIService';
+import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
 
 const GroupQuestion: React.FC<{
   q: any;
@@ -17,6 +18,7 @@ const GroupQuestion: React.FC<{
   idAttr?: string;
   level?: number;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -34,6 +36,7 @@ const GroupQuestion: React.FC<{
   idAttr,
   level = 0,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -74,6 +77,7 @@ const GroupQuestion: React.FC<{
                 idAttr={`${idAttr ?? q.id}-g-${f.id}`}
                 level={level + 1}
                 pdfContent={pdfContent}
+                structuredDocument={structuredDocument}
                 onNavigateToPage={onNavigateToPage}
                 onHighlightsChange={onHighlightsChange}
                 pdfUrl={pdfUrl}

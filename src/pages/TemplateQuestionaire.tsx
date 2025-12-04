@@ -9,6 +9,7 @@ import {
   useAIService,
   type AIVerificationResult,
 } from '../services/backendAIService';
+import type { StructuredDocument } from '../utils/structuredPdfExtractor';
 
 /* types & constants */
 type TemplateSpec = any;
@@ -17,6 +18,7 @@ type Props = {
   answers: Record<string, any>;
   setAnswers: (next: Record<string, any>) => void;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   pdfExtractionError?: Error | null;
   onRetryExtraction?: () => void;
@@ -49,6 +51,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
   answers,
   setAnswers,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   pdfExtractionError,
   onRetryExtraction,
@@ -1287,6 +1290,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
                   setExpandedKey={setExpandedKey}
                   isExpandedKey={isExpandedKey}
                   pdfContent={pdfContent}
+                  structuredDocument={structuredDocument}
                   onNavigateToPage={onNavigateToPage}
                   onHighlightsChange={onHighlightsChange}
                   pdfUrl={pdfUrl}

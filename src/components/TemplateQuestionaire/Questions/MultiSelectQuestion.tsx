@@ -14,6 +14,7 @@ import AIAssistantButton, {
 import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
+import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
 
 const MultiSelectQuestion: React.FC<{
   q: any;
@@ -22,6 +23,7 @@ const MultiSelectQuestion: React.FC<{
   idAttr?: string;
   level?: number;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -39,6 +41,7 @@ const MultiSelectQuestion: React.FC<{
   onChange,
   level = 0,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -233,6 +236,7 @@ const MultiSelectQuestion: React.FC<{
                 onVerificationComplete={onAIVerificationComplete}
                 onError={handleError}
                 pdfContent={pdfContent}
+                structuredDocument={structuredDocument}
                 hasSuggestions={suggestions.length > 0}
               />
             )}

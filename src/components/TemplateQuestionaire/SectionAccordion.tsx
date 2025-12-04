@@ -15,6 +15,7 @@ import Stack from '@mui/material/Stack';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import QuestionRenderer from './Questions/QuestionRenderer';
+import type { StructuredDocument } from '../../utils/structuredPdfExtractor';
 
 type Props = {
   sec: any;
@@ -36,6 +37,7 @@ type Props = {
   setExpandedKey: (k: string, v: boolean) => void;
   isExpandedKey: (k: string) => boolean;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -70,6 +72,7 @@ const SectionAccordion: React.FC<Props> = ({
   setExpandedKey,
   isExpandedKey,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -184,6 +187,7 @@ const SectionAccordion: React.FC<Props> = ({
                   idAttr={questionId}
                   level={1}
                   pdfContent={pdfContent}
+                  structuredDocument={structuredDocument}
                   onNavigateToPage={onNavigateToPage}
                   onHighlightsChange={onHighlightsChange}
                   pdfUrl={pdfUrl}
@@ -264,6 +268,7 @@ const SectionAccordion: React.FC<Props> = ({
                               idAttr={questionId}
                               level={1}
                               pdfContent={pdfContent}
+                              structuredDocument={structuredDocument}
                               onNavigateToPage={onNavigateToPage}
                               onHighlightsChange={onHighlightsChange}
                               pdfUrl={pdfUrl}

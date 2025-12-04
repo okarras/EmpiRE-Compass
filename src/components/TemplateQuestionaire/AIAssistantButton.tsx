@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
   Button,
   Menu,
@@ -32,6 +32,10 @@ import {
 } from '../../utils/suggestions';
 import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
 import QuestionnaireAIHistoryDialog from './QuestionnaireAIHistoryDialog';
+import {
+  structuredPdfExtractor,
+  type StructuredDocument,
+} from '../../utils/structuredPdfExtractor';
 
 interface AIAssistantButtonProps {
   questionId: string;
@@ -44,6 +48,7 @@ interface AIAssistantButtonProps {
   onError?: (error: string) => void;
   disabled?: boolean;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   context?: string;
   hasSuggestions?: boolean;
 }
@@ -69,6 +74,7 @@ const AIAssistantButton = React.forwardRef<
       onError,
       disabled = false,
       pdfContent,
+      structuredDocument,
       context,
       hasSuggestions = false,
     },
@@ -93,6 +99,27 @@ const AIAssistantButton = React.forwardRef<
       setTimeout(() => setAnnounceMessage(''), 100);
     }, []);
 
+    // Use intelligent content retrieval if structured document is available
+    const relevantPdfContent = useMemo(() => {
+      if (structuredDocument) {
+        // Use selective retrieval based on question text
+        const retrieval = structuredPdfExtractor.retrieveForQuestion(
+          structuredDocument,
+          questionText,
+          4000 // max tokens
+        );
+        console.log('[AIAssistantButton] Using intelligent retrieval:', {
+          question: questionText.substring(0, 50),
+          sections: retrieval.sections,
+          pages: retrieval.pages,
+          tokenEstimate: retrieval.tokenEstimate,
+        });
+        return retrieval.content;
+      }
+      // Fallback to full content
+      return pdfContent;
+    }, [structuredDocument, questionText, pdfContent]);
+
     const {
       suggestions,
       loading: suggestLoading,
@@ -103,7 +130,7 @@ const AIAssistantButton = React.forwardRef<
       questionText,
       questionType,
       questionOptions,
-      pdfContent,
+      pdfContent: relevantPdfContent,
       questionId,
     });
 
@@ -198,7 +225,7 @@ const AIAssistantButton = React.forwardRef<
     const handleSuggest = async () => {
       handleMenuClose();
 
-      if (!pdfContent || pdfContent.trim().length === 0) {
+      if (!relevantPdfContent || relevantPdfContent.trim().length === 0) {
         const errorMsg =
           'PDF content is required to generate suggestions. Please ensure a PDF is loaded.';
         setLastError(errorMsg);
@@ -242,7 +269,7 @@ const AIAssistantButton = React.forwardRef<
           currentAnswer,
           questionType,
           context,
-          pdfContent,
+          pdfContent: relevantPdfContent,
         });
 
         setVerificationResult(result);
@@ -401,7 +428,9 @@ const AIAssistantButton = React.forwardRef<
           <MenuItem
             onClick={handleSuggest}
             disabled={
-              !pdfContent || pdfContent.trim().length === 0 || hasSuggestions
+              !relevantPdfContent ||
+              relevantPdfContent.trim().length === 0 ||
+              hasSuggestions
             }
           >
             <ListItemIcon>
@@ -412,9 +441,12 @@ const AIAssistantButton = React.forwardRef<
               secondary={
                 hasSuggestions
                   ? 'Suggestions already shown'
-                  : !pdfContent || pdfContent.trim().length === 0
+                  : !relevantPdfContent ||
+                      relevantPdfContent.trim().length === 0
                     ? 'No PDF content available'
-                    : 'Generate from PDF'
+                    : structuredDocument
+                      ? 'Generate from relevant sections'
+                      : 'Generate from PDF'
               }
             />
           </MenuItem>

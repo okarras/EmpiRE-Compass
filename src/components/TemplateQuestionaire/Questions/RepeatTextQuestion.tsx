@@ -16,6 +16,8 @@ import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 
+import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
+
 const RepeatTextQuestion: React.FC<{
   q: any;
   value: any;
@@ -23,6 +25,7 @@ const RepeatTextQuestion: React.FC<{
   idAttr?: string;
   level?: number;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -41,6 +44,7 @@ const RepeatTextQuestion: React.FC<{
   idAttr,
   level = 0,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -167,6 +171,7 @@ const RepeatTextQuestion: React.FC<{
                 onVerificationComplete={onAIVerificationComplete}
                 onError={handleError}
                 pdfContent={pdfContent}
+                structuredDocument={structuredDocument}
               />
             </Box>
           )}

@@ -6,6 +6,10 @@ import TemplateQuestionaire from './TemplateQuestionaire';
 import empiricalResearchTemplate from '../templates/empirical_research_questionaire.json';
 import { useLocation } from 'react-router-dom';
 import PdfViewer from './PdfViewer';
+import {
+  structuredPdfExtractor,
+  type StructuredDocument,
+} from '../utils/structuredPdfExtractor';
 
 type ViewerState = {
   pdfUrl?: string | null;
@@ -35,6 +39,8 @@ const ContributeViewer: React.FC = () => {
   const [extractedPdfText, setExtractedPdfText] = useState<string | undefined>(
     undefined
   );
+  const [structuredDocument, setStructuredDocument] =
+    useState<StructuredDocument | null>(null);
   const [pdfExtractionError, setPdfExtractionError] = useState<Error | null>(
     null
   );
@@ -142,10 +148,34 @@ const ContributeViewer: React.FC = () => {
     setPdfHighlights(highlights);
   };
 
-  // Handle PDF text extraction
-  const handleTextExtracted = (text: string) => {
+  // Handle PDF text extraction - now uses structured extraction
+  const handleTextExtracted = async (text: string) => {
     console.log('[ContributeViewer] PDF text extracted, length:', text.length);
     setExtractedPdfText(text);
+
+    // Also extract structured document for intelligent retrieval
+    if (pdfUrl) {
+      try {
+        const structured =
+          await structuredPdfExtractor.extractStructuredDocument(
+            pdfUrl,
+            locState.filename
+          );
+        setStructuredDocument(structured);
+        console.log('[ContributeViewer] Structured document extracted:', {
+          pages: structured.metadata.totalPages,
+          sections: structured.sections.map((s) => s.name),
+          hasStructure: structured.metadata.hasStructuredSections,
+        });
+      } catch (err) {
+        console.warn(
+          '[ContributeViewer] Structured extraction failed, using fallback:',
+          err
+        );
+        // Continue with basic text extraction as fallback
+      }
+    }
+
     // Set a global flag for debugging (can be removed later)
     if (typeof window !== 'undefined') {
       (window as any).__pdfTextExtracted = true;
@@ -163,11 +193,13 @@ const ContributeViewer: React.FC = () => {
   const handleRetryExtraction = () => {
     // Clear the error state
     setPdfExtractionError(null);
+    setStructuredDocument(null);
 
     // Force re-extraction by clearing the cache and resetting the PDF URL
     if (pdfUrl) {
       const { pdfTextExtractor } = require('../utils/pdf');
       pdfTextExtractor.clearDocumentCache(pdfUrl);
+      structuredPdfExtractor.clearCache(pdfUrl);
 
       // Trigger re-extraction by temporarily clearing and resetting the URL
       const currentUrl = pdfUrl;
@@ -210,6 +242,7 @@ const ContributeViewer: React.FC = () => {
           answers={answers}
           setAnswers={setAnswers}
           pdfContent={extractedPdfText}
+          structuredDocument={structuredDocument}
           onNavigateToPage={handleGoToPage}
           pdfExtractionError={pdfExtractionError}
           onRetryExtraction={handleRetryExtraction}

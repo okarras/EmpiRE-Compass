@@ -6,6 +6,7 @@ import RepeatTextQuestion from './RepeatTextQuestion';
 import RepeatGroupQuestion from './RepeatGroupQuestion';
 import GroupQuestion from './GroupQuestion';
 import type { AIVerificationResult } from '../../../services/backendAIService';
+import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
 
 const QuestionRenderer: React.FC<{
   q: any;
@@ -14,6 +15,7 @@ const QuestionRenderer: React.FC<{
   idAttr?: string;
   level?: number;
   pdfContent?: string;
+  structuredDocument?: StructuredDocument | null;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -33,6 +35,7 @@ const QuestionRenderer: React.FC<{
   idAttr,
   level = 0,
   pdfContent,
+  structuredDocument,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -50,6 +53,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -73,6 +77,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -91,6 +96,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -109,6 +115,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -127,6 +134,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -144,6 +152,7 @@ const QuestionRenderer: React.FC<{
         idAttr={idAttr}
         level={level}
         pdfContent={pdfContent}
+        structuredDocument={structuredDocument}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -161,6 +170,7 @@ const QuestionRenderer: React.FC<{
       idAttr={idAttr}
       level={level}
       pdfContent={pdfContent}
+      structuredDocument={structuredDocument}
       onNavigateToPage={onNavigateToPage}
       onHighlightsChange={onHighlightsChange}
       pdfUrl={pdfUrl}
