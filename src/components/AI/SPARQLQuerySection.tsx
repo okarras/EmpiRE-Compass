@@ -222,7 +222,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
 }) => {
   const { renderHistoryButton } = useHistoryManager();
   const aiService = useAIService();
-  const { state, getHistoryByType } = useDynamicQuestion();
+  const { state, getHistoryByType, updateCosts } = useDynamicQuestion();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isAIModifying, setIsAIModifying] = useState(false);
@@ -708,6 +708,15 @@ Modified SPARQL Query:`;
         .trim();
 
       onSparqlChange(modifiedQuery);
+
+      // Track cost for AI modification
+      if (result.cost) {
+        const costWithSection = {
+          ...result.cost,
+          section: 'AI Modification - SPARQL Query',
+        };
+        updateCosts([...state.costs, costWithSection]);
+      }
 
       setShowAIDialog(false);
       setAiPrompt('');

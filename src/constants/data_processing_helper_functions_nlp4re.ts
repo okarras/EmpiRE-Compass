@@ -263,7 +263,6 @@ export const Query9DataProcessingFunction = (
     'ratio_missing_nlp_dataset',
     'ratio_annotation_missing',
   ];
-  console.log('result:', rawData);
 
   return KEYS.map((key) => {
     const values = rawData

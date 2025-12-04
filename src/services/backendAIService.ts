@@ -35,6 +35,16 @@ export interface GenerateTextResponse {
     completionTokens: number;
     totalTokens: number;
   };
+  cost?: {
+    model: string;
+    provider: AIProvider;
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+    inputCost: number;
+    outputCost: number;
+    totalCost: number;
+  };
 }
 
 export interface AIConfigResponse {
@@ -215,7 +225,12 @@ export class BackendAIService {
       provider?: AIProvider;
       systemContext?: string;
     }
-  ): Promise<{ text: string; reasoning?: string }> {
+  ): Promise<{
+    text: string;
+    reasoning?: string;
+    usage?: GenerateTextResponse['usage'];
+    cost?: GenerateTextResponse['cost'];
+  }> {
     const request: GenerateTextRequest = {
       prompt,
       provider: options?.provider || this.config.provider,
@@ -237,6 +252,8 @@ export class BackendAIService {
     return {
       text: response.text,
       reasoning: response.reasoning,
+      usage: response.usage,
+      cost: response.cost,
     };
   }
 
@@ -386,7 +403,12 @@ export class UnifiedAIService {
       provider?: AIProvider;
       systemContext?: string;
     }
-  ): Promise<{ text: string; reasoning?: string }> {
+  ): Promise<{
+    text: string;
+    reasoning?: string;
+    usage?: GenerateTextResponse['usage'];
+    cost?: GenerateTextResponse['cost'];
+  }> {
     // Use frontend service if user has provided their own API keys
     if (this.shouldUseFrontend()) {
       const frontendService = this.getFrontendService();
