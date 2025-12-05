@@ -41,7 +41,23 @@ export const MISTRAL_MODELS = [
   'open-mistral-nemo',
 ] as const;
 
-export const GOOGLE_MODELS = ['gemini-2.5-flash', 'gemma-3-27b-it'] as const;
+export const GOOGLE_MODELS = [
+  // Gemini 3 series
+  'gemini-3-pro-preview',
+  // Gemini 2.5 series
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  // Gemini 2.0 series
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-2.0-flash-lite',
+  // Gemini 1.5 series
+  'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  // Other models
+  'gemma-3-27b-it',
+] as const;
 
 export type OpenAIModel = (typeof OPENAI_MODELS)[number];
 export type GroqModel = (typeof GROQ_MODELS)[number];
