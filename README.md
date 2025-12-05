@@ -162,18 +162,44 @@ Using **npm**:
 npm install
 ```
 
-## 5. Configure environment variables (optional)
+## 5. Configure environment variables
 
-Create a `.env` file in the root directory with the following variables:
+### Frontend Configuration
 
-```env
-VITE_KEYCLOAK_URL=https://accounts.orkg.org
-VITE_KEYCLOAK_REALM=orkg
-VITE_KEYCLOAK_CLIENT_ID=empire-compass-devel
-VITE_BACKEND_URL=https://empirecompassbackend.vercel.app
+Copy the example environment file and configure your variables:
+
+```sh
+cp .env.example .env
 ```
 
-**Note:** The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available. The dashboard and public features will function normally in unauthenticated mode.
+Edit the `.env` file with your actual values. The `.env.example` file contains all necessary environment variables including:
+
+- **Backend API URL**: `VITE_BACKEND_URL`
+- **Keycloak Authentication** (optional): `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID`
+- **Firebase Configuration**: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, etc.
+- **AI Provider API Keys** (optional): `VITE_OPEN_AI_API_KEY`, `VITE_GROQ_API_KEY`, `VITE_MISTRAL_API_KEY`, `VITE_GOOGLE_GENERATIVE_AI_API_KEY`
+
+**Note:**
+
+- The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available.
+- AI API keys can also be configured directly in the UI. If you set them in `.env`, enable "Use Environment Keys" in the AI configuration settings.
+- The dashboard and public features will function normally in unauthenticated mode.
+
+### Backend Configuration (if running backend locally)
+
+If you're running the backend server locally, configure backend environment variables:
+
+```sh
+cd backend
+cp .env.example .env
+```
+
+Edit `backend/.env` with your backend configuration including:
+
+- **Server Port**: `PORT`
+- **AI Provider**: `AI_PROVIDER` (openai, groq, mistral, or google)
+- **AI Models**: `OPENAI_MODEL`, `GROQ_MODEL`, `MISTRAL_MODEL`, `GOOGLE_MODEL`
+- **AI API Keys**: `OPENAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`
 
 ## 6. Start the development server
 
