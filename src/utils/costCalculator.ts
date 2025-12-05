@@ -43,22 +43,21 @@ const OPENAI_PRICING: Record<OpenAIModel, { input: number; output: number }> = {
   'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
 };
 
-// Groq pricing per 1M tokens (most models are free or very low cost)
+// Groq pricing per 1M tokens
+// Pricing based on https://console.groq.com/docs/models and https://groq.com/pricing (as of 2025)
 const GROQ_PRICING: Partial<
   Record<GroqModel, { input: number; output: number }>
 > = {
-  'llama-3.1-8b-instant': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.1-70b-versatile': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.1-405b-reasoning': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.3-70b-versatile': { input: 0.0, output: 0.0 }, // Free tier
-  'openai/gpt-oss-120b': { input: 0.0, output: 0.0 }, // Free tier
-  'openai/gpt-oss-20b': { input: 0.0, output: 0.0 }, // Free tier
-  'whisper-large-v3': { input: 0.0, output: 0.0 }, // Free tier
-  'deepseek-r1-distill-llama-70b': { input: 0.0, output: 0.0 }, // Free tier
-  'mixtral-8x7b-32768': { input: 0.0, output: 0.0 }, // Free tier
+  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
+  'llama-3.1-70b-versatile': { input: 0.0, output: 0.0 }, // Not listed in production/preview models - may be deprecated
+  'llama-3.1-405b-reasoning': { input: 0.0, output: 0.0 }, // Not listed in production/preview models - may be deprecated
+  'llama-3.3-70b-versatile': { input: 0.59, output: 0.79 },
+  'openai/gpt-oss-120b': { input: 0.15, output: 0.6 },
+  'openai/gpt-oss-20b': { input: 0.075, output: 0.3 },
 };
 
 // Mistral pricing per 1M tokens
+// Pricing based on https://mistral.ai/pricing#api-pricing (as of 2025)
 const MISTRAL_PRICING: Record<MistralModel, { input: number; output: number }> =
   {
     'mistral-large-latest': { input: 2.7, output: 8.1 },
