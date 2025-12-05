@@ -28,9 +28,6 @@ export const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
   'openai/gpt-oss-120b',
   'openai/gpt-oss-20b',
-  'whisper-large-v3',
-  'mixtral-8x7b-32768',
-  'deepseek-r1-distill-llama-70b',
 ] as const;
 
 export const MISTRAL_MODELS = [
