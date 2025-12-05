@@ -41,6 +41,7 @@ interface Props {
   gridOptions?: {
     defaultColumns?: string[];
     defaultGroupBy?: string;
+    defaultUseUniquePapers?: boolean;
   };
 }
 
@@ -55,7 +56,9 @@ interface ColumnStats {
 const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
   const [showStats, setShowStats] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [useUniquePapers, setUseUniquePapers] = useState(true);
+  const [useUniquePapers, setUseUniquePapers] = useState(
+    gridOptions?.defaultUseUniquePapers ?? true
+  );
   const [groupByColumn, setGroupByColumn] = useState<string>('');
 
   // Popover states
@@ -93,6 +96,11 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
         availableColumns.includes(gridOptions.defaultGroupBy)
       ) {
         setGroupByColumn(gridOptions.defaultGroupBy);
+      }
+
+      // Set default use unique papers if provided
+      if (gridOptions.defaultUseUniquePapers !== undefined) {
+        setUseUniquePapers(gridOptions.defaultUseUniquePapers);
       }
     }
   }, [gridOptions, availableColumns]);
