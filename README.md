@@ -50,61 +50,6 @@ EmpiRE-Compass offers a rich set of capabilities to support exploration, synthes
 
 In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
 
-## Graphical Overview
-
-```
-EmpiRE-Compass/
-┣━ .github/
-┃   ┗━ workflows/
-┣━ .husky/
-┣━ .storybook/
-┃   ├── main.ts
-┃   ├── preview.ts
-┃   └── vitest.setup.ts
-┣━ backend/                 # Backend API server
-┣━ backups/                 # Firebase backups
-┣━ dev-dist/                # Service worker files
-┣━ docs/                    # Project documentation
-┣━ public/                  # Public static assets
-┣━ scripts/                 # Python statistics & maintenance scripts
-┣━ src/
-┃   ├── api/                # SPARQL query definitions
-┃   ├── assets/             # Static image assets
-┃   ├── auth/               # Authentication (Keycloak)
-┃   ├── components/
-┃   │   ├── Admin/          # Admin dashboard components
-┃   │   ├── AI/             # AI Assistant & Chat components
-┃   │   ├── CustomCharts/   # Visualization components
-┃   │   ├── Home/           # Landing page components
-┃   │   ├── Layout/         # Layout components
-┃   │   └── ...             # Shared components
-┃   ├── constants/          # Configuration constants
-┃   ├── context/            # React Context Providers
-┃   ├── firestore/          # Firebase CRUD services
-┃   ├── helpers/            # Helper functions
-┃   ├── hooks/              # Custom React hooks
-┃   ├── pages/              # Route page components
-┃   ├── prompts/            # AI Prompt templates
-┃   ├── services/           # API services
-┃   ├── store/              # Redux state management
-┃   ├── stories/            # Storybook stories
-┃   ├── styles/             # Global CSS
-┃   ├── templates/          # JSON templates for domains
-┃   ├── types/              # TypeScript definitions
-┃   ├── utils/              # Utility functions
-┃   ├── App.tsx             # Main App component
-┃   ├── Router.tsx          # Routing configuration
-┃   ├── firebase.ts         # Firebase initialization
-┃   └── main.tsx            # Entry point
-┣━ stories/                 # Storybook component stories
-┣━ templates/               # Template definition files
-┣━ .env                     # Environment variables
-┣━ package.json             # Dependencies and scripts
-┣━ README.md                # Project documentation
-┣━ tsconfig.json            # TypeScript configuration
-┗━ vite.config.ts           # Vite configuration
-```
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Description of the Folders and Files
@@ -260,7 +205,13 @@ npm run preview:storybook
 
 # Firebase Setup
 
-EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data updates. Follow these guides to set up Firebase integration:
+EmpiRE-Compass uses Firebase Firestore for real-time data storage, statistics, and content management. Follow these guides to set up Firebase integration:
+
+## 📚 Firestore Tutorial
+
+For a comprehensive guide on Firestore, refer to the official documentation:
+
+- **[Firestore Documentation & Tutorial](https://firebase.google.com/docs/firestore)** - Learn Firestore basics, data modeling, and best practices
 
 ## Quick Setup (5 minutes)
 
@@ -270,12 +221,168 @@ EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data
 
 📖 **[Complete Firebase Setup Guide](docs/GITHUB_FIREBASE_SETUP.md)** - Comprehensive guide with troubleshooting
 
+## Connecting Firebase to Your Project
+
+### 1. Create a Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click **Add project** or select an existing project
+3. Follow the setup wizard to create your project
+
+### 2. Enable Firestore Database
+
+1. In Firebase Console, navigate to **Firestore Database**
+2. Click **Create database**
+3. Choose **Start in test mode** (you can configure security rules later)
+4. Select a location for your database
+
+### 3. Get Firebase Configuration
+
+1. Go to **Project Settings** (gear icon) → **General** tab
+2. Scroll down to **Your apps** section
+3. Click the **Web** icon (`</>`) to add a web app
+4. Register your app and copy the Firebase configuration object
+5. Add these values to your `.env` file (see `.env.example` for reference):
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID` (optional, for Analytics)
+
+### 4. Create Required Firestore Collections
+
+EmpiRE-Compass requires the following Firestore collections. You can create them manually or they will be created automatically when the app runs:
+
+#### **Templates Collection** (Main collection)
+
+```
+Templates (collection)
+  └─ {templateId} (document)
+      ├─ id: string
+      ├─ title: string
+      ├─ collectionName: string
+      ├─ description?: string
+      ├─ Questions (subcollection)
+      │   └─ {questionId} (document)
+      │       ├─ id: number
+      │       ├─ uid: string
+      │       ├─ title: string
+      │       ├─ dataAnalysisInformation: object
+      │       └─ sparqlQuery: string
+      └─ Statistics (subcollection)
+          └─ {statisticId} (document)
+              ├─ id: string
+              ├─ name: string
+              ├─ paperCount: number
+              ├─ total_resources: number
+              ├─ total_literals: number
+              ├─ total_predicates: number
+              ├─ total_statements: number
+              ├─ venueCount: number
+              ├─ global_distinct_resources: number
+              ├─ global_distinct_literals: number
+              ├─ global_distinct_predicates: number
+              └─ updatedAt: timestamp
+```
+
+**To create manually:**
+
+1. In Firestore Console, click **Start collection**
+2. Collection ID: `Templates`
+3. Create a document with ID matching your template (e.g., `R186491` for KG-EmpiRE)
+4. Add fields: `id` (string), `title` (string), `collectionName` (string)
+
+#### **HomeContent Collection**
+
+```
+HomeContent (collection)
+  └─ sections (document)
+      ├─ header: { title: string, subtitle: string }
+      ├─ aboutProject: { title: string, content: string, themes: string[] }
+      ├─ keyFeatures: { title: string, features: Array<{title: string, description: string}> }
+      ├─ futureDevelopment: { title: string, intro: string, phases: Array<{phase: string, goal: string}> }
+      ├─ contact: { title: string, name: string, position: string, organization: string, address: string[], email: string }
+      ├─ partners: { title: string, partners: Array<{label: string, link: string, logoUrl: string}> }
+      └─ templates: Array<{ id: string, title: string, description: string }>
+```
+
+**To create manually:**
+
+1. Create collection: `HomeContent`
+2. Create document with ID: `sections`
+3. Add the structure above (can be initialized with default values)
+
+#### **Users Collection** (Optional - for authentication)
+
+```
+Users (collection)
+  └─ {userId} (document)
+      ├─ id: string
+      ├─ email: string
+      ├─ display_name: string
+      └─ ... (other user fields)
+```
+
+**Note:** This collection is created automatically when users authenticate via Keycloak.
+
+### 5. Configure Security Rules
+
+For production, update your Firestore security rules. Example rules:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Templates collection - read public, write requires auth
+    match /Templates/{templateId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+
+      match /Questions/{questionId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+
+      match /Statistics/{statisticId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // HomeContent - read public, write requires auth
+    match /HomeContent/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Users - read own data, write own data
+    match /Users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 6. Generate Service Account (for Backend/Statistics)
+
+1. Go to **Project Settings** → **Service Accounts**
+2. Click **Generate New Private Key**
+3. Download the JSON file securely
+4. For GitHub Actions: Add the entire JSON content as `FIREBASE_SERVICE_ACCOUNT_KEY` secret
+5. For local development: Place the JSON file in `scripts/` directory (ensure it's in `.gitignore`)
+
 ## Firebase Configuration Steps:
 
 1. **Create Firebase Project** - Set up a new project in Firebase Console
-2. **Generate Service Account** - Download the service account JSON key
-3. **Configure GitHub Secret** - Add `FIREBASE_SERVICE_ACCOUNT_KEY` to repository secrets
-4. **Test Integration** - Run the workflow to verify everything works
+2. **Enable Firestore** - Create Firestore database in test mode
+3. **Get Configuration** - Copy Firebase config to `.env` file
+4. **Create Collections** - Set up Templates and HomeContent collections (or let the app create them)
+5. **Generate Service Account** - Download the service account JSON key for backend operations
+6. **Configure GitHub Secret** - Add `FIREBASE_SERVICE_ACCOUNT_KEY` to repository secrets (if using GitHub Actions)
+7. **Test Integration** - Run the app to verify Firebase connection
 
 ## Local Development
 
