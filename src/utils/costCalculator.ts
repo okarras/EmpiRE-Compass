@@ -9,6 +9,7 @@ import type {
   OpenAIModel,
   GroqModel,
   MistralModel,
+  GoogleModel,
 } from '../store/slices/aiSlice';
 
 // OpenAI pricing per 1M tokens (input/output)
@@ -67,6 +68,27 @@ const MISTRAL_PRICING: Record<MistralModel, { input: number; output: number }> =
     'open-mistral-nemo': { input: 0.0, output: 0.0 }, // Free/open model
   };
 
+// Google/Gemini pricing per 1M tokens
+// Pricing based on https://ai.google.dev/gemini-api/docs/pricing (as of 2025)
+// Using base tier pricing (up to 200k tokens for Pro models, 128k for Flash models)
+const GOOGLE_PRICING: Record<GoogleModel, { input: number; output: number }> = {
+  // Gemini 3 series
+  'gemini-3-pro-preview': { input: 2.0, output: 12.0 },
+  // Gemini 2.5 series
+  'gemini-2.5-pro': { input: 1.25, output: 10.0 },
+  'gemini-2.5-flash': { input: 0.1, output: 0.4 },
+  // Gemini 2.0 series
+  'gemini-2.0-flash': { input: 0.1, output: 0.4 },
+  'gemini-2.0-flash-exp': { input: 0.1, output: 0.4 },
+  'gemini-2.0-flash-lite': { input: 0.019, output: 0.019 },
+  // Gemini 1.5 series
+  'gemini-1.5-pro': { input: 1.25, output: 5.0 },
+  'gemini-1.5-flash': { input: 0.075, output: 0.3 },
+  'gemini-1.5-flash-8b': { input: 0.075, output: 0.3 },
+  // Other models
+  'gemma-3-27b-it': { input: 0.0, output: 0.0 }, // Pricing TBD
+};
+
 export interface CostBreakdown {
   model: string;
   provider: AIProvider;
@@ -99,6 +121,12 @@ export function calculateCost(
       break;
     case 'mistral':
       pricing = MISTRAL_PRICING[model as MistralModel] || {
+        input: 0,
+        output: 0,
+      };
+      break;
+    case 'google':
+      pricing = GOOGLE_PRICING[model as GoogleModel] || {
         input: 0,
         output: 0,
       };
