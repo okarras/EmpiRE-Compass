@@ -12,56 +12,6 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
       ?venue rdfs:label ?venue_name.
     FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
   }`,
-  TRIPLES_QUERY: `
-  SELECT (COUNT(?s) AS ?tripleCount)
-  WHERE {
-    {
-      ?s a orkgc:C27001 .
-      ?s ?p ?o .
-    } UNION {
-      ?paper orkgp:P31 ?contri .
-      ?contri a orkgc:C27001 .
-      ?paper ?p ?o .
-    }
-  }`,
-  RESOURCES_QUERY: `
-  SELECT (COUNT(?resource) AS ?resourceCount) (COUNT(DISTINCT ?resource) AS ?distinctResourceCount)
-  WHERE {
-    {
-      ?contri a orkgc:C27001 .
-      ?contri ?p ?resource .
-    } UNION {
-      ?paper orkgp:P31 ?contri .
-      ?contri a orkgc:C27001 .
-      ?paper ?p ?resource .
-    }
-  }`,
-  Literals_QUERY: `
-  SELECT (COUNT(?literal) AS ?literalCount) (COUNT(DISTINCT ?literal) AS ?distinctLiteralCount)
-  WHERE {
-    {
-      ?contri a orkgc:C27001 .
-      ?contri ?p ?literal .
-      FILTER(isLiteral(?literal))
-    } UNION {
-      ?paper orkgp:P31 ?contri .
-      ?contri a orkgc:C27001 .
-      ?paper ?p ?literal .
-      FILTER(isLiteral(?literal))
-    }
-  }`,
-  PROPERTIES_QUERY: `
-  SELECT (COUNT(?property) AS ?propertyCount) (COUNT(DISTINCT ?property) AS ?distinctPropertyCount)
-  WHERE {
-    {
-      ?contri a orkgc:C27001 .
-      ?contri ?property ?o .
-    } UNION {
-      ?paper orkgp:P31 ?contri .
-      ?contri a orkgc:C27001 .
-      ?paper ?property ?o .
-    }
-  }`,
   PAPERS_PER_VENUE_QUERY: `
   SELECT ?venue (COUNT(?paper) AS ?paperCount)
   WHERE { 

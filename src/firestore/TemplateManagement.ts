@@ -72,6 +72,7 @@ export interface QuestionData {
   gridOptions?: {
     defaultColumns?: string[]; // Default columns to show in grid statistics
     defaultGroupBy?: string; // Default grouping column
+    defaultUseUniquePapers?: boolean; // Default value for "Count by Unique Papers" switch
   };
 }
 

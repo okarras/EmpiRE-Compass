@@ -52,7 +52,7 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
   onContentChange,
 }) => {
   const aiService = useAIService();
-  const { state, getHistoryByType } = useDynamicQuestion();
+  const { state, getHistoryByType, updateCosts } = useDynamicQuestion();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isAIModifying, setIsAIModifying] = useState(false);
@@ -135,6 +135,52 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
     }
   };
 
+  // Helper function to prepare data summary for AI processing
+  const prepareDataSummary = (data: Record<string, unknown>[]) => {
+    if (!data || data.length === 0) return 'No data available';
+
+    const columns = Object.keys(data[0] || {});
+    const summary: Record<
+      string,
+      {
+        type: string;
+        count: number;
+        min?: number;
+        max?: number;
+        unique_values: number;
+        sample_values?: unknown[];
+      }
+    > = {};
+
+    // For each column, provide a summary
+    columns.forEach((col) => {
+      const values = data
+        .map((row) => row[col])
+        .filter((val) => val !== null && val !== undefined);
+      const uniqueValues = [...new Set(values)];
+
+      if (typeof values[0] === 'number') {
+        const nums = values as number[];
+        summary[col] = {
+          type: 'numeric',
+          count: values.length,
+          min: Math.min(...nums),
+          max: Math.max(...nums),
+          unique_values: uniqueValues.length,
+        };
+      } else {
+        summary[col] = {
+          type: 'categorical',
+          count: values.length,
+          unique_values: uniqueValues.length,
+          sample_values: uniqueValues.slice(0, 10), // Show first 10 unique values
+        };
+      }
+    });
+
+    return JSON.stringify(summary, null, 2);
+  };
+
   const handleAIModify = async () => {
     if (!aiPrompt.trim()) {
       setError('Please enter a prompt for the AI.');
@@ -157,41 +203,54 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
     try {
       const history = getHistoryByType('chart');
       const recentHistory = history.slice(-5);
+      const queryResults = state.queryResults || [];
+      const dataSummary = prepareDataSummary(queryResults);
+      const fullData =
+        queryResults.length > 0
+          ? JSON.stringify(queryResults, null, 2)
+          : 'No data available';
 
       const contextPrompt = `You are modifying chart HTML for a dynamic research question analysis. 
 
-      Current Research Question: "${state.question}"
+Current Research Question: "${state.question}"
 
-      Current Data: ${JSON.stringify(state.queryResults, null, 2)}
+SPARQL Query Results:
+- Total rows: ${queryResults.length}
+- Columns: ${queryResults.length > 0 ? Object.keys(queryResults[0] || {}).join(', ') : 'N/A'}
+- Data Summary: ${dataSummary}
+- Full Data (all rows): ${fullData}
 
-      Current Chart HTML:
-      ${html}
+Current Chart HTML:
+${html}
 
-      Recent History:
-      ${recentHistory
-        .map(
-          (entry) =>
-            `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
-        )
-        .join('\n')}
+Recent History:
+${recentHistory
+  .map(
+    (entry) =>
+      `${entry.action} (${new Date(entry.timestamp).toLocaleString()}): ${entry.prompt || 'Manual edit'}`
+  )
+  .join('\n')}
 
-      User Request: ${aiPrompt}
+User Request: ${aiPrompt}
 
-      Please modify the chart HTML according to the user's request. Consider the context and history provided.
+Please modify the chart HTML according to the user's request. Consider the context, query results data, and history provided.
 
-      Requirements:
-      - Return complete HTML with Chart.js CDN included
-      - Use transparent background, no scrollbars
-      - Include professional, responsive styling
-      - Use brand colors (#e86161, #4CAF50, #2196F3, #FF9800, #9C27B0)
-      - Set chart height to at least 500px for better visibility
-      - Ensure the chart is properly sized and responsive
-      - Include comprehensive interactivity (hover tooltips, click events, zoom/pan)
-      - Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
-      - Set padding to 40px
-      - Set the minimum height to 500px
+Requirements:
+- Return complete HTML with Chart.js CDN included
+- Use transparent background, no scrollbars
+- Include professional, responsive styling
+- Use brand colors (#e86161, #4CAF50, #2196F3, #FF9800, #9C27B0)
+- Set chart height to at least 500px for better visibility
+- Ensure the chart is properly sized and responsive
+- Include comprehensive interactivity (hover tooltips, click events, zoom/pan)
+- Enable Chart.js interactions: responsive, maintainAspectRatio, and interaction options
+- Set padding to 40px
+- Set the minimum height to 500px
+- IMPORTANT: The data will be provided as a JavaScript variable named 'chartData' in the HTML
+- DO NOT include the actual data in your generated code - just reference the 'chartData' variable
+- Process the 'chartData' variable to create appropriate chart datasets
 
-      Modified Chart HTML:`;
+Modified Chart HTML:`;
 
       const result = await aiService.generateText(contextPrompt, {
         temperature: 0.3,
@@ -227,6 +286,15 @@ ${bodyMatch[0]}
       }
 
       onContentChange(modifiedHtml, aiPrompt);
+
+      // Track cost for AI modification
+      if (result.cost) {
+        const costWithSection = {
+          ...result.cost,
+          section: `AI Modification - ${title}`,
+        };
+        updateCosts([...state.costs, costWithSection]);
+      }
 
       setShowAIDialog(false);
       setAiPrompt('');
