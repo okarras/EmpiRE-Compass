@@ -73,7 +73,13 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Get all available columns
   const availableColumns = React.useMemo(() => {
-    if (questionData.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0
+    ) {
+      return [];
+    }
     return Object.keys(questionData[0]);
   }, [questionData]);
 
@@ -107,7 +113,14 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Calculate statistics for selected columns only
   const columnStats: ColumnStats[] = React.useMemo(() => {
-    if (questionData.length === 0 || selectedColumns.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0 ||
+      selectedColumns.length === 0
+    ) {
+      return [];
+    }
 
     const stats: ColumnStats[] = [];
 
