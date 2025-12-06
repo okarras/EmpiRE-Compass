@@ -110,7 +110,14 @@ const DynamicAIQuestion = () => {
 
   // Update AI Assistant context when data changes
   useEffect(() => {
-    if (dynamicQuery && !loading && !error && state.queryResults.length > 0) {
+    if (
+      dynamicQuery &&
+      !loading &&
+      !error &&
+      state.queryResults &&
+      Array.isArray(state.queryResults) &&
+      state.queryResults.length > 0
+    ) {
       setContext(dynamicQuery, state.queryResults);
     }
   }, [dynamicQuery, state.queryResults, loading, error, setContext]);
@@ -122,7 +129,13 @@ const DynamicAIQuestion = () => {
 
   // Recreate dynamic query when state is loaded from storage
   useEffect(() => {
-    if (state.queryResults.length > 0 && state.question && !dynamicQuery) {
+    if (
+      state.queryResults &&
+      Array.isArray(state.queryResults) &&
+      state.queryResults.length > 0 &&
+      state.question &&
+      !dynamicQuery
+    ) {
       const newDynamicQuery = buildDynamicQuery({
         question: state.question,
         transformedData: state.queryResults,
@@ -171,7 +184,11 @@ const DynamicAIQuestion = () => {
     try {
       const transformed = await executeQueries(queryString);
 
-      if (!transformed || transformed.length === 0) {
+      if (
+        !transformed ||
+        !Array.isArray(transformed) ||
+        transformed.length === 0
+      ) {
         setError(
           'Query executed successfully but returned no results after processing. Try modifying your query or research question.'
         );
@@ -182,7 +199,12 @@ const DynamicAIQuestion = () => {
       updateQueryResults(transformed);
 
       // Auto-update processing function if needed
-      if (state.question && state.question.trim() && transformed.length > 0) {
+      if (
+        state.question &&
+        state.question.trim() &&
+        Array.isArray(transformed) &&
+        transformed.length > 0
+      ) {
         try {
           await generateProcessingFunction(
             transformed,
@@ -278,11 +300,11 @@ const DynamicAIQuestion = () => {
       );
 
       // Set query generation costs
-      if (queryCosts && queryCosts.length > 0) {
+      if (queryCosts && Array.isArray(queryCosts) && queryCosts.length > 0) {
         updateCosts(queryCosts);
       }
 
-      if (!rawData || rawData.length === 0) {
+      if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
         setError(
           'Query executed successfully but returned no results after multiple refinement attempts. Try modifying your research question.'
         );
@@ -414,8 +436,13 @@ const DynamicAIQuestion = () => {
     }
 
     // Add content generation costs to the total costs
-    if (contentCosts && contentCosts.length > 0) {
-      updateCosts([...state.costs, ...contentCosts]);
+    if (
+      contentCosts &&
+      Array.isArray(contentCosts) &&
+      contentCosts.length > 0
+    ) {
+      const currentCosts = Array.isArray(state.costs) ? state.costs : [];
+      updateCosts([...currentCosts, ...contentCosts]);
     }
   };
 
@@ -487,14 +514,23 @@ const DynamicAIQuestion = () => {
     const compiled = updateProcessingCode(code);
 
     // Auto-update results when processing function changes
-    if (compiled && state.queryResults.length > 0) {
+    if (
+      compiled &&
+      state.queryResults &&
+      Array.isArray(state.queryResults) &&
+      state.queryResults.length > 0
+    ) {
       try {
         if (state.sparqlQuery && state.sparqlQuery.trim()) {
           const blocks = parseSparqlBlocks(state.sparqlQuery);
           const rawData = await executeQueriesRaw(blocks);
-          if (rawData && rawData.length > 0) {
+          if (rawData && Array.isArray(rawData) && rawData.length > 0) {
             const reprocessedData = compiled(rawData);
-            if (reprocessedData && reprocessedData.length > 0) {
+            if (
+              reprocessedData &&
+              Array.isArray(reprocessedData) &&
+              reprocessedData.length > 0
+            ) {
               updateQueryResults(reprocessedData);
               const newDynamicQuery = buildDynamicQuery({
                 question: state.question,
@@ -518,7 +554,12 @@ const DynamicAIQuestion = () => {
   };
 
   const handleRegenerateProcessingCode = async () => {
-    if (!state.question || !state.queryResults.length) {
+    if (
+      !state.question ||
+      !state.queryResults ||
+      !Array.isArray(state.queryResults) ||
+      state.queryResults.length === 0
+    ) {
       setError('No question or data available to regenerate processing code.');
       return;
     }
@@ -587,7 +628,11 @@ const DynamicAIQuestion = () => {
     }
 
     // Rebuild dynamic query if we have results
-    if (exampleState.queryResults && exampleState.queryResults.length > 0) {
+    if (
+      exampleState.queryResults &&
+      Array.isArray(exampleState.queryResults) &&
+      exampleState.queryResults.length > 0
+    ) {
       const newDynamicQuery = buildDynamicQuery({
         question: exampleState.question || '',
         transformedData: exampleState.queryResults,

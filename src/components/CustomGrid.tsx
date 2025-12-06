@@ -25,7 +25,13 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Generate columns based on keys from the first data object
   const columns: GridColDef[] = React.useMemo(() => {
-    if (questionData.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0
+    ) {
+      return [];
+    }
 
     return Object.keys(questionData[0]).map((key) => ({
       field: key,
@@ -67,6 +73,9 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Ensure each row has a unique 'id' field
   const rows = React.useMemo(() => {
+    if (!questionData || !Array.isArray(questionData)) {
+      return [];
+    }
     return questionData.map((row, index) => ({
       id: row.id ?? index,
       ...row,

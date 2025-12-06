@@ -66,6 +66,7 @@ const stripFunctions = (obj: any): any => {
   if (typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) return obj.map(stripFunctions);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const result: any = {};
   for (const key in obj) {
     if (typeof obj[key] !== 'function') {
@@ -86,13 +87,18 @@ const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
     .map((query) => {
       const firebaseData = questionsMap.get(query.uid);
       if (!firebaseData) {
-        console.error(
-          `Query with uid ${query.uid} not found in Firebase data.`
-        );
+        // Only log warning for queries that should exist (not secondary UIDs)
+        // Secondary UIDs (uid_2) might not exist in Firebase if they're only in code
+        if (!query.uid.includes('_2') || questionsMap.has(query.uid_2 || '')) {
+          console.warn(
+            `Query with uid ${query.uid} not found in Firebase data. Using local query configuration.`
+          );
+        }
         return query;
       }
       // Merge Firebase data with local query, but preserve functions from local query
       // Firebase stores function names as strings, not actual functions
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         dataProcessingFunction: firebaseFn,
         dataProcessingFunction2: firebaseFn2,
@@ -163,14 +169,17 @@ const questionSlice = createSlice({
       const firebaseData = state.firebaseQuestions[targetQuery.uid];
       if (firebaseData) {
         // Merge but preserve functions from local query config
-        const {
-          dataProcessingFunction,
-          dataProcessingFunction2,
-          ...firebaseDataWithoutFunctions
-        } = firebaseData as any;
+        // Remove function fields from firebaseData since we always use local functions
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const firebaseDataCopy = { ...(firebaseData as any) };
+        delete firebaseDataCopy.dataProcessingFunction;
+        delete firebaseDataCopy.dataProcessingFunction2;
+        delete firebaseDataCopy.dataProcessingFunctionName;
+        delete firebaseDataCopy.dataProcessingFunctionName2;
+
         state.currentQuestion = {
           ...targetQuery,
-          ...firebaseDataWithoutFunctions,
+          ...firebaseDataCopy,
           // Always use functions from local query config
           dataProcessingFunction: targetQuery.dataProcessingFunction,
           dataProcessingFunction2: targetQuery.dataProcessingFunction2,

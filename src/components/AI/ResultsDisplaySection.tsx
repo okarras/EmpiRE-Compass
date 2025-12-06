@@ -102,7 +102,9 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
       {loading && !sparqlQuery && <TextSkeleton lines={12} />}
       {error && renderErrorState(error)}
 
-      {queryResults.length > 0 &&
+      {queryResults &&
+        Array.isArray(queryResults) &&
+        queryResults.length > 0 &&
         question &&
         !chartHtml &&
         !questionInterpretation &&
@@ -116,47 +118,57 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
           />
         )}
 
-      {dynamicQuery && queryResults.length > 0 && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <SectionSelector
-            sectionType="information"
-            sectionTitle="Question Information"
-            query={dynamicQuery}
+      {dynamicQuery &&
+        queryResults &&
+        Array.isArray(queryResults) &&
+        queryResults.length > 0 && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: { xs: 2, sm: 3, md: 4 },
+              mb: 4,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              borderRadius: 2,
+              border: '1px solid rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <SectionSelector
+              sectionType="information"
+              sectionTitle="Question Information"
+              query={dynamicQuery}
+            />
+            <QuestionInformationView
+              query={dynamicQuery}
+              isInteractive={true}
+            />
+
+            {chartHtml && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <HTMLRenderer
+                  html={chartHtml}
+                  title="AI-Generated Chart"
+                  type="chart"
+                  useIframe={true}
+                  onContentChange={onChartHtmlChange}
+                />
+              </>
+            )}
+          </Paper>
+        )}
+
+      {costs && Array.isArray(costs) && costs.length > 0 && (
+        <CostDisplay costs={costs} />
+      )}
+
+      {queryResults &&
+        Array.isArray(queryResults) &&
+        queryResults.length > 0 && (
+          <QuestionDataGridView
+            questionData={queryResults}
+            gridOptions={dynamicQuery?.gridOptions}
           />
-          <QuestionInformationView query={dynamicQuery} isInteractive={true} />
-
-          {chartHtml && (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <HTMLRenderer
-                html={chartHtml}
-                title="AI-Generated Chart"
-                type="chart"
-                useIframe={true}
-                onContentChange={onChartHtmlChange}
-              />
-            </>
-          )}
-        </Paper>
-      )}
-
-      {costs.length > 0 && <CostDisplay costs={costs} />}
-
-      {queryResults.length > 0 && (
-        <QuestionDataGridView
-          questionData={queryResults}
-          gridOptions={dynamicQuery?.gridOptions}
-        />
-      )}
+        )}
     </>
   );
 };
