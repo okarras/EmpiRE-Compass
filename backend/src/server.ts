@@ -12,6 +12,7 @@ import templatesRouter from './routes/templates.js';
 import requestLogsRouter from './routes/requestLogs.js';
 import aiRouter, { initializeAIService } from './routes/ai.js';
 import healthRouter, { setAIServiceForHealth } from './routes/health.js';
+import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
 
 dotenv.config();
 
@@ -97,6 +98,7 @@ app.use('/api/templates', templatesRouter);
 app.use('/api/request-logs', requestLogsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
+app.use('/api/dynamic-questions', dynamicQuestionsRouter);
 
 // error handling middleware
 app.use(errorHandler);
