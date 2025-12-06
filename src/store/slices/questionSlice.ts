@@ -59,7 +59,24 @@ const getTemplateResources = (templateId: string) => {
   };
 };
 
+// Helper function to strip functions from an object (for Redux serialization)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const stripFunctions = (obj: any): any => {
+  if (obj === null || obj === undefined) return obj;
+  if (typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(stripFunctions);
+
+  const result: any = {};
+  for (const key in obj) {
+    if (typeof obj[key] !== 'function') {
+      result[key] = stripFunctions(obj[key]);
+    }
+  }
+  return result;
+};
+
 // Helper function to merge Firebase data with local queries
+// Returns questions with functions for use in components
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
   const { queries } = getTemplateResources(templateId);
@@ -144,9 +161,23 @@ const questionSlice = createSlice({
 
       // Merge with Firebase data if available
       const firebaseData = state.firebaseQuestions[targetQuery.uid];
-      state.currentQuestion = firebaseData
-        ? { ...targetQuery, ...firebaseData }
-        : targetQuery;
+      if (firebaseData) {
+        // Merge but preserve functions from local query config
+        const {
+          dataProcessingFunction,
+          dataProcessingFunction2,
+          ...firebaseDataWithoutFunctions
+        } = firebaseData as any;
+        state.currentQuestion = {
+          ...targetQuery,
+          ...firebaseDataWithoutFunctions,
+          // Always use functions from local query config
+          dataProcessingFunction: targetQuery.dataProcessingFunction,
+          dataProcessingFunction2: targetQuery.dataProcessingFunction2,
+        } as Query;
+      } else {
+        state.currentQuestion = targetQuery;
+      }
     },
     setNormalized: (state, action) => {
       state.normalized = action.payload;
@@ -166,16 +197,22 @@ const questionSlice = createSlice({
       .addCase(fetchQuestionsFromFirebase.fulfilled, (state, action) => {
         state.loading.questions = false;
         const { firebaseQuestions, templateId } = action.payload;
-        // Store raw Firebase data
+        // Store raw Firebase data (without functions for serialization)
         state.firebaseQuestions = firebaseQuestions.reduce(
           (acc, q) => ({
             ...acc,
-            [q.uid]: q,
+            [q.uid]: stripFunctions(q),
           }),
           {}
         );
-        // Merge with local queries
-        state.questions = mergeQuestionsData(firebaseQuestions, templateId);
+        // Store questions without functions (functions will be merged on access)
+        const mergedQuestions = mergeQuestionsData(
+          firebaseQuestions,
+          templateId
+        );
+        state.questions = mergedQuestions.map((q) =>
+          stripFunctions(q)
+        ) as Query[];
       })
       .addCase(fetchQuestionsFromFirebase.rejected, (state, action) => {
         state.loading.questions = false;

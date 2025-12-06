@@ -35,6 +35,12 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
       filterable: true,
       renderCell: (params) => {
         const value = params.value;
+
+        // Handle null/undefined
+        if (value == null) {
+          return '';
+        }
+
         // If the cell content is a URL, render it as a link
         if (typeof value === 'string' && isValidUrl(value)) {
           return (
@@ -43,8 +49,18 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
             </a>
           );
         }
-        // Otherwise, just render the value
-        return value;
+
+        // Handle objects and arrays - convert to JSON string
+        if (typeof value === 'object') {
+          try {
+            return JSON.stringify(value);
+          } catch {
+            return String(value);
+          }
+        }
+
+        // For other types, convert to string
+        return String(value);
       },
     }));
   }, [questionData]);

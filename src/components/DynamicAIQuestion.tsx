@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Box } from '@mui/material';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
+import { Save } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
@@ -9,6 +10,8 @@ import { useDynamicQuestion } from '../context/DynamicQuestionContext';
 import QueryExecutionSection from './AI/QueryExecutionSection';
 import DataProcessingCodeSection from './AI/DataProcessingCodeSection';
 import ResultsDisplaySection from './AI/ResultsDisplaySection';
+import DynamicQuestionExamples from './AI/DynamicQuestionExamples';
+import SaveDynamicQuestionDialog from './AI/SaveDynamicQuestionDialog';
 import { useTemplateLoader } from '../hooks/useTemplateLoader';
 import { useQueryGeneration } from '../hooks/useQueryGeneration';
 import { useDataProcessing } from '../hooks/useDataProcessing';
@@ -18,6 +21,9 @@ import { buildDynamicQuery, DynamicQuery } from '../utils/dynamicQueryBuilder';
 import { useLocation } from 'react-router-dom';
 import { PredicatesMapping } from '../components/Graph/types';
 import type { CostBreakdown } from '../utils/costCalculator';
+import type { DynamicQuestion } from '../firestore/CRUDDynamicQuestions';
+import { useAuthData } from '../auth/useAuthData';
+import CRUDDynamicQuestions from '../firestore/CRUDDynamicQuestions';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -444,6 +450,15 @@ const DynamicAIQuestion = () => {
   );
   const [historyOpen, setHistoryOpen] = useState(false);
   const [llmContextHistoryOpen, setLlmContextHistoryOpen] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [savingExample, setSavingExample] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [examplesRefreshTrigger, setExamplesRefreshTrigger] = useState(0);
+
+  // Check if user is admin
+  const { user } = useAuthData();
+  const isAdmin = user?.is_admin === true;
 
   const handleOpenHistory = (type: HistoryItem['type']) => {
     setHistoryType(type);
@@ -523,8 +538,160 @@ const DynamicAIQuestion = () => {
     }
   };
 
+  const handleLoadExample = (example: DynamicQuestion) => {
+    const exampleState = example.state;
+
+    // Load all state from the example
+    if (exampleState.question) {
+      updateQuestion(exampleState.question);
+    }
+    if (exampleState.sparqlQuery) {
+      updateSparqlQuery(exampleState.sparqlQuery);
+    }
+    if (exampleState.sparqlTranslation) {
+      updateSparqlTranslation(exampleState.sparqlTranslation);
+    }
+    if (exampleState.queryResults) {
+      // Ensure queryResults are properly serialized (deep clone to avoid reference issues)
+      const serializedResults = JSON.parse(
+        JSON.stringify(exampleState.queryResults)
+      );
+      updateQueryResults(serializedResults);
+    }
+    if (exampleState.chartHtml) {
+      updateChartHtml(exampleState.chartHtml);
+    }
+    if (exampleState.questionInterpretation) {
+      updateQuestionInterpretation(exampleState.questionInterpretation);
+    }
+    if (exampleState.dataCollectionInterpretation) {
+      updateDataCollectionInterpretation(
+        exampleState.dataCollectionInterpretation
+      );
+    }
+    if (exampleState.dataAnalysisInterpretation) {
+      updateDataAnalysisInterpretation(exampleState.dataAnalysisInterpretation);
+    }
+    if (exampleState.processingFunctionCode) {
+      updateProcessingFunctionCode(exampleState.processingFunctionCode);
+    }
+    if (exampleState.templateId) {
+      updateTemplateId(exampleState.templateId);
+      void handleTemplateChange(exampleState.templateId);
+    }
+    if (exampleState.templateMapping) {
+      updateTemplateMapping(exampleState.templateMapping);
+    }
+    if (exampleState.targetClassId) {
+      updateTargetClassId(exampleState.targetClassId);
+    }
+
+    // Rebuild dynamic query if we have results
+    if (exampleState.queryResults && exampleState.queryResults.length > 0) {
+      const newDynamicQuery = buildDynamicQuery({
+        question: exampleState.question || '',
+        transformedData: exampleState.queryResults,
+        questionInterpretation: exampleState.questionInterpretation || '',
+        dataCollectionInterpretation:
+          exampleState.dataCollectionInterpretation || '',
+        dataAnalysisInterpretation:
+          exampleState.dataAnalysisInterpretation || '',
+      });
+      setDynamicQuery(newDynamicQuery);
+    }
+  };
+
+  const handleSaveExample = async (name: string) => {
+    // Validate that we have at least a question
+    if (!state.question || !state.question.trim()) {
+      throw new Error('Please enter a question before saving as an example');
+    }
+
+    setSavingExample(true);
+    setSaveError(null);
+
+    try {
+      // Create the dynamic question object from current state
+      const questionId = `question_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
+      const dynamicQuestion: DynamicQuestion = {
+        id: questionId,
+        name: name,
+        timestamp: Date.now(),
+        state: {
+          question: state.question,
+          sparqlQuery: state.sparqlQuery || '',
+          sparqlTranslation: state.sparqlTranslation || '',
+          queryResults: state.queryResults || [],
+          chartHtml: state.chartHtml || '',
+          questionInterpretation: state.questionInterpretation || '',
+          dataCollectionInterpretation:
+            state.dataCollectionInterpretation || '',
+          dataAnalysisInterpretation: state.dataAnalysisInterpretation || '',
+          processingFunctionCode: state.processingFunctionCode || '',
+          templateId: state.templateId || undefined,
+          templateMapping: state.templateMapping || undefined,
+          targetClassId: state.targetClassId || undefined,
+        },
+      };
+
+      await CRUDDynamicQuestions.saveDynamicQuestion(
+        dynamicQuestion,
+        questionId
+      );
+      setSaveSuccess(true);
+      // Refresh examples list to show the new example
+      setExamplesRefreshTrigger((prev) => prev + 1);
+    } catch (err) {
+      console.error('Error saving dynamic question example:', err);
+      setSaveError(
+        err instanceof Error ? err.message : 'Failed to save example question'
+      );
+      throw err; // Re-throw so dialog can handle it
+    } finally {
+      setSavingExample(false);
+    }
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+        <Box sx={{ flex: 1 }}>
+          <DynamicQuestionExamples
+            onSelectExample={handleLoadExample}
+            refreshTrigger={examplesRefreshTrigger}
+          />
+        </Box>
+        {isAdmin && (
+          <Button
+            variant="outlined"
+            startIcon={<Save />}
+            onClick={() => setSaveDialogOpen(true)}
+            disabled={!state.question || !state.question.trim()}
+            sx={{
+              borderColor: '#e86161',
+              color: '#e86161',
+              '&:hover': {
+                borderColor: '#d45555',
+                backgroundColor: 'rgba(232, 97, 97, 0.04)',
+              },
+              '&:disabled': {
+                borderColor: 'rgba(0, 0, 0, 0.26)',
+                color: 'rgba(0, 0, 0, 0.26)',
+              },
+              whiteSpace: 'nowrap',
+              minWidth: 'auto',
+            }}
+            title={
+              !state.question || !state.question.trim()
+                ? 'Enter a question to save as an example'
+                : 'Save current question as an example for other users'
+            }
+          >
+            Save as Example
+          </Button>
+        )}
+      </Box>
       <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
@@ -583,6 +750,46 @@ const DynamicAIQuestion = () => {
         open={llmContextHistoryOpen}
         onClose={handleCloseLlmContextHistory}
       />
+
+      <SaveDynamicQuestionDialog
+        open={saveDialogOpen}
+        onClose={() => setSaveDialogOpen(false)}
+        onSave={handleSaveExample}
+        defaultName={state.question ? state.question.substring(0, 50) : ''}
+        loading={savingExample}
+      />
+
+      <Snackbar
+        open={saveSuccess}
+        autoHideDuration={4000}
+        onClose={() => setSaveSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setSaveSuccess(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          Example question saved successfully!
+        </Alert>
+      </Snackbar>
+
+      {saveError && (
+        <Snackbar
+          open={!!saveError}
+          autoHideDuration={6000}
+          onClose={() => setSaveError(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        >
+          <Alert
+            onClose={() => setSaveError(null)}
+            severity="error"
+            sx={{ width: '100%' }}
+          >
+            {saveError}
+          </Alert>
+        </Snackbar>
+      )}
     </Box>
   );
 };
