@@ -48,8 +48,9 @@ const DynamicAIQuestion = () => {
   const [error, setError] = useState<string | null>(null);
   const location = useLocation();
   const [templateId, setTemplateId] = useState<string>(
-    location.search.split('template=')[1] || 'R186491'
+    location.pathname.split('/')[1] || 'R186491'
   );
+
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
   const [maxIterations] = useState<number>(3);
 
@@ -88,15 +89,21 @@ const DynamicAIQuestion = () => {
   });
 
   useEffect(() => {
-    setTemplateId(location.search.split('template=')[1] || 'R186491');
-  }, [location.search]);
+    setTemplateId(location.pathname.split('/')[1] || 'R186491');
+  }, [location.pathname]);
 
   // Initialize template ID in context
   useEffect(() => {
     if (templateId && state.templateId !== templateId) {
       void handleTemplateChange(templateId);
+      // Set default target class IDs for known templates
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');
+      } else if (
+        templateId === 'R1544125' &&
+        state.targetClassId !== 'C121001'
+      ) {
+        updateTargetClassId('C121001');
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
