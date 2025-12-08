@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-daily_orkg_metrics.py
+nlp4re-statistics.py
 
-1. Send SPARQL query directly to ORKG to list all KG-EmpiRE papers.
+1. Send SPARQL query directly to ORKG to list all NLP4RE papers.
 2. For each paper IRI, fetch its statements bundle via ORKG library (with caching).
-3. Compute RPL metrics and output daily_results.csv.
+3. Compute RPL metrics and output nlp4re_results.csv.
 4. Update Firebase with computed statistics.
 5. Supports --reload_data to force re-fetching everything.
 6. Calculates global distinct counts across all papers.
@@ -40,12 +40,13 @@ except Exception as e:
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
 SPARQL_ENDPOINT = "https://www.orkg.org/triplestore"
-CACHE_DIR = "./orkg-cache"
+CACHE_DIR = "./orkg-cache-nlp4re"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Initialize ORKG client
 orkg = ORKG(host="https://www.orkg.org/")
 
+# NLP4RE uses class C121001 (no venue filter)
 SPARQL_QUERY = """
 PREFIX r: <http://orkg.org/orkg/resource/>
 PREFIX c: <http://orkg.org/orkg/class/>
@@ -56,10 +57,7 @@ SELECT ?paper, ?doi
 WHERE {
     ?paper p:P31 ?contri.
     OPTIONAL{?paper p:P26 ?doi.} 
-    ?contri a c:C27001.
-    ?contri p:P135046 ?venue.
-    ?venue rdfs:label ?venue_name.
-  FILTER ((?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string || ?venue_name = "International Working Conference on Requirements Engineering: Foundation for Software Quality"^^xsd:string))
+    ?contri a c:C121001.
 }
 """
 
@@ -245,7 +243,7 @@ def process_papers(papers, reload_data=False):
             else:
                 print(f"  Fetching fresh data for {paper_id}")
                 try:
-                    # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
+                    # Use ORKG library to fetch statements bundle
                     bundle = orkg.statements.bundle(thing_id=paper_id)
                     statements = bundle.content["statements"]
                     save_cache(
@@ -257,7 +255,7 @@ def process_papers(papers, reload_data=False):
         else:
             print(f"  Fetching fresh data for {paper_id}")
             try:
-                # Use ORKG library to fetch statements bundle (same as in fetch_bundle function)
+                # Use ORKG library to fetch statements bundle
                 bundle = orkg.statements.bundle(thing_id=paper_id)
                 statements = bundle.content["statements"]
                 save_cache(
@@ -321,129 +319,10 @@ def process_papers(papers, reload_data=False):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# 5) Fetch statements bundle with cache using ORKG library
-# ──────────────────────────────────────────────────────────────────────────────
-def fetch_bundle(resource_id, reload_data=False):
-    # Use cache if available
-    if not reload_data:
-        cached = load_cached(resource_id)
-        if cached:
-            return resource_id, cached["statements"]
-
-    try:
-        # Use ORKG library to fetch statements bundle
-        bundle = orkg.statements.bundle(thing_id=resource_id)
-        stmts = bundle.content["statements"]
-        save_cache(resource_id, stmts)
-        return resource_id, stmts
-    except Exception as e:
-        print(f"Resource {resource_id} not found, skipping... ({e})")
-        return resource_id, []
-
-
-def process_all(papers, reload_data=False):
-    results = []
-    results_file = "./daily_results_incremental.csv"
-    all_statements = {}  # Store all statements for global distinct calculation
-
-    # Check for already processed papers
-    processed_papers = set()
-    if os.path.exists(results_file) and not reload_data:
-        with open(results_file, "r") as f:
-            for line in f:
-                if line.strip() and not line.startswith("paper,"):  # Skip header
-                    paper_id = line.split(",")[0].strip()
-                    processed_papers.add(paper_id)
-        print(f"Found {len(processed_papers)} already processed papers")
-
-    # Create header if file doesn't exist
-    if not os.path.exists(results_file):
-        with open(results_file, "w") as f:
-            f.write("paper,#Statements,#Resources,#Literals,#Predicates\n")
-
-    # Process all papers (including already processed ones for global distinct calculation)
-    for i, resource_id in enumerate(papers):
-        # Skip if already processed (unless reload_data is True)
-        if resource_id in processed_papers and not reload_data:
-            print(f"Skipping {i+1}/{len(papers)}: {resource_id} (already processed)")
-            # Still load from cache for global distinct calculation
-            cached = load_cached(resource_id)
-            if cached:
-                all_statements[resource_id] = cached["statements"]
-            continue
-
-        print(f"Processing {i+1}/{len(papers)}: {resource_id}")
-        try:
-            iri, stmts = fetch_bundle(resource_id, reload_data)
-            all_statements[resource_id] = stmts  # Store for global calculation
-
-            # Calculate per-paper metrics (no distinct counts)
-            metrics = analyze_paper(stmts)
-            result = (iri, *metrics)
-            results.append(result)
-
-            # Save result immediately to file
-            with open(results_file, "a") as f:
-                f.write(f"{iri},{metrics[0]},{metrics[1]},{metrics[2]},{metrics[3]}\n")
-
-            print(f"  ✓ Saved: {metrics[0]} statements")
-
-        except Exception as e:
-            print(f"  ✗ Error processing {resource_id}: {e}")
-            # Still append empty result to maintain list structure
-            result = (resource_id, 0, 0, 0, 0)
-            results.append(result)
-            all_statements[resource_id] = []  # Empty statements for this paper
-
-            # Save error result to file
-            with open(results_file, "a") as f:
-                f.write(f"{resource_id},0,0,0,0\n")
-
-    # Calculate global distinct counts
-    print("\nCalculating global distinct counts...")
-    global_dist_res, global_dist_lit, global_dist_pred = (
-        calculate_global_distinct_counts(all_statements)
-    )
-
-    print(f"Global distinct counts:")
-    print(f"  - Resources: {global_dist_res}")
-    print(f"  - Literals: {global_dist_lit}")
-    print(f"  - Predicates: {global_dist_pred}")
-
-    # Handle paper deletions - remove papers that are no longer in the SPARQL results
-    if os.path.exists(results_file):
-        current_papers_set = set(papers)
-        temp_file = results_file + ".tmp"
-
-        with open(results_file, "r") as infile, open(temp_file, "w") as outfile:
-            for line in infile:
-                if line.startswith("paper,"):  # Keep header
-                    outfile.write(line)
-                else:
-                    paper_id = line.split(",")[0].strip()
-                    if paper_id in current_papers_set:
-                        outfile.write(line)
-                    else:
-                        print(f"Removing deleted paper: {paper_id}")
-                        # Also remove from cache
-                        cache_file = iri_to_filename(paper_id)
-                        if os.path.exists(cache_file):
-                            os.remove(cache_file)
-                            print(f"  - Removed cache file: {cache_file}")
-
-        # Replace original file with cleaned version
-        os.replace(temp_file, results_file)
-        print(f"Cleaned CSV file - removed deleted papers")
-
-    print(f"\nIncremental results saved to: {results_file}")
-    return results, (global_dist_res, global_dist_lit, global_dist_pred)
-
-
-# ──────────────────────────────────────────────────────────────────────────────
-# 5) Main execution
+# 6) Main execution
 # ──────────────────────────────────────────────────────────────────────────────
 def main():
-    parser = argparse.ArgumentParser(description="Calculate daily ORKG metrics")
+    parser = argparse.ArgumentParser(description="Calculate NLP4RE ORKG metrics")
     parser.add_argument("--limit", type=int, help="Limit number of papers to process")
     parser.add_argument(
         "--reload_data", action="store_true", help="Force reload all data"
@@ -453,7 +332,7 @@ def main():
     )
     args = parser.parse_args()
 
-    print("🔍 Fetching KG-EmpiRE papers from ORKG...")
+    print("🔍 Fetching NLP4RE papers from ORKG...")
     papers = fetch_paper_list()
 
     if args.limit:
@@ -503,7 +382,7 @@ def main():
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     df["timestamp"] = timestamp
 
-    csv_path = "./daily_results_incremental.csv"
+    csv_path = "./nlp4re_results.csv"
     df.to_csv(csv_path, index=False)
     print(f"💾 Results saved to {csv_path}")
 
@@ -569,11 +448,11 @@ def main():
             stats_for_firebase = global_stats.copy()
             stats_for_firebase["paperCount"] = len(results)
 
-            # Use new nested path structure: Templates/R186491/Statistics/empire-statistics
+            # Use new nested path structure: Templates/R1544125/Statistics/nlp4re-statistics
             success = firebase_manager.update_statistics(
                 stats_for_firebase,
-                template_id="R186491",
-                statistic_id="empire-statistics",
+                template_id="R1544125",
+                statistic_id="nlp4re-statistics",
             )
 
             if success:

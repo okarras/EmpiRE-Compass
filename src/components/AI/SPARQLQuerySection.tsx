@@ -1394,7 +1394,9 @@ LIMIT 10`}
           {/* Query Results Status */}
           {!loading && sparqlQuery && !queryError && (
             <Box sx={{ mb: 2 }}>
-              {queryResults.length > 0 ? (
+              {queryResults &&
+              Array.isArray(queryResults) &&
+              queryResults.length > 0 ? (
                 <Alert severity="success" sx={{ mb: 2 }}>
                   <Typography variant="body2">
                     ✅ Query executed successfully! Found{' '}
