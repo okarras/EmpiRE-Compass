@@ -9,6 +9,7 @@ import type {
   OpenAIModel,
   GroqModel,
   MistralModel,
+  GoogleModel,
 } from '../store/slices/aiSlice';
 
 // OpenAI pricing per 1M tokens (input/output)
@@ -42,22 +43,21 @@ const OPENAI_PRICING: Record<OpenAIModel, { input: number; output: number }> = {
   'gpt-3.5-turbo': { input: 0.5, output: 1.5 },
 };
 
-// Groq pricing per 1M tokens (most models are free or very low cost)
+// Groq pricing per 1M tokens
+// Pricing based on https://console.groq.com/docs/models and https://groq.com/pricing (as of 2025)
 const GROQ_PRICING: Partial<
   Record<GroqModel, { input: number; output: number }>
 > = {
-  'llama-3.1-8b-instant': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.1-70b-versatile': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.1-405b-reasoning': { input: 0.0, output: 0.0 }, // Free tier
-  'llama-3.3-70b-versatile': { input: 0.0, output: 0.0 }, // Free tier
-  'openai/gpt-oss-120b': { input: 0.0, output: 0.0 }, // Free tier
-  'openai/gpt-oss-20b': { input: 0.0, output: 0.0 }, // Free tier
-  'whisper-large-v3': { input: 0.0, output: 0.0 }, // Free tier
-  'deepseek-r1-distill-llama-70b': { input: 0.0, output: 0.0 }, // Free tier
-  'mixtral-8x7b-32768': { input: 0.0, output: 0.0 }, // Free tier
+  'llama-3.1-8b-instant': { input: 0.05, output: 0.08 },
+  'llama-3.1-70b-versatile': { input: 0.0, output: 0.0 }, // Not listed in production/preview models - may be deprecated
+  'llama-3.1-405b-reasoning': { input: 0.0, output: 0.0 }, // Not listed in production/preview models - may be deprecated
+  'llama-3.3-70b-versatile': { input: 0.59, output: 0.79 },
+  'openai/gpt-oss-120b': { input: 0.15, output: 0.6 },
+  'openai/gpt-oss-20b': { input: 0.075, output: 0.3 },
 };
 
 // Mistral pricing per 1M tokens
+// Pricing based on https://mistral.ai/pricing#api-pricing (as of 2025)
 const MISTRAL_PRICING: Record<MistralModel, { input: number; output: number }> =
   {
     'mistral-large-latest': { input: 2.7, output: 8.1 },
@@ -66,6 +66,27 @@ const MISTRAL_PRICING: Record<MistralModel, { input: number; output: number }> =
     'pixtral-large-latest': { input: 2.7, output: 8.1 },
     'open-mistral-nemo': { input: 0.0, output: 0.0 }, // Free/open model
   };
+
+// Google/Gemini pricing per 1M tokens
+// Pricing based on https://ai.google.dev/gemini-api/docs/pricing (as of 2025)
+// Using base tier pricing (up to 200k tokens for Pro models, 128k for Flash models)
+const GOOGLE_PRICING: Record<GoogleModel, { input: number; output: number }> = {
+  // Gemini 3 series
+  'gemini-3-pro-preview': { input: 2.0, output: 12.0 },
+  // Gemini 2.5 series
+  'gemini-2.5-pro': { input: 1.25, output: 10.0 },
+  'gemini-2.5-flash': { input: 0.1, output: 0.4 },
+  // Gemini 2.0 series
+  'gemini-2.0-flash': { input: 0.1, output: 0.4 },
+  'gemini-2.0-flash-exp': { input: 0.1, output: 0.4 },
+  'gemini-2.0-flash-lite': { input: 0.019, output: 0.019 },
+  // Gemini 1.5 series
+  'gemini-1.5-pro': { input: 1.25, output: 5.0 },
+  'gemini-1.5-flash': { input: 0.075, output: 0.3 },
+  'gemini-1.5-flash-8b': { input: 0.075, output: 0.3 },
+  // Other models
+  'gemma-3-27b-it': { input: 0.0, output: 0.0 }, // Pricing TBD
+};
 
 export interface CostBreakdown {
   model: string;
@@ -99,6 +120,12 @@ export function calculateCost(
       break;
     case 'mistral':
       pricing = MISTRAL_PRICING[model as MistralModel] || {
+        input: 0,
+        output: 0,
+      };
+      break;
+    case 'google':
+      pricing = GOOGLE_PRICING[model as GoogleModel] || {
         input: 0,
         output: 0,
       };

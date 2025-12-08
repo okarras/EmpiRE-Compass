@@ -25,7 +25,13 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Generate columns based on keys from the first data object
   const columns: GridColDef[] = React.useMemo(() => {
-    if (questionData.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0
+    ) {
+      return [];
+    }
 
     return Object.keys(questionData[0]).map((key) => ({
       field: key,
@@ -35,6 +41,12 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
       filterable: true,
       renderCell: (params) => {
         const value = params.value;
+
+        // Handle null/undefined
+        if (value == null) {
+          return '';
+        }
+
         // If the cell content is a URL, render it as a link
         if (typeof value === 'string' && isValidUrl(value)) {
           return (
@@ -43,14 +55,27 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
             </a>
           );
         }
-        // Otherwise, just render the value
-        return value;
+
+        // Handle objects and arrays - convert to JSON string
+        if (typeof value === 'object') {
+          try {
+            return JSON.stringify(value);
+          } catch {
+            return String(value);
+          }
+        }
+
+        // For other types, convert to string
+        return String(value);
       },
     }));
   }, [questionData]);
 
   // Ensure each row has a unique 'id' field
   const rows = React.useMemo(() => {
+    if (!questionData || !Array.isArray(questionData)) {
+      return [];
+    }
     return questionData.map((row, index) => ({
       id: row.id ?? index,
       ...row,

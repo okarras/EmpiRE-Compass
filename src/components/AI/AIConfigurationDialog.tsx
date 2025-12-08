@@ -29,18 +29,22 @@ import {
   setOpenAIModel,
   setGroqModel,
   setMistralModel,
+  setGoogleModel,
   setOpenAIApiKey,
   setGroqApiKey,
   setMistralApiKey,
+  setGoogleApiKey,
   setIsConfigured,
   setUseEnvironmentKeys,
   OPENAI_MODELS,
   GROQ_MODELS,
   MISTRAL_MODELS,
+  GOOGLE_MODELS,
   type AIProvider,
   type OpenAIModel,
   type GroqModel,
   type MistralModel,
+  type GoogleModel,
 } from '../../store/slices/aiSlice';
 
 interface AIConfigurationDialogProps {
@@ -58,9 +62,11 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     openaiModel,
     groqModel,
     mistralModel,
+    googleModel,
     openaiApiKey,
     groqApiKey,
     mistralApiKey,
+    googleApiKey,
     isConfigured,
     useEnvironmentKeys,
   } = useAppSelector((state) => state.ai);
@@ -72,14 +78,18 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const [localGroqModel, setLocalGroqModel] = useState<GroqModel>(groqModel);
   const [localMistralModel, setLocalMistralModel] =
     useState<MistralModel>(mistralModel);
+  const [localGoogleModel, setLocalGoogleModel] =
+    useState<GoogleModel>(googleModel);
   const [localOpenAIApiKey, setLocalOpenAIApiKey] = useState(openaiApiKey);
   const [localGroqApiKey, setLocalGroqApiKey] = useState(groqApiKey);
   const [localMistralApiKey, setLocalMistralApiKey] = useState(mistralApiKey);
+  const [localGoogleApiKey, setLocalGoogleApiKey] = useState(googleApiKey);
   const [localUseEnvironmentKeys, setLocalUseEnvironmentKeys] =
     useState(useEnvironmentKeys);
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
   const [showGroqKey, setShowGroqKey] = useState(false);
   const [showMistralKey, setShowMistralKey] = useState(false);
+  const [showGoogleKey, setShowGoogleKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset local state when dialog opens
@@ -89,9 +99,11 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       setLocalOpenAIModel(openaiModel);
       setLocalGroqModel(groqModel);
       setLocalMistralModel(mistralModel);
+      setLocalGoogleModel(googleModel);
       setLocalOpenAIApiKey(openaiApiKey);
       setLocalGroqApiKey(groqApiKey);
       setLocalMistralApiKey(mistralApiKey);
+      setLocalGoogleApiKey(googleApiKey);
       setLocalUseEnvironmentKeys(useEnvironmentKeys);
       setError(null);
     }
@@ -101,9 +113,11 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     openaiModel,
     groqModel,
     mistralModel,
+    googleModel,
     openaiApiKey,
     groqApiKey,
     mistralApiKey,
+    googleApiKey,
     useEnvironmentKeys,
   ]);
 
@@ -123,6 +137,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           setError('Mistral API key is required');
           return;
         }
+        if (localProvider === 'google' && !localGoogleApiKey.trim()) {
+          setError('Google API key is required');
+          return;
+        }
       }
 
       // Save to store
@@ -130,9 +148,11 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       dispatch(setOpenAIModel(localOpenAIModel));
       dispatch(setGroqModel(localGroqModel));
       dispatch(setMistralModel(localMistralModel));
+      dispatch(setGoogleModel(localGoogleModel));
       dispatch(setOpenAIApiKey(localOpenAIApiKey));
       dispatch(setGroqApiKey(localGroqApiKey));
       dispatch(setMistralApiKey(localMistralApiKey));
+      dispatch(setGoogleApiKey(localGoogleApiKey));
       dispatch(setUseEnvironmentKeys(localUseEnvironmentKeys));
       dispatch(setIsConfigured(true));
 
@@ -255,6 +275,25 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                     </Box>
                   </Box>
                 </MenuItem>
+                <MenuItem value="google">
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Google Gemini
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Gemini 2.5 Flash, Gemma models
+                      </Typography>
+                    </Box>
+                  </Box>
+                </MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -271,7 +310,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                     ? localOpenAIModel
                     : localProvider === 'groq'
                       ? localGroqModel
-                      : localMistralModel
+                      : localProvider === 'mistral'
+                        ? localMistralModel
+                        : localGoogleModel
                 }
                 onChange={(e) => {
                   if (localProvider === 'openai') {
@@ -280,6 +321,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                     setLocalGroqModel(e.target.value as GroqModel);
                   } else if (localProvider === 'mistral') {
                     setLocalMistralModel(e.target.value as MistralModel);
+                  } else if (localProvider === 'google') {
+                    setLocalGoogleModel(e.target.value as GoogleModel);
                   }
                 }}
                 variant="outlined"
@@ -346,38 +389,88 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                           </Box>
                         </MenuItem>
                       ))
-                    : MISTRAL_MODELS.map((model) => (
-                        <MenuItem key={model} value={model}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              width: '100%',
-                            }}
-                          >
-                            <Typography sx={{ fontWeight: 500 }}>
-                              {model}
-                            </Typography>
-                            {model === 'mistral-large-latest' && (
-                              <Chip
-                                label="Default"
-                                size="small"
-                                color="primary"
-                                variant="outlined"
-                              />
-                            )}
-                            {model.includes('large') &&
-                              model !== 'mistral-large-latest' && (
+                    : localProvider === 'mistral'
+                      ? MISTRAL_MODELS.map((model) => (
+                          <MenuItem key={model} value={model}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                width: '100%',
+                              }}
+                            >
+                              <Typography sx={{ fontWeight: 500 }}>
+                                {model}
+                              </Typography>
+                              {model === 'mistral-large-latest' && (
                                 <Chip
-                                  label="Large"
+                                  label="Default"
                                   size="small"
-                                  variant="outlined"
                                   color="primary"
+                                  variant="outlined"
                                 />
                               )}
-                          </Box>
-                        </MenuItem>
-                      ))}
+                              {model.includes('large') &&
+                                model !== 'mistral-large-latest' && (
+                                  <Chip
+                                    label="Large"
+                                    size="small"
+                                    variant="outlined"
+                                    color="primary"
+                                  />
+                                )}
+                            </Box>
+                          </MenuItem>
+                        ))
+                      : GOOGLE_MODELS.map((model) => {
+                          // Get display label for model
+                          const getModelLabel = (m: string) => {
+                            if (m === 'gemini-2.5-flash')
+                              return 'Gemini 2.5 Flash';
+                            if (m === 'gemma-3-27b-it') return 'Gemma 3 (27B)';
+                            return m;
+                          };
+
+                          return (
+                            <MenuItem key={model} value={model}>
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  width: '100%',
+                                }}
+                              >
+                                <Typography sx={{ fontWeight: 500 }}>
+                                  {getModelLabel(model)}
+                                </Typography>
+                                {model === 'gemini-2.5-flash' && (
+                                  <Chip
+                                    label="Recommended"
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                  />
+                                )}
+                                {model === 'gemini-2.5-flash' && (
+                                  <Chip
+                                    label="Fast"
+                                    size="small"
+                                    variant="outlined"
+                                    color="success"
+                                  />
+                                )}
+                                {model === 'gemma-3-27b-it' && (
+                                  <Chip
+                                    label="Latest"
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                  />
+                                )}
+                              </Box>
+                            </MenuItem>
+                          );
+                        })}
               </Select>
             </FormControl>
           </Box>
@@ -448,7 +541,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                     }}
                     helperText="Your API key is sent securely to the backend and never exposed"
                   />
-                ) : (
+                ) : localProvider === 'mistral' ? (
                   <TextField
                     fullWidth
                     label="Mistral API Key"
@@ -462,6 +555,25 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                           edge="end"
                         >
                           {showMistralKey ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      ),
+                    }}
+                    helperText="Your API key is sent securely to the backend and never exposed"
+                  />
+                ) : (
+                  <TextField
+                    fullWidth
+                    label="Google API Key"
+                    type={showGoogleKey ? 'text' : 'password'}
+                    value={localGoogleApiKey}
+                    onChange={(e) => setLocalGoogleApiKey(e.target.value)}
+                    InputProps={{
+                      endAdornment: (
+                        <IconButton
+                          onClick={() => setShowGoogleKey(!showGoogleKey)}
+                          edge="end"
+                        >
+                          {showGoogleKey ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       ),
                     }}
@@ -503,7 +615,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             !localUseEnvironmentKeys &&
             ((localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
               (localProvider === 'groq' && !localGroqApiKey.trim()) ||
-              (localProvider === 'mistral' && !localMistralApiKey.trim()))
+              (localProvider === 'mistral' && !localMistralApiKey.trim()) ||
+              (localProvider === 'google' && !localGoogleApiKey.trim()))
           }
           sx={{
             backgroundColor: '#e86161',

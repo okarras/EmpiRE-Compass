@@ -109,8 +109,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         return {
           ...initialState,
           ...parsed,
-          history: parsed.history || [],
-          costs: parsed.costs || [],
+          history: Array.isArray(parsed.history) ? parsed.history : [],
+          costs: Array.isArray(parsed.costs) ? parsed.costs : [],
+          queryResults: Array.isArray(parsed.queryResults)
+            ? parsed.queryResults
+            : [],
         };
       }
     } catch (err) {

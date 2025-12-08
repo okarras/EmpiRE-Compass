@@ -1,4 +1,4 @@
-name: Update Empire Statistics
+name: Update Statistics (Empire & NLP4RE)
 
 on:
   push:
@@ -59,31 +59,49 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
 
-      - name: Run empire statistics script
+      - name: Run Empire statistics
         run: |
           cd scripts
           export GOOGLE_APPLICATION_CREDENTIALS="firebase-service-account.json"
-          python empire-statistics.py
+          python orkg-statistics.py --template empire
         timeout-minutes: 60
         continue-on-error: true
 
-      - name: Check for results
+      - name: Run NLP4RE statistics
+        run: |
+          cd scripts
+          export GOOGLE_APPLICATION_CREDENTIALS="firebase-service-account.json"
+          python orkg-statistics.py --template nlp4re
+        timeout-minutes: 60
+        continue-on-error: true
+
+      - name: Check for Empire results
         run: |
           if [ -f "scripts/daily_results_incremental.csv" ]; then
-            echo "✓ Statistics file generated successfully"
+            echo "✓ Empire statistics file generated successfully"
             echo "File size: $(du -h scripts/daily_results_incremental.csv | cut -f1)"
             echo "Line count: $(wc -l < scripts/daily_results_incremental.csv)"
           else
-            echo "✗ Statistics file not found"
-            exit 1
+            echo "✗ Empire statistics file not found"
+          fi
+
+      - name: Check for NLP4RE results
+        run: |
+          if [ -f "scripts/nlp4re_results.csv" ]; then
+            echo "✓ NLP4RE statistics file generated successfully"
+            echo "File size: $(du -h scripts/nlp4re_results.csv | cut -f1)"
+            echo "Line count: $(wc -l < scripts/nlp4re_results.csv)"
+          else
+            echo "✗ NLP4RE statistics file not found"
           fi
 
       - name: Upload results as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: empire-statistics-results
+          name: statistics-results
           path: |
             scripts/daily_results_incremental.csv
+            scripts/nlp4re_results.csv
             scripts/*.log
           retention-days: 30
 
@@ -95,11 +113,11 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Empire statistics update failed. Please check the logs."
+          echo "::error::Statistics update failed. Please check the logs."
 
       - name: Summary
         run: |
-          echo "## Empire Statistics Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Statistics Update Summary" >> $GITHUB_STEP_SUMMARY
           echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
