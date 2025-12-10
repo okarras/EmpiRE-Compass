@@ -10,6 +10,37 @@ import { logRequest } from '../services/requestLogger.js';
 
 const router = Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TeamMember:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
+ *         - email
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         role:
+ *           type: string
+ *         description:
+ *           type: string
+ *         image:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
+ *         link:
+ *           type: string
+ *         priority:
+ *           type: integer
+ *           description: Sort order (lower numbers appear first)
+ */
+
 export interface TeamMember {
   id?: string;
   name: string;
@@ -22,8 +53,23 @@ export interface TeamMember {
 }
 
 /**
- * GET /api/team
- * Get all team members (public)
+ * @swagger
+ * /api/team:
+ *   get:
+ *     summary: Get all team members
+ *     tags:
+ *       - Team
+ *     responses:
+ *       '200':
+ *         description: Team members retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/TeamMember'
+ *       '500':
+ *         description: Failed to fetch team members
  */
 router.get('/', async (req, res) => {
   try {
@@ -84,8 +130,35 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * POST /api/team
- * Create team member (admin only)
+ * @swagger
+ * /api/team:
+ *   post:
+ *     summary: Create team member
+ *     tags:
+ *       - Team
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/TeamMember'
+ *     responses:
+ *       '200':
+ *         description: Team member created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamMember'
+ *       '400':
+ *         description: Missing required fields
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to create team member
  */
 router.post(
   '/',
@@ -138,8 +211,43 @@ router.post(
 );
 
 /**
- * PUT /api/team/:id
- * Update team member (admin only)
+ * @swagger
+ * /api/team/{id}:
+ *   put:
+ *     summary: Update team member
+ *     tags:
+ *       - Team
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the team member to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Partial team member data to update
+ *     responses:
+ *       '200':
+ *         description: Team member updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TeamMember'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Team member not found
+ *       '500':
+ *         description: Failed to update team member
  */
 router.put(
   '/:id',
@@ -199,8 +307,39 @@ router.put(
 );
 
 /**
- * DELETE /api/team/:id
- * Delete team member (admin only)
+ * @swagger
+ * /api/team/{id}:
+ *   delete:
+ *     summary: Delete team member
+ *     tags:
+ *       - Team
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the team member to delete
+ *     responses:
+ *       '200':
+ *         description: Team member deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Team member not found
+ *       '500':
+ *         description: Failed to delete team member
  */
 router.delete(
   '/:id',

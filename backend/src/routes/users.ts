@@ -33,12 +33,20 @@ const router = Router();
  *         id: 12345
  *         email: user@example.com
  *         display_name: Jane Doe
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: Keycloak JWT token
  *
  * /api/users/{userId}:
  *   get:
  *     summary: Get a user by ID
  *     tags:
  *       - Users
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -59,10 +67,50 @@ const router = Router();
  *         description: User not found
  *       '500':
  *         description: Failed to fetch user
- */
-/**
- * POST /api/users/sync
- * Sync Keycloak user to Firebase
+ *
+ * /api/users/sync:
+ *   post:
+ *     summary: Sync Keycloak user to Firebase
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - email
+ *               - display_name
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: Unique identifier originating from Keycloak
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               display_name:
+ *                 type: string
+ *           example:
+ *             id: 12345
+ *             email: user@example.com
+ *             display_name: Jane Doe
+ *     responses:
+ *       '200':
+ *         description: User synced successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       '400':
+ *         description: Missing required fields
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '500':
+ *         description: Failed to sync user
  */
 router.post(
   '/sync',
@@ -102,10 +150,6 @@ router.post(
   }
 );
 
-/**
- * GET /api/users/:userId
- * Get user by ID
- */
 router.get(
   '/:userId',
   validateKeycloakToken,
