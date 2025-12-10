@@ -33,6 +33,7 @@ const COLLECTIONS_TO_BACKUP = [
   'HomeContent',
   'FirebaseRequestLogs',
   'Team',
+  'DynamicQuestions',
 ];
 
 /**

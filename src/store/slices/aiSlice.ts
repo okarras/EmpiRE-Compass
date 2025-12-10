@@ -2,9 +2,21 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // Available models for each provider
 export const OPENAI_MODELS = [
+  // Frontier models - OpenAI's most advanced models
+  'gpt-5.1',
+  'gpt-5-mini',
+  'gpt-5-nano',
+  'gpt-5-pro',
+  'gpt-5',
+  'gpt-4.1',
+  // Previous generation models
   'gpt-4o',
   'gpt-4o-mini',
   'gpt-4-turbo',
+  'gpt-4o-2024-08-06',
+  'gpt-4-turbo-2024-04-09',
+  'o1-preview',
+  'o1-mini',
   'gpt-4',
   'gpt-3.5-turbo',
 ] as const;
@@ -16,9 +28,6 @@ export const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
   'openai/gpt-oss-120b',
   'openai/gpt-oss-20b',
-  'whisper-large-v3',
-  'mixtral-8x7b-32768',
-  'deepseek-r1-distill-llama-70b',
 ] as const;
 
 export const MISTRAL_MODELS = [
@@ -29,7 +38,23 @@ export const MISTRAL_MODELS = [
   'open-mistral-nemo',
 ] as const;
 
-export const GOOGLE_MODELS = ['gemini-2.5-flash', 'gemma-3-27b-it'] as const;
+export const GOOGLE_MODELS = [
+  // Gemini 3 series
+  'gemini-3-pro-preview',
+  // Gemini 2.5 series
+  'gemini-2.5-pro',
+  'gemini-2.5-flash',
+  // Gemini 2.0 series
+  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
+  'gemini-2.0-flash-lite',
+  // Gemini 1.5 series
+  'gemini-1.5-pro',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-8b',
+  // Other models
+  'gemma-3-27b-it',
+] as const;
 
 export type OpenAIModel = (typeof OPENAI_MODELS)[number];
 export type GroqModel = (typeof GROQ_MODELS)[number];

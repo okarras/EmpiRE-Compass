@@ -6,6 +6,8 @@ import React, {
   createContext,
 } from 'react';
 
+import type { CostBreakdown } from '../utils/costCalculator';
+
 export interface DynamicQuestionState {
   question: string;
   sparqlQuery: string;
@@ -22,6 +24,8 @@ export interface DynamicQuestionState {
   templateId: string | null;
   templateMapping: Record<string, unknown> | null;
   targetClassId: string | null;
+  // AI model costs for this question
+  costs: CostBreakdown[];
 }
 
 export interface DynamicQuestionHistory {
@@ -48,6 +52,7 @@ const initialState: DynamicQuestionState = {
   templateId: null,
   templateMapping: null,
   targetClassId: null,
+  costs: [],
 };
 
 interface DynamicQuestionContextType {
@@ -73,6 +78,7 @@ interface DynamicQuestionContextType {
   updateTemplateId: (templateId: string) => void;
   updateTemplateMapping: (mapping: Record<string, unknown>) => void;
   updateTargetClassId: (targetClassId: string) => void;
+  updateCosts: (costs: CostBreakdown[]) => void;
   addToHistory: (
     entry: Omit<DynamicQuestionHistory, 'id' | 'timestamp'>
   ) => void;
@@ -103,7 +109,11 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         return {
           ...initialState,
           ...parsed,
-          history: parsed.history || [],
+          history: Array.isArray(parsed.history) ? parsed.history : [],
+          costs: Array.isArray(parsed.costs) ? parsed.costs : [],
+          queryResults: Array.isArray(parsed.queryResults)
+            ? parsed.queryResults
+            : [],
         };
       }
     } catch (err) {
@@ -286,6 +296,13 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
+  const updateCosts = (costs: CostBreakdown[]) => {
+    setState((prev) => ({
+      ...prev,
+      costs,
+    }));
+  };
+
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -342,6 +359,7 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         updateTemplateId,
         updateTemplateMapping,
         updateTargetClassId,
+        updateCosts,
         addToHistory,
         getHistoryByType,
         clearHistory,

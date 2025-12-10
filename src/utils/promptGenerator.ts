@@ -36,27 +36,11 @@ In this domain, an empirical study is a paper that:
 3. Is typically from the IEEE International Requirements Engineering Conference
 
 **The Standard Pattern for Empirical Research Questions:**
-\`\`\`sparql
-# This is the canonical pattern used in existing queries
-SELECT ?paper ?year ?dc_label ?da_label WHERE {
-  ?paper orkgp:P31 ?contribution .
-  ?paper orkgp:P29 ?year .
-  ?contribution a orkgc:C27001 .
-  ?contribution orkgp:P135046 ?venue .
-  ?venue rdfs:label ?venue_name .
-  
-  OPTIONAL {
-    ?contribution orkgp:P56008 ?data_collection .
-    ?data_collection rdfs:label ?dc_label .
-  }
-  OPTIONAL {
-    ?contribution orkgp:P15124 ?data_analysis .
-    ?data_analysis rdfs:label ?da_label .
-  }
-  
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string) 
-}
-\`\`\`
+- Link paper to contribution using \`orkgp:P31\`
+- Declare contribution class \`orkgc:C27001\`
+- Include year if temporal analysis is needed
+- Use OPTIONAL blocks for data collection and analysis properties
+- Filter by venue label when needed
 
 **Handling "Empirical Studies" Questions:**
 When questions ask about "empirical studies," use a simple approach:
@@ -91,103 +75,43 @@ FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^x
 To find specific method types (e.g., 'Case Study'), traverse to the Method Type node:
 
 **Correct Traversal for Data Collection Method Type:**
-\`\`\`sparql
-?contribution orkgp:P56008 ?data_collection_instance .
-?data_collection_instance orkgp:P1005 ?dc_method .
-?dc_method orkgp:P94003 ?dc_method_type .
-?dc_method_type rdfs:label ?method_type_label .
-\`\`\`
+- Start from contribution → data collection instance → method → method type → label
+- Traverse through each intermediate node to reach the final property
+- Use rdfs:label at the final level to get human-readable values
 
 **4. Statistical Analysis Patterns**
 For inferential statistics:
-\`\`\`sparql
-?data_analysis orkgp:P56043 ?inferential_stats .
-?inferential_stats orkgp:P30001 ?hypothesis .
-?inferential_stats orkgp:P35133 ?stat_test .
-\`\`\`
+- Traverse from data analysis → inferential stats → hypothesis/test properties
+- Use appropriate predicates for each level
 
 For descriptive statistics:
-\`\`\`sparql
-?data_analysis orkgp:P56048 ?descriptive_stats .
-OPTIONAL { ?descriptive_stats orkgp:P56049 ?freq_node . }
-OPTIONAL { ?descriptive_stats orkgp:P57005 ?central_tendency . }
-OPTIONAL { ?descriptive_stats orkgp:P57008 ?dispersion . }
-\`\`\`
+- Traverse from data analysis → descriptive stats → frequency/central tendency/dispersion
+- Use OPTIONAL blocks for properties that may not exist
 
 **5. Threats to Validity Pattern**
-\`\`\`sparql
-?contribution orkgp:P39099 ?threats_node .
-OPTIONAL { ?threats_node orkgp:P55034 ?external. }
-OPTIONAL { ?threats_node orkgp:P55035 ?internal. }
-OPTIONAL { ?threats_node orkgp:P55037 ?construct. }
-OPTIONAL { ?threats_node orkgp:P55036 ?conclusion. }
-\`\`\`
+- Access threats node from contribution
+- Use OPTIONAL blocks for each threat type (external, internal, construct, conclusion)
 
 **6. Always include the venue filter: FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
 `,
     commonPatterns: `
 ### Common Query Patterns for Empirical Research
 
-**Pattern 1: Simple Empirical Studies Count**
-\`\`\`sparql
-SELECT ?paper ?year ?dc_label ?da_label WHERE {
-  ?paper orkgp:P29 ?year .
-  ?paper orkgp:P31 ?contribution .
-  ?contribution a orkgc:C27001 .
-  ?contribution orkgp:P135046 ?venue .
-  ?venue rdfs:label ?venue_name .
-  
-  OPTIONAL {
-    ?contribution orkgp:P56008 ?data_collection .
-    ?data_collection rdfs:label ?dc_label .
-  }
-  OPTIONAL {
-    ?contribution orkgp:P15124 ?data_analysis .
-    ?data_analysis rdfs:label ?da_label .
-  }
-  
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-}
-\`\`\`
+**Pattern 1: Basic Query with Optional Properties**
+- Include paper and year (if needed) in SELECT
+- Use OPTIONAL blocks for properties that may not exist for all contributions
+- Filter by venue label when needed
+- Always declare contribution class
 
-**Pattern 2: Method Type Analysis**
-\`\`\`sparql
-SELECT ?paper ?year ?method_type_label WHERE {
-  ?paper orkgp:P29 ?year .
-  ?paper orkgp:P31 ?contribution .
-  ?contribution a orkgc:C27001 .
-  ?contribution orkgp:P135046 ?venue .
-  ?venue rdfs:label ?venue_name .
-  
-  OPTIONAL {
-    ?contribution orkgp:P56008 ?data_collection .
-    ?data_collection orkgp:P1005 ?method .
-    ?method orkgp:P94003 ?method_type .
-    ?method_type rdfs:label ?method_type_label .
-  }
-  
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-}
-\`\`\`
+**Pattern 2: Nested Property Traversal**
+- Traverse through intermediate nodes to reach the target property
+- Use OPTIONAL for nested paths that may not exist
+- Get labels at the final level for meaningful results
 
-**Pattern 3: Boolean Property Analysis (with SAMPLE)**
-\`\`\`sparql
-SELECT ?paper ?year (SAMPLE(?boolean_prop) AS ?boolean_prop) WHERE {
-  ?paper orkgp:P29 ?year .
-  ?paper orkgp:P31 ?contribution .
-  ?contribution a orkgc:C27001 .
-  ?contribution orkgp:P135046 ?venue .
-  ?venue rdfs:label ?venue_name .
-  
-  OPTIONAL {
-    ?contribution orkgp:SomeProperty ?node .
-    OPTIONAL { ?node orkgp:BooleanProperty ?boolean_prop . }
-  }
-  
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-}
-GROUP BY ?paper ?year
-\`\`\`
+**Pattern 3: Aggregation with SAMPLE**
+- Use SAMPLE() with GROUP BY when multiple values exist per paper
+- Group by paper and year (or other identifying fields)
+- Useful for boolean properties or when deduplication is needed
 `,
     troubleshooting: `
 ### Troubleshooting for Empirical Research Queries
@@ -211,6 +135,143 @@ GROUP BY ?paper ?year
 **Problem: Statistical analysis fields are empty**
 - **Likely cause**: Not traversing through the analysis structure
 - **Solution**: Check if analysis has the specific type (inferential/descriptive/ML) first
+`,
+  },
+  // NLP for Requirements Engineering Template (R1544125)
+  R1544125: {
+    templateId: 'R1544125',
+    templateLabel: 'NLP for Requirements Engineering (NLP4RE)',
+    domainKnowledge: `
+### Domain-Specific Knowledge: NLP4RE Template
+
+**Understanding NLP4RE Research:**
+This template focuses on Natural Language Processing approaches applied to Requirements Engineering tasks. The template organizes data about:
+- NLP methods and tasks used in RE
+- Evaluation metrics for NLP4RE approaches
+- Datasets used in NLP4RE research
+- Annotation processes and guidelines
+- Baseline comparisons
+- Data formats and sources
+
+**The Standard Pattern for NLP4RE Questions:**
+\`\`\`sparql
+# Basic pattern for NLP4RE queries
+SELECT DISTINCT ?paper ?paperLabel ?fieldLabel WHERE {
+  ?paper orkgp:P31 ?contribution .
+  ?contribution a orkgc:C121001 .
+  
+  # Add specific NLP4RE properties here
+  ?contribution orkgp:SomeProperty ?resource .
+  ?resource rdfs:label ?fieldLabel .
+  
+  OPTIONAL { ?paper rdfs:label ?paperLabel . }
+}
+ORDER BY ?paperLabel
+\`\`\`
+
+**Key NLP4RE Concepts:**
+- **Evaluation Metrics**: Use \`orkgp:HAS_EVALUATION\` to access evaluation information, then \`orkgp:P110006\` for metrics
+- **NLP Tasks**: Use \`orkgp:P181003\` for NLP tasks, \`orkgp:P181004\` for task types
+- **RE Tasks**: Use \`orkgp:P181002\` for Requirements Engineering tasks
+- **Datasets**: Use \`orkgp:P181011\` for NLP datasets
+- **Annotation Process**: Use \`orkgp:P181031\` for annotation processes
+`,
+    queryExamples: '',
+    specificRules: `
+### NLP4RE Specific Rules
+
+**1. Target Class Declaration**
+Every query MUST include the class declaration:
+\`\`\`sparql
+?contribution a orkgc:C121001 .
+\`\`\`
+
+**2. Evaluation Metrics Pattern**
+To access evaluation metrics:
+- Start from contribution → HAS_EVALUATION → evaluation → P110006 → evaluation metric → label
+- Traverse through each level to reach the metric label
+
+**3. NLP Task Pattern**
+To access NLP task information:
+- Start from contribution → P181003 → NLP task → P181004 → NLP task type → label
+- Follow the property chain to reach the task type
+
+**4. Dataset Pattern**
+To access dataset information:
+- Start from contribution → P181011 → dataset → P181022 → datatype → P181023 → dataformat → label
+- Traverse through all intermediate levels
+
+**5. Annotation Process Pattern**
+To access annotation process information:
+- Start from contribution → P181031 → annotation process → P181036 → annotation scheme → P181038 → guideline availability → label
+- Follow the complete property chain
+
+**6. Baseline Comparison Pattern**
+To access baseline comparison information:
+- Start from contribution → HAS_EVALUATION → evaluation → P181051 → baseline comparison → P181052 → baseline type → label
+- Traverse through evaluation to reach baseline information
+
+**7. Always Use DISTINCT**
+NLP4RE queries often return duplicate rows due to multiple tasks, metrics, or datasets per contribution. Always use \`SELECT DISTINCT\` to avoid duplicates.
+
+**8. Use OPTIONAL for Labels**
+Always wrap label retrieval in OPTIONAL blocks:
+\`\`\`sparql
+OPTIONAL { ?paper rdfs:label ?paperLabel . }
+OPTIONAL { ?resource rdfs:label ?resourceLabel . }
+\`\`\`
+
+**9. CRITICAL: For "Top N" or "Most Frequently Used" Questions**
+- **ALWAYS include \`?paper\` and \`?paperLabel\` in SELECT** - the processing function needs paper information to count frequency
+- **DO NOT use LIMIT in SPARQL** - return all rows, let the processing function count and select top N
+- **ORDER BY should be by paper** (e.g., \`ORDER BY ?paperLabel\`), not by the field being counted
+- Example: For "top 10 evaluation metrics", return \`?paper ?paperLabel ?evaluation_metricLabel\` with no LIMIT
+`,
+    commonPatterns: `
+### Common Query Patterns for NLP4RE
+
+**Pattern 1: Counting/Frequency Queries**
+For questions about frequency or "top N", the query should:
+- Include \`?paper\` and \`?paperLabel\` in SELECT along with the field being counted
+- Use \`SELECT DISTINCT\` to avoid duplicate rows
+- Use \`ORDER BY ?paperLabel\` (or similar paper-based ordering)
+- Do NOT use LIMIT - return all rows for counting
+
+**Pattern 2: Multi-Property Queries**
+For queries accessing multiple properties (e.g., RE tasks and NLP tasks):
+- Include all relevant fields in SELECT
+- Traverse through each property path correctly
+- Use OPTIONAL for labels
+- Order by contribution or paper as appropriate
+
+**Pattern 3: Nested Property Traversal**
+For queries accessing nested properties (e.g., dataset → datatype → dataformat):
+- Traverse through each level of the hierarchy
+- Include intermediate nodes if needed for filtering
+- Use OPTIONAL for labels at each level
+`,
+    troubleshooting: `
+### Troubleshooting for NLP4RE Queries
+
+**Problem: Query returns duplicate rows**
+- **Likely cause**: Multiple tasks, metrics, or datasets per contribution
+- **Solution**: Use \`SELECT DISTINCT\` and ensure proper grouping
+
+**Problem: Missing labels in results**
+- **Likely cause**: Not using OPTIONAL for label retrieval
+- **Solution**: Always wrap \`rdfs:label\` queries in OPTIONAL blocks
+
+**Problem: Empty results for nested properties**
+- **Likely cause**: Not traversing through the full property chain
+- **Solution**: Check the template hierarchy and traverse through all intermediate nodes
+
+**Problem: Evaluation metrics not found**
+- **Likely cause**: Using wrong predicate or not accessing through HAS_EVALUATION
+- **Solution**: Use \`orkgp:HAS_EVALUATION\` first, then \`orkgp:P110006\` for metrics
+
+**Problem: Dataset information incomplete**
+- **Likely cause**: Not traversing through datatype to dataformat
+- **Solution**: Use the full path: dataset → datatype → dataformat
 `,
   },
 };
@@ -476,7 +537,15 @@ When you do need to use year, remember that the publication year (\`orkgp:P29\`)
 - Year-based grouping (e.g., "by year")
 - Publication year information
 
-### 2. Critical Rule: Handle Ambiguity with Multiple Queries
+### 2. Critical Rule: "Top N" or "Most Frequently Used" Questions
+**When the question asks for "top N", "most frequently used", "most common", or similar counting/ranking questions:**
+
+1. **MUST include paper information in SELECT**: Always include \`?paper\` and \`?paperLabel\` along with the field being counted (e.g., if counting metrics, include both paper and metric fields)
+2. **DO NOT use LIMIT in SPARQL**: Return ALL rows - the processing function will count papers per item and select the top N. LIMIT in SPARQL would truncate results before counting can occur.
+3. **ORDER BY should be by paper**: Use \`ORDER BY ?paperLabel\` (or similar paper-based ordering), not by the field being counted. The processing function handles ranking.
+4. **Return all data**: The processing function needs all paper-item pairs to count frequency correctly. Each row should represent one paper using one instance of the item being counted.
+
+### 3. Critical Rule: Handle Ambiguity with Multiple Queries
 For ambiguous questions, provide separate, clearly-labeled SPARQL queries for each interpretation. Do not combine unrelated concepts in one complex query.
 
 **Important: Each query must be in its own separate code block:**
@@ -492,10 +561,10 @@ SELECT ... WHERE { ... }
 
 **Never put multiple SELECT statements in the same code block - this causes syntax errors.**
 
-### 3. Critical Rule: Traverse Schema for Meaningful Types
+### 4. Critical Rule: Traverse Schema for Meaningful Types
 To find specific types, traverse to the appropriate node. Don't just select the label of the top-level instance.
 
-### 4. Recommended Pattern: Use BIND(IF(...)) for Conditional Counting
+### 5. Recommended Pattern: Use BIND(IF(...)) for Conditional Counting
 When calculating proportions or counting subsets, use BIND(IF(...)) to create flag variables (1 for true, 0 for false), then SUM() during aggregation.
 
 **General Template:**
@@ -503,7 +572,7 @@ When calculating proportions or counting subsets, use BIND(IF(...)) to create fl
 BIND(IF(condition, 1, 0) AS ?flagVariable)
 \`\`\`
 
-### 5. CRITICAL RULE: URIs vs Labels (MOST COMMON MISTAKE)
+### 6. CRITICAL RULE: URIs vs Labels (MOST COMMON MISTAKE)
 
 **⚠️ EXTREMELY IMPORTANT: Resources are URIs, NOT Strings**
 
@@ -542,7 +611,7 @@ BIND(IF(?resource_label = "expected value"^^xsd:string, 1, 0) AS ?flag)
 - ❌ Wrong: \`BIND(IF(?label = "X", 1, 0) AS ?flag) ?resource rdfs:label ?label .\`
 - ✅ Correct: \`?resource rdfs:label ?label . BIND(IF(?label = "X", 1, 0) AS ?flag)\`
 
-### 6. Critical SPARQL Syntax Rules
+### 7. Critical SPARQL Syntax Rules
 
 
 **BIND Usage:**
@@ -567,9 +636,13 @@ Before writing any SPARQL:
 1. **Read the question carefully** - What exactly is being asked?
 2. **Identify the key concepts** - What data elements are needed?
 3. **Determine the analysis type** - Counting? Proportions? Trends? Comparisons?
-4. **Check temporal requirements** - Does the question ask for trends over time, specific years, or year-based analysis? If NO, do NOT include year in the query.
-5. **Plan the query structure** - What variables do you need? What grouping?
-6. **Choose appropriate filters** - What conditions define the subset of interest?
+4. **Check for "top N" or frequency questions** - If the question asks for "top N", "most frequently used", "most common":
+   - **MUST include \`?paper\` and \`?paperLabel\` in SELECT**
+   - **DO NOT use LIMIT** - return all rows for counting
+   - **ORDER BY paper**, not by the counted field
+5. **Check temporal requirements** - Does the question ask for trends over time, specific years, or year-based analysis? If NO, do NOT include year in the query.
+6. **Plan the query structure** - What variables do you need? What grouping?
+7. **Choose appropriate filters** - What conditions define the subset of interest?
 
 ### Output Format
 - Your output must be ONLY the SPARQL query (or queries)
@@ -591,18 +664,13 @@ SPARQL line here
 Another SPARQL line
 \`\`\`
 
-**Example with proper comments:**
-\`\`\`sparql
-# Select the paper resource and publication year
-SELECT ?paper ?year WHERE {
-  # Link the paper to its contribution using the P31 predicate
-  ?paper orkgp:P31 ?contribution .
-  # Declare that the contribution is of type Empirical Research Practice (C27001)
-  ?contribution a orkgc:C27001 .
-  # Get the publication year of the paper
-  ?paper orkgp:P29 ?year .
-}
-\`\`\`
+**Example structure with proper comments:**
+- Every SELECT statement should have a comment explaining what is being selected
+- Every triple pattern should have a comment explaining the relationship
+- Class declarations should be commented
+- Property accesses should be commented
+- OPTIONAL blocks should be commented
+- FILTER clauses should be commented
 
 **Rules for comments:**
 - Every SPARQL statement (triple pattern, FILTER, OPTIONAL, etc.) must have a comment above it
@@ -620,15 +688,22 @@ SELECT ?paper ?year WHERE {
 
 ### Common Query Patterns
 - **For counting/proportions questions**: Return the relevant data fields, let processing function count/calculate
+- **For "top N" or "most frequently used" questions**: 
+  - **CRITICAL**: Return ALL rows with paper information (include \`?paper\` and \`?paperLabel\` in SELECT)
+  - **DO NOT use LIMIT** in SPARQL - the processing function will count and select top N
+  - Return paper + the field being counted (e.g., \`?paper ?paperLabel ?evaluation_metricLabel\`)
+  - ORDER BY should typically be by paper (e.g., \`ORDER BY ?paperLabel\`), not by the counted field
 - **Time-based analysis**: Include \`?year\` field if needed, let processing function group by year
 - **Method analysis**: Return method labels, let processing function categorize
 - **Boolean conditions**: Return the field values, let processing function check conditions
 
 ### Analyzing the Question
 Before writing the query, determine what DATA FIELDS are needed:
+- Does it ask about "top N" or "most frequently used"? → **MUST include \`?paper\` and \`?paperLabel\`** + the field being counted
 - Does it ask about time/trends? → Include \`?year\` field
 - Does it ask about venues/conferences? → Include venue field
 - Does it ask about methods? → Include method-related fields
+- Does it ask about counting or frequency? → **ALWAYS include paper information** so processing function can count
 
 ### MANDATORY Query Structure Template
 Every query MUST follow this basic structure:

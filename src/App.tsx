@@ -14,6 +14,7 @@ import { DynamicQuestionProvider } from './context/DynamicQuestionContext';
 import './styles/global.css';
 import AuthProvider from './auth/AuthProvider';
 import { Toaster } from 'react-hot-toast';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -36,10 +37,10 @@ const AppContent = () => {
       >
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<LoadingSpinner />}>
               <Router />
             </Suspense>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={null}>
               <FloatingAIAssistant />
             </Suspense>
           </AuthProvider>

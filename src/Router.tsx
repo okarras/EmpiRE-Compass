@@ -1,20 +1,24 @@
+import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Home from './pages/Home';
-import Statistics from './pages/Statistics';
-import NotFound from './pages/NotFound';
-import ErrorFallback from './pages/ErrorFallback';
-import Layout from './pages/Layout';
-import QuestionPage from './pages/QuestionPage';
-import QuestionDashboardPage from './pages/QuestionDashboardPage';
-import DynamicQuestionPage from './pages/DynamicQuestionPage';
-import TemplateGraphPage from './pages/TemplateGraphPage';
-import Team from './pages/Team';
-import AdminBackup from './pages/AdminBackup';
-import AdminDataManagement from './pages/AdminDataManagement';
-import AdminHomeContent from './pages/AdminHomeContent';
-import AdminDashboard from './pages/AdminDashboard';
-import AdminRequestMonitor from './pages/AdminRequestMonitor';
 import AdminGuard from './auth/AdminGuard';
+import ErrorFallback from './pages/ErrorFallback';
+
+const Home = lazy(() => import('./pages/Home'));
+const Statistics = lazy(() => import('./pages/Statistics'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Layout = lazy(() => import('./pages/Layout'));
+const QuestionPage = lazy(() => import('./pages/QuestionPage'));
+const QuestionDashboardPage = lazy(
+  () => import('./pages/QuestionDashboardPage')
+);
+const DynamicQuestionPage = lazy(() => import('./pages/DynamicQuestionPage'));
+const TemplateGraphPage = lazy(() => import('./pages/TemplateGraphPage'));
+const Team = lazy(() => import('./pages/Team'));
+const AdminBackup = lazy(() => import('./pages/AdminBackup'));
+const AdminDataManagement = lazy(() => import('./pages/AdminDataManagement'));
+const AdminHomeContent = lazy(() => import('./pages/AdminHomeContent'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
 
 const Router = () => {
   return (

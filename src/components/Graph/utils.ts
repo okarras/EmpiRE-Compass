@@ -11,19 +11,11 @@ export function formatCardinality(
 }
 
 export function calculateNodeHeight(template: Template): number {
-  const headerHeight = 45; // Header with padding and border
-  const propertiesListPadding = 8; // Top padding of the properties list
-  const propertyRowHeight = 35; // Each property row (padding + margin + content)
-  const minNodeHeight = 50; // Minimum height for very small nodes
-  const heightBuffer = 0; // Additional padding
-  const propertyCount = template.properties?.length ?? 0;
-  const calculatedHeight =
-    headerHeight +
-    propertiesListPadding +
-    propertyCount * propertyRowHeight +
-    heightBuffer;
+  const PROPERTY_HEIGHT = 30; // Height per property (padding + margin + content)
+  const BOTTOM_PADDING = 90; // Bottom spacing
 
-  return Math.max(calculatedHeight, minNodeHeight);
+  const propertyCount = template.properties?.length ?? 0;
+  return propertyCount * PROPERTY_HEIGHT + BOTTOM_PADDING;
 }
 
 // Hierarchical tree layout algorithm (left-to-right orientation)

@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Typography, IconButton } from '@mui/material';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
-import { PREFIXES, SPARQL_QUERIES } from '../api/SPARQL_QUERIES';
+import {
+  PREFIXES as EMPIRICAL_PREFIXES,
+  SPARQL_QUERIES as EMPIRICAL_SPARQL_QUERIES,
+} from '../api/SPARQL_QUERIES';
+import {
+  PREFIXES as NLP4RE_PREFIXES,
+  SPARQL_QUERIES as NLP4RE_SPARQL_QUERIES,
+} from '../api/SPARQL_QUERIES_NLP4RE';
 import CodeIcon from '@mui/icons-material/Code';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Query, ChartSetting } from '../constants/queries_chart_info';
+import { useLocation } from 'react-router-dom';
 
 interface QuestionChartViewProps {
   query: Query;
@@ -31,6 +39,28 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   type,
 }) => {
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
+
+  //TODO: we need better way to handle this
+  const [prefixes, setPrefixes] = useState<string>(EMPIRICAL_PREFIXES);
+  const [sparqlQueries, setSparqlQueries] = useState<
+    typeof EMPIRICAL_SPARQL_QUERIES | typeof NLP4RE_SPARQL_QUERIES
+  >(EMPIRICAL_SPARQL_QUERIES);
+  const [templateId, setTemplateId] = useState<string>('R186491');
+  const location = useLocation();
+
+  useEffect(() => {
+    const newTemplateId = location.pathname.split('/')[1];
+    setTemplateId(newTemplateId);
+    setPrefixes(
+      newTemplateId === 'R186491' ? EMPIRICAL_PREFIXES : NLP4RE_PREFIXES
+    );
+    setSparqlQueries(
+      newTemplateId === 'R186491'
+        ? EMPIRICAL_SPARQL_QUERIES
+        : NLP4RE_SPARQL_QUERIES
+    );
+  }, [location.pathname]);
+
   let series = chartSettings.series;
   if (chartSettings.series.length > 1 && normalized) {
     // add normalized to each series key string
@@ -243,25 +273,27 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       />
 
       <Box>
+        {templateId === 'R186491' && (
+          <Button
+            href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
+            target="_blank"
+            sx={{
+              color: '#e86161',
+              mt: { xs: 2, sm: 0 },
+              '&:hover': {
+                color: '#b33a3a',
+              },
+            }}
+            variant="outlined"
+          >
+            <CodeIcon sx={{ mr: 1 }} />
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              Check and edit the code in Binder
+            </Typography>
+          </Button>
+        )}
         <Button
-          href={`https://mybinder.org/v2/gh/okarras/EmpiRE-Analysis/HEAD?labpath=%2Fempire-analysis.ipynb`}
-          target="_blank"
-          sx={{
-            color: '#e86161',
-            mt: { xs: 2, sm: 0 },
-            '&:hover': {
-              color: '#b33a3a',
-            },
-          }}
-          variant="outlined"
-        >
-          <CodeIcon sx={{ mr: 1 }} />
-          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-            Check and edit the code in Binder
-          </Typography>
-        </Button>
-        <Button
-          href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + SPARQL_QUERIES[query.uid as keyof typeof SPARQL_QUERIES])}`}
+          href={`https://orkg.org/sparql#${encodeURIComponent(prefixes + sparqlQueries[query.uid as keyof typeof sparqlQueries])}`}
           target="_blank"
           sx={{
             color: '#e86161',

@@ -15,6 +15,8 @@ interface QueryEvaluation {
   feedback: string;
 }
 
+import type { CostBreakdown } from '../utils/costCalculator';
+
 export interface IterationDetail {
   iteration: number;
   prompt: string;
@@ -24,6 +26,7 @@ export interface IterationDetail {
   resultCount: number;
   feedback: string;
   timestamp: Date;
+  cost?: CostBreakdown;
 }
 
 interface UseQueryGenerationProps {
@@ -247,6 +250,7 @@ ${
       sparqlBlocks: SPARQLBlock[];
       rawData: Record<string, unknown>[];
       finalPrompt: string;
+      costs: CostBreakdown[];
     }> => {
       setCurrentIteration(0);
       setIterationFeedback('');
@@ -300,6 +304,12 @@ ${
             feedback:
               'No SPARQL code block was generated. Please ensure the response contains a valid SPARQL query in a code block.',
             timestamp: new Date(),
+            cost: sparqlResult.cost
+              ? {
+                  ...sparqlResult.cost,
+                  section: `Query Generation - Iteration ${iteration}`,
+                }
+              : undefined,
           };
           history.push(iterationDetail);
           setIterationHistory([...history]);
@@ -355,6 +365,12 @@ ${
           resultCount: rawData.length,
           feedback: evaluation.feedback,
           timestamp: new Date(),
+          cost: sparqlResult.cost
+            ? {
+                ...sparqlResult.cost,
+                section: `Query Generation - Iteration ${iteration}`,
+              }
+            : undefined,
         };
         history.push(iterationDetail);
         setIterationHistory([...history]);
@@ -395,10 +411,16 @@ ${
       const combinedQuery = combineSparqlBlocks(bestSparqlBlocks);
       updateSparqlQuery(combinedQuery, currentPrompt);
 
+      // Collect costs from iteration history
+      const queryCosts: CostBreakdown[] = history
+        .filter((item) => item.cost)
+        .map((item) => item.cost!);
+
       return {
         sparqlBlocks: bestSparqlBlocks,
         rawData: bestRawData,
         finalPrompt: currentPrompt,
+        costs: queryCosts,
       };
     },
     [
