@@ -18,6 +18,89 @@ interface UserRateLimit {
 
 const router = Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     AIConfig:
+ *       type: object
+ *       properties:
+ *         provider:
+ *           type: string
+ *           enum: [openai, groq, mistral, google]
+ *         openaiModel:
+ *           type: string
+ *         groqModel:
+ *           type: string
+ *         mistralModel:
+ *           type: string
+ *         googleModel:
+ *           type: string
+ *         apiKeyConfigured:
+ *           type: boolean
+ *     RateLimitStatus:
+ *       type: object
+ *       properties:
+ *         limit:
+ *           type: integer
+ *           description: Maximum requests allowed (-1 for unlimited/admin)
+ *         remaining:
+ *           type: integer
+ *           description: Remaining requests (-1 for unlimited/admin)
+ *         count:
+ *           type: integer
+ *           description: Current request count
+ *         resetAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *         resetIn:
+ *           type: integer
+ *           description: Seconds until reset
+ *         isAdmin:
+ *           type: boolean
+ *     GenerateTextRequest:
+ *       type: object
+ *       required:
+ *         - prompt
+ *       properties:
+ *         prompt:
+ *           type: string
+ *           description: The text prompt to generate from
+ *         provider:
+ *           type: string
+ *           enum: [openai, groq, mistral, google]
+ *         model:
+ *           type: string
+ *           description: Model name (optional, uses provider default if not specified)
+ *         temperature:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           maximum: 2
+ *         maxTokens:
+ *           type: integer
+ *           minimum: 1
+ *         systemContext:
+ *           type: string
+ *           description: System context/instructions for the AI
+ *     GenerateTextResponse:
+ *       type: object
+ *       properties:
+ *         text:
+ *           type: string
+ *           description: Generated text
+ *         usage:
+ *           type: object
+ *           properties:
+ *             promptTokens:
+ *               type: integer
+ *             completionTokens:
+ *               type: integer
+ *             totalTokens:
+ *               type: integer
+ */
+
 // Initialize AI service (singleton pattern)
 let aiService: AIService | null = null;
 
@@ -94,8 +177,25 @@ const getAIService = (): AIService => {
 };
 
 /**
- * GET /api/ai/config
- * Get current AI configuration (requires authentication)
+ * @swagger
+ * /api/ai/config:
+ *   get:
+ *     summary: Get current AI configuration
+ *     tags:
+ *       - AI
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: AI configuration retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AIConfig'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '500':
+ *         description: Failed to get AI configuration
  */
 router.get(
   '/config',
@@ -129,8 +229,25 @@ router.get(
 );
 
 /**
- * GET /api/ai/rate-limit
- * Get current user's rate limit status
+ * @swagger
+ * /api/ai/rate-limit:
+ *   get:
+ *     summary: Get current user's rate limit status
+ *     tags:
+ *       - AI
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Rate limit status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RateLimitStatus'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '500':
+ *         description: Failed to get rate limit status
  */
 router.get(
   '/rate-limit',
@@ -219,8 +336,41 @@ router.get(
 );
 
 /**
- * POST /api/ai/generate
- * Generate text using AI (requires authentication, rate limited per user)
+ * @swagger
+ * /api/ai/generate:
+ *   post:
+ *     summary: Generate text using AI
+ *     description: Rate limited per user (5 requests per window, unlimited for admins)
+ *     tags:
+ *       - AI
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/GenerateTextRequest'
+ *           example:
+ *             prompt: "Explain quantum computing"
+ *             provider: "mistral"
+ *             temperature: 0.7
+ *             maxTokens: 500
+ *     responses:
+ *       '200':
+ *         description: Text generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/GenerateTextResponse'
+ *       '400':
+ *         description: Invalid request body
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '429':
+ *         description: Rate limit exceeded
+ *       '500':
+ *         description: Failed to generate text or AI service not configured
  */
 router.post(
   '/generate',

@@ -10,8 +10,34 @@ import { logRequest } from '../services/requestLogger.js';
 const router = Router();
 
 /**
- * GET /api/home-content
- * Get home content (public)
+ * @swagger
+ * components:
+ *   schemas:
+ *     HomeContent:
+ *       type: object
+ *       description: Home page content sections
+ *       properties:
+ *         sections:
+ *           type: array
+ *           items:
+ *             type: object
+ *
+ * /api/home-content:
+ *   get:
+ *     summary: Get home content
+ *     tags:
+ *       - Home Content
+ *     responses:
+ *       '200':
+ *         description: Home content retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HomeContent'
+ *       '404':
+ *         description: Home content not found
+ *       '500':
+ *         description: Failed to fetch home content
  */
 router.get('/', async (req, res) => {
   try {
@@ -67,8 +93,34 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * PUT /api/home-content
- * Update home content (admin only)
+ * @swagger
+ * /api/home-content:
+ *   put:
+ *     summary: Update home content
+ *     tags:
+ *       - Home Content
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Home content data to update
+ *     responses:
+ *       '200':
+ *         description: Home content updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HomeContent'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to update home content
  */
 router.put(
   '/',

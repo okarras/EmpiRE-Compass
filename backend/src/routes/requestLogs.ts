@@ -9,13 +9,94 @@ import {
 const router = Router();
 
 /**
- * GET /api/request-logs
- * Get request logs (admin only)
- * Query params:
- *   - limit: number of logs to return (default: 200)
- *   - collection: filter by collection
- *   - operation: filter by operation (read, write, update, delete, query)
- *   - success: filter by success status (true/false)
+ * @swagger
+ * components:
+ *   schemas:
+ *     RequestLog:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         collection:
+ *           type: string
+ *         operation:
+ *           type: string
+ *           enum: [read, write, update, delete, query]
+ *         success:
+ *           type: boolean
+ *         timestamp:
+ *           type: string
+ *           format: date-time
+ *         userId:
+ *           type: string
+ *         userEmail:
+ *           type: string
+ *         error:
+ *           type: string
+ *     RequestLogsResponse:
+ *       type: object
+ *       properties:
+ *         logs:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/RequestLog'
+ *         count:
+ *           type: integer
+ *         filters:
+ *           type: object
+ *           properties:
+ *             collection:
+ *               type: string
+ *             operation:
+ *               type: string
+ *             success:
+ *               type: string
+ *
+ * /api/request-logs:
+ *   get:
+ *     summary: Get request logs
+ *     description: Admin only. Returns filtered request logs with pagination.
+ *     tags:
+ *       - Request Logs
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 200
+ *         description: Number of logs to return
+ *       - in: query
+ *         name: collection
+ *         schema:
+ *           type: string
+ *         description: Filter by collection name
+ *       - in: query
+ *         name: operation
+ *         schema:
+ *           type: string
+ *           enum: [read, write, update, delete, query]
+ *         description: Filter by operation type
+ *       - in: query
+ *         name: success
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: Filter by success status
+ *     responses:
+ *       '200':
+ *         description: Request logs retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RequestLogsResponse'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to fetch request logs
  */
 router.get(
   '/',
