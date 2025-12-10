@@ -41,6 +41,7 @@ interface Props {
   gridOptions?: {
     defaultColumns?: string[];
     defaultGroupBy?: string;
+    defaultUseUniquePapers?: boolean;
   };
 }
 
@@ -55,7 +56,9 @@ interface ColumnStats {
 const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
   const [showStats, setShowStats] = useState(false);
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [useUniquePapers, setUseUniquePapers] = useState(true);
+  const [useUniquePapers, setUseUniquePapers] = useState(
+    gridOptions?.defaultUseUniquePapers ?? true
+  );
   const [groupByColumn, setGroupByColumn] = useState<string>('');
 
   // Popover states
@@ -70,7 +73,13 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
 
   // Get all available columns
   const availableColumns = React.useMemo(() => {
-    if (questionData.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0
+    ) {
+      return [];
+    }
     return Object.keys(questionData[0]);
   }, [questionData]);
 
@@ -94,12 +103,24 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
       ) {
         setGroupByColumn(gridOptions.defaultGroupBy);
       }
+
+      // Set default use unique papers if provided
+      if (gridOptions.defaultUseUniquePapers !== undefined) {
+        setUseUniquePapers(gridOptions.defaultUseUniquePapers);
+      }
     }
   }, [gridOptions, availableColumns]);
 
   // Calculate statistics for selected columns only
   const columnStats: ColumnStats[] = React.useMemo(() => {
-    if (questionData.length === 0 || selectedColumns.length === 0) return [];
+    if (
+      !questionData ||
+      !Array.isArray(questionData) ||
+      questionData.length === 0 ||
+      selectedColumns.length === 0
+    ) {
+      return [];
+    }
 
     const stats: ColumnStats[] = [];
 
@@ -124,8 +145,23 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
         const value = row[key];
         const paperId = String(row['paper'] || '');
 
+        // Convert value to string, handling objects properly
+        let stringValue: string;
+        if (value === null || value === undefined) {
+          stringValue = '';
+        } else if (typeof value === 'object') {
+          // For objects, use JSON.stringify
+          try {
+            stringValue = JSON.stringify(value);
+          } catch {
+            stringValue = String(value);
+          }
+        } else {
+          stringValue = String(value);
+        }
+
         // Check for null, undefined, empty string, or string 'null'/'undefined'/'none'
-        const stringLower = String(value).toLowerCase().trim();
+        const stringLower = stringValue.toLowerCase().trim();
         if (
           value === null ||
           value === undefined ||
@@ -133,12 +169,13 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
           stringLower === 'null' ||
           stringLower === 'undefined' ||
           stringLower === 'none' ||
-          stringLower === 'nan'
+          stringLower === 'nan' ||
+          stringLower === ''
         ) {
           nullCount++;
         } else {
           // Always trim whitespace
-          let stringValue = String(value).trim();
+          stringValue = stringValue.trim();
 
           // Always apply case-insensitive capitalization (like pandas str.capitalize)
           stringValue = stringValue.toLowerCase();
@@ -485,9 +522,15 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                   }}
-                                  title={value}
+                                  title={
+                                    typeof value === 'object'
+                                      ? JSON.stringify(value)
+                                      : String(value)
+                                  }
                                 >
-                                  {value}
+                                  {typeof value === 'object'
+                                    ? JSON.stringify(value)
+                                    : String(value)}
                                 </TableCell>
                                 <TableCell align="right">
                                   <Chip
@@ -758,7 +801,9 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
                                                   py: 1.5,
                                                 }}
                                               >
-                                                {value}
+                                                {typeof value === 'object'
+                                                  ? JSON.stringify(value)
+                                                  : String(value)}
                                               </TableCell>
                                               <TableCell align="right">
                                                 <Chip

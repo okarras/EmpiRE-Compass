@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { CircularProgress, Typography, Paper } from '@mui/material';
 import { useAIService } from '../../services/backendAIService';
+import type { CostBreakdown } from '../../utils/costCalculator';
 
 interface AIContentGeneratorProps {
   data: Record<string, unknown>[];
@@ -10,7 +11,22 @@ interface AIContentGeneratorProps {
     chartDescription: string,
     questionInterpretation: string,
     dataCollectionInterpretation: string,
-    dataAnalysisInterpretation: string
+    dataAnalysisInterpretation: string,
+    costs?: CostBreakdown[]
+  ) => void;
+  onError: (error: string) => void;
+}
+
+interface AIContentGeneratorProps {
+  data: Record<string, unknown>[];
+  question: string;
+  onContentGenerated: (
+    chartHtmlContent: string,
+    chartDescriptionContent: string,
+    questionInterpretationContent: string,
+    dataCollectionInterpretationContent: string,
+    dataAnalysisInterpretationContent: string,
+    costs?: CostBreakdown[]
   ) => void;
   onError: (error: string) => void;
 }
@@ -164,6 +180,15 @@ Generate the complete HTML now:`;
       });
 
       let chartHtml = chartResult.text;
+      const costs: CostBreakdown[] = [];
+
+      // Track cost for chart generation
+      if (chartResult.cost) {
+        costs.push({
+          ...chartResult.cost,
+          section: 'Chart Generation',
+        });
+      }
 
       // Inject the actual data into the HTML
       const dataScript = `
@@ -273,6 +298,14 @@ Return ONLY the HTML content (no <html>, <head>, or <body> tags).`;
 
       const chartDescription = descriptionResult.text;
 
+      // Track cost for description generation
+      if (descriptionResult.cost) {
+        costs.push({
+          ...descriptionResult.cost,
+          section: 'Chart Description',
+        });
+      }
+
       // Generate Question Information interpretation
       const questionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Explanation of the Competency Question" section.
 
@@ -299,6 +332,14 @@ Return ONLY the explanation text.`;
       );
 
       const questionInterpretation = questionInterpretationResult.text;
+
+      // Track cost for question interpretation
+      if (questionInterpretationResult.cost) {
+        costs.push({
+          ...questionInterpretationResult.cost,
+          section: 'Question Interpretation',
+        });
+      }
 
       // Generate Data Collection interpretation
       const dataCollectionInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Required Data for Analysis" section.
@@ -328,6 +369,14 @@ Return ONLY the explanation text.`;
       const dataCollectionInterpretation =
         dataCollectionInterpretationResult.text;
 
+      // Track cost for data collection interpretation
+      if (dataCollectionInterpretationResult.cost) {
+        costs.push({
+          ...dataCollectionInterpretationResult.cost,
+          section: 'Data Collection Interpretation',
+        });
+      }
+
       // Generate Data Analysis interpretation
       const dataAnalysisInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Data Analysis" section.
 
@@ -355,6 +404,14 @@ Return ONLY the explanation text.`;
 
       const dataAnalysisInterpretation = dataAnalysisInterpretationResult.text;
 
+      // Track cost for data analysis interpretation
+      if (dataAnalysisInterpretationResult.cost) {
+        costs.push({
+          ...dataAnalysisInterpretationResult.cost,
+          section: 'Data Analysis Interpretation',
+        });
+      }
+
       // Clean up code blocks from generated content
       const chartHtmlWithoutCodeBlocks = chartHtml.replace(
         /```html\n|```/g,
@@ -367,13 +424,14 @@ Return ONLY the explanation text.`;
       const dataAnalysisInterpretationWithoutCodeBlocks =
         dataAnalysisInterpretation.replace(/```html\n|```/g, '');
 
-      // Call the callback with generated content
+      // Call the callback with generated content and costs
       onContentGenerated(
         chartHtmlWithoutCodeBlocks,
         chartDescription,
         questionInterpretationWithoutCodeBlocks,
         dataCollectionInterpretationWithoutCodeBlocks,
-        dataAnalysisInterpretationWithoutCodeBlocks
+        dataAnalysisInterpretationWithoutCodeBlocks,
+        costs.length > 0 ? costs : undefined
       );
     } catch (error) {
       console.error('Error generating AI content:', error);

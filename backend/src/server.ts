@@ -14,6 +14,7 @@ import templatesRouter from './routes/templates.js';
 import requestLogsRouter from './routes/requestLogs.js';
 import aiRouter, { initializeAIService } from './routes/ai.js';
 import healthRouter, { setAIServiceForHealth } from './routes/health.js';
+import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
 
 dotenv.config();
 
@@ -67,9 +68,21 @@ const aiConfig: AIConfig = {
       | 'mistral') || 'mistral',
   openaiModel:
     (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
+      | 'gpt-5.1'
+      | 'gpt-5-mini'
+      | 'gpt-5-nano'
+      | 'gpt-5-pro'
+      | 'gpt-5'
+      | 'gpt-4.1'
       | 'gpt-4o-mini'
       | 'gpt-4o'
-      | 'gpt-4-turbo') || 'gpt-4o-mini',
+      | 'gpt-4-turbo'
+      | 'gpt-4o-2024-08-06'
+      | 'gpt-4-turbo-2024-04-09'
+      | 'o1-preview'
+      | 'o1-mini'
+      | 'gpt-4'
+      | 'gpt-3.5-turbo') || 'gpt-4o-mini',
   groqModel:
     (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
       | 'llama-3.1-8b-instant'
@@ -106,6 +119,7 @@ app.use('/api/templates', templatesRouter);
 app.use('/api/request-logs', requestLogsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
+app.use('/api/dynamic-questions', dynamicQuestionsRouter);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // error handling middleware

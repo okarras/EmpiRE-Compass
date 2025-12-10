@@ -5,7 +5,24 @@ import { createMistral } from '@ai-sdk/mistral';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
 export type AIProvider = 'openai' | 'groq' | 'mistral' | 'google';
-export type OpenAIModel = 'gpt-4o-mini' | 'gpt-4o' | 'gpt-4-turbo';
+export type OpenAIModel =
+  // Frontier models - OpenAI's most advanced models
+  | 'gpt-5.1'
+  | 'gpt-5-mini'
+  | 'gpt-5-nano'
+  | 'gpt-5-pro'
+  | 'gpt-5'
+  | 'gpt-4.1'
+  // Previous generation models
+  | 'gpt-4o-mini'
+  | 'gpt-4o'
+  | 'gpt-4-turbo'
+  | 'gpt-4o-2024-08-06'
+  | 'gpt-4-turbo-2024-04-09'
+  | 'o1-preview'
+  | 'o1-mini'
+  | 'gpt-4'
+  | 'gpt-3.5-turbo';
 export type GroqModel =
   | 'llama-3.1-8b-instant'
   | 'llama-3.1-70b-versatile'
@@ -13,17 +30,29 @@ export type GroqModel =
   | 'llama-3.3-70b-versatile'
   | 'openai/gpt-oss-120b'
   | 'openai/gpt-oss-20b'
-  | 'whisper-large-v3'
-  | 'deepseek-r1-distill-llama-70b'
-  | 'llama-3-70b-8192'
-  | 'mixtral-8x7b-32768';
+  | 'llama-3-70b-8192';
 export type MistralModel =
   | 'mistral-large-latest'
   | 'mistral-medium-latest'
   | 'mistral-small-latest'
   | 'pixtral-large-latest'
   | 'open-mistral-nemo';
-export type GoogleModel = 'gemini-2.5-flash' | 'gemma-3-27b-it';
+export type GoogleModel =
+  // Gemini 3 series
+  | 'gemini-3-pro-preview'
+  // Gemini 2.5 series
+  | 'gemini-2.5-pro'
+  | 'gemini-2.5-flash'
+  // Gemini 2.0 series
+  | 'gemini-2.0-flash'
+  | 'gemini-2.0-flash-exp'
+  | 'gemini-2.0-flash-lite'
+  // Gemini 1.5 series
+  | 'gemini-1.5-pro'
+  | 'gemini-1.5-flash'
+  | 'gemini-1.5-flash-8b'
+  // Other models
+  | 'gemma-3-27b-it';
 
 export interface AIConfig {
   provider: AIProvider;
@@ -65,7 +94,7 @@ export class AIService {
     this.config = config;
   }
 
-  private getApiKey(provider: AIProvider, userProvidedKey?: string): string {
+  private getApiKey(provider: AIProvider, _userProvidedKey?: string): string {
     // SECURITY: Always ignore user-provided keys - only use environment keys
     // User API keys should never be sent to backend for security reasons
     if (provider === 'openai') {
@@ -162,13 +191,25 @@ export class AIService {
         undefined // Never pass user API keys
       );
 
-      const result = await generateText({
+      const generateOptions: {
+        model: any;
+        prompt: string;
+        temperature?: number;
+        maxTokens?: number;
+        system?: string;
+      } = {
         model,
         prompt: request.prompt,
         temperature: request.temperature ?? 0.3,
-        maxTokens: request.maxTokens,
         system: request.systemContext,
-      });
+      };
+
+      // Only include maxTokens if it's provided and valid
+      if (request.maxTokens && request.maxTokens > 0) {
+        generateOptions.maxTokens = request.maxTokens;
+      }
+
+      const result = await generateText(generateOptions);
 
       // Handle different response formats safely
       if (!result) {
@@ -199,10 +240,46 @@ export class AIService {
       // Use reasoning as fallback if text is empty
       const finalText = normalizedText.trim() || normalizedReasoning || '';
 
+      // Extract usage information - check multiple possible locations
+      // Type the usage as any to access properties that may vary by provider
+      let usage:
+        | {
+            promptTokens?: number;
+            completionTokens?: number;
+            inputTokens?: number;
+            outputTokens?: number;
+            totalTokens?: number;
+          }
+        | undefined = result.usage as any;
+
+      if (!usage && (result as any).response) {
+        usage = (result as any).response.usage;
+      }
+      if (!usage && (result as any).usageMetadata) {
+        usage = (result as any).usageMetadata;
+      }
+
+      // Log usage for debugging (only in development)
+      if (process.env.NODE_ENV !== 'production' && usage) {
+        console.log('AI Service Usage:', JSON.stringify(usage, null, 2));
+      }
+
+      // Normalize usage to our expected format
+      const normalizedUsage = usage
+        ? {
+            promptTokens: usage.promptTokens ?? usage.inputTokens ?? 0,
+            completionTokens: usage.completionTokens ?? usage.outputTokens ?? 0,
+            totalTokens:
+              usage.totalTokens ??
+              (usage.promptTokens ?? usage.inputTokens ?? 0) +
+                (usage.completionTokens ?? usage.outputTokens ?? 0),
+          }
+        : undefined;
+
       return {
         text: finalText,
         reasoning: normalizedReasoning,
-        usage: result.usage,
+        usage: normalizedUsage,
       };
     } catch (error) {
       // Enhanced error logging

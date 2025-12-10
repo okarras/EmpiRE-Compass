@@ -7,6 +7,23 @@ export const store = configureStore({
     questions: questionReducer,
     ai: aiReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types
+        ignoredActions: ['questions/fetchQuestions/fulfilled'],
+        // Ignore these field paths in all actions
+        ignoredActionPaths: [
+          'payload.dataProcessingFunction',
+          'payload.dataProcessingFunction2',
+        ],
+        // Ignore these paths in the state
+        ignoredPaths: [
+          'questions.questions.dataProcessingFunction',
+          'questions.questions.dataProcessingFunction2',
+        ],
+      },
+    }),
 });
 
 // Export types for TypeScript

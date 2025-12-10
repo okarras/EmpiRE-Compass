@@ -96,7 +96,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
       // Add remaining path segments
       paths.slice(1).forEach((path, index) => {
-        let fullPath = '/' + paths.slice(0, index + 2).join('/');
+        const actualIndex = index + 1; // Actual index in paths array
+        const fullPath = '/' + paths.slice(0, index + 2).join('/');
         let label = path.charAt(0).toUpperCase() + path.slice(1);
 
         // Handle specific route names
@@ -110,12 +111,24 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = 'Dynamic Question';
         } else if (path === 'graph') {
           label = 'Graph Schema';
-        } else if (path === 'questions' && paths[index + 2]) {
-          const questionId = parseInt(paths[index + 2]);
+        } else if (path === 'questions') {
+          // Show 'All Questions' for the questions segment
+          label = 'All Questions';
+          // If there's a question ID after, adjust the path to point to allquestions
+          if (paths[actualIndex + 1]) {
+            const adjustedPath =
+              '/' + paths.slice(0, actualIndex).join('/') + '/allquestions';
+            breadcrumbs.push({ path: adjustedPath, label });
+            return; // Skip adding the actual questions path, we'll handle the ID next
+          }
+        } else if (actualIndex > 0 && paths[actualIndex - 1] === 'questions') {
+          // This is a question ID following 'questions'
+          const questionId = parseInt(path);
           const question = queries.find((q) => q.id === questionId);
           if (question) {
-            label = `All Questions`;
-            fullPath = `/${templateId}/allquestions`;
+            label = `Question ${questionId}`;
+          } else {
+            label = `Question ${path}`;
           }
         }
 
@@ -196,7 +209,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           <Typography
             variant="h6"
             component={RouterLink}
-            to="/"
+            to={`/${selectedTemplate}/`}
             sx={{
               flexGrow: { xs: 1, sm: 0 },
               textDecoration: 'none',

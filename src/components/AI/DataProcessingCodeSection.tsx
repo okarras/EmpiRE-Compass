@@ -49,7 +49,7 @@ const DataProcessingCodeSection: React.FC<DataProcessingCodeSectionProps> = ({
   onRegenerateCode,
   // onOpenHistory = () => {},
 }) => {
-  const { getHistoryByType, updateProcessingFunctionCode } =
+  const { getHistoryByType, updateProcessingFunctionCode, state, updateCosts } =
     useDynamicQuestion();
   const aiService = useAIService();
 
@@ -112,6 +112,52 @@ const DataProcessingCodeSection: React.FC<DataProcessingCodeSectionProps> = ({
   const getProcessingHistory = () =>
     getHistoryByType('processing').sort((a, b) => b.timestamp - a.timestamp);
 
+  // Helper function to prepare data summary for AI processing
+  const prepareDataSummary = (data: Record<string, unknown>[]) => {
+    if (!data || data.length === 0) return 'No data available';
+
+    const columns = Object.keys(data[0] || {});
+    const summary: Record<
+      string,
+      {
+        type: string;
+        count: number;
+        min?: number;
+        max?: number;
+        unique_values: number;
+        sample_values?: unknown[];
+      }
+    > = {};
+
+    // For each column, provide a summary
+    columns.forEach((col) => {
+      const values = data
+        .map((row) => row[col])
+        .filter((val) => val !== null && val !== undefined);
+      const uniqueValues = [...new Set(values)];
+
+      if (typeof values[0] === 'number') {
+        const nums = values as number[];
+        summary[col] = {
+          type: 'numeric',
+          count: values.length,
+          min: Math.min(...nums),
+          max: Math.max(...nums),
+          unique_values: uniqueValues.length,
+        };
+      } else {
+        summary[col] = {
+          type: 'categorical',
+          count: values.length,
+          unique_values: uniqueValues.length,
+          sample_values: uniqueValues.slice(0, 10), // Show first 10 unique values
+        };
+      }
+    });
+
+    return JSON.stringify(summary, null, 2);
+  };
+
   const handleAIModify = async () => {
     if (!aiPrompt.trim()) {
       setError('Please enter a modification request.');
@@ -128,7 +174,22 @@ const DataProcessingCodeSection: React.FC<DataProcessingCodeSectionProps> = ({
 
     try {
       const currentCode = processingCode || '';
+      const queryResults = state.queryResults || [];
+      const dataSummary = prepareDataSummary(queryResults);
+      const fullData =
+        queryResults.length > 0
+          ? JSON.stringify(queryResults, null, 2)
+          : 'No data available';
+
       const modificationPrompt = `You are a JavaScript expert. Please modify the following data processing function based on the user's request.
+
+**Context:**
+- Research Question: "${state.question}"
+- SPARQL Query Results:
+  - Total rows: ${queryResults.length}
+  - Columns: ${queryResults.length > 0 ? Object.keys(queryResults[0] || {}).join(', ') : 'N/A'}
+  - Data Summary: ${dataSummary}
+  - Full Data (all rows): ${fullData}
 
 **Current Processing Function:**
 \`\`\`javascript
@@ -143,6 +204,7 @@ ${currentCode}
 3. Return an array of objects suitable for visualization
 4. Make the requested modifications while preserving the core functionality
 5. Add comments explaining any changes made
+6. Consider the actual data structure from the SPARQL query results when making modifications
 
 **Output only the modified JavaScript code block:**
 
@@ -171,6 +233,16 @@ function processData(rows) {
         const modifiedCode = jsMatch[1].trim();
         await onCodeChange(modifiedCode);
         updateProcessingFunctionCode(modifiedCode, modificationPrompt);
+
+        // Track cost for AI modification
+        if (result.cost) {
+          const costWithSection = {
+            ...result.cost,
+            section: 'AI Modification - Data Processing Code',
+          };
+          updateCosts([...state.costs, costWithSection]);
+        }
+
         setShowAIDialog(false);
         setAiPrompt('');
       } else {

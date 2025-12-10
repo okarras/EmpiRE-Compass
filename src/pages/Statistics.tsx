@@ -13,9 +13,9 @@ import {
   Divider,
 } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
+import { useParams } from 'react-router-dom';
 import theme from '../utils/theme';
 import fetchSPARQLData from '../helpers/fetch_query';
-import STATISTICS_SPARQL_QUERIES from '../api/STATISTICS_SPARQL_QUERIES';
 import StatCard from '../components/StatCard';
 import FeedIcon from '@mui/icons-material/Feed';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -25,6 +25,7 @@ import HubIcon from '@mui/icons-material/Hub';
 import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSkeleton';
 import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import { getTemplateConfig } from '../constants/template_config';
 // import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 // import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
@@ -62,20 +63,29 @@ const DEFAULT_STATS: StatisticsData = {
 };
 
 export default function Statistics() {
+  const params = useParams();
+  const templateId = params.templateId as string;
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
+    // Reset loading state and statistics when template changes
+    setLoading(true);
+    setStatistics(DEFAULT_STATS);
+
     const fetchData = async () => {
       try {
+        const templateConfig = getTemplateConfig(templateId);
+        const STATISTICS_SPARQL_QUERIES = templateConfig.statisticsSparql;
+
         const results = await Promise.all(
           Object.values(STATISTICS_SPARQL_QUERIES).map((query) =>
-            fetchSPARQLData(query)
+            fetchSPARQLData(query as string)
           )
         );
 
-        const [paperData, , , , , perVenueData, venuesData] = results;
+        const [paperData, perVenueData, venuesData] = results;
 
         setStatistics((prev) => ({
           ...prev,
@@ -95,11 +105,6 @@ export default function Statistics() {
     };
 
     fetchData().then(() => {
-      // UPDATED FOR NEW NESTED STRUCTURE
-      // Get template ID from URL (e.g., /R186491/statistics)
-      const pathSegments = window.location.pathname.split('/').filter(Boolean);
-      const templateId = pathSegments[0] || 'R186491';
-
       CRUDStatistics.getStatistics(templateId).then((statisticsValues) => {
         if (statisticsValues) {
           Object.keys(statisticsValues).forEach((key) => {
@@ -111,7 +116,7 @@ export default function Statistics() {
         }
       });
     });
-  }, []);
+  }, [templateId]);
 
   if (loading) return <StatisticsPageLoadingSkeleton />;
 

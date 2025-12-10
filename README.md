@@ -50,225 +50,30 @@ EmpiRE-Compass offers a rich set of capabilities to support exploration, synthes
 
 In the following, we first show a graphical overview of the folder structure and files of the project before we describe them in more detail.
 
-## Graphical Overview
-
-```
-EmpiRE-Compass/
-┣━ .github/
-┃   ┗━ workflows/
-┃       ┗━ update-statistics.yml
-┣━ .husky/
-┃   ┣━ _/
-┃   ┣━ commit-msg
-┃   ┗━ pre-commit
-┣━ .idea/
-┣━ .storybook/
-┃   ├── main.ts
-┃   ├── preview.ts
-┃   └── vitest.setup.ts
-┣━ data/
-┃   ├── questions.json
-┃   ├── sample_data.json
-┃   ├── query_1_data_2024-07-26.json
-┃   ├── query_2.1_data_2024-07-26.json
-┃   ├── query_6.1_data_2024-07-26.json
-┃   ├── query_10_data_2025-02-27.json
-┃   ├── query_11_data_2025-02-27.json
-┃   ├── query_12_data_2025-02-27.json
-┃   ├── query_13_data_2025-02-27.json
-┃   ├── query_14_data_2025-02-27.json
-┃   ├── query_15.1_data_2025-02-27.json
-┃   ├── query_15.2_data_2025-02-27.json
-┃   ├── query_4.1_data_2025-02-27.json
-┃   ├── query_4.2_data_2025-02-27.json
-┃   ├── query_5_data_2025-02-27.json
-┃   ├── query_7.1_data_2025-02-27.json
-┃   ├── query_8_data_2025-02-27.json
-┃   └── query_9_data_2025-02-27.json
-┣━ dev-dist/
-┃   ├── registerSW.js
-┃   ├── sw.js
-┃   └── workbox-6244ca5c.js
-┣━ docs/
-┃   ├── CONTRIBUTING.md
-┃   ├── FIREBASE_QUICK_SETUP.md
-┃   ├── FIREBASE_SETUP.md
-┃   ├── GITHUB_FIREBASE_SETUP.md
-┃   ├── STORYBOOK_PUBLISHING.md
-┃   └── VERSIONING.md
-┣━ empire-compass-dashboard/
-┃   └── src/ (macOS .DS_Store files)
-┣━ scripts/
-┃   ├── empire-statistics.py
-┃   ├── firebase_integration.py
-┃   ├── firebase-service-account.json.template
-┃   ├── daily_results_incremental.csv
-┃   ├── requirements.txt
-┃   ├── update_statistics_dummy.txt
-┃   └── orkg-cache/
-┃       ├── .gitkeep
-┃       ├── <many cached ORKG *.json files> …
-┃       └── (hundreds of hashed cache entries)
-┣━ src/
-┃   ├── api/
-┃   │   ├── SPARQL_QUERIES.ts
-┃   │   └── STATISTICS_SPARQL_QUERIES.ts
-┃   ├── assets/
-┃   │   ├── KGEmpire.png
-┃   │   ├── ORKG.png
-┃   │   ├── ORKGask.png
-┃   │   └── TIB.png
-┃   ├── components/
-┃   │   ├── AI/
-┃   │   │   ├── AIAssistant.tsx
-┃   │   │   ├── AIConfigurationButton.tsx
-┃   │   │   ├── AIConfigurationDialog.tsx
-┃   │   │   ├── AIContentGenerator.tsx
-┃   │   │   ├── ChatMessage.tsx
-┃   │   │   ├── CodeBlock.tsx
-┃   │   │   ├── DynamicQuestionManager.tsx
-┃   │   │   ├── FloatingAIAssistant.tsx
-┃   │   │   ├── HistoryManager.tsx
-┃   │   │   ├── HTMLRenderer.tsx
-┃   │   │   ├── InitialAnalysis.tsx
-┃   │   │   ├── InteractiveSection.tsx
-┃   │   │   ├── LLMContextHistoryDialog.tsx
-┃   │   │   ├── MessageContent.tsx
-┃   │   │   ├── ReasoningSection.tsx
-┃   │   │   ├── ResponseDisplay.tsx
-┃   │   │   ├── SPARQLQuerySection.tsx
-┃   │   │   └── TextSkeleton.tsx
-┃   │   ├── CustomCharts/
-┃   │   │   ├── ChartParamsSelector.tsx
-┃   │   │   ├── ChartTypeSelector.tsx
-┃   │   │   ├── ChartWrapper.tsx
-┃   │   │   ├── CustomBarChart.tsx
-┃   │   │   ├── CustomGaugeChart.tsx
-┃   │   │   ├── CustomPieChart.tsx
-┃   │   │   └── StatsChartTypeSelector.tsx
-┃   │   ├── Home/
-┃   │   │   ├── AboutProject.tsx
-┃   │   │   ├── Contact.tsx
-┃   │   │   ├── FutureDevelopment.tsx
-┃   │   │   ├── Header.tsx
-┃   │   │   └── KeyFeatures.tsx
-┃   │   ├── Layout pieces (Header.tsx, MenuDrawer.tsx, ScrollTop.tsx)
-┃   │   ├── Question*.tsx (Question, Dialog, Accordion, Views)
-┃   │   ├── Dashboard.tsx
-┃   │   ├── CustomGrid.tsx
-┃   │   ├── ErrorState.tsx
-┃   │   ├── LoadingState.tsx
-┃   │   ├── SectionSelector.tsx
-┃   │   ├── StatCard.tsx
-┃   │   └── StatisticsPageLoadingSkeleton.tsx
-┃   ├── constants/
-┃   │   ├── data_processing_helper_functions.ts
-┃   │   └── queries_chart_info.ts
-┃   ├── context/
-┃   │   ├── AIAssistantContext.tsx
-┃   │   └── DynamicQuestionContext.tsx
-┃   ├── contexts/ (ThemeContext.tsx)
-┃   ├── firestore/
-┃   │   ├── CRUDQuestions.ts
-┃   │   └── CRUDStatistics.ts
-┃   ├── helpers/
-┃   │   ├── fetch_query.ts
-┃   │   ├── query.ts
-┃   │   └── statistics_calculator.ts
-┃   ├── hooks/ (useAIAssistant.ts)
-┃   ├── pages/
-┃   │   ├── DynamicQuestionPage.tsx
-┃   │   ├── QuestionDashboardPage.tsx
-┃   │   ├── QuestionPage.tsx
-┃   │   ├── Statistics.tsx
-┃   │   ├── Home.tsx
-┃   │   ├── Layout.tsx
-┃   │   ├── ErrorFallback.tsx
-┃   │   └── NotFound.tsx
-┃   ├── prompts/ (GENERATE_SPARQL.txt)
-┃   ├── services/ (aiService.ts)
-┃   ├── store/
-┃   │   ├── hooks.ts
-┃   │   ├── index.ts
-┃   │   └── slices/
-┃   │       ├── aiSlice.ts
-┃   │       └── questionSlice.ts
-┃   ├── styles/ (global.css)
-┃   ├── types/ (chart.d.ts)
-┃   ├── utils/ (theme.ts)
-┃   ├── App.tsx
-┃   ├── Router.tsx
-┃   ├── firebase.ts
-┃   ├── main.css
-┃   ├── main.tsx
-┃   └── vite-env.d.ts
-┣━ stories/
-┃   ├── AI/ …
-┃   ├── DataVisualization/ …
-┃   ├── Home/ …
-┃   ├── Layout/ …
-┃   ├── Questions/ …
-┃   └── Utility/ …
-┣━ docs/ (see above)
-┣━ index.html
-┣━ logo.png
-┣━ LICENSE
-┣━ README.md
-┣━ package.json
-┣━ package-lock.json
-┣━ tsconfig*.json
-┣━ vercel.json
-┣━ vite.config.ts
-┣━ vitest.*.d.ts
-┗━ CHANGELOG.md, .prettierrc, eslint.config.js, commitlint.config.cjs, .env, .gitignore
-```
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Description of the Folders and Files
 
-| **Directory / File**                                         | **Description**                                               |
-| ------------------------------------------------------------ | ------------------------------------------------------------- |
-| [.storybook/](.storybook/)                                   | Storybook configuration files used to document UI components. |
-| [.storybook/main.js](.storybook/main.js)                     | Main Storybook configuration (addons, stories).               |
-| [.storybook/preview.js](.storybook/preview.js)               | Global settings, decorators, and parameters for Storybook.    |
-| [.storybook/manager.js](.storybook/manager.js)               | Custom Storybook UI configuration.                            |
-| [public/](public/)                                           | Static files served by the app.                               |
-| [public/logo.png](public/logo.png)                           | Logo of the project.                                          |
-| [src/assets/](src/assets/)                                   | Contains static project assets.                               |
-| [src/assets/images/](src/assets/images/)                     | Image files for UI.                                           |
-| [src/assets/styles/](src/assets/styles/)                     | CSS/SCSS files for asset styling.                             |
-| [src/components/](src/components/)                           | All reusable and page-specific components.                    |
-| [src/components/Dashboard/](src/components/Dashboard/)       | Components for dashboard display.                             |
-| [src/components/Charts/](src/components/Charts/)             | Chart.js and diagram components.                              |
-| [src/components/Forms/](src/components/Forms/)               | Form components for data input.                               |
-| [src/components/Shared/](src/components/Shared/)             | Shared UI elements like buttons and modals.                   |
-| [src/hooks/](src/hooks/)                                     | Custom React hooks for reusable logic.                        |
-| [src/hooks/useFetchData.js](src/hooks/useFetchData.js)       | Data fetching logic for ORKG queries.                         |
-| [src/hooks/usePagination.js](src/hooks/usePagination.js)     | Hook for pagination logic.                                    |
-| [src/pages/](src/pages/)                                     | Page-level React components for routing.                      |
-| [src/pages/HomePage.js](src/pages/HomePage.js)               | Landing page.                                                 |
-| [src/pages/DashboardPage.js](src/pages/DashboardPage.js)     | Dashboard overview page.                                      |
-| [src/pages/StatisticsPage.js](src/pages/StatisticsPage.js)   | Statistics visualization page.                                |
-| [src/services/](src/services/)                               | Service layer for API interactions.                           |
-| [src/services/api.js](src/services/api.js)                   | Base API setup.                                               |
-| [src/services/orkgService.js](src/services/orkgService.js)   | ORKG-specific API requests.                                   |
-| [src/store/](src/store/)                                     | Global state management with Zustand.                         |
-| [src/store/comparisonStore.js](src/store/comparisonStore.js) | Zustand store for comparisons.                                |
-| [src/styles/](src/styles/)                                   | Global style definitions.                                     |
-| [src/styles/globals.css](src/styles/globals.css)             | Base global styles.                                           |
-| [src/styles/theme.css](src/styles/theme.css)                 | Theme definitions and color variables.                        |
-| [src/tests/](src/tests/)                                     | Unit and integration tests.                                   |
-| [src/tests/App.test.js](src/tests/App.test.js)               | Main app test.                                                |
-| [src/tests/utils.test.js](src/tests/utils.test.js)           | Utility function tests.                                       |
-| [src/utils/](src/utils/)                                     | Helper functions.                                             |
-| [src/utils/fetchData.js](src/utils/fetchData.js)             | Fetch data helper.                                            |
-| [src/utils/formatData.js](src/utils/formatData.js)           | Data formatting helper.                                       |
-| [src/index.js](src/index.js)                                 | Entry point for the React app.                                |
-| [.gitignore](.gitignore)                                     | Git ignore rules.                                             |
-| [package.json](package.json)                                 | Project dependencies and scripts.                             |
-| [README.md](README.md)                                       | Project documentation.                                        |
-| [LICENSE](LICENSE)                                           | Project license.                                              |
+| **Directory / File**                                         | **Description**                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| [.storybook/](.storybook/)                                   | Storybook configuration files.                          |
+| [backend/](backend/)                                         | Node.js backend server for API handling.                |
+| [scripts/](scripts/)                                         | Python scripts for data processing and statistics.      |
+| [src/api/](src/api/)                                         | SPARQL query constants and definitions.                 |
+| [src/auth/](src/auth/)                                       | Keycloak authentication logic and contexts.             |
+| [src/components/](src/components/)                           | Reusable React components.                              |
+| [src/components/Admin/](src/components/Admin/)               | Components for the administration dashboard.            |
+| [src/components/AI/](src/components/AI/)                     | AI Assistant, Chat interface, and Logic.                |
+| [src/components/CustomCharts/](src/components/CustomCharts/) | Custom visualization components using Recharts/MUI.     |
+| [src/firestore/](src/firestore/)                             | Services for interacting with Firebase Firestore.       |
+| [src/hooks/](src/hooks/)                                     | Custom React hooks (e.g., `useAIAssistant`, `useAuth`). |
+| [src/pages/](src/pages/)                                     | Top-level page components corresponding to routes.      |
+| [src/services/](src/services/)                               | API services for Backend and AI integration.            |
+| [src/store/](src/store/)                                     | Redux store slices (`aiSlice`, `questionSlice`).        |
+| [src/templates/](src/templates/)                             | JSON schemas defining research domain templates.        |
+| [src/utils/](src/utils/)                                     | Utility functions for data formatting and processing.   |
+| [package.json](package.json)                                 | Project dependencies and npm scripts.                   |
+| [vite.config.ts](vite.config.ts)                             | Configuration for the Vite build tool.                  |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -278,7 +83,7 @@ In the following, we explain how to install and run the project locally using a 
 
 ## 1. Ensure prerequisites are installed
 
-- **Node.js** (version 14 or higher)
+- **Node.js** (version 18 or higher recommended)
 - **Modern web browser** (e.g., Chrome, Firefox)
 - **Git** (optional, for version control)
 
@@ -302,18 +107,44 @@ Using **npm**:
 npm install
 ```
 
-## 5. Configure environment variables (optional)
+## 5. Configure environment variables
 
-Create a `.env` file in the root directory with the following variables:
+### Frontend Configuration
 
-```env
-VITE_KEYCLOAK_URL=https://accounts.orkg.org
-VITE_KEYCLOAK_REALM=orkg
-VITE_KEYCLOAK_CLIENT_ID=empire-compass-devel
-VITE_BACKEND_URL=https://empirecompassbackend.vercel.app
+Copy the example environment file and configure your variables:
+
+```sh
+cp .env.example .env
 ```
 
-**Note:** The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available. The dashboard and public features will function normally in unauthenticated mode.
+Edit the `.env` file with your actual values. The `.env.example` file contains all necessary environment variables including:
+
+- **Backend API URL**: `VITE_BACKEND_URL`
+- **Keycloak Authentication** (optional): `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID`
+- **Firebase Configuration**: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, etc.
+- **AI Provider API Keys** (optional): `VITE_OPEN_AI_API_KEY`, `VITE_GROQ_API_KEY`, `VITE_MISTRAL_API_KEY`, `VITE_GOOGLE_GENERATIVE_AI_API_KEY`
+
+**Note:**
+
+- The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available.
+- AI API keys can also be configured directly in the UI. If you set them in `.env`, enable "Use Environment Keys" in the AI configuration settings.
+- The dashboard and public features will function normally in unauthenticated mode.
+
+### Backend Configuration (if running backend locally)
+
+If you're running the backend server locally, configure backend environment variables:
+
+```sh
+cd backend
+cp .env.example .env
+```
+
+Edit `backend/.env` with your backend configuration including:
+
+- **Server Port**: `PORT`
+- **AI Provider**: `AI_PROVIDER` (openai, groq, mistral, or google)
+- **AI Models**: `OPENAI_MODEL`, `GROQ_MODEL`, `MISTRAL_MODEL`, `GOOGLE_MODEL`
+- **AI API Keys**: `OPENAI_API_KEY`, `GROQ_API_KEY`, `MISTRAL_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`
 
 ## 6. Start the development server
 
@@ -339,21 +170,22 @@ EmpiRE-Compass includes a comprehensive design system documented in Storybook, p
 
 ## 📚 **Storybook (Component Library)**
 
-**Live Documentation**: [https://your-storybook-url.chromatic.com](https://your-storybook-url.chromatic.com) <!-- TODO: Update with actual Storybook URL -->
+**Live Documentation**: [https://empire-compass-storybooks.vercel.app](https://empire-compass-storybooks.vercel.app)
 
 ## **Component Categories**
 
 - **🏠 Home Components**: Hero sections, feature highlights, contact forms
 - **📊 Data Visualization**: Custom charts, statistics cards, interactive graphs
 - **🤖 AI Components**: AI assistant interface, chat messages, dynamic questions
+- **🛡️ Admin Components**: Dashboard tools, settings, data management
 - **🔧 Layout Components**: Headers, navigation, responsive containers
 - **⚙️ Utility Components**: Loading states, error handling, form elements
 
 ## **Technology Stack**
 
 - **React 18** with TypeScript
-- **Material-UI** component library
-- **Storybook 7** for documentation
+- **Material-UI (MUI)** component library
+- **Storybook 7+** for documentation
 - **Chromatic** for visual testing (planned)
 
 ## **Local Development**
@@ -369,38 +201,17 @@ npm run build-storybook
 npm run preview:storybook
 ```
 
-## **Deployment to Chromatic**
-
-```bash
-# Deploy to Chromatic (requires CHROMATIC_PROJECT_TOKEN)
-npm run deploy:chromatic
-
-# Set up Chromatic project token as environment variable
-export CHROMATIC_PROJECT_TOKEN=your-token-here
-```
-
-## **Setup Instructions:**
-
-1. Sign up at [chromatic.com](https://chromatic.com)
-2. Create a new project for EmpiRE-Compass
-3. Get your project token from the Chromatic dashboard
-4. Add the token to your environment variables
-5. Run `npm run deploy:chromatic` to publish your Storybook
-6. Update the URLs in `Header.tsx` and `README.md` with your Chromatic URL
-
-## **Features**
-
-- 📖 **Interactive Documentation** - Live component examples with controls
-- 🎨 **Design Tokens** - Consistent colors, typography, and spacing
-- ♿ **Accessibility Testing** - Built-in a11y checks
-- 📱 **Responsive Design** - Mobile-first component library
-- 🔧 **Developer Tools** - Props controls and code examples
-
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 # Firebase Setup
 
-EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data updates. Follow these guides to set up Firebase integration:
+EmpiRE-Compass uses Firebase Firestore for real-time data storage, statistics, and content management. Follow these guides to set up Firebase integration:
+
+## 📚 Firestore Tutorial
+
+For a comprehensive guide on Firestore, refer to the official documentation:
+
+- **[Firestore Documentation & Tutorial](https://firebase.google.com/docs/firestore)** - Learn Firestore basics, data modeling, and best practices
 
 ## Quick Setup (5 minutes)
 
@@ -410,12 +221,168 @@ EmpiRE-Compass uses Firebase for real-time statistics storage and automatic data
 
 📖 **[Complete Firebase Setup Guide](docs/GITHUB_FIREBASE_SETUP.md)** - Comprehensive guide with troubleshooting
 
+## Connecting Firebase to Your Project
+
+### 1. Create a Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click **Add project** or select an existing project
+3. Follow the setup wizard to create your project
+
+### 2. Enable Firestore Database
+
+1. In Firebase Console, navigate to **Firestore Database**
+2. Click **Create database**
+3. Choose **Start in test mode** (you can configure security rules later)
+4. Select a location for your database
+
+### 3. Get Firebase Configuration
+
+1. Go to **Project Settings** (gear icon) → **General** tab
+2. Scroll down to **Your apps** section
+3. Click the **Web** icon (`</>`) to add a web app
+4. Register your app and copy the Firebase configuration object
+5. Add these values to your `.env` file (see `.env.example` for reference):
+   - `VITE_FIREBASE_API_KEY`
+   - `VITE_FIREBASE_AUTH_DOMAIN`
+   - `VITE_FIREBASE_PROJECT_ID`
+   - `VITE_FIREBASE_STORAGE_BUCKET`
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+   - `VITE_FIREBASE_APP_ID`
+   - `VITE_FIREBASE_MEASUREMENT_ID` (optional, for Analytics)
+
+### 4. Create Required Firestore Collections
+
+EmpiRE-Compass requires the following Firestore collections. You can create them manually or they will be created automatically when the app runs:
+
+#### **Templates Collection** (Main collection)
+
+```
+Templates (collection)
+  └─ {templateId} (document)
+      ├─ id: string
+      ├─ title: string
+      ├─ collectionName: string
+      ├─ description?: string
+      ├─ Questions (subcollection)
+      │   └─ {questionId} (document)
+      │       ├─ id: number
+      │       ├─ uid: string
+      │       ├─ title: string
+      │       ├─ dataAnalysisInformation: object
+      │       └─ sparqlQuery: string
+      └─ Statistics (subcollection)
+          └─ {statisticId} (document)
+              ├─ id: string
+              ├─ name: string
+              ├─ paperCount: number
+              ├─ total_resources: number
+              ├─ total_literals: number
+              ├─ total_predicates: number
+              ├─ total_statements: number
+              ├─ venueCount: number
+              ├─ global_distinct_resources: number
+              ├─ global_distinct_literals: number
+              ├─ global_distinct_predicates: number
+              └─ updatedAt: timestamp
+```
+
+**To create manually:**
+
+1. In Firestore Console, click **Start collection**
+2. Collection ID: `Templates`
+3. Create a document with ID matching your template (e.g., `R186491` for KG-EmpiRE)
+4. Add fields: `id` (string), `title` (string), `collectionName` (string)
+
+#### **HomeContent Collection**
+
+```
+HomeContent (collection)
+  └─ sections (document)
+      ├─ header: { title: string, subtitle: string }
+      ├─ aboutProject: { title: string, content: string, themes: string[] }
+      ├─ keyFeatures: { title: string, features: Array<{title: string, description: string}> }
+      ├─ futureDevelopment: { title: string, intro: string, phases: Array<{phase: string, goal: string}> }
+      ├─ contact: { title: string, name: string, position: string, organization: string, address: string[], email: string }
+      ├─ partners: { title: string, partners: Array<{label: string, link: string, logoUrl: string}> }
+      └─ templates: Array<{ id: string, title: string, description: string }>
+```
+
+**To create manually:**
+
+1. Create collection: `HomeContent`
+2. Create document with ID: `sections`
+3. Add the structure above (can be initialized with default values)
+
+#### **Users Collection** (Optional - for authentication)
+
+```
+Users (collection)
+  └─ {userId} (document)
+      ├─ id: string
+      ├─ email: string
+      ├─ display_name: string
+      └─ ... (other user fields)
+```
+
+**Note:** This collection is created automatically when users authenticate via Keycloak.
+
+### 5. Configure Security Rules
+
+For production, update your Firestore security rules. Example rules:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Templates collection - read public, write requires auth
+    match /Templates/{templateId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+
+      match /Questions/{questionId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+
+      match /Statistics/{statisticId} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+    }
+
+    // HomeContent - read public, write requires auth
+    match /HomeContent/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Users - read own data, write own data
+    match /Users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### 6. Generate Service Account (for Backend/Statistics)
+
+1. Go to **Project Settings** → **Service Accounts**
+2. Click **Generate New Private Key**
+3. Download the JSON file securely
+4. For GitHub Actions: Add the entire JSON content as `FIREBASE_SERVICE_ACCOUNT_KEY` secret
+5. For local development: Place the JSON file in `scripts/` directory (ensure it's in `.gitignore`)
+
 ## Firebase Configuration Steps:
 
 1. **Create Firebase Project** - Set up a new project in Firebase Console
-2. **Generate Service Account** - Download the service account JSON key
-3. **Configure GitHub Secret** - Add `FIREBASE_SERVICE_ACCOUNT_KEY` to repository secrets
-4. **Test Integration** - Run the workflow to verify everything works
+2. **Enable Firestore** - Create Firestore database in test mode
+3. **Get Configuration** - Copy Firebase config to `.env` file
+4. **Create Collections** - Set up Templates and HomeContent collections (or let the app create them)
+5. **Generate Service Account** - Download the service account JSON key for backend operations
+6. **Configure GitHub Secret** - Add `FIREBASE_SERVICE_ACCOUNT_KEY` to repository secrets (if using GitHub Actions)
+7. **Test Integration** - Run the app to verify Firebase connection
 
 ## Local Development
 
@@ -520,7 +487,7 @@ E-Mail: [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)
 
 If you want to cite this project, we suggest using the following reference:
 
-> Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/> >[**EmpiRE-Compass**](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
+> Oliver Karras, Amirreza Alasti, Sushant Aggarwal, Yücel Celik, and Lena John:<br/> [**EmpiRE-Compass**](https://empire-compass.vercel.app/R186491/), Computer Software, Version v1.4, https://github.com/okarras/EmpiRE-Compass, 2025.
 >
 > You can also use the "**Cite this repository**" function in the top right menu, resulting from the included [citation file format file](CITATION.cff) for human- and machine-readable citation information for software and datasets. Further information can be found on the [Citation File Format (CFF) website](https://citation-file-format.github.io/).
 

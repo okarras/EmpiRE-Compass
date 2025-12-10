@@ -7,6 +7,7 @@ interface QuestionDataGridViewProps {
   gridOptions?: {
     defaultColumns?: string[];
     defaultGroupBy?: string;
+    defaultUseUniquePapers?: boolean;
   };
 }
 
@@ -14,6 +15,15 @@ const QuestionDataGridView: React.FC<QuestionDataGridViewProps> = ({
   questionData,
   gridOptions,
 }) => {
+  // Safety check: ensure questionData is an array
+  if (!questionData || !Array.isArray(questionData)) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No data available to display.
+      </Typography>
+    );
+  }
+
   return (
     <>
       <Typography
