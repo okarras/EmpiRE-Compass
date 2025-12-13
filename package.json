@@ -57,6 +57,8 @@
     "react-router-dom": "^7.5.0",
     "reactflow": "11.11.4",
     "recharts": "^3.4.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "universal-cookie": "^8.0.1",
     "victory": "^37.3.6",
     "vite-plugin-pwa": "^1.0.0",
