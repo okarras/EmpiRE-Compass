@@ -5,6 +5,7 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
+import path from 'path';
 import { AIService, type AIConfig } from './aiService.js';
 import { createRateLimiter, corsOptions, errorHandler } from './middleware.js';
 import usersRouter from './routes/users.js';
@@ -35,7 +36,11 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ['./src/routes/*.ts', './src/routes/*.js', './routes/*.js'],
+  // Look for route files in both src (dev) and dist (prod) directories
+  apis: [
+    path.join(process.cwd(), 'src/routes/*.ts'),
+    path.join(process.cwd(), 'dist/routes/*.js'),
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -58,6 +63,7 @@ app.use(
           "'unsafe-inline'",
           'https://cdnjs.cloudflare.com',
         ],
+        'frame-src': ["'self'", 'https://vercel.live'],
       },
     },
   })
