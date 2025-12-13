@@ -94,6 +94,9 @@ const DynamicAIQuestion = () => {
 
   // Initialize template ID in context
   useEffect(() => {
+    const hasMappingData =
+      state.templateMapping && Object.keys(state.templateMapping).length > 0;
+
     if (templateId && state.templateId !== templateId) {
       void handleTemplateChange(templateId);
       // Set default target class IDs for known templates
@@ -105,9 +108,16 @@ const DynamicAIQuestion = () => {
       ) {
         updateTargetClassId('C121001');
       }
+    } else if (
+      templateId &&
+      state.templateId === templateId &&
+      !hasMappingData
+    ) {
+      // Template ID matches but mapping is missing - load it
+      void handleTemplateChange(templateId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId, state.templateId]);
+  }, [templateId, state.templateId, state.templateMapping]);
 
   // Load saved template from localStorage on mount
   useEffect(() => {

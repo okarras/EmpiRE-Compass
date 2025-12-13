@@ -39,7 +39,8 @@ export const useTemplateLoader = ({
           typeof templateFlow.target_class === 'object' &&
           'id' in templateFlow.target_class
         ) {
-          updateTargetClassId(templateFlow.target_class.id as string);
+          const targetClassId = templateFlow.target_class.id as string;
+          updateTargetClassId(targetClassId);
         }
       }
 
@@ -81,33 +82,36 @@ export const useTemplateLoader = ({
     async (newTemplateId: string) => {
       updateTemplateId(newTemplateId);
 
-      if (newTemplateId !== DEFAULT_TEMPLATE_ID) {
-        // Non-default template: load template data
-        try {
-          const templateMapping = await loadTemplateData(newTemplateId);
-          updateTemplateMapping(templateMapping);
+      // Load template data for ALL templates (including default R186491)
+      try {
+        const templateMapping = await loadTemplateData(newTemplateId);
+        updateTemplateMapping(templateMapping);
 
-          // Persist to localStorage
-          try {
-            localStorage.setItem(STORAGE_KEY, newTemplateId);
-          } catch {
-            // Ignore storage errors
-          }
-        } catch (err) {
-          console.error('❌ Error loading schema data:', err);
-          // Continue with static prompt if template loading fails
-        }
-      } else {
-        // Default template: clear template mapping and ensure default target class
-        updateTemplateMapping({});
-        if (currentTargetClassId !== DEFAULT_TARGET_CLASS_ID) {
+        // Ensure default target class ID for default template if not already set
+        if (
+          newTemplateId === DEFAULT_TEMPLATE_ID &&
+          currentTargetClassId !== DEFAULT_TARGET_CLASS_ID
+        ) {
           updateTargetClassId(DEFAULT_TARGET_CLASS_ID);
         }
+
+        // Persist to localStorage
         try {
           localStorage.setItem(STORAGE_KEY, newTemplateId);
         } catch {
           // Ignore storage errors
         }
+      } catch (err) {
+        console.error('Error loading schema data:', err);
+        // If loading fails, ensure default target class for default template
+        if (
+          newTemplateId === DEFAULT_TEMPLATE_ID &&
+          currentTargetClassId !== DEFAULT_TARGET_CLASS_ID
+        ) {
+          updateTargetClassId(DEFAULT_TARGET_CLASS_ID);
+        }
+        // Continue with empty mapping if template loading fails
+        updateTemplateMapping({});
       }
     },
     [
