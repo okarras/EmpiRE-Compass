@@ -98,16 +98,35 @@ const AIContentGenerator: React.FC<AIContentGeneratorProps> = ({
       // Prepare data summary for efficient AI processing
       const dataSummary = prepareDataSummary(data);
 
+      // Count unique papers if paper field exists
+      const hasPaperField = data.length > 0 && 'paper' in (data[0] || {});
+      const uniquePaperCount = hasPaperField
+        ? new Set(data.map((row) => row.paper).filter(Boolean)).size
+        : data.length;
+      const totalRowCount = data.length;
+
       // Generate HTML chart
       const chartPrompt = `Based on the following SPARQL query results for the research question "${question}", generate a complete HTML chart visualization.
 
 Data Structure:
-- Total rows: ${data.length}
+- Total rows in dataset: ${totalRowCount}
+${hasPaperField ? `- Unique papers: ${uniquePaperCount}` : ''}
 - Columns: ${Object.keys(data[0] || {}).join(', ')}
-- Sample data (first 5 rows): ${JSON.stringify(data.slice(0, 5), null, 2)}
-- Last 2 rows (for range): ${JSON.stringify(data.slice(-2), null, 2)}
+- Full dataset (all ${totalRowCount} rows): ${JSON.stringify(data, null, 2)}
 
 Data Summary: ${dataSummary}
+
+CRITICAL DATA INTERPRETATION RULES:
+${
+  hasPaperField
+    ? `- IMPORTANT: This dataset contains ${totalRowCount} rows but only ${uniquePaperCount} UNIQUE PAPERS
+- When counting papers, you MUST count UNIQUE papers, not total rows
+- Multiple rows may represent the same paper with different attributes (e.g., different methods, years)
+- Use JavaScript to count unique papers: const uniquePapers = new Set(chartData.map(d => d.paper)).size
+- The chart should reflect the actual count of UNIQUE PAPERS, not the total number of rows
+- If showing counts, ensure they represent unique papers, not row counts`
+    : '- Count items based on the actual data structure and what makes sense for the question'
+}
 
 IMPORTANT DATA PROCESSING INSTRUCTIONS:
 - The data will be provided as a JavaScript variable named 'chartData' in the HTML
@@ -116,6 +135,14 @@ IMPORTANT DATA PROCESSING INSTRUCTIONS:
 - Process the 'chartData' variable to create appropriate chart datasets
 - For time-series data with methods/categories, create grouped or stacked bar charts
 - Use all data points from the 'chartData' variable without limiting or sampling
+- CRITICAL: When counting papers or entities, count UNIQUE values, not total rows
+- Ensure the chart accurately represents the data counts and doesn't inflate numbers
+
+CRITICAL CONSISTENCY REQUIREMENT:
+- The chart MUST accurately represent the data counts shown above
+${hasPaperField ? `- If counting papers, the chart must show ${uniquePaperCount} (unique papers), NOT ${totalRowCount} (total rows)` : `- The chart must accurately reflect the count of ${totalRowCount} items`}
+- Ensure chart labels, titles, and values match the actual data counts
+- The chart should be consistent with what the data analysis text will describe
 
 Requirements:
 1. Create a complete HTML document with embedded CSS and JavaScript
@@ -159,10 +186,17 @@ Requirements:
 EXAMPLE of how to use the chartData variable in your JavaScript:
 \`\`\`javascript
 // The chartData variable will be automatically available
-// Process the data to create Chart.js datasets
+${
+  hasPaperField
+    ? `// IMPORTANT: Count UNIQUE papers, not total rows
+const uniquePapers = new Set(chartData.map(d => d.paper)).size;
+// Use uniquePapers (${uniquePaperCount}) for counts, not chartData.length (${totalRowCount})`
+    : `// Process the data to create Chart.js datasets`
+}
 const processedData = {
   labels: [...], // Extract from chartData
   datasets: [...] // Process chartData into chart datasets
+  ${hasPaperField ? `// Ensure counts reflect unique papers: ${uniquePaperCount}, not total rows: ${totalRowCount}` : ''}
 };
 
 const chart = new Chart(ctx, {
@@ -171,6 +205,16 @@ const chart = new Chart(ctx, {
   options: { ... }
 });
 \`\`\`
+
+CRITICAL REMINDER:
+${
+  hasPaperField
+    ? `- The dataset has ${totalRowCount} rows but only ${uniquePaperCount} UNIQUE PAPERS
+- Your chart MUST show counts based on UNIQUE PAPERS (${uniquePaperCount}), not total rows
+- Chart title, labels, and values must reflect the correct count: ${uniquePaperCount} papers
+- Do NOT use chartData.length for counting papers - use unique paper count instead`
+    : `- Ensure your chart accurately represents ${totalRowCount} items`
+}
 
 Generate the complete HTML now:`;
 
@@ -267,11 +311,21 @@ Generate the complete HTML now:`;
       const descriptionPrompt = `Based on the following data from a SPARQL query about "${question}", provide a detailed chart analysis in HTML format.
 
 Data Structure:
-- Total rows: ${data.length}
+- Total rows in dataset: ${totalRowCount}
+${hasPaperField ? `- Unique papers: ${uniquePaperCount}` : ''}
 - Columns: ${Object.keys(data[0] || {}).join(', ')}
-- Sample data: ${JSON.stringify(data.slice(0, 5), null, 2)}
+- Full dataset: ${JSON.stringify(data, null, 2)}
 
 Data Summary: ${dataSummary}
+
+CRITICAL DATA INTERPRETATION RULES:
+${
+  hasPaperField
+    ? `- IMPORTANT: This dataset contains ${totalRowCount} rows but only ${uniquePaperCount} UNIQUE PAPERS
+- When mentioning counts, refer to UNIQUE PAPERS (${uniquePaperCount}), not total rows
+- Ensure your description matches what the chart actually shows`
+    : '- Count items based on the actual data structure'
+}
 
 Requirements:
 1. Return properly formatted HTML content (not a complete HTML document, just the content)
@@ -380,7 +434,24 @@ Return ONLY the explanation text.`;
       // Generate Data Analysis interpretation
       const dataAnalysisInterpretationPrompt = `Based on the research question "${question}" and the following data, provide a concise explanation for the "Data Analysis" section.
 
+Data Structure:
+- Total rows in dataset: ${totalRowCount}
+${hasPaperField ? `- Unique papers: ${uniquePaperCount}` : ''}
+- Columns: ${Object.keys(data[0] || {}).join(', ')}
+- Full dataset: ${JSON.stringify(data, null, 2)}
+
 Data Summary: ${dataSummary}
+
+CRITICAL DATA INTERPRETATION RULES:
+${
+  hasPaperField
+    ? `- IMPORTANT: This dataset contains ${totalRowCount} rows but only ${uniquePaperCount} UNIQUE PAPERS
+- When mentioning counts in your analysis, you MUST refer to UNIQUE PAPERS (${uniquePaperCount}), not total rows (${totalRowCount})
+- Multiple rows may represent the same paper with different attributes
+- Be precise: if you mention "one paper" or "X papers", ensure it matches the actual unique paper count
+- Do NOT confuse row count with paper count`
+    : '- Count items based on the actual data structure and what makes sense for the question'
+}
 
 Requirements:
 1. Return a simple, clear explanation (not HTML)
@@ -388,9 +459,11 @@ Requirements:
    - How the data is analyzed to answer the question
    - What patterns or trends are being examined
    - What insights the analysis provides
+   - ACCURATE counts: Use the correct count (${hasPaperField ? `${uniquePaperCount} unique papers` : `${totalRowCount} items`}) in your explanation
 3. Keep it to 2-3 sentences maximum
 4. Use professional but accessible language
 5. Don't use HTML tags, just plain text
+6. CRITICAL: Ensure any numbers or counts mentioned match the actual data (${hasPaperField ? `${uniquePaperCount} unique papers` : `${totalRowCount} items`})
 
 Return ONLY the explanation text.`;
 

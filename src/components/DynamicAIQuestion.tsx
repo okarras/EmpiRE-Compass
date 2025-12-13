@@ -70,6 +70,7 @@ const DynamicAIQuestion = () => {
     currentIteration,
     iterationFeedback,
     iterationHistory,
+    resetIterationHistory,
   } = useQueryGeneration({
     templateMapping: state.templateMapping ?? undefined,
     templateId: state.templateId ?? undefined,
@@ -602,6 +603,9 @@ const DynamicAIQuestion = () => {
 
   const handleLoadExample = (example: DynamicQuestion) => {
     const exampleState = example.state;
+
+    // Reset iteration history when loading a new example
+    resetIterationHistory();
 
     // Load all state from the example
     if (exampleState.question) {
