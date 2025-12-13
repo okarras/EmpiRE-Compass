@@ -161,6 +161,53 @@ const getPredicateUsageSamples = (
     .slice(0, maxSamples);
 };
 
+/**
+ * Check if a SPARQL query already contains PREFIX declarations
+ */
+const hasPrefixes = (query: string): boolean => {
+  const trimmedQuery = query.trim();
+  return /^\s*PREFIX\s+/i.test(trimmedQuery);
+};
+
+/**
+ * Remove PREFIX declarations from a SPARQL query
+ */
+const removePrefixes = (query: string): string => {
+  const lines = query.split('\n');
+  const prefixLines: number[] = [];
+
+  // Find all PREFIX lines
+  lines.forEach((line, index) => {
+    if (/^\s*PREFIX\s+/i.test(line.trim())) {
+      prefixLines.push(index);
+    }
+  });
+
+  // If we found PREFIX lines, remove them
+  if (prefixLines.length > 0) {
+    // Remove lines in reverse order to maintain indices
+    const linesWithoutPrefixes = lines.filter(
+      (_, index) => !prefixLines.includes(index)
+    );
+    return linesWithoutPrefixes.join('\n').trim();
+  }
+
+  return query;
+};
+
+/**
+ * Ensure a SPARQL query has prefixes, adding them only if missing
+ */
+const ensurePrefixes = (query: string, prefixes: string): string => {
+  if (hasPrefixes(query)) {
+    // Query already has prefixes, remove duplicates and ensure we have the standard ones
+    const queryWithoutPrefixes = removePrefixes(query);
+    return `${prefixes.trim()}\n${queryWithoutPrefixes}`;
+  }
+  // Query doesn't have prefixes, add them
+  return `${prefixes.trim()}\n${query}`;
+};
+
 const walkMappingForClass = (
   mapping: PropertyMapping | undefined,
   predicateChain: string[],
@@ -591,6 +638,12 @@ LIMIT 1`;
 
   const handleOpenHistory = () => {
     setHistoryDialogOpen(true);
+  };
+
+  const handleOpenInORKG = () => {
+    const queryWithPrefixes = ensurePrefixes(sparqlQuery, PREFIXES);
+    const url = `https://orkg.org/sparql#${encodeURIComponent(queryWithPrefixes)}`;
+    window.open(url, '_blank');
   };
 
   const handleCloseHistory = () => {
@@ -1276,8 +1329,7 @@ Modified SPARQL Query:`;
               ) : (
                 <>
                   <Button
-                    href={`https://orkg.org/sparql#${encodeURIComponent(PREFIXES + sparqlQuery)}`}
-                    target="_blank"
+                    onClick={handleOpenInORKG}
                     sx={{
                       color: '#e86161',
                       mt: { xs: 2, sm: 0 },
