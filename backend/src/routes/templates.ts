@@ -13,6 +13,117 @@ import { logRequest } from '../services/requestLogger.js';
 
 const router = Router();
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Template:
+ *       type: object
+ *       required:
+ *         - id
+ *         - title
+ *         - collectionName
+ *       properties:
+ *         id:
+ *           type: string
+ *         title:
+ *           type: string
+ *         collectionName:
+ *           type: string
+ *         description:
+ *           type: string
+ *     Question:
+ *       type: object
+ *       required:
+ *         - id
+ *         - uid
+ *         - title
+ *         - dataAnalysisInformation
+ *       properties:
+ *         id:
+ *           type: integer
+ *         uid:
+ *           type: string
+ *         uid_2:
+ *           type: string
+ *         uid_2_merge:
+ *           type: string
+ *         title:
+ *           type: string
+ *         chartType:
+ *           type: string
+ *           enum: [bar, pie]
+ *         dataAnalysisInformation:
+ *           type: object
+ *           properties:
+ *             question:
+ *               type: string
+ *             questionExplanation:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             dataAnalysis:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             dataInterpretation:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             requiredDataForAnalysis:
+ *               type: array
+ *               items:
+ *                 type: string
+ *         sparqlQuery:
+ *           type: string
+ *         sparqlQuery2:
+ *           type: string
+ *         chartSettings:
+ *           type: object
+ *         chartSettings2:
+ *           type: object
+ *         dataProcessingFunctionName:
+ *           type: string
+ *         dataProcessingFunctionName2:
+ *           type: string
+ *         tabs:
+ *           type: object
+ *           properties:
+ *             tab1_name:
+ *               type: string
+ *             tab2_name:
+ *               type: string
+ *         gridOptions:
+ *           type: object
+ *           properties:
+ *             defaultColumns:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             defaultGroupBy:
+ *               type: string
+ *     Statistic:
+ *       type: object
+ *       required:
+ *         - id
+ *         - name
+ *         - sparqlQuery
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         sparqlQuery:
+ *           type: string
+ *         description:
+ *           type: string
+ *     SuccessResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ */
+
 export interface TemplateData {
   id: string;
   title: string;
@@ -60,8 +171,23 @@ export interface StatisticData {
 // ========== Templates Routes ==========
 
 /**
- * GET /api/templates
- * Get all templates (public)
+ * @swagger
+ * /api/templates:
+ *   get:
+ *     summary: Get all templates
+ *     tags:
+ *       - Templates
+ *     responses:
+ *       '200':
+ *         description: Templates retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 $ref: '#/components/schemas/Template'
+ *       '500':
+ *         description: Failed to fetch templates
  */
 router.get('/', async (req, res) => {
   try {
@@ -80,8 +206,30 @@ router.get('/', async (req, res) => {
 });
 
 /**
- * GET /api/templates/:templateId
- * Get template by ID (public)
+ * @swagger
+ * /api/templates/{templateId}:
+ *   get:
+ *     summary: Get template by ID
+ *     tags:
+ *       - Templates
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template to retrieve
+ *     responses:
+ *       '200':
+ *         description: Template retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Template'
+ *       '404':
+ *         description: Template not found
+ *       '500':
+ *         description: Failed to fetch template
  */
 router.get('/:templateId', async (req, res) => {
   try {
@@ -100,8 +248,35 @@ router.get('/:templateId', async (req, res) => {
 });
 
 /**
- * POST /api/templates
- * Create template (admin only)
+ * @swagger
+ * /api/templates:
+ *   post:
+ *     summary: Create template
+ *     tags:
+ *       - Templates
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Template'
+ *     responses:
+ *       '200':
+ *         description: Template created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Template'
+ *       '400':
+ *         description: Missing required fields
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to create template
  */
 router.post(
   '/',
@@ -147,8 +322,43 @@ router.post(
 );
 
 /**
- * PUT /api/templates/:templateId
- * Update template (admin only)
+ * @swagger
+ * /api/templates/{templateId}:
+ *   put:
+ *     summary: Update template
+ *     tags:
+ *       - Templates
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Partial template data to update
+ *     responses:
+ *       '200':
+ *         description: Template updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Template'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Template not found
+ *       '500':
+ *         description: Failed to update template
  */
 router.put(
   '/:templateId',
@@ -198,8 +408,36 @@ router.put(
 );
 
 /**
- * DELETE /api/templates/:templateId
- * Delete template (admin only)
+ * @swagger
+ * /api/templates/{templateId}:
+ *   delete:
+ *     summary: Delete template
+ *     tags:
+ *       - Templates
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template to delete
+ *     responses:
+ *       '200':
+ *         description: Template deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Template not found
+ *       '500':
+ *         description: Failed to delete template
  */
 router.delete(
   '/:templateId',
@@ -248,8 +486,30 @@ router.delete(
 // ========== Questions Routes (Nested) ==========
 
 /**
- * GET /api/templates/:templateId/questions
- * Get all questions for a template (public)
+ * @swagger
+ * /api/templates/{templateId}/questions:
+ *   get:
+ *     summary: Get all questions for a template
+ *     tags:
+ *       - Questions
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *     responses:
+ *       '200':
+ *         description: Questions retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Question'
+ *       '500':
+ *         description: Failed to fetch questions
  */
 router.get('/:templateId/questions', async (req, res) => {
   try {
@@ -274,8 +534,36 @@ router.get('/:templateId/questions', async (req, res) => {
 });
 
 /**
- * GET /api/templates/:templateId/questions/:questionId
- * Get question by ID (public)
+ * @swagger
+ * /api/templates/{templateId}/questions/{questionId}:
+ *   get:
+ *     summary: Get question by ID
+ *     tags:
+ *       - Questions
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *       - in: path
+ *         name: questionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the question to retrieve
+ *     responses:
+ *       '200':
+ *         description: Question retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Question'
+ *       '404':
+ *         description: Question not found
+ *       '500':
+ *         description: Failed to fetch question
  */
 router.get('/:templateId/questions/:questionId', async (req, res) => {
   try {
@@ -299,8 +587,43 @@ router.get('/:templateId/questions/:questionId', async (req, res) => {
 });
 
 /**
- * POST /api/templates/:templateId/questions
- * Create question (admin only)
+ * @swagger
+ * /api/templates/{templateId}/questions:
+ *   post:
+ *     summary: Create question
+ *     description: Validates SPARQL query syntax if provided
+ *     tags:
+ *       - Questions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Question'
+ *     responses:
+ *       '200':
+ *         description: Question created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Question'
+ *       '400':
+ *         description: Missing required fields or invalid SPARQL query
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to create question
  */
 router.post(
   '/:templateId/questions',
@@ -357,8 +680,52 @@ router.post(
 );
 
 /**
- * PUT /api/templates/:templateId/questions/:questionId
- * Update question (admin only)
+ * @swagger
+ * /api/templates/{templateId}/questions/{questionId}:
+ *   put:
+ *     summary: Update question
+ *     description: Validates SPARQL query syntax if provided
+ *     tags:
+ *       - Questions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *       - in: path
+ *         name: questionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the question to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Partial question data to update
+ *     responses:
+ *       '200':
+ *         description: Question updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Question'
+ *       '400':
+ *         description: Invalid SPARQL query
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Question not found
+ *       '500':
+ *         description: Failed to update question
  */
 router.put(
   '/:templateId/questions/:questionId',
@@ -442,8 +809,42 @@ router.put(
 );
 
 /**
- * DELETE /api/templates/:templateId/questions/:questionId
- * Delete question (admin only)
+ * @swagger
+ * /api/templates/{templateId}/questions/{questionId}:
+ *   delete:
+ *     summary: Delete question
+ *     tags:
+ *       - Questions
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *       - in: path
+ *         name: questionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the question to delete
+ *     responses:
+ *       '200':
+ *         description: Question deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Question not found
+ *       '500':
+ *         description: Failed to delete question
  */
 router.delete(
   '/:templateId/questions/:questionId',
@@ -522,8 +923,30 @@ router.delete(
 // ========== Statistics Routes (Nested) ==========
 
 /**
- * GET /api/templates/:templateId/statistics
- * Get all statistics for a template (public)
+ * @swagger
+ * /api/templates/{templateId}/statistics:
+ *   get:
+ *     summary: Get all statistics for a template
+ *     tags:
+ *       - Statistics
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *     responses:
+ *       '200':
+ *         description: Statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Statistic'
+ *       '500':
+ *         description: Failed to fetch statistics
  */
 router.get('/:templateId/statistics', async (req, res) => {
   try {
@@ -547,8 +970,43 @@ router.get('/:templateId/statistics', async (req, res) => {
 });
 
 /**
- * POST /api/templates/:templateId/statistics
- * Create statistic (admin only)
+ * @swagger
+ * /api/templates/{templateId}/statistics:
+ *   post:
+ *     summary: Create statistic
+ *     description: Validates SPARQL query syntax
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Statistic'
+ *     responses:
+ *       '200':
+ *         description: Statistic created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Statistic'
+ *       '400':
+ *         description: Missing required fields or invalid SPARQL query
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '500':
+ *         description: Failed to create statistic
  */
 router.post(
   '/:templateId/statistics',
@@ -600,8 +1058,52 @@ router.post(
 );
 
 /**
- * PUT /api/templates/:templateId/statistics/:statisticId
- * Update statistic (admin only)
+ * @swagger
+ * /api/templates/{templateId}/statistics/{statisticId}:
+ *   put:
+ *     summary: Update statistic
+ *     description: Validates SPARQL query syntax if provided
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *       - in: path
+ *         name: statisticId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the statistic to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Partial statistic data to update
+ *     responses:
+ *       '200':
+ *         description: Statistic updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Statistic'
+ *       '400':
+ *         description: Invalid SPARQL query
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Statistic not found
+ *       '500':
+ *         description: Failed to update statistic
  */
 router.put(
   '/:templateId/statistics/:statisticId',
@@ -656,8 +1158,42 @@ router.put(
 );
 
 /**
- * DELETE /api/templates/:templateId/statistics/:statisticId
- * Delete statistic (admin only)
+ * @swagger
+ * /api/templates/{templateId}/statistics/{statisticId}:
+ *   delete:
+ *     summary: Delete statistic
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: templateId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the template
+ *       - in: path
+ *         name: statisticId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the statistic to delete
+ *     responses:
+ *       '200':
+ *         description: Statistic deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       '401':
+ *         description: Unauthorized - missing or invalid Keycloak token
+ *       '403':
+ *         description: Admin access required
+ *       '404':
+ *         description: Statistic not found
+ *       '500':
+ *         description: Failed to delete statistic
  */
 router.delete(
   '/:templateId/statistics/:statisticId',

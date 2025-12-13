@@ -15,8 +15,34 @@ export const setAIServiceForHealth = (service: AIService): void => {
 };
 
 /**
- * GET /api/health
- * Health check endpoint
+ * @swagger
+ * components:
+ *   schemas:
+ *     HealthStatus:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *           example: ok
+ *         timestamp:
+ *           type: string
+ *           format: date-time
+ *         aiConfigured:
+ *           type: boolean
+ *           description: Whether AI service is configured
+ *
+ * /api/health:
+ *   get:
+ *     summary: Health check endpoint
+ *     tags:
+ *       - Health
+ *     responses:
+ *       '200':
+ *         description: Service is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthStatus'
  */
 router.get('/', (req: Request, res: Response) => {
   res.json({

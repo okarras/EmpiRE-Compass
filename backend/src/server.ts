@@ -3,6 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 import { AIService, type AIConfig } from './aiService.js';
 import { createRateLimiter, corsOptions, errorHandler } from './middleware.js';
 import usersRouter from './routes/users.js';
@@ -18,6 +20,25 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.1.0',
+    info: {
+      title: 'EmpiRE Compass API',
+      version: '1.0.0',
+      description: 'API documentation for the EmpiRE Compass backend services',
+    },
+    servers: [
+      {
+        url: '/api',
+      },
+    ],
+  },
+  apis: ['./src/routes/*.ts', './src/routes/*.js', './routes/*.js'],
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // security middleware
 app.use(helmet());
@@ -99,6 +120,7 @@ app.use('/api/request-logs', requestLogsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/dynamic-questions', dynamicQuestionsRouter);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // error handling middleware
 app.use(errorHandler);
