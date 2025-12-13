@@ -55,7 +55,7 @@ interface SPARQLQuerySectionProps {
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
   onGenerateAndRun: () => void;
-  onRunEditedQuery: () => void;
+  onRunEditedQuery: (query?: string) => void;
   onOpenHistory: (type: 'query' | 'sparql') => void;
   templateMapping?: PredicatesMapping;
   templateId?: string | null;
@@ -1427,7 +1427,9 @@ LIMIT 10`}
           <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
-              onClick={onRunEditedQuery}
+              onClick={() =>
+                onRunEditedQuery(isEditing ? editContent : sparqlQuery)
+              }
               disabled={loading}
               startIcon={
                 loading ? <CircularProgress size={20} color="inherit" /> : null

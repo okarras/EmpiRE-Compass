@@ -90,6 +90,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
       {/* Data Grid */}
       <div style={{ height: 600, width: '100%' }}>
         <DataGrid
+          key={`datagrid-${rows.length}-${columns.map((c) => c.field).join('-')}`}
           rows={rows}
           columns={columns}
           pageSizeOptions={[15, 30, 50]}

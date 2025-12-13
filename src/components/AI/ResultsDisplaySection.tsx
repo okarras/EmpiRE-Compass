@@ -165,6 +165,7 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
         Array.isArray(queryResults) &&
         queryResults.length > 0 && (
           <QuestionDataGridView
+            key={`grid-${sparqlQuery.length}-${queryResults.length}-${Object.keys(queryResults[0] || {}).join(',')}`}
             questionData={queryResults}
             gridOptions={dynamicQuery?.gridOptions}
           />

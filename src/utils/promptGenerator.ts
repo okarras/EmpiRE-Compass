@@ -39,7 +39,6 @@ In this domain, an empirical study is a paper that:
 - Link paper to contribution using \`orkgp:P31\`
 - Declare contribution class \`orkgc:C27001\`
 - Include year if temporal analysis is needed
-- Use OPTIONAL blocks for data collection and analysis properties
 - Filter by venue label when needed
 
 **Handling "Empirical Studies" Questions:**
@@ -105,7 +104,6 @@ For descriptive statistics:
 
 **Pattern 2: Nested Property Traversal**
 - Traverse through intermediate nodes to reach the target property
-- Use OPTIONAL for nested paths that may not exist
 - Get labels at the final level for meaningful results
 
 **Pattern 3: Aggregation with SAMPLE**
@@ -120,9 +118,6 @@ For descriptive statistics:
 - **Likely cause**: Not traversing to the method type node
 - **Solution**: Use the full path: collection → method → method type → label
 
-**Problem: All papers show as non-empirical**
-- **Likely cause**: Missing OPTIONAL for data collection/analysis
-- **Solution**: Wrap data collection and analysis in OPTIONAL blocks
 
 **Problem: Venue filter not working**
 - **Likely cause**: Comparing URI to string without getting label
@@ -241,14 +236,12 @@ For questions about frequency or "top N", the query should:
 For queries accessing multiple properties (e.g., RE tasks and NLP tasks):
 - Include all relevant fields in SELECT
 - Traverse through each property path correctly
-- Use OPTIONAL for labels
 - Order by contribution or paper as appropriate
 
 **Pattern 3: Nested Property Traversal**
 For queries accessing nested properties (e.g., dataset → datatype → dataformat):
 - Traverse through each level of the hierarchy
 - Include intermediate nodes if needed for filtering
-- Use OPTIONAL for labels at each level
 `,
     troubleshooting: `
 ### Troubleshooting for NLP4RE Queries
@@ -592,7 +585,13 @@ This fails because \`?resource\` is a URI, not a string!
 BIND(IF(?resource_label = "Expected Value"^^xsd:string, 1, 0) AS ?flag)
 \`\`\`
 
-**Critical Pattern for Checking Labels:**
+### 6.1. MANDATORY RULE: Always Use Lowercase for Label Comparisons
+
+**🚨 CRITICAL: ALL label comparisons MUST use lowercase normalization**
+
+Labels in ORKG may have inconsistent casing (e.g., "Case Study", "case study", "CASE STUDY"). To ensure reliable filtering and matching, you MUST ALWAYS convert labels to lowercase before comparing them.
+
+**MANDATORY Pattern for ALL Label Comparisons:**
 \`\`\`sparql
 # Step 1: Get the resource
 ?subject orkgp:PropertyID ?resource .
@@ -600,16 +599,59 @@ BIND(IF(?resource_label = "Expected Value"^^xsd:string, 1, 0) AS ?flag)
 # Step 2: Get the resource's label
 ?resource rdfs:label ?resource_label .
 
-# Step 3: Compare the LABEL (not the resource)
-FILTER(?resource_label = "expected value"^^xsd:string)
-# OR
-BIND(IF(?resource_label = "expected value"^^xsd:string, 1, 0) AS ?flag)
+# Step 3: ALWAYS normalize to lowercase and compare
+FILTER(LCASE(STR(?resource_label)) = LCASE("expected value"))
+# OR for BIND statements
+BIND(IF(LCASE(STR(?resource_label)) = LCASE("expected value"), 1, 0) AS ?flag)
 \`\`\`
+
+**❌ WRONG (Case-sensitive comparison - will miss matches):**
+\`\`\`sparql
+?resource rdfs:label ?resource_label .
+FILTER(?resource_label = "Case Study"^^xsd:string)
+# This will FAIL if the label is "case study" or "CASE STUDY"
+\`\`\`
+
+**✅ CORRECT (Case-insensitive comparison - always works):**
+\`\`\`sparql
+?resource rdfs:label ?resource_label .
+FILTER(LCASE(STR(?resource_label)) = LCASE("Case Study"))
+# This will match "Case Study", "case study", "CASE STUDY", etc.
+\`\`\`
+
+**Examples of Correct Label Filtering:**
+\`\`\`sparql
+# Filtering venue labels
+?venue rdfs:label ?venue_label .
+FILTER(LCASE(STR(?venue_label)) = LCASE("IEEE International Requirements Engineering Conference"))
+
+# Filtering data collection labels
+?data_collection rdfs:label ?dc_label .
+FILTER(LCASE(STR(?dc_label)) != LCASE("no collection"))
+
+# Filtering data analysis labels
+?data_analysis rdfs:label ?da_label .
+FILTER(LCASE(STR(?da_label)) != LCASE("no analysis"))
+
+# Filtering method type labels
+?method_type rdfs:label ?method_type_label .
+FILTER(LCASE(STR(?method_type_label)) = LCASE("Case Study"))
+
+# Using in BIND for conditional counting
+?resource rdfs:label ?resource_label .
+BIND(IF(LCASE(STR(?resource_label)) = LCASE("Expected Value"), 1, 0) AS ?flag)
+\`\`\`
+
+**Important Notes:**
+- Use \`LCASE(STR(?label))\` to convert the label to lowercase string
+- Always compare both sides: \`LCASE(STR(?label)) = LCASE("value")\` (not just \`LCASE(STR(?label)) = "value"\`)
+- This applies to ALL label comparisons: FILTER, BIND, and WHERE clause patterns
+- Even if you think the case matches, ALWAYS use lowercase normalization for consistency
 
 **BIND Statement Ordering (Critical):**
 - BIND that uses a variable MUST come AFTER that variable is defined
-- ❌ Wrong: \`BIND(IF(?label = "X", 1, 0) AS ?flag) ?resource rdfs:label ?label .\`
-- ✅ Correct: \`?resource rdfs:label ?label . BIND(IF(?label = "X", 1, 0) AS ?flag)\`
+- ❌ Wrong: \`BIND(IF(LCASE(STR(?label)) = LCASE("X"), 1, 0) AS ?flag) ?resource rdfs:label ?label .\`
+- ✅ Correct: \`?resource rdfs:label ?label . BIND(IF(LCASE(STR(?label)) = LCASE("X"), 1, 0) AS ?flag)\`
 
 ### 7. Critical SPARQL Syntax Rules
 
@@ -684,7 +726,6 @@ Another SPARQL line
 ### Approach for Complex Questions
 1. **Analyze the question carefully** - identify what DATA FIELDS are needed
 2. **Only use SPARQL features when necessary** - avoid premature optimization
-3. **Use OPTIONAL** - for fields that might not exist for all entities
 
 ### Common Query Patterns
 - **For counting/proportions questions**: Return the relevant data fields, let processing function count/calculate

@@ -100,6 +100,7 @@ const DynamicAIQuestion = () => {
     if (templateId && state.templateId !== templateId) {
       void handleTemplateChange(templateId);
       // Set default target class IDs for known templates
+      //TODO: this section should be done dynamically this is a temporary solution
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');
       } else if (
@@ -382,8 +383,11 @@ const DynamicAIQuestion = () => {
     }
   };
 
-  const handleRunEditedQuery = async () => {
-    if (!state.sparqlQuery.trim()) {
+  const handleRunEditedQuery = async (queryToRun?: string) => {
+    // Use the provided query or fall back to state
+    const query = queryToRun || state.sparqlQuery;
+
+    if (!query || !query.trim()) {
       setError('The query is empty.');
       return;
     }
@@ -399,7 +403,7 @@ const DynamicAIQuestion = () => {
     if (state.question && state.question.trim()) {
       try {
         setLoading(true);
-        const blocks = parseSparqlBlocks(state.sparqlQuery);
+        const blocks = parseSparqlBlocks(query);
         const rawData = await executeQueriesRaw(blocks);
         if (rawData && rawData.length > 0) {
           await generateProcessingFunction(
@@ -415,7 +419,7 @@ const DynamicAIQuestion = () => {
       }
     }
 
-    handleRunQuery(state.sparqlQuery);
+    handleRunQuery(query);
   };
 
   const handleContentGenerated = (

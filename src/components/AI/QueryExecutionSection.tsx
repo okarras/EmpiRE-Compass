@@ -41,7 +41,7 @@ interface QueryExecutionSectionProps {
   onQuestionChange: (question: string) => void;
   onSparqlChange: (sparql: string) => void;
   onGenerateAndRun: () => void;
-  onRunEditedQuery: () => void;
+  onRunEditedQuery: (query?: string) => void;
   onOpenHistory: (type: HistoryItem['type']) => void;
   onOpenLlmContextHistory: () => void;
   currentTemplateId?: string | null;
