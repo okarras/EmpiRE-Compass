@@ -433,11 +433,21 @@ ${
     ]
   );
 
+  /**
+   * Reset iteration history and state
+   */
+  const resetIterationHistory = useCallback(() => {
+    setCurrentIteration(0);
+    setIterationFeedback('');
+    setIterationHistory([]);
+  }, []);
+
   return {
     generateQueryWithRefinement,
     executeQueriesRaw,
     currentIteration,
     iterationFeedback,
     iterationHistory,
+    resetIterationHistory,
   };
 };
