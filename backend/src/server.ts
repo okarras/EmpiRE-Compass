@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { AIService, type AIConfig } from './aiService.js';
 import { createRateLimiter, corsOptions, errorHandler } from './middleware.js';
 import usersRouter from './routes/users.js';
@@ -22,6 +23,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const swaggerOptions = {
   definition: {
     openapi: '3.1.0',
@@ -36,10 +41,11 @@ const swaggerOptions = {
       },
     ],
   },
-  // Look for route files in both src (dev) and dist (prod) directories
+  // Look for route files relative to this file's location
+  // In dev: src/routes/*.ts, In prod: dist/routes/*.js
   apis: [
-    path.join(process.cwd(), 'src/routes/*.ts'),
-    path.join(process.cwd(), 'dist/routes/*.js'),
+    path.join(__dirname, 'routes', '*.ts'),
+    path.join(__dirname, 'routes', '*.js'),
   ],
 };
 
