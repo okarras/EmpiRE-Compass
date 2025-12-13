@@ -113,10 +113,10 @@ SELECT ?paper ?year ?dc_label ?da_label WHERE {
     ?data_analysis rdfs:label ?da_label.
   }
   
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
 }
 ```
-Processing function filters: `dc_label != "no collection" && da_label != "no analysis"`
+Processing function filters: Use lowercase normalization when comparing labels (e.g., `dc_label?.toLowerCase() !== "no collection" && da_label?.toLowerCase() !== "no analysis"`)
 
 **Example 2: Data Collection Methods Over Time**
 Question: "How often are which empirical methods used over time?"
@@ -136,8 +136,8 @@ SELECT ?paper ?year ?dc_method_type_label WHERE {
     ?dc_method_type rdfs:label ?dc_method_type_label.
   }
   
-  FILTER(?dc_label != "no collection"^^xsd:string)
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+  FILTER(LCASE(STR(?dc_label)) != LCASE("no collection"))
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
 }
 ```
 Note: Traverse to method type through: collection → method → method type → label
@@ -165,8 +165,8 @@ WHERE {
   
   ?serie rdfs:label ?venue_name.
   
-  FILTER(?da_label != "no analysis"^^xsd:string)
-  FILTER(?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
+  FILTER(LCASE(STR(?da_label)) != LCASE("no analysis"))
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
 }
 GROUP BY ?paper ?year ?da_label
 ```
@@ -363,9 +363,9 @@ An "empirical study" typically refers to research that involves:
 - Data collection from real-world sources (NOT "no collection")
 - Analysis of that data using systematic methods (NOT "no analysis")
 
-**MANDATORY: Always exclude non-empirical studies using these filters:**
-- `FILTER(?dc_label != "no collection"^^xsd:string)` - for data collection queries
-- `FILTER(?da_label != "no analysis"^^xsd:string)` - for data analysis queries
+**MANDATORY: Always exclude non-empirical studies using these filters (with lowercase normalization):**
+- `FILTER(LCASE(STR(?dc_label)) != LCASE("no collection"))` - for data collection queries
+- `FILTER(LCASE(STR(?da_label)) != LCASE("no analysis"))` - for data analysis queries
 
 When filtering for empirical studies, consider what makes sense for the specific question:
 - Studies with data collection methods (exclude "no collection")
@@ -413,8 +413,32 @@ BIND(IF(condition, 1, 0) AS ?flagVariable)
 **Examples of conditions:**
 - `BOUND(?variable)` - check if variable exists
 - `?boolean_property = true` - check boolean property
-- `LCASE(STR(?label)) = "specific_value"` - check string values
+- `LCASE(STR(?label)) = LCASE("specific_value")` - check string values (MANDATORY: always use LCASE on both sides)
 - Complex conditions with `&&` and `||` operators
+
+**🚨 CRITICAL: ALL Label Comparisons MUST Use Lowercase Normalization**
+
+Labels in ORKG may have inconsistent casing. To ensure reliable filtering, you MUST ALWAYS convert labels to lowercase before comparing:
+
+**MANDATORY Pattern:**
+```sparql
+?resource rdfs:label ?resource_label .
+FILTER(LCASE(STR(?resource_label)) = LCASE("Expected Value"))
+# OR
+BIND(IF(LCASE(STR(?resource_label)) = LCASE("Expected Value"), 1, 0) AS ?flag)
+```
+
+**❌ WRONG (Case-sensitive - will miss matches):**
+```sparql
+FILTER(?resource_label = "Case Study"^^xsd:string)
+```
+
+**✅ CORRECT (Case-insensitive - always works):**
+```sparql
+FILTER(LCASE(STR(?resource_label)) = LCASE("Case Study"))
+```
+
+**This applies to ALL label comparisons in FILTER, BIND, and WHERE clauses.**
 
 ### 6. CRITICAL RULE: URIs vs Labels (MOST COMMON MISTAKE)
 
@@ -429,14 +453,14 @@ BIND(IF(?venue = "IEEE International Requirements Engineering Conference", 1, 0)
 ```
 This fails because `?venue` is a URI like `orkgr:R12345`, not a string!
 
-**✅ CORRECT (Get label first, then compare):**
+**✅ CORRECT (Get label first, then compare with lowercase normalization):**
 ```sparql
 ?contribution orkgp:P135046 ?venue .
 ?venue rdfs:label ?venue_label .
-BIND(IF(?venue_label = "IEEE International Requirements Engineering Conference"^^xsd:string, 1, 0) AS ?isEmpirical)
+BIND(IF(LCASE(STR(?venue_label)) = LCASE("IEEE International Requirements Engineering Conference"), 1, 0) AS ?isEmpirical)
 ```
 
-**Critical Pattern for Checking Labels:**
+**Critical Pattern for Checking Labels (MANDATORY Lowercase Normalization):**
 ```sparql
 # Step 1: Get the resource
 ?subject orkgp:PropertyID ?resource .
@@ -444,11 +468,13 @@ BIND(IF(?venue_label = "IEEE International Requirements Engineering Conference"^
 # Step 2: Get the resource's label
 ?resource rdfs:label ?resource_label .
 
-# Step 3: Compare the LABEL (not the resource)
-FILTER(?resource_label = "expected value"^^xsd:string)
+# Step 3: ALWAYS normalize to lowercase and compare the LABEL (not the resource)
+FILTER(LCASE(STR(?resource_label)) = LCASE("expected value"))
 # OR
-BIND(IF(?resource_label = "expected value"^^xsd:string, 1, 0) AS ?flag)
+BIND(IF(LCASE(STR(?resource_label)) = LCASE("expected value"), 1, 0) AS ?flag)
 ```
+
+**🚨 CRITICAL: Always use LCASE(STR(?label)) = LCASE("value") for ALL label comparisons to ensure case-insensitive matching.**
 
 **Examples of properties that return resources (need rdfs:label):**
 - `orkgp:P135046` (Venue Serie) → Returns venue resource → Use `?venue rdfs:label ?venue_label`
@@ -459,8 +485,8 @@ BIND(IF(?resource_label = "expected value"^^xsd:string, 1, 0) AS ?flag)
 
 **BIND Statement Ordering (Critical):**
 - BIND that uses a variable MUST come AFTER that variable is defined
-- ❌ Wrong: `BIND(IF(?label = "X", 1, 0) AS ?flag) ?resource rdfs:label ?label .`
-- ✅ Correct: `?resource rdfs:label ?label . BIND(IF(?label = "X", 1, 0) AS ?flag)`
+- ❌ Wrong: `BIND(IF(LCASE(STR(?label)) = LCASE("X"), 1, 0) AS ?flag) ?resource rdfs:label ?label .`
+- ✅ Correct: `?resource rdfs:label ?label . BIND(IF(LCASE(STR(?label)) = LCASE("X"), 1, 0) AS ?flag)`
 
 ### 7. Critical SPARQL Syntax Rules
 
@@ -508,7 +534,8 @@ SELECT ?year (COUNT(?paper) AS ?count) WHERE {
   ?paper orkgp:P29 ?year .
   ?paper orkgp:P31 ?contribution .
   ?contribution orkgp:P135046 ?serie .
-  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?serie rdfs:label ?venue_name .
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
 } GROUP BY ?year
 ```
 
@@ -518,7 +545,8 @@ SELECT ?year (COUNT(?paper) AS ?empirical_studies) WHERE {
   ?paper orkgp:P29 ?year .
   ?paper orkgp:P31 ?contribution .
   ?contribution orkgp:P135046 ?serie .
-  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?serie rdfs:label ?venue_name .
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
   ?contribution orkgp:P56008 ?dc_instance .
   ?dc_instance orkgp:P1005 ?dc_method .
   ?dc_method rdfs:label ?dc_label .
@@ -532,7 +560,8 @@ SELECT ?year (COUNT(?paper) AS ?full_empirical_studies) WHERE {
   ?paper orkgp:P29 ?year .
   ?paper orkgp:P31 ?contribution .
   ?contribution orkgp:P135046 ?serie .
-  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?serie rdfs:label ?venue_name .
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
   ?contribution orkgp:P56008 ?dc_instance .
   ?dc_instance orkgp:P1005 ?dc_method .
   ?dc_method rdfs:label ?dc_label .
@@ -550,7 +579,8 @@ SELECT ?period (COUNT(?paper) AS ?count) WHERE {
   ?paper orkgp:P29 ?year .
   ?paper orkgp:P31 ?contribution .
   ?contribution orkgp:P135046 ?serie .
-  ?serie rdfs:label "IEEE International Requirements Engineering Conference"^^xsd:string .
+  ?serie rdfs:label ?venue_name .
+  FILTER(LCASE(STR(?venue_name)) = LCASE("IEEE International Requirements Engineering Conference"))
   BIND(
     IF(?year >= 2000 && ?year <= 2010, "2000-2010",
     IF(?year >= 2011 && ?year <= 2020, "2011-2020", "Other"))
@@ -668,7 +698,7 @@ This section maps common question types to their appropriate query patterns. Use
 **E. Questions about SPECIFIC VALUES:**
 - Keywords: "secondary research", "case study", "specific type"
 - Pattern: Add FILTER for the specific value
-- Example: `FILTER(?dc_method_type_label = "secondary research"^^xsd:string)`
+- Example: `FILTER(LCASE(STR(?dc_method_type_label)) = LCASE("secondary research"))`
 - Only filter in SPARQL when the exact value is known
 
 **F. Questions about DATA AVAILABILITY:**
@@ -797,7 +827,7 @@ SELECT (COUNT(DISTINCT ?paper) AS ?count) WHERE {
 # Data analysis branch
 ?contribution orkgp:P15124 ?da_instance .
 ?da_instance rdfs:label ?da_label .
-FILTER(?dc_label != "no collection"^^xsd:string && ?da_label != "no analysis"^^xsd:string)
+FILTER(LCASE(STR(?dc_label)) != LCASE("no collection") && LCASE(STR(?da_label)) != LCASE("no analysis"))
 
 # Threats to validity
 ?contribution orkgp:P39099 ?threats_node .
