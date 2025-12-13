@@ -37,7 +37,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: '/api',
+        url: '/',
       },
     ],
   },
@@ -137,6 +137,19 @@ const aiConfig: AIConfig = {
   openaiApiKey: sanitizeEnvVar(process.env.OPENAI_API_KEY, ''),
   groqApiKey: sanitizeEnvVar(process.env.GROQ_API_KEY, ''),
   mistralApiKey: sanitizeEnvVar(process.env.MISTRAL_API_KEY, ''),
+  googleModel:
+    (sanitizeEnvVar(process.env.GOOGLE_MODEL, 'gemini-1.5-flash') as
+      | 'gemini-3-pro-preview'
+      | 'gemini-2.5-pro'
+      | 'gemini-2.5-flash'
+      | 'gemini-2.0-flash'
+      | 'gemini-2.0-flash-exp'
+      | 'gemini-2.0-flash-lite'
+      | 'gemini-1.5-pro'
+      | 'gemini-1.5-flash'
+      | 'gemini-1.5-flash-8b'
+      | 'gemma-3-27b-it') || 'gemini-1.5-flash',
+  googleApiKey: sanitizeEnvVar(process.env.GOOGLE_API_KEY, ''),
 };
 
 const aiService = new AIService(aiConfig);
