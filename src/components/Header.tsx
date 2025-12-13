@@ -22,6 +22,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import ApiIcon from '@mui/icons-material/Api';
 import { useLocation, Link as RouterLink, useNavigate } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 // import { useTheme } from '../contexts/ThemeContext';
@@ -157,6 +158,10 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
     const paths = location.pathname.split('/').filter(Boolean);
     const templateId = paths[0] || 'R186491';
     window.location.href = `/${templateId}/graph`;
+  };
+
+  const redirectToSwagger = () => {
+    window.open('https://empirecompassbackend.vercel.app/api-docs/', '_blank');
   };
 
   return (
@@ -383,6 +388,21 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               }}
             >
               <BookIcon sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="API Docs">
+            <IconButton
+              onClick={redirectToSwagger}
+              size="small"
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary',
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <ApiIcon sx={{ fontSize: '1.1rem' }} />
             </IconButton>
           </Tooltip>
           <Tooltip title="Graph">
