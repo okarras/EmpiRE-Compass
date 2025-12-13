@@ -179,16 +179,43 @@ const DynamicQuestionManager: React.FC = () => {
 
         // Merge with existing questions, avoiding duplicates
         const existingIds = new Set(savedQuestions.map((q) => q.id));
+        const duplicateQuestions = importedQuestions.filter((q) =>
+          existingIds.has(q.id)
+        );
         const newQuestions = importedQuestions.filter(
           (q) => !existingIds.has(q.id)
         );
 
-        const updatedQuestions = [...savedQuestions, ...newQuestions];
-        setSavedQuestions(updatedQuestions);
-        saveQuestionsToStorage(updatedQuestions);
+        if (duplicateQuestions.length > 0 && newQuestions.length > 0) {
+          // Both duplicates and new questions
+          const duplicateNames = duplicateQuestions
+            .map((q) => q.name || q.id)
+            .join(', ');
+          setSuccess(
+            `Imported ${newQuestions.length} new question(s) successfully! ${duplicateQuestions.length} question(s) were skipped as they already exist: ${duplicateNames}`
+          );
+        } else if (duplicateQuestions.length > 0 && newQuestions.length === 0) {
+          // All are duplicates
+          setError(
+            `No new questions imported. All ${duplicateQuestions.length} question(s) already exist`
+          );
+        } else {
+          // Only new questions
+          setSuccess(
+            `Imported ${newQuestions.length} question(s) successfully!`
+          );
+        }
 
-        setSuccess(`Imported ${newQuestions.length} questions successfully!`);
-        setTimeout(() => setSuccess(null), 3000);
+        if (newQuestions.length > 0) {
+          const updatedQuestions = [...savedQuestions, ...newQuestions];
+          setSavedQuestions(updatedQuestions);
+          saveQuestionsToStorage(updatedQuestions);
+        }
+
+        setTimeout(() => {
+          setSuccess(null);
+          setError(null);
+        }, 5000);
       } catch {
         setError('Failed to import questions. Please check the file format.');
       }
@@ -255,7 +282,7 @@ const DynamicQuestionManager: React.FC = () => {
               '&:hover': { backgroundColor: '#d45151' },
             }}
           >
-            Save Current
+            Save Question
           </Button>
 
           <Button
@@ -264,7 +291,7 @@ const DynamicQuestionManager: React.FC = () => {
             onClick={() => setShowLoadDialog(true)}
             disabled={savedQuestions.length === 0}
           >
-            Load Saved
+            Load Question
           </Button>
 
           <Button
@@ -273,12 +300,12 @@ const DynamicQuestionManager: React.FC = () => {
             onClick={handleExportAll}
             disabled={savedQuestions.length === 0}
           >
-            Export All
+            Export Saved Questions
           </Button>
 
           <Tooltip title="Import questions from JSON file">
             <Button variant="outlined" component="label" startIcon={<Upload />}>
-              Import
+              Import Questions
               <input
                 type="file"
                 accept=".json"
