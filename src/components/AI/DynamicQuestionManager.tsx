@@ -197,7 +197,7 @@ const DynamicQuestionManager: React.FC = () => {
         } else if (duplicateQuestions.length > 0 && newQuestions.length === 0) {
           // All are duplicates
           setError(
-            `No new questions imported. All ${duplicateQuestions.length} question(s) already exist`
+            `No new questions imported. All ${duplicateQuestions.length} question(s) already exist (Click on Load Question to see them)`
           );
         } else {
           // Only new questions
