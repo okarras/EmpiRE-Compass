@@ -25,6 +25,7 @@
     <li><a href="#folder-structure-and-files">Folder Structure and Files</a></li>
     <li><a href="#installation-instructions">Installation Instructions</a></li>
     <li><a href="#design-system--storybook">Design System & Storybook</a></li>
+    <li><a href="#api-documentation-swagger">API Documentation (Swagger)</a></li>
     <li><a href="#firebase-setup">Firebase Setup</a></li>
     <li><a href="#statistics-automation">Statistics Automation</a></li>
     <li><a href="#repository-links">Repository Links</a></li>
@@ -199,6 +200,48 @@ npm run build-storybook
 
 # Preview built Storybook
 npm run preview:storybook
+```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+# API Documentation (Swagger)
+
+EmpiRE-Compass provides a comprehensive REST API documented with Swagger/OpenAPI, enabling programmatic access to AI services and backend functionality.
+
+## 📚 **API Documentation**
+
+**Live Documentation**: [https://empirecompassbackend.vercel.app/api-docs/](https://empirecompassbackend.vercel.app/api-docs/)
+
+## **Available Endpoints**
+
+- **🤖 AI Services**: `/api/ai/*` - AI-powered question answering and chat
+- **❤️ Health Check**: `/api/health` - Service health and status monitoring
+- **📊 Templates**: `/api/templates/*` - Research domain templates
+- **👥 Users**: `/api/users/*` - User management
+- **📝 Request Logs**: `/api/request-logs/*` - API usage tracking
+- **🏠 Home Content**: `/api/home-content/*` - Dynamic content management
+
+## **Technology Stack**
+
+- **Express.js** backend with TypeScript
+- **Swagger UI** for interactive API documentation
+- **OpenAPI 3.1** specification
+- **AI SDK** integration (OpenAI, Groq, Mistral, Google)
+
+## **Local Development**
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Start backend server
+npm run dev
+
+# Access local API docs
+# http://localhost:5001/api-docs
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -445,7 +488,8 @@ python scripts/empire-statistics.py --no_firebase
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
 EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
-Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs)
+Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs)  
+API Documentation (Swagger): [https://empirecompassbackend.vercel.app/api-docs/](https://empirecompassbackend.vercel.app/api-docs/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
