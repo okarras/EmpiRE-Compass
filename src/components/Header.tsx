@@ -110,8 +110,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = 'Team';
         } else if (path === 'dynamic-question') {
           label = 'Dynamic Question';
-        } else if (path === 'graph') {
-          label = 'Graph Schema';
+        } else if (path === 'schema') {
+          label = 'Schema';
         } else if (path === 'questions') {
           // Show 'All Questions' for the questions segment
           label = 'All Questions';
@@ -154,10 +154,10 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   };
 
   const redirectToArchitecture = () => {
-    // Navigate to the in-app JSON graph view
+    // Navigate to the in-app JSON schema view
     const paths = location.pathname.split('/').filter(Boolean);
     const templateId = paths[0] || 'R186491';
-    window.location.href = `/${templateId}/graph`;
+    window.location.href = `/${templateId}/schema`;
   };
 
   const redirectToSwagger = () => {
@@ -405,7 +405,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               <ApiIcon sx={{ fontSize: '1.1rem' }} />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Graph">
+          <Tooltip title="Schema">
             <IconButton
               onClick={redirectToArchitecture}
               size="small"
