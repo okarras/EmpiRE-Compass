@@ -52,7 +52,7 @@ const Router = () => {
               errorElement={<ErrorFallback />}
             />
             <Route
-              path="graph"
+              path="schema"
               element={<TemplateGraphPage />}
               errorElement={<ErrorFallback />}
             />
