@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
-import { ResponsiveHeatMap } from '@nivo/heatmap';
+import { ResponsiveHeatMap, HeatMapDatum } from '@nivo/heatmap';
 import { createLabelFormatter } from '../../utils/chartUtils';
 
 interface HeatDatum {
@@ -29,6 +29,77 @@ interface CustomHeatMapInterface {
   cellHeight?: number;
   showValues?: boolean;
 }
+
+// Custom tooltip component with multiline support
+interface TooltipProps {
+  cell: {
+    serieId: string | number;
+    data: HeatMapDatum;
+    formattedValue: string | number | null;
+    color: string;
+  };
+}
+
+const HeatMapTooltip = ({ cell }: TooltipProps) => {
+  return (
+    <Box
+      sx={{
+        background: 'white',
+        padding: '12px 16px',
+        borderRadius: '8px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        maxWidth: '300px',
+        border: '1px solid #e0e0e0',
+      }}
+    >
+      <Typography
+        variant="body2"
+        sx={{
+          fontWeight: 600,
+          marginBottom: '8px',
+          color: '#333',
+          wordWrap: 'break-word',
+          whiteSpace: 'pre-wrap',
+          lineHeight: 1.4,
+        }}
+      >
+        {String(cell.serieId)}
+      </Typography>
+      <Typography
+        variant="body2"
+        sx={{
+          marginBottom: '8px',
+          color: '#555',
+          wordWrap: 'break-word',
+          whiteSpace: 'pre-wrap',
+          lineHeight: 1.4,
+        }}
+      >
+        {String(cell.data.x)}
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box
+          sx={{
+            width: 14,
+            height: 14,
+            backgroundColor: cell.color,
+            borderRadius: '3px',
+            flexShrink: 0,
+          }}
+        />
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 500,
+            color: '#333',
+          }}
+        >
+          Value: {cell.formattedValue}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
 
 export default function CustomHeatMap({
   dataset = [],
@@ -143,7 +214,7 @@ export default function CustomHeatMap({
         p: 2,
         background: 'white',
         borderRadius: 1,
-        overflow: 'auto',
+        overflow: 'visible',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -200,6 +271,7 @@ export default function CustomHeatMap({
             from: 'color',
             modifiers: [['darker', 2.5]],
           }}
+          tooltip={HeatMapTooltip}
           axisTop={{
             tickSize: 5,
             tickPadding: 8,
@@ -208,7 +280,7 @@ export default function CustomHeatMap({
             legendOffset: -80,
             legendPosition: 'middle',
             tickValues: undefined, // Let nivo auto-calculate
-            format: (value) => labelFormatter(value),
+            format: (value: string) => labelFormatter(value),
           }}
           axisLeft={{
             tickSize: 5,
@@ -217,7 +289,7 @@ export default function CustomHeatMap({
             legend: chartSetting?.yAxis?.[0]?.label ?? '',
             legendPosition: 'middle',
             legendOffset: -Math.max(120, leftMargin - 50),
-            format: (value) => labelFormatter(value),
+            format: (value: string) => labelFormatter(value),
           }}
           axisRight={null}
           axisBottom={null}
