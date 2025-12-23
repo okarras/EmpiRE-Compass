@@ -10,6 +10,7 @@ import {
   getDoc,
   getDocs,
   setDoc,
+  deleteDoc,
   query,
   orderBy,
   limit,
@@ -19,6 +20,7 @@ export interface DynamicQuestion {
   id: string;
   name: string;
   timestamp: number;
+  templateId?: string; // Stored at root level for Firestore indexing
   state: {
     question: string;
     sparqlQuery: string;
@@ -127,7 +129,13 @@ export const saveDynamicQuestion = async (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id: _id, ...questionData } = question;
 
-    await setDoc(questionRef, questionData, { merge: true });
+    // Ensure templateId is at root level for Firestore indexing
+    const dataToSave = {
+      ...questionData,
+      templateId: question.state?.templateId || question.templateId,
+    };
+
+    await setDoc(questionRef, dataToSave, { merge: true });
   } catch (error) {
     console.error('Error saving dynamic question:', error);
     throw error;
@@ -163,10 +171,76 @@ export const importDynamicQuestions = async (
   return { success, failed };
 };
 
+/**
+ * Get dynamic questions filtered by template ID
+ * @param templateId - Template ID to filter by
+ * @param limitCount - Maximum number of questions to return (default: 50)
+ */
+export const getDynamicQuestionsByTemplate = async (
+  templateId: string,
+  limitCount = 50
+): Promise<DynamicQuestion[]> => {
+  if (!db) {
+    console.warn(
+      'Firebase is not initialized. Cannot fetch dynamic questions.'
+    );
+    return [];
+  }
+
+  try {
+    const questionsRef = collection(db, 'DynamicQuestions');
+    const q = query(
+      questionsRef,
+      orderBy('timestamp', 'desc'),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+
+    const questions: DynamicQuestion[] = [];
+    querySnapshot.forEach((docSnapshot) => {
+      if (docSnapshot.data().templateId === templateId) {
+        questions.push({
+          id: docSnapshot.id,
+          ...docSnapshot.data(),
+        } as DynamicQuestion);
+      }
+    });
+
+    return questions;
+  } catch (error) {
+    console.error('Error fetching dynamic questions by template:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a dynamic question by ID
+ * @param questionId - The ID of the question to delete
+ */
+export const deleteDynamicQuestion = async (
+  questionId: string
+): Promise<void> => {
+  if (!db) {
+    throw new Error(
+      'Firebase is not initialized. Please configure Firebase environment variables.'
+    );
+  }
+
+  try {
+    const questionRef = doc(db, 'DynamicQuestions', questionId);
+    await deleteDoc(questionRef);
+  } catch (error) {
+    console.error('Error deleting dynamic question:', error);
+    throw error;
+  }
+};
+
 const CRUDDynamicQuestions = {
   getDynamicQuestions,
   getDynamicQuestion,
+  getDynamicQuestionsByTemplate,
   saveDynamicQuestion,
+  deleteDynamicQuestion,
   importDynamicQuestions,
 };
 
