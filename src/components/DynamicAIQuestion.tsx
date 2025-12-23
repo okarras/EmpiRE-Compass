@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Box, Button, Snackbar, Alert } from '@mui/material';
-import { Save } from '@mui/icons-material';
+import { Save, Undo } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
@@ -504,6 +504,19 @@ const DynamicAIQuestion = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [examplesRefreshTrigger, setExamplesRefreshTrigger] = useState(0);
+  const [showUndoSnackbar, setShowUndoSnackbar] = useState(false);
+  const [previousState, setPreviousState] = useState<{
+    question: string;
+    sparqlQuery: string;
+    sparqlTranslation: string;
+    queryResults: Record<string, unknown>[];
+    chartHtml: string;
+    questionInterpretation: string;
+    dataCollectionInterpretation: string;
+    dataAnalysisInterpretation: string;
+    processingFunctionCode: string;
+    costs: any[];
+  } | null>(null);
 
   // Check if user is admin
   const { user } = useAuthData();
@@ -671,6 +684,65 @@ const DynamicAIQuestion = () => {
     }
   };
 
+  const handleClearAll = () => {
+    // Save current state for undo
+    setPreviousState({
+      question: state.question || '',
+      sparqlQuery: state.sparqlQuery || '',
+      sparqlTranslation: state.sparqlTranslation || '',
+      queryResults: state.queryResults || [],
+      chartHtml: state.chartHtml || '',
+      questionInterpretation: state.questionInterpretation || '',
+      dataCollectionInterpretation: state.dataCollectionInterpretation || '',
+      dataAnalysisInterpretation: state.dataAnalysisInterpretation || '',
+      processingFunctionCode: state.processingFunctionCode || '',
+      costs: state.costs || [],
+    });
+
+    // Reset iteration history
+    resetIterationHistory();
+
+    // Clear all state fields
+    updateQuestion('');
+    updateSparqlQuery('');
+    updateSparqlTranslation('');
+    updateQueryResults([]);
+    updateChartHtml('');
+    updateQuestionInterpretation('');
+    updateDataCollectionInterpretation('');
+    updateDataAnalysisInterpretation('');
+    updateProcessingFunctionCode('', 'Cleared all fields');
+    updateCosts([]);
+    setDynamicQuery(null);
+    setError(null);
+    setShowUndoSnackbar(true);
+  };
+
+  const handleUndo = () => {
+    if (!previousState) return;
+
+    // Restore previous state
+    updateQuestion(previousState.question);
+    updateSparqlQuery(previousState.sparqlQuery);
+    updateSparqlTranslation(previousState.sparqlTranslation);
+    updateQueryResults(previousState.queryResults);
+    updateChartHtml(previousState.chartHtml);
+    updateQuestionInterpretation(previousState.questionInterpretation);
+    updateDataCollectionInterpretation(
+      previousState.dataCollectionInterpretation
+    );
+    updateDataAnalysisInterpretation(previousState.dataAnalysisInterpretation);
+    updateProcessingFunctionCode(
+      previousState.processingFunctionCode,
+      'Restored from undo'
+    );
+    updateCosts(previousState.costs);
+
+    // Clear undo state
+    setPreviousState(null);
+    setShowUndoSnackbar(false);
+  };
+
   const handleSaveExample = async (name: string) => {
     // Validate that we have at least a question
     if (!state.question || !state.question.trim()) {
@@ -730,6 +802,12 @@ const DynamicAIQuestion = () => {
           <DynamicQuestionExamples
             onSelectExample={handleLoadExample}
             refreshTrigger={examplesRefreshTrigger}
+            templateId={templateId}
+            isAdmin={isAdmin}
+            onEditExample={(example) => {
+              handleLoadExample(example);
+              setSaveDialogOpen(true);
+            }}
           />
         </Box>
         {isAdmin && (
@@ -775,6 +853,7 @@ const DynamicAIQuestion = () => {
         onRunEditedQuery={handleRunEditedQuery}
         onOpenHistory={handleOpenHistory}
         onOpenLlmContextHistory={handleOpenLlmContextHistory}
+        onClearAll={handleClearAll}
         currentTemplateId={state.templateId}
         onTemplateIdChange={handleTemplateChange}
         iterationFeedback={currentIteration > 0 ? iterationFeedback : undefined}
@@ -860,6 +939,35 @@ const DynamicAIQuestion = () => {
           </Alert>
         </Snackbar>
       )}
+
+      {/* Undo Clear Snackbar */}
+      <Snackbar
+        open={showUndoSnackbar}
+        autoHideDuration={8000}
+        onClose={() => {
+          setShowUndoSnackbar(false);
+          setPreviousState(null);
+        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          severity="info"
+          sx={{ width: '100%', alignItems: 'center' }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              startIcon={<Undo />}
+              onClick={handleUndo}
+              sx={{ fontWeight: 600 }}
+            >
+              Undo
+            </Button>
+          }
+        >
+          All fields cleared
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

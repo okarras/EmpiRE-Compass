@@ -22,6 +22,7 @@ import {
   Warning,
   Visibility,
   VisibilityOff,
+  Clear,
 } from '@mui/icons-material';
 import AIConfigurationButton from './AIConfigurationButton';
 import DynamicQuestionManager from './DynamicQuestionManager';
@@ -44,6 +45,7 @@ interface QueryExecutionSectionProps {
   onRunEditedQuery: (query?: string) => void;
   onOpenHistory: (type: HistoryItem['type']) => void;
   onOpenLlmContextHistory: () => void;
+  onClearAll?: () => void;
   currentTemplateId?: string | null;
   onTemplateIdChange?: (templateId: string) => void | Promise<void>;
   iterationFeedback?: string;
@@ -67,6 +69,7 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onRunEditedQuery,
   onOpenHistory,
   onOpenLlmContextHistory,
+  onClearAll,
   currentTemplateId,
   onTemplateIdChange,
   iterationFeedback,
@@ -137,7 +140,7 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
                 borderColor: '#e86161',
                 color: '#e86161',
                 '&:hover': {
-                  borderColor: '#d45151',
+                  borderColor: '#e86161',
                   backgroundColor: 'rgba(232, 97, 97, 0.04)',
                 },
               }}
@@ -145,6 +148,28 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
               LLM Context History
             </Button>
           </Tooltip>
+          {onClearAll && (
+            <Tooltip title="Clear all fields">
+              <Button
+                variant="outlined"
+                startIcon={<Clear />}
+                onClick={onClearAll}
+                size="small"
+                sx={{
+                  ml: 1,
+                  borderColor: '#e86161',
+                  color: '#e86161',
+                  '&:hover': {
+                    borderColor: '#e86161',
+                    color: '#e86161',
+                    backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                  },
+                }}
+              >
+                Clear All
+              </Button>
+            </Tooltip>
+          )}
         </Box>
       </Box>
 
