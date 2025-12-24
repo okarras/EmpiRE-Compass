@@ -221,7 +221,7 @@ export default function CustomBoxPlot({
     return series.map((s, idx) => {
       const stats = summarize(s.values);
       const color = colorPalette[idx % colorPalette.length];
-      const tooltipLabel = `Min: ${stats.min.toFixed(2)}\nQ1: ${stats.q1.toFixed(2)}\nMedian: ${stats.med.toFixed(2)}\nQ3: ${stats.q3.toFixed(2)}\nMax: ${stats.max.toFixed(2)}`;
+      const tooltipLabel = `Max: ${stats.max.toFixed(2)}\nQ3: ${stats.q3.toFixed(2)}\nMedian: ${stats.med.toFixed(2)}\nQ1: ${stats.q1.toFixed(2)}\nMin: ${stats.min.toFixed(2)}`;
 
       return {
         x: s.label,
