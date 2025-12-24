@@ -7,6 +7,7 @@ import {
   VictoryContainer,
   VictoryLabel,
   VictoryScatter,
+  VictoryTooltip,
 } from 'victory';
 import { createLabelFormatter } from '../../utils/chartUtils';
 
@@ -99,6 +100,14 @@ type BoxDatum = {
 };
 
 type OutlierDatum = { x: string; y: number; color: string };
+
+const CUSTOM_X_LABELS = [
+  'Approach',
+  'Evaluation',
+  'NLP Task',
+  'NLP Dataset',
+  'Annotation',
+];
 
 export default function CustomBoxPlot({
   dataset = [],
@@ -212,9 +221,11 @@ export default function CustomBoxPlot({
     return series.map((s, idx) => {
       const stats = summarize(s.values);
       const color = colorPalette[idx % colorPalette.length];
+      const tooltipLabel = `Min: ${stats.min.toFixed(2)}\nQ1: ${stats.q1.toFixed(2)}\nMedian: ${stats.med.toFixed(2)}\nQ3: ${stats.q3.toFixed(2)}\nMax: ${stats.max.toFixed(2)}`;
+
       return {
         x: s.label,
-        label: s.label,
+        label: tooltipLabel,
         min: stats.min,
         q1: stats.q1,
         median: stats.med,
@@ -236,6 +247,16 @@ export default function CustomBoxPlot({
       }))
     );
   }, [boxData, effectiveShowOutliers]);
+
+  // Create a separate dataset for tooltips using the median point
+  const tooltipData = useMemo(() => {
+    return boxData.map((d) => ({
+      x: d.x,
+      y: d.median, // Position tooltip at the median
+      label: d.label,
+      color: d.color,
+    }));
+  }, [boxData]);
 
   if (loading)
     return <Box sx={{ p: 2, textAlign: 'center' }}>Loading boxplot...</Box>;
@@ -297,7 +318,16 @@ export default function CustomBoxPlot({
               ticks: { size: 0 },
             }}
             tickValues={series.map((s) => s.label)}
-            tickFormat={(tick: string) => labelFormatter(tick)}
+            tickFormat={(tick: any, index: number) => {
+              // Use custom labels if available for the index, otherwise fallback to formatter
+              if (
+                series.length === CUSTOM_X_LABELS.length &&
+                index < CUSTOM_X_LABELS.length
+              ) {
+                return CUSTOM_X_LABELS[index];
+              }
+              return labelFormatter(tick);
+            }}
             label={xAxisLabel}
             axisLabelComponent={<VictoryLabel dy={55} />}
           />
@@ -353,6 +383,36 @@ export default function CustomBoxPlot({
               }}
             />
           )}
+
+          {/* Transparent Scatter for Tooltips */}
+          <VictoryScatter
+            data={tooltipData}
+            size={effectiveBoxWidth / 2} // Make touch target large enough (half box width)
+            style={{
+              data: {
+                fill: 'transparent',
+                strokeWidth: 0,
+                cursor: 'pointer',
+              },
+            }}
+            labels={({ datum }) => datum.label}
+            labelComponent={
+              <VictoryTooltip
+                orientation="top"
+                pointerLength={0}
+                flyoutStyle={{
+                  stroke: '#e86161',
+                  fill: 'white',
+                  filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.1))',
+                }}
+                style={{
+                  fontSize: 10,
+                  fill: '#333',
+                  textAnchor: 'middle',
+                }}
+              />
+            }
+          />
         </VictoryChart>
       </Box>
     </Box>
