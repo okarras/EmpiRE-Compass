@@ -772,8 +772,8 @@ const DynamicAIQuestion = () => {
           dataAnalysisInterpretation: state.dataAnalysisInterpretation || '',
           processingFunctionCode: state.processingFunctionCode || '',
           templateId: state.templateId || undefined,
-          templateMapping: state.templateMapping || undefined,
-          targetClassId: state.targetClassId || undefined,
+          // templateMapping: state.templateMapping || undefined,
+          // targetClassId: state.targetClassId || undefined,
         },
       };
 
