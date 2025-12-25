@@ -18,14 +18,14 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import PeopleIcon from '@mui/icons-material/People';
-import { templateConfig } from '../constants/template_config';
+import TemplateManagement, {
+  QuestionData,
+} from '../firestore/TemplateManagement';
 import BackupIcon from '@mui/icons-material/Backup';
 import StorageIcon from '@mui/icons-material/Storage';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAuthData } from '../auth/useAuthData';
-
-const templates = templateConfig;
 
 const drawerWidth = 280;
 
@@ -39,22 +39,37 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const location = useLocation();
   const { user } = useAuthData();
 
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<keyof typeof templates>('R186491');
+  const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+  const [questions, setQuestions] = useState<QuestionData[]>([]);
+  const [templateTitle, setTemplateTitle] = useState<string>('');
 
   useEffect(() => {
-    if (selectedTemplate === 'R186491' || selectedTemplate === 'R1544125') {
-      setSelectedTemplate(selectedTemplate);
-    }
+    //TODO: we should fetch data once and use that everywhere else
+    const fetchTemplateData = async () => {
+      try {
+        const templateData =
+          await TemplateManagement.getTemplate(selectedTemplate);
+        if (templateData) {
+          setTemplateTitle(templateData.title);
+        }
+
+        const questionsData =
+          await TemplateManagement.getAllQuestions(selectedTemplate);
+        setQuestions(questionsData);
+      } catch (error) {
+        console.error('Error fetching template data:', error);
+      }
+    };
+
+    fetchTemplateData();
   }, [selectedTemplate]);
-  const currentQueries = templates[selectedTemplate]?.queries ?? [];
 
   // Read template from URL on mount
   useEffect(() => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const templateFromUrl = pathSegments[0];
-    if (templateFromUrl && templateFromUrl in templates) {
-      setSelectedTemplate(templateFromUrl as keyof typeof templates);
+    if (templateFromUrl) {
+      setSelectedTemplate(templateFromUrl);
     }
   }, [location.pathname]);
 
@@ -254,7 +269,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                   fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
                 }}
               >
-                {templates[selectedTemplate]?.title} Questions
+                {templateTitle || 'Loading...'} Questions
               </Typography>
             }
           />
@@ -481,20 +496,20 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           Research Questions
         </Typography>
 
-        {currentQueries.map((query) => (
+        {questions.map((question) => (
           <Tooltip
-            title={query.dataAnalysisInformation.question}
+            title={question.dataAnalysisInformation.question}
             placement="right"
             arrow
-            key={query.id}
+            key={question.id}
           >
             <ListItem
-              onClick={() => handleListItemClick(query.id)}
+              onClick={() => handleListItemClick(question.id)}
               sx={{
                 mb: 0.5,
                 borderRadius: 2,
                 backgroundColor: isCurrentPath(
-                  `/${selectedTemplate}/questions/${query.id}`
+                  `/${selectedTemplate}/questions/${question.id}`
                 )
                   ? 'rgba(232, 97, 97, 0.08)'
                   : 'transparent',
@@ -512,7 +527,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     sx={{
                       color: 'text.primary',
                       fontWeight: isCurrentPath(
-                        `/${selectedTemplate}/questions/${query.id}`
+                        `/${selectedTemplate}/questions/${question.id}`
                       )
                         ? 600
                         : 400,
@@ -524,7 +539,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                       WebkitBoxOrient: 'vertical',
                     }}
                   >
-                    {`${query.id}. ${query.dataAnalysisInformation.question}`}
+                    {`${question.id}. ${question.dataAnalysisInformation.question}`}
                   </Typography>
                 }
               />
