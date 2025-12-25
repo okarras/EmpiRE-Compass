@@ -356,7 +356,7 @@ export const queries: Query[] = [
     dataProcessingFunction: Query9DataProcessingFunction,
     dataAnalysisInformation: {
       question:
-        'Which ID-card informational elements do not provide enough options to respondents?',
+        'Which NLP4RE ID Card sections do not provide enough options to respondents?',
       requiredDataForAnalysis:
         'As an ID card manager, I want to identify emerging research topics so that I can update the ID card options offered to respondents according to the state of the art. (Asked by: Xavier Franch, Affects: all ID card questions)',
     },
