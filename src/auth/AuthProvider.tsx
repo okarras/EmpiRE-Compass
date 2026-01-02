@@ -1,6 +1,6 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { createKeycloak } from './keycloak';
-import { getKeycloakConfig } from './keycloakConfig';
+// import { getKeycloakConfig } from './keycloakConfig';
 import KeycloakTokenRefresher from './KeycloakTokenRefresher';
 import { AuthContextProvider } from './AuthContext';
 import { AuthContext, type AuthContextType } from './AuthContextTypes';
@@ -60,8 +60,8 @@ export default function AuthProvider({
         onLoad: 'check-sso',
         pkceMethod: 'S256',
         checkLoginIframe: false,
-        // @ts-ignore - redirectUri is conditionally added in config
-        redirectUri: getKeycloakConfig().redirectUri,
+        // // @ts-ignore - redirectUri is conditionally added in config
+        // redirectUri: getKeycloakConfig().redirectUri,
       }}
       autoRefreshToken={true}
     >
