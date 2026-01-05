@@ -171,7 +171,7 @@ EmpiRE-Compass includes a comprehensive design system documented in Storybook, p
 
 ## 📚 **Storybook (Component Library)**
 
-**Live Documentation**: [https://empire-compass-storybooks.vercel.app](https://empire-compass-storybooks.vercel.app)
+**Live Documentation**: [https://empire-compass-storybook.tib.eu](https://empire-compass-storybook.tib.eu)
 
 ## **Component Categories**
 
@@ -210,7 +210,7 @@ EmpiRE-Compass provides a comprehensive REST API documented with Swagger/OpenAPI
 
 ## 📚 **API Documentation**
 
-**Live Documentation**: [https://empirecompassbackend.vercel.app/api-docs/](https://empirecompassbackend.vercel.app/api-docs/)
+**Live Documentation**: [https://empire-compass-backend.tib.eu/api-docs/](https://empire-compass-backend.tib.eu/api-docs/)
 
 ## **Available Endpoints**
 
@@ -488,8 +488,8 @@ python scripts/empire-statistics.py --no_firebase
 
 EmpiRE-Compass: [https://github.com/okarras/EmpiRE-Compass](https://github.com/okarras/EmpiRE-Compass)  
 EmpiRE-Analysis: [https://github.com/okarras/EmpiRE-Analysis](https://github.com/okarras/EmpiRE-Analysis)  
-Storybook (Design System): [https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs)  
-API Documentation (Swagger): [https://empirecompassbackend.vercel.app/api-docs/](https://empirecompassbackend.vercel.app/api-docs/)
+Storybook (Design System): [https://empire-compass-storybook.tib.eu/?path=/docs/layout-menudrawer--docs](https://empire-compass-storybook.tib.eu/?path=/docs/layout-menudrawer--docs)  
+API Documentation (Swagger): [https://empire-compass-backend.tib.eu/api-docs/](https://empire-compass-backend.tib.eu/api-docs/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
