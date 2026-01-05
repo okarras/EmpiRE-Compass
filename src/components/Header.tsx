@@ -148,7 +148,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
     // Example: https://64a1b2c3d4e5f6789012345.chromatic.com
     // To deploy: npm run deploy:chromatic (requires CHROMATIC_PROJECT_TOKEN)
     window.open(
-      'https://empire-compass-storybooks.vercel.app/?path=/docs/layout-menudrawer--docs',
+      'http://empire-compass-storybook.tib.eu/?path=/docs/layout-menudrawer--docs',
       '_blank'
     );
   };
@@ -161,7 +161,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   };
 
   const redirectToSwagger = () => {
-    window.open('https://empirecompassbackend.vercel.app/api-docs/', '_blank');
+    window.open('http://empire-compass-backend.tib.eu/api-docs/', '_blank');
   };
 
   return (
