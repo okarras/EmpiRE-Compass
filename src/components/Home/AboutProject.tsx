@@ -1,4 +1,4 @@
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Divider, Paper, Typography } from '@mui/material';
 import { AboutProjectContent } from '../../firestore/CRUDHomeContent';
 
 interface AboutProjectProps {
@@ -6,6 +6,9 @@ interface AboutProjectProps {
 }
 
 const AboutProject = ({ content }: AboutProjectProps) => {
+  const videoId = '1kzthlwk6YGg-YiSSOh0wgWTn6wcFrmKF';
+  const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
+
   return (
     <Paper
       elevation={2}
@@ -64,6 +67,45 @@ const AboutProject = ({ content }: AboutProjectProps) => {
             </Typography>
           ))}
         </Typography>
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      <Typography
+        variant="h5"
+        sx={{
+          color: '#e86161',
+          fontWeight: 600,
+          mb: 2,
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+        }}
+      >
+        Dashboard Demonstration
+      </Typography>
+
+      <Box
+        sx={{
+          position: 'relative',
+          width: '100%',
+          paddingTop: '56.25%', // 16:9 aspect ratio
+          borderRadius: 2,
+          overflow: 'hidden',
+        }}
+      >
+        <iframe
+          src={embedUrl}
+          title="EmpiRE-Compass Tool Demonstration"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            border: 'none',
+          }}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
       </Box>
     </Paper>
   );
