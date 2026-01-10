@@ -17,6 +17,7 @@ import requestLogsRouter from './routes/requestLogs.js';
 import aiRouter, { initializeAIService } from './routes/ai.js';
 import healthRouter, { setAIServiceForHealth } from './routes/health.js';
 import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
+import statisticsRouter from './routes/statistics.js';
 
 dotenv.config();
 
@@ -165,6 +166,7 @@ app.use('/api/request-logs', requestLogsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/dynamic-questions', dynamicQuestionsRouter);
+app.use('/api/statistics', statisticsRouter);
 
 const swaggerUiOptions = {
   customCssUrl:
