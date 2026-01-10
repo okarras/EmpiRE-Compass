@@ -17,6 +17,14 @@ authors:
     family-names: Alasti
     email: amirrezaalasti@gmail.com
     affiliation: Leibniz University Hannover
+    orcid: 'https://orcid.org/0009-0002-1165-773X'
+  - given-names: Lena
+    family-names: John
+    email: lena.john@tib.eu
+    affiliation: >-
+      TIB - Leibniz Information Centre for Science and
+      Technology
+    orcid: 'https://orcid.org/0009-0007-2097-9761'
   - given-names: Sushant
     family-names: Aggarwal
     email: aggarwalsushant27@gmail.com
@@ -25,15 +33,12 @@ authors:
     family-names: Celik
     email: yucel.celik@stud.uni-hannover.de
     affiliation: Leibniz University Hannover
-  - given-names: Lena
-    family-names: John
-    email: lena.john@tib.eu
-    affiliation: >-
-      TIB - Leibniz Information Centre for Science and
-      Technology
-    orcid: 'https://orcid.org/0009-0007-2097-9761'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.18170203
+    description: The DOI of the corresponding release on Zenodo.
 repository-code: 'https://github.com/okarras/EmpiRE-Compass'
-url: 'https://empire-compass.vercel.app/R186491/team'
+url: 'https://empire-compass.tib.eu/R186491/'
 abstract: >-
   EmpiRE-Compass is a neuro-symbolic dashboard that
   facilitates the exploration, synthesis, and reuse of
@@ -60,4 +65,4 @@ keywords:
 license: MIT
 commit: 44af8533a0fbd18191d03f8c59fab5cc09b67ac6
 version: 1.4.0
-date-released: '2025-10-05'
+date-released: '2026-01-07'
