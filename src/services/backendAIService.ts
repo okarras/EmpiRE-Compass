@@ -515,7 +515,7 @@ export const useAIService = () => {
 // for components that dont use hooks
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
-    provider: 'mistral',
+    provider: 'openai',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
@@ -526,7 +526,7 @@ export const createDefaultBackendAIService = () => {
 
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
-    provider: 'mistral',
+    provider: 'openai',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
