@@ -416,7 +416,7 @@ router.post(
         const actualModel = model || config.model;
 
         // Import cost calculator
-        const { calculateCost } = await import('../utils/costCalculator');
+        const { calculateCost } = await import('../utils/costCalculator.js');
         costInfo = calculateCost(
           actualProvider,
           actualModel,
