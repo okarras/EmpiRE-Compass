@@ -6,8 +6,7 @@ interface AboutProjectProps {
 }
 
 const AboutProject = ({ content }: AboutProjectProps) => {
-  const videoId = '1kzthlwk6YGg-YiSSOh0wgWTn6wcFrmKF';
-  const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
+  const embedUrl = `https://av.tib.eu/media/72249`;
 
   return (
     <Paper
@@ -98,6 +97,7 @@ const AboutProject = ({ content }: AboutProjectProps) => {
             width: '100%',
             height: '100%',
             border: 'none',
+            aspectRatio: '16 / 9',
           }}
           allow="autoplay; encrypted-media"
           allowFullScreen
