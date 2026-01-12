@@ -25,18 +25,23 @@ export const createUserRateLimiter = () => {
     next: NextFunction
   ) => {
     try {
-      // Require authentication
-      if (!req.userId) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
+      // For anonymous users, use IP-based rate limiting
+      // For authenticated users, use user-based rate limiting
+      const userId =
+        req.userId ||
+        `anon_${req.ip || req.connection?.remoteAddress || 'unknown'}`;
+      const isAnonymous = !req.userId;
 
       // Skip rate limiting for admin users
       if (req.isAdmin) {
         return next();
       }
 
-      // Double-check admin status if not set
-      if (req.isAdmin === undefined || req.isAdmin === false) {
+      // Double-check admin status if not set (only for authenticated users)
+      if (
+        !isAnonymous &&
+        (req.isAdmin === undefined || req.isAdmin === false)
+      ) {
         // Check email-based admin first (faster)
         if (req.userEmail && isAdminEmail(req.userEmail)) {
           req.isAdmin = true;
@@ -45,7 +50,7 @@ export const createUserRateLimiter = () => {
 
         // Check Firebase for admin status
         try {
-          const userDoc = await db.collection('Users').doc(req.userId).get();
+          const userDoc = await db.collection('Users').doc(req.userId!).get();
           const userData = userDoc.data();
           const isAdmin =
             userData?.is_admin === true ||
@@ -61,7 +66,6 @@ export const createUserRateLimiter = () => {
         }
       }
 
-      const userId = req.userId;
       const now = Timestamp.now();
       const resetAt = Timestamp.fromMillis(now.toMillis() + WINDOW_MS);
 

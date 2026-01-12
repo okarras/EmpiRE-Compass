@@ -6,7 +6,7 @@ interface AboutProjectProps {
 }
 
 const AboutProject = ({ content }: AboutProjectProps) => {
-  const embedUrl = `https://av.tib.eu/media/72249`;
+  const embedUrl = `https://av.tib.eu/player/72249`;
 
   return (
     <Paper
