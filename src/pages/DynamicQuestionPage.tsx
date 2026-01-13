@@ -45,7 +45,7 @@ const DynamicQuestionPage: React.FC = () => {
                 },
               }}
             >
-              Dynamic AI Question
+              Dynamic Question
             </Typography>
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
