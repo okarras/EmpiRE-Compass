@@ -39,9 +39,9 @@
 
 EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploration, synthesis, and reuse of knowledge about empirical research practice in Requirements Engineering (RE). It integrates two complementary layers: A symbolic layer based on the [Open Research Knowledge Graph (ORKG)](https://orkg.org) for structured, machine-actionable knowledge, and a neural layer leveraging large language models (LLMs) to answer both predefined and custom competency questions. This dual approach enables researchers to navigate the evolving knowledge landscape of empirical research practice in RE, identify reusable insights across publications, and promote Open Science through transparent, interoperable knowledge representations. EmpiRE-Compass currently focuses on two themes: Empirical research practices in RE using [KG-EmpiRE](https://www.oliver-karras.de/portfolio/kg-empire/), and empirical research practices in Natural Language Processing for RE using the [NLP4RE ID Card](https://zenodo.org/records/14197338).
 
-<div align="center">
 https://github.com/user-attachments/assets/27870a40-aaf6-4a66-8ba7-7d009397859d
 
+<div align="center">
 [![Video DOI - 10.5446/72249](https://img.shields.io/badge/Video_DOI-https%3A%2F%2Fdoi.org%2F10.5446%2F72249-blue)](https://doi.org/10.5446/72249)
 </div>
 
