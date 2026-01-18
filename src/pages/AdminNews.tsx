@@ -61,6 +61,7 @@ const AdminNews = () => {
     title: '',
     content: '',
     published: false,
+    showOnHome: false,
     tags: '',
     priority: 'normal' as 'low' | 'normal' | 'high',
     imageUrl: '',
@@ -91,6 +92,7 @@ const AdminNews = () => {
         title: news.title || '',
         content: news.content || '',
         published: news.published || false,
+        showOnHome: news.showOnHome || false,
         tags: news.tags?.join(', ') || '',
         priority: news.priority || 'normal',
         imageUrl: news.imageUrl || '',
@@ -101,6 +103,7 @@ const AdminNews = () => {
         title: '',
         content: '',
         published: false,
+        showOnHome: false,
         tags: '',
         priority: 'normal',
         imageUrl: '',
@@ -116,6 +119,7 @@ const AdminNews = () => {
       title: '',
       content: '',
       published: false,
+      showOnHome: false,
       tags: '',
       priority: 'normal',
       imageUrl: '',
@@ -150,6 +154,7 @@ const AdminNews = () => {
             title: formData.title.trim(),
             content: formData.content.trim(),
             published: formData.published,
+            showOnHome: formData.showOnHome,
             tags: tagsArray.length > 0 ? tagsArray : undefined,
             priority: formData.priority,
             imageUrl: formData.imageUrl.trim() || undefined,
@@ -166,6 +171,7 @@ const AdminNews = () => {
             title: formData.title.trim(),
             content: formData.content.trim(),
             published: formData.published,
+            showOnHome: formData.showOnHome,
             tags: tagsArray.length > 0 ? tagsArray : undefined,
             priority: formData.priority,
             imageUrl: formData.imageUrl.trim() || undefined,
@@ -355,6 +361,7 @@ const AdminNews = () => {
                 <TableCell>Title</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Priority</TableCell>
+                <TableCell>Show on Home</TableCell>
                 <TableCell>Tags</TableCell>
                 <TableCell>Created</TableCell>
                 <TableCell>Updated</TableCell>
@@ -364,7 +371,7 @@ const AdminNews = () => {
             <TableBody>
               {newsItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} align="center">
+                  <TableCell colSpan={8} align="center">
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -429,6 +436,20 @@ const AdminNews = () => {
                           news.priority === 'low' ? 'outlined' : 'filled'
                         }
                       />
+                    </TableCell>
+                    <TableCell>
+                      {news.showOnHome && news.published ? (
+                        <Chip
+                          label="Yes"
+                          size="small"
+                          color="success"
+                          variant="outlined"
+                        />
+                      ) : (
+                        <Typography variant="caption" color="text.secondary">
+                          No
+                        </Typography>
+                      )}
                     </TableCell>
                     <TableCell>
                       {news.tags && news.tags.length > 0 ? (
@@ -602,12 +623,39 @@ const AdminNews = () => {
                 <Switch
                   checked={formData.published}
                   onChange={(e) =>
-                    setFormData({ ...formData, published: e.target.checked })
+                    setFormData({
+                      ...formData,
+                      published: e.target.checked,
+                      showOnHome: e.target.checked
+                        ? formData.showOnHome
+                        : false,
+                    })
                   }
                 />
               }
               label="Published"
             />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.showOnHome}
+                  onChange={(e) =>
+                    setFormData({ ...formData, showOnHome: e.target.checked })
+                  }
+                  disabled={!formData.published}
+                />
+              }
+              label="Show on Home Page"
+            />
+            {!formData.published && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 4 }}
+              >
+                News must be published to show on home page
+              </Typography>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>

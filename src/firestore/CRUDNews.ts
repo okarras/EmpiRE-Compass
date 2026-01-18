@@ -26,6 +26,7 @@ export interface NewsItem {
   tags?: string[];
   imageUrl?: string;
   priority?: 'low' | 'normal' | 'high';
+  showOnHome?: boolean;
 }
 
 // Helper to convert API NewsItem to local NewsItem format
