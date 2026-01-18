@@ -10,7 +10,6 @@ import { ThemeProvider } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 import theme from '../utils/theme';
 import Header from '../components/Home/Header';
-import HighPriorityNews from '../components/Home/HighPriorityNews';
 import AboutProject from '../components/Home/AboutProject';
 import KeyFeatures from '../components/Home/KeyFeatures';
 import FutureDevelopment from '../components/Home/FutureDevelopment';
@@ -91,7 +90,6 @@ const Home = () => {
             {homeContent && (
               <>
                 <Header content={homeContent.header} />
-                <HighPriorityNews />
                 <Divider sx={{ my: { xs: 3, sm: 4, md: 5 } }} />
                 <Stack spacing={4}>
                   <AboutProject content={homeContent.aboutProject} />
