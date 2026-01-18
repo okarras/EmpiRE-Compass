@@ -18,6 +18,7 @@ import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 import HomeIcon from '@mui/icons-material/Home';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import PeopleIcon from '@mui/icons-material/People';
+import ArticleIcon from '@mui/icons-material/Article';
 import TemplateManagement, {
   QuestionData,
 } from '../firestore/TemplateManagement';
@@ -237,6 +238,39 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 Team
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* News Link */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/news`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/news')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <ArticleIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/news') ? 600 : 500,
+                }}
+              >
+                News
               </Typography>
             }
           />
