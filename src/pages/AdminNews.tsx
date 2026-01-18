@@ -42,6 +42,7 @@ import {
 import CRUDNews, { NewsItem } from '../firestore/CRUDNews';
 import { useAuth } from '../auth/useAuth';
 import { useKeycloak } from '@react-keycloak/web';
+import CodeEditor from '../components/CodeEditor/CodeEditor';
 
 const AdminNews = () => {
   const { user } = useAuth();
@@ -540,17 +541,26 @@ const AdminNews = () => {
                 setFormData({ ...formData, title: e.target.value })
               }
             />
-            <TextField
-              label="Content"
-              fullWidth
-              required
-              multiline
-              rows={8}
-              value={formData.content}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
-            />
+            <Box>
+              <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                Content <span style={{ color: 'red' }}>*</span>
+              </Typography>
+              <CodeEditor
+                value={formData.content}
+                onChange={(value) =>
+                  setFormData({ ...formData, content: value })
+                }
+                language="html"
+                height="300px"
+                readOnly={false}
+                showLineNumbers={true}
+                placeholder="Enter HTML content here..."
+                label="News Content"
+                copyable={false}
+                formattable={true}
+                fullscreenable={true}
+              />
+            </Box>
             <TextField
               label="Image URL (optional)"
               fullWidth
