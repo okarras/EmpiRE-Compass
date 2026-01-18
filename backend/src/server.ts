@@ -124,10 +124,7 @@ const aiConfig: AIConfig = {
       | 'llama-3.3-70b-versatile'
       | 'openai/gpt-oss-120b'
       | 'openai/gpt-oss-20b'
-      | 'whisper-large-v3'
-      | 'deepseek-r1-distill-llama-70b'
-      | 'llama-3-70b-8192'
-      | 'mixtral-8x7b-32768') || 'llama-3.1-8b-instant',
+      | 'llama-3-70b-8192') || 'llama-3.1-8b-instant',
   mistralModel:
     (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
       | 'mistral-large-latest'
