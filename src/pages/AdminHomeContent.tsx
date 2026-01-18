@@ -30,6 +30,7 @@ import CRUDHomeContent, {
 } from '../firestore/CRUDHomeContent';
 import { useAuth } from '../auth/useAuth';
 import { useKeycloak } from '@react-keycloak/web';
+import { CodeEditor } from '../components/CodeEditor';
 
 const AdminHomeContent = () => {
   const { user } = useAuth();
@@ -342,6 +343,7 @@ const AdminHomeContent = () => {
 
   const deleteTemplateInfoBox = (templateId: string) => {
     if (!content) return;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [templateId]: _, ...rest } = content.templateInfoBoxes;
     setContent({
       ...content,
@@ -487,15 +489,16 @@ const AdminHomeContent = () => {
             onChange={(e) => updateAboutProject('title', e.target.value)}
             sx={{ mb: 2 }}
           />
-          <TextField
-            fullWidth
-            label="Content"
+          <CodeEditor
             value={content.aboutProject.content}
-            onChange={(e) => updateAboutProject('content', e.target.value)}
-            multiline
-            rows={4}
-            sx={{ mb: 2 }}
-            helperText="Use double line breaks (\\n\\n) to separate paragraphs"
+            onChange={(value) => updateAboutProject('content', value)}
+            language="html"
+            height="400px"
+            minHeight="400px"
+            readOnly={false}
+            theme="vs"
+            showMinimap={false}
+            showLineNumbers={true}
           />
           <Box sx={{ mb: 2 }}>
             <Box
@@ -514,12 +517,19 @@ const AdminHomeContent = () => {
               </Button>
             </Box>
             {content.aboutProject.themes.map((theme, index) => (
-              <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  fullWidth
+              <Box
+                key={index}
+                sx={{ display: 'flex', gap: 1, mb: 1, width: '100%' }}
+              >
+                <CodeEditor
                   value={theme}
-                  onChange={(e) => updateTheme(index, e.target.value)}
-                  size="small"
+                  onChange={(value) => updateTheme(index, value)}
+                  language="html"
+                  height="100px"
+                  width="100%"
+                  minHeight="100px"
+                  readOnly={false}
+                  theme="vs"
                 />
                 <IconButton onClick={() => deleteTheme(index)} color="error">
                   <Delete />
@@ -596,16 +606,17 @@ const AdminHomeContent = () => {
                   sx={{ mb: 1 }}
                   size="small"
                 />
-                <TextField
-                  fullWidth
-                  label="Description"
+                <CodeEditor
                   value={feature.description}
-                  onChange={(e) =>
-                    updateFeature(index, 'description', e.target.value)
+                  onChange={(value) =>
+                    updateFeature(index, 'description', value)
                   }
-                  multiline
-                  rows={2}
-                  size="small"
+                  language="html"
+                  height="100px"
+                  width="100%"
+                  minHeight="100px"
+                  readOnly={false}
+                  theme="vs"
                 />
               </Paper>
             ))}
@@ -697,14 +708,15 @@ const AdminHomeContent = () => {
                   sx={{ mb: 1 }}
                   size="small"
                 />
-                <TextField
-                  fullWidth
-                  label="Goal"
+                <CodeEditor
                   value={phase.goal}
-                  onChange={(e) => updatePhase(index, 'goal', e.target.value)}
-                  multiline
-                  rows={2}
-                  size="small"
+                  onChange={(value) => updatePhase(index, 'goal', value)}
+                  language="html"
+                  height="100px"
+                  width="100%"
+                  minHeight="100px"
+                  readOnly={false}
+                  theme="vs"
                 />
               </Paper>
             ))}
@@ -1003,21 +1015,17 @@ const AdminHomeContent = () => {
                     sx={{ mb: 1 }}
                     size="small"
                   />
-                  <TextField
-                    fullWidth
-                    label="Description"
+                  <CodeEditor
                     value={infoBox.description}
-                    onChange={(e) =>
-                      updateTemplateInfoBox(
-                        templateId,
-                        'description',
-                        e.target.value
-                      )
+                    onChange={(value) =>
+                      updateTemplateInfoBox(templateId, 'description', value)
                     }
-                    multiline
-                    rows={3}
-                    size="small"
-                    helperText="This text will be displayed in the info box at the top of the template dashboard"
+                    language="html"
+                    height="200px"
+                    width="100%"
+                    minHeight="200px"
+                    readOnly={false}
+                    theme="vs"
                   />
                 </Paper>
               )

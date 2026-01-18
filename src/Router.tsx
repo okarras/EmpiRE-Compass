@@ -14,11 +14,14 @@ const QuestionDashboardPage = lazy(
 const DynamicQuestionPage = lazy(() => import('./pages/DynamicQuestionPage'));
 const TemplateGraphPage = lazy(() => import('./pages/TemplateGraphPage'));
 const Team = lazy(() => import('./pages/Team'));
+const News = lazy(() => import('./pages/News'));
+const NewsDetail = lazy(() => import('./pages/NewsDetail'));
 const AdminBackup = lazy(() => import('./pages/AdminBackup'));
 const AdminDataManagement = lazy(() => import('./pages/AdminDataManagement'));
 const AdminHomeContent = lazy(() => import('./pages/AdminHomeContent'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
+const AdminNews = lazy(() => import('./pages/AdminNews'));
 
 const Router = () => {
   return (
@@ -62,6 +65,16 @@ const Router = () => {
               errorElement={<ErrorFallback />}
             />
             <Route
+              path="news"
+              element={<News />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="news/:newsId"
+              element={<NewsDetail />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
               path="admin"
               element={
                 <AdminGuard>
@@ -102,6 +115,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminRequestMonitor />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/news"
+              element={
+                <AdminGuard>
+                  <AdminNews />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}
