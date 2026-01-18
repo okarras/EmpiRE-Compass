@@ -10,7 +10,7 @@ import type {
   GroqModel,
   MistralModel,
   GoogleModel,
-} from '../aiService';
+} from '../aiService.js';
 
 // OpenAI pricing per 1M tokens (input/output)
 // Pricing based on https://openai.com/api/pricing/ (as of 2025)

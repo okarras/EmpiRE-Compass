@@ -118,7 +118,7 @@ router.get('/', async (req, res) => {
       undefined,
       undefined,
       undefined,
-      { publishedOnly }
+      { queryType: publishedOnly ? 'publishedOnly' : 'all' }
     );
 
     res.json(newsItems);
