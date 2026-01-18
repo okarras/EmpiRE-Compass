@@ -51,6 +51,7 @@ const News = () => {
 
   useEffect(() => {
     filterNews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [newsItems, searchQuery, selectedTag, selectedPriority]);
 
   const fetchNews = async () => {
@@ -135,6 +136,12 @@ const News = () => {
       default:
         return 'primary';
     }
+  };
+
+  const stripHtml = (html: string): string => {
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   };
 
   // Pagination
@@ -381,7 +388,8 @@ const News = () => {
                             flexGrow: 1,
                           }}
                         >
-                          {news.content}
+                          {stripHtml(news.content).substring(0, 150)}
+                          {stripHtml(news.content).length > 150 ? '...' : ''}
                         </Typography>
                         <Divider sx={{ my: 1 }} />
                         <Box

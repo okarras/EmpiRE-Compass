@@ -248,17 +248,39 @@ const NewsDetail = () => {
           )}
 
           {/* Content */}
-          <Typography
-            variant="body1"
+          <Box
             sx={{
               lineHeight: 1.8,
               fontSize: '1.1rem',
-              whiteSpace: 'pre-wrap',
               mb: 4,
+              '& h1, & h2, & h3, & h4, & h5, & h6': {
+                marginTop: 2,
+                marginBottom: 1,
+                fontWeight: 600,
+              },
+              '& p': {
+                marginBottom: 1.5,
+              },
+              '& ul, & ol': {
+                marginLeft: 2,
+                marginBottom: 1.5,
+              },
+              '& a': {
+                color: '#e86161',
+                textDecoration: 'none',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              },
+              '& img': {
+                maxWidth: '100%',
+                height: 'auto',
+                borderRadius: 1,
+                marginY: 2,
+              },
             }}
-          >
-            {newsItem.content}
-          </Typography>
+            dangerouslySetInnerHTML={{ __html: newsItem.content }}
+          />
 
           {/* Navigation */}
           {(currentIndex > 0 ||
