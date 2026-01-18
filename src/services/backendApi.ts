@@ -6,8 +6,29 @@
 
 import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
 
-const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL || 'https://empirecompassbackend.vercel.app';
+// Determine backend URL based on frontend domain
+const getBackendUrl = () => {
+  // Check if we're on Vercel deployment
+  const isVercel =
+    typeof window !== 'undefined' &&
+    (window.location.hostname.includes('.vercel.app') ||
+      window.location.hostname.includes('.vercel'));
+
+  if (isVercel) {
+    return (
+      import.meta.env.VITE_BACKEND_FEATURE_URL ||
+      import.meta.env.VITE_BACKEND_URL ||
+      'https://empirecompassbackend.vercel.app'
+    );
+  }
+
+  return (
+    import.meta.env.VITE_BACKEND_URL ||
+    'https://empirecompassbackend.vercel.app'
+  );
+};
+
+const BACKEND_URL = getBackendUrl();
 
 export interface ApiRequestOptions extends RequestInit {
   userId?: string;
