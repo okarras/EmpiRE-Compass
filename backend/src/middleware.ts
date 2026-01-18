@@ -14,11 +14,29 @@ const getAllowedOrigins = (): string[] => {
     origins.push(process.env.FRONTEND_URL);
   }
 
+  // Add feature/preview frontend URL from environment variable
+  if (process.env.FRONTEND_FEATURE_URL) {
+    origins.push(process.env.FRONTEND_FEATURE_URL);
+  }
+
   // Add Vercel frontend URL (hardcoded for your production deployment)
   origins.push('https://empire-compass.vercel.app');
   origins.push('https://empire-compass.tib.eu');
 
   return origins;
+};
+
+// Check if origin is a Vercel preview/feature branch URL
+const isVercelPreviewUrl = (origin: string): boolean => {
+  try {
+    const url = new URL(origin);
+    // Allow any .vercel.app domain (includes preview and feature branches)
+    return (
+      url.hostname.endsWith('.vercel.app') || url.hostname.endsWith('.vercel')
+    );
+  } catch {
+    return false;
+  }
 };
 
 // rate limit
@@ -50,9 +68,10 @@ export const validateApiKey = (
   // Case-insensitive origin matching
   const isTrustedOrigin =
     origin &&
-    allowedOrigins.some(
+    (allowedOrigins.some(
       (allowedOrigin) => allowedOrigin.toLowerCase() === origin.toLowerCase()
-    );
+    ) ||
+      isVercelPreviewUrl(origin));
 
   // In production, require API key OR trusted origin
   if (process.env.NODE_ENV === 'production') {
@@ -140,6 +159,9 @@ export const corsOptions = {
     );
 
     if (isAllowed) {
+      callback(null, true);
+    } else if (isVercelPreviewUrl(origin)) {
+      // Allow any Vercel preview/feature branch URL
       callback(null, true);
     } else {
       // In development, be more permissive

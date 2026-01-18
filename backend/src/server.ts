@@ -73,6 +73,8 @@ app.use(
         'frame-src': ["'self'", 'https://vercel.live'],
       },
     },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 app.use(compression());
