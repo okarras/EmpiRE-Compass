@@ -29,9 +29,9 @@ const HighPriorityNews = () => {
     setError(null);
     try {
       const items = await CRUDNews.getAllNews(true); // Only published news
-      // Filter for high priority news and limit to 5 most recent
-      const highPriority = items
-        .filter((item) => item.priority === 'high')
+      // Filter for news that should be shown on home page
+      const homeNews = items
+        .filter((item) => item.showOnHome === true)
         .sort((a, b) => {
           const dateA = a.publishedAt || a.createdAt;
           const dateB = b.publishedAt || b.createdAt;
@@ -54,9 +54,9 @@ const HighPriorityNews = () => {
           return timeB - timeA; // Most recent first
         })
         .slice(0, 5); // Limit to 5 items
-      setHighPriorityNews(highPriority);
+      setHighPriorityNews(homeNews);
     } catch (err) {
-      console.error('Error fetching high priority news:', err);
+      console.error('Error fetching home news:', err);
       setError('Failed to load news.');
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ const HighPriorityNews = () => {
     );
   };
 
-  // Don't render if there are no high priority news items, templateId is missing, or dismissed
+  // Don't render if there are no news items to show on home, templateId is missing, or dismissed
   if (!loading && (highPriorityNews.length === 0 || !templateId || dismissed)) {
     return null;
   }
@@ -144,17 +144,19 @@ const HighPriorityNews = () => {
                 flexShrink: 0,
               }}
             />
-            <Chip
-              label="High Priority"
-              size="small"
-              color="error"
-              sx={{
-                height: 20,
-                fontSize: '0.65rem',
-                fontWeight: 600,
-                flexShrink: 0,
-              }}
-            />
+            {currentNews.priority === 'high' && (
+              <Chip
+                label="High Priority"
+                size="small"
+                color="error"
+                sx={{
+                  height: 20,
+                  fontSize: '0.65rem',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}
+              />
+            )}
             <Box sx={{ flex: 1, minWidth: 0 }}>
               <Typography
                 variant="body2"
