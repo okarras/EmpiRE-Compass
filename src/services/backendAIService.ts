@@ -105,7 +105,22 @@ export class BackendAIService {
 
   constructor(config: BackendAIConfig) {
     this.config = config;
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+
+    // Determine backend URL based on frontend domain
+    const isVercel =
+      typeof window !== 'undefined' &&
+      (window.location.hostname.includes('.vercel.app') ||
+        window.location.hostname.includes('.vercel'));
+
+    if (isVercel) {
+      this.baseUrl =
+        import.meta.env.VITE_BACKEND_FEATURE_URL ||
+        import.meta.env.VITE_BACKEND_URL ||
+        'http://localhost:5001';
+    } else {
+      this.baseUrl =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    }
   }
 
   private async makeRequest<T>(

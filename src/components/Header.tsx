@@ -14,6 +14,7 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -23,7 +24,13 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ApiIcon from '@mui/icons-material/Api';
-import { useLocation, Link as RouterLink, useNavigate } from 'react-router-dom';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import {
+  useLocation,
+  Link as RouterLink,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 // import { useTheme } from '../contexts/ThemeContext';
 import LoginORKG from './LoginORKG';
@@ -31,6 +38,7 @@ import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
 import { toast } from 'react-hot-toast';
+import CRUDNews from '../firestore/CRUDNews';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -45,6 +53,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+  const [highPriorityNewsCount, setHighPriorityNewsCount] = useState<number>(0);
+  const { templateId } = useParams<{ templateId: string }>();
 
   // Load templates from Firebase
   useEffect(() => {
@@ -59,6 +69,24 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
     };
     loadTemplates();
   }, []);
+
+  // Fetch high priority news count
+  useEffect(() => {
+    const fetchHighPriorityNewsCount = async () => {
+      try {
+        const items = await CRUDNews.getAllNews(true); // Only published news
+        const highPriorityCount = items.filter(
+          (item) => item.priority === 'high'
+        ).length;
+        setHighPriorityNewsCount(highPriorityCount);
+      } catch (err) {
+        console.error('Error fetching high priority news count:', err);
+        // Don't show error to user, just set count to 0
+        setHighPriorityNewsCount(0);
+      }
+    };
+    fetchHighPriorityNewsCount();
+  }, [location.pathname]); // Refetch when route changes
 
   // Read template from URL on mount
   useEffect(() => {
@@ -162,6 +190,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const redirectToSwagger = () => {
     window.open('https://empire-compass-backend.tib.eu/api-docs/', '_blank');
+  };
+
+  const redirectToNews = () => {
+    const currentTemplateId = templateId || selectedTemplate;
+    navigate(`/${currentTemplateId}/news`);
   };
 
   return (
@@ -375,6 +408,37 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             gap: 0.5,
           }}
         >
+          {highPriorityNewsCount > 0 && (
+            <Tooltip title={`${highPriorityNewsCount} High Priority News`}>
+              <IconButton
+                onClick={redirectToNews}
+                size="small"
+                sx={{
+                  color:
+                    highPriorityNewsCount > 0 ? '#e86161' : 'text.secondary',
+                  '&:hover': {
+                    color: '#e86161',
+                    backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                  },
+                }}
+              >
+                <Badge
+                  badgeContent={highPriorityNewsCount}
+                  color="error"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: '18px',
+                      minWidth: '18px',
+                      padding: '0 4px',
+                    },
+                  }}
+                >
+                  <NotificationsIcon sx={{ fontSize: '1.1rem' }} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Components">
             <IconButton
               onClick={redirectToStorybook}

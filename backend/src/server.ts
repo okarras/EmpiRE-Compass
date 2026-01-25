@@ -18,6 +18,7 @@ import aiRouter, { initializeAIService } from './routes/ai.js';
 import healthRouter, { setAIServiceForHealth } from './routes/health.js';
 import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
 import statisticsRouter from './routes/statistics.js';
+import newsRouter from './routes/news.js';
 
 dotenv.config();
 
@@ -73,6 +74,8 @@ app.use(
         'frame-src': ["'self'", 'https://vercel.live'],
       },
     },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 app.use(compression());
@@ -124,10 +127,7 @@ const aiConfig: AIConfig = {
       | 'llama-3.3-70b-versatile'
       | 'openai/gpt-oss-120b'
       | 'openai/gpt-oss-20b'
-      | 'whisper-large-v3'
-      | 'deepseek-r1-distill-llama-70b'
-      | 'llama-3-70b-8192'
-      | 'mixtral-8x7b-32768') || 'llama-3.1-8b-instant',
+      | 'llama-3-70b-8192') || 'llama-3.1-8b-instant',
   mistralModel:
     (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
       | 'mistral-large-latest'
@@ -167,6 +167,7 @@ app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/dynamic-questions', dynamicQuestionsRouter);
 app.use('/api/statistics', statisticsRouter);
+app.use('/api/news', newsRouter);
 
 const swaggerUiOptions = {
   customCssUrl:
