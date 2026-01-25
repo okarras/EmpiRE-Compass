@@ -51,6 +51,7 @@ interface StatisticsData {
   global_distinct_resources: number;
   global_distinct_literals: number;
   global_distinct_predicates: number;
+  totalORKGPapersCount: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -65,6 +66,7 @@ const DEFAULT_STATS: StatisticsData = {
   global_distinct_resources: 0,
   global_distinct_literals: 0,
   global_distinct_predicates: 0,
+  totalORKGPapersCount: 0,
 };
 
 export default function Statistics() {
@@ -91,11 +93,12 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, perVenueData, venuesData] = results;
+        const [paperData, perVenueData, venuesData, totalORKGData] = results;
 
         setStatistics((prev) => ({
           ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
+          totalORKGPapersCount: Number(totalORKGData[0]?.total_papers ?? 0),
 
           perVenueData: perVenueData.map((row: VenueData) => ({
             venue: row.venue,
@@ -137,6 +140,7 @@ export default function Statistics() {
     global_distinct_resources,
     global_distinct_literals,
     global_distinct_predicates,
+    totalORKGPapersCount,
   } = statistics;
 
   return (
@@ -171,16 +175,16 @@ export default function Statistics() {
             value={venueCount}
             icon={<LocationOnIcon />}
           />
-          <KPICard
+          {/* <KPICard
             label="Total Triples"
             value={statistics.tripleCount}
             icon={<StorageIcon />}
-          />
-          <KPICard
+          /> */}
+          {/* <KPICard
             label="Avg. Papers/Venue"
             value={venueCount > 0 ? Math.round(paperCount / venueCount) : 0}
             icon={<TrendingUpIcon />}
-          />
+          /> */}
         </Stack>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -212,26 +216,29 @@ export default function Statistics() {
             {/* Using arbitrary max values for demonstration or relative maxes */}
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
-                label="Papers"
+                label="Papers with Empirical Studies"
                 value={paperCount}
-                max={paperCount * 1.5}
+                max={totalORKGPapersCount}
                 color="#e86161"
+                link="https://orkg.org/papers"
               />
             </Box>
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Venues"
                 value={venueCount}
-                max={venueCount * 2}
-                color="#4c72b0"
+                max={venueCount}
+                color="#e86161"
+                link="https://orkg.org/observatories"
               />
             </Box>
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Resources"
                 value={total_resources}
-                max={total_resources * 1.2}
-                color="#55a868"
+                max={total_resources}
+                color="#e86161"
+                link="https://orkg.org/resources"
               />
             </Box>
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
@@ -239,15 +246,17 @@ export default function Statistics() {
                 label="Distinct Resources"
                 value={global_distinct_resources}
                 max={total_resources}
-                color="#dd8452"
+                color="#e86161"
+                link="https://orkg.org/classes"
               />
             </Box>
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Statements"
                 value={total_statements}
-                max={total_statements * 1.3}
-                color="#8e44ad"
+                max={total_statements}
+                color="#e86161"
+                link="https://orkg.org/rs/statements"
               />
             </Box>
           </Stack>
