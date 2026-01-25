@@ -95,10 +95,10 @@ const sanitizeEnvVar = (
 // Initialize AI service
 const aiConfig: AIConfig = {
   provider:
-    (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
+    (sanitizeEnvVar(process.env.AI_PROVIDER, 'openai') as
       | 'openai'
       | 'groq'
-      | 'mistral') || 'mistral',
+      | 'mistral') || 'openai',
   openaiModel:
     (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
       | 'gpt-5.1'

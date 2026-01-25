@@ -209,36 +209,32 @@ const getAIService = (): AIService => {
  *       '500':
  *         description: Failed to get AI configuration
  */
-router.get(
-  '/config',
-  validateKeycloakToken,
-  async (req: AuthenticatedRequest, res: Response) => {
-    try {
-      const service = getAIService();
-      const config = service.getCurrentConfig();
-      const isConfigured = service.isConfigured();
+router.get('/config', async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const service = getAIService();
+    const config = service.getCurrentConfig();
+    const isConfigured = service.isConfigured();
 
-      res.json({
-        ...config,
-        apiKeyConfigured: isConfigured,
-        // Include diagnostic info in development
-        ...(process.env.NODE_ENV !== 'production' && {
-          hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-          hasGroqKey: !!process.env.GROQ_API_KEY,
-          hasMistralKey: !!process.env.MISTRAL_API_KEY,
-          hasGoogleKey: !!process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-          provider: process.env.AI_PROVIDER || 'groq',
-        }),
-      });
-    } catch (error) {
-      console.error('Error getting AI config:', error);
-      res.status(500).json({
-        error: 'Failed to get AI configuration',
-        details: error instanceof Error ? error.message : String(error),
-      });
-    }
+    res.json({
+      ...config,
+      apiKeyConfigured: isConfigured,
+      // Include diagnostic info in development
+      ...(process.env.NODE_ENV !== 'production' && {
+        hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+        hasGroqKey: !!process.env.GROQ_API_KEY,
+        hasMistralKey: !!process.env.MISTRAL_API_KEY,
+        hasGoogleKey: !!process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+        provider: process.env.AI_PROVIDER || 'groq',
+      }),
+    });
+  } catch (error) {
+    console.error('Error getting AI config:', error);
+    res.status(500).json({
+      error: 'Failed to get AI configuration',
+      details: error instanceof Error ? error.message : String(error),
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -386,7 +382,6 @@ router.get(
  */
 router.post(
   '/generate',
-  validateKeycloakToken,
   createUserRateLimiter(),
   validateGenerateTextRequest,
   async (req: AuthenticatedRequest, res: Response) => {
@@ -421,7 +416,7 @@ router.post(
         const actualModel = model || config.model;
 
         // Import cost calculator
-        const { calculateCost } = await import('../utils/costCalculator');
+        const { calculateCost } = await import('../utils/costCalculator.js');
         costInfo = calculateCost(
           actualProvider,
           actualModel,

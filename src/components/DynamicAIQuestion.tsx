@@ -291,7 +291,7 @@ const DynamicAIQuestion = () => {
 
     if (!aiService.isConfigured()) {
       setError(
-        'Please configure your AI settings before generating SPARQL queries.'
+        'AI service is not available. Please try again later or check your configuration.'
       );
       return;
     }

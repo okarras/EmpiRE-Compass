@@ -83,7 +83,7 @@ const loadAIConfig = (): Partial<InitialState> => {
     if (savedConfig) {
       const parsed = JSON.parse(savedConfig);
       return {
-        provider: parsed.provider || 'mistral',
+        provider: parsed.provider || 'openai',
         openaiModel: parsed.openaiModel || 'gpt-4o-mini',
         groqModel: parsed.groqModel || 'llama-3.1-8b-instant',
         mistralModel: parsed.mistralModel || 'mistral-large-latest',
@@ -115,7 +115,7 @@ const saveAIConfig = (config: InitialState) => {
 };
 
 const defaultConfig: InitialState = {
-  provider: 'mistral',
+  provider: 'openai',
   openaiModel: 'gpt-4o-mini',
   groqModel: 'llama-3.1-8b-instant',
   mistralModel: 'mistral-large-latest',
@@ -124,8 +124,8 @@ const defaultConfig: InitialState = {
   groqApiKey: '',
   mistralApiKey: '',
   googleApiKey: '',
-  isConfigured: false,
-  useEnvironmentKeys: false,
+  isConfigured: true,
+  useEnvironmentKeys: true,
 };
 
 const initialState: InitialState = {
