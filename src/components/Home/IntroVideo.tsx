@@ -1,8 +1,8 @@
 import { Box, Paper, Typography } from '@mui/material';
 
 const IntroVideo = () => {
-  const videoId = '1kzthlwk6YGg-YiSSOh0wgWTn6wcFrmKF';
-  const embedUrl = `https://drive.google.com/file/d/${videoId}/preview`;
+  // Use embed URL format for video-only display (without TIB portal chrome)
+  const embedUrl = `https://av.tib.eu/player/72249`;
 
   return (
     <Paper

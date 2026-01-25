@@ -41,6 +41,12 @@ EmpiRE-Compass is a **neuro-symbolic dashboard** that facilitates the exploratio
 
 https://github.com/user-attachments/assets/27870a40-aaf6-4a66-8ba7-7d009397859d
 
+<div align="center">
+  
+[![Video DOI - https://doi.org/10.5446/72249](https://img.shields.io/badge/Video_DOI-10.5446%2F72249-blue)](https://doi.org/10.5446/72249)
+
+</div>
+
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 # Key Features

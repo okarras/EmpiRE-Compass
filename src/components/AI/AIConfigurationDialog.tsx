@@ -212,50 +212,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 variant="outlined"
                 sx={{ '& .MuiSelect-select': { py: 1.5 } }}
               >
-                <MenuItem value="mistral">
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      width: '100%',
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        Mistral AI
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        High-performance models • Mistral Large, Medium, Small
-                      </Typography>
-                    </Box>
-                    <Chip
-                      label="Default"
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                  </Box>
-                </MenuItem>
-                <MenuItem value="groq">
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 2,
-                      width: '100%',
-                    }}
-                  >
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        Groq
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Fast inference • Llama, DeepSeek, Mixtral
-                      </Typography>
-                    </Box>
-                  </Box>
-                </MenuItem>
                 <MenuItem value="openai">
                   <Box
                     sx={{
@@ -270,12 +226,101 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         OpenAI
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        GPT-4, GPT-3.5 models
+                        GPT-4o mini • Available for all users
                       </Typography>
                     </Box>
+                    {localUseEnvironmentKeys && (
+                      <Chip
+                        label="System Default"
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                      />
+                    )}
                   </Box>
                 </MenuItem>
-                <MenuItem value="google">
+                <MenuItem
+                  value="mistral"
+                  disabled={localUseEnvironmentKeys}
+                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
+                  title={
+                    localUseEnvironmentKeys
+                      ? 'Login or provide your own API key to use this provider'
+                      : undefined
+                  }
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Mistral AI
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        High-performance models • Requires API key
+                      </Typography>
+                    </Box>
+                    {localUseEnvironmentKeys && (
+                      <Chip
+                        label="Requires Login"
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                </MenuItem>
+                <MenuItem
+                  value="groq"
+                  disabled={localUseEnvironmentKeys}
+                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
+                  title={
+                    localUseEnvironmentKeys
+                      ? 'Login or provide your own API key to use this provider'
+                      : undefined
+                  }
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 2,
+                      width: '100%',
+                    }}
+                  >
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        Groq
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Fast inference • Requires API key
+                      </Typography>
+                    </Box>
+                    {localUseEnvironmentKeys && (
+                      <Chip
+                        label="Requires Login"
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                      />
+                    )}
+                  </Box>
+                </MenuItem>
+                <MenuItem
+                  value="google"
+                  disabled={localUseEnvironmentKeys}
+                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
+                  title={
+                    localUseEnvironmentKeys
+                      ? 'Login or provide your own API key to use this provider'
+                      : undefined
+                  }
+                >
                   <Box
                     sx={{
                       display: 'flex',
@@ -289,9 +334,17 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Google Gemini
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Gemini 2.5 Flash, Gemma models
+                        Gemini 2.5 Flash, Gemma models • Requires API key
                       </Typography>
                     </Box>
+                    {localUseEnvironmentKeys && (
+                      <Chip
+                        label="Requires Login"
+                        size="small"
+                        color="warning"
+                        variant="outlined"
+                      />
+                    )}
                   </Box>
                 </MenuItem>
               </Select>
@@ -329,31 +382,71 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 sx={{ '& .MuiSelect-select': { py: 1.5 } }}
               >
                 {localProvider === 'openai'
-                  ? OPENAI_MODELS.map((model) => (
-                      <MenuItem key={model} value={model}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                          }}
+                  ? OPENAI_MODELS.map((model) => {
+                      const isGpt4oMini = model === 'gpt-4o-mini';
+                      const isDisabled =
+                        localUseEnvironmentKeys && !isGpt4oMini;
+
+                      return (
+                        <MenuItem
+                          key={model}
+                          value={model}
+                          disabled={isDisabled}
+                          sx={{ opacity: isDisabled ? 0.5 : 1 }}
+                          title={
+                            isDisabled
+                              ? 'Login or provide your own API key to use this model'
+                              : undefined
+                          }
                         >
-                          <Typography sx={{ fontWeight: 500 }}>
-                            {model}
-                          </Typography>
-                          <Chip
-                            label={
-                              model.includes('gpt-4') ? 'Advanced' : 'Standard'
-                            }
-                            size="small"
-                            variant="outlined"
-                            color={
-                              model.includes('gpt-4') ? 'primary' : 'default'
-                            }
-                          />
-                        </Box>
-                      </MenuItem>
-                    ))
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              width: '100%',
+                            }}
+                          >
+                            <Typography sx={{ fontWeight: 500 }}>
+                              {model}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 0.5 }}>
+                              {isGpt4oMini && localUseEnvironmentKeys && (
+                                <Chip
+                                  label="Available"
+                                  size="small"
+                                  color="success"
+                                  variant="outlined"
+                                />
+                              )}
+                              {isDisabled && (
+                                <Chip
+                                  label="Requires Login"
+                                  size="small"
+                                  color="warning"
+                                  variant="outlined"
+                                />
+                              )}
+                              {!localUseEnvironmentKeys && (
+                                <Chip
+                                  label={
+                                    model.includes('gpt-4')
+                                      ? 'Advanced'
+                                      : 'Standard'
+                                  }
+                                  size="small"
+                                  variant="outlined"
+                                  color={
+                                    model.includes('gpt-4')
+                                      ? 'primary'
+                                      : 'default'
+                                  }
+                                />
+                              )}
+                            </Box>
+                          </Box>
+                        </MenuItem>
+                      );
+                    })
                   : localProvider === 'groq'
                     ? GROQ_MODELS.map((model) => (
                         <MenuItem key={model} value={model}>
