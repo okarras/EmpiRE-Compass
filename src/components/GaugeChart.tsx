@@ -5,6 +5,7 @@ interface GaugeChartProps {
   value: number;
   max: number;
   label: string;
+  link?: string;
   color?: string;
 }
 
@@ -13,6 +14,7 @@ export default function GaugeChart({
   max,
   label,
   color = '#e86161',
+  link,
 }: GaugeChartProps) {
   const theme = useTheme();
 
@@ -26,6 +28,12 @@ export default function GaugeChart({
 
   const percentage = max > 0 ? Math.round((normalizedValue / max) * 100) : 0;
 
+  const handleClick = () => {
+    if (link) {
+      window.open(link, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -37,7 +45,13 @@ export default function GaugeChart({
         height: 200,
         width: '100%',
         p: 2,
+        cursor: link ? 'pointer' : 'default',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+          transform: link ? 'translateY(-4px)' : 'none',
+        },
       }}
+      onClick={handleClick}
     >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
