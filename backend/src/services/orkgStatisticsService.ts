@@ -246,8 +246,8 @@ export async function fetchStatementsBundle(
   resourceId: string
 ): Promise<ORKGStatement[]> {
   // ORKG API endpoint for statements bundle
-  // Format: https://www.orkg.org/api/statements/bundle/{resource_id}
-  const url = `${ORKG_API_BASE}/statements/bundle/${resourceId}`;
+  // Format: https://www.orkg.org/api/statements/{resource_id}/bundle
+  const url = `${ORKG_API_BASE}/statements/${resourceId}/bundle`;
 
   const fetchWithRetry = async () => {
     const response = await fetch(url, {
