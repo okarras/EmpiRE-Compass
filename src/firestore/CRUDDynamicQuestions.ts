@@ -14,6 +14,7 @@ import {
   query,
   orderBy,
   limit,
+  where,
 } from 'firebase/firestore';
 
 export interface DynamicQuestion {
@@ -21,20 +22,23 @@ export interface DynamicQuestion {
   name: string;
   timestamp: number;
   templateId?: string; // Stored at root level for Firestore indexing
+  isCommunity?: boolean; // Flag to indicate if this is a community question
+  createdBy?: string; // User ID of creator (for community questions)
+  creatorName?: string; // Display name of creator
   state: {
     question: string;
     sparqlQuery: string;
-    sparqlTranslation?: string;
-    queryResults?: any[];
-    chartHtml?: string;
-    questionInterpretation?: string;
-    dataCollectionInterpretation?: string;
-    dataAnalysisInterpretation?: string;
-    processingFunctionCode?: string;
-    history?: any[];
-    templateId?: string;
-    templateMapping?: Record<string, any>;
-    targetClassId?: string;
+    sparqlTranslation?: string | null;
+    queryResults?: any[] | null;
+    chartHtml?: string | null;
+    questionInterpretation?: string | null;
+    dataCollectionInterpretation?: string | null;
+    dataAnalysisInterpretation?: string | null;
+    processingFunctionCode?: string | null;
+    history?: any[] | null;
+    templateId?: string | null;
+    templateMapping?: Record<string, any> | null;
+    targetClassId?: string | null;
   };
 }
 
@@ -54,6 +58,18 @@ export const getDynamicQuestions = async (
 
   try {
     const questionsRef = collection(db, 'DynamicQuestions');
+    // We filter OUT community questions from the main list if needed, or keeping them separate?
+    // The requirement says "Community Questions should be something like the dashboard... to show questions of CommunityQuestions"
+    // Usually "Examples" are curated, "Community" are user submitted.
+    // For now, let's assume getDynamicQuestions fetches ALL or just curated ones?
+    // Let's rely on isCommunity flag. If undefined/false, it might be a system example.
+
+    // For backward compatibility, we just order by timestamp.
+    // But maybe we want to filter OUT community questions here if this function is used for "System Examples"?
+    // The DynamicQuestionExamples component uses this.
+    // Let's assume this returns EVERYTHING for now unless we want to filter.
+    // Actually, usually "Examples" are mixed. But let's add a specific getter for Community ones.
+
     const q = query(
       questionsRef,
       orderBy('timestamp', 'desc'),
@@ -72,6 +88,44 @@ export const getDynamicQuestions = async (
     return questions;
   } catch (error) {
     console.error('Error fetching dynamic questions:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get community questions from Firebase
+ * @param limitCount - Maximum number of questions to return (default: 50)
+ */
+export const getCommunityQuestions = async (
+  limitCount = 50
+): Promise<DynamicQuestion[]> => {
+  if (!db) {
+    console.warn(
+      'Firebase is not initialized. Cannot fetch community questions.'
+    );
+    return [];
+  }
+
+  try {
+    const questionsRef = collection(db, 'CommunityQuestions');
+    const q = query(
+      questionsRef,
+      orderBy('timestamp', 'desc'),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+
+    const questions: DynamicQuestion[] = [];
+    querySnapshot.forEach((docSnapshot) => {
+      questions.push({
+        id: docSnapshot.id,
+        ...docSnapshot.data(),
+      } as DynamicQuestion);
+    });
+
+    return questions;
+  } catch (error) {
+    console.error('Error fetching community questions:', error);
     throw error;
   }
 };
@@ -123,7 +177,10 @@ export const saveDynamicQuestion = async (
 
   try {
     const id = questionId || question.id;
-    const questionRef = doc(db, 'DynamicQuestions', id);
+    const collectionName = question.isCommunity
+      ? 'CommunityQuestions'
+      : 'DynamicQuestions';
+    const questionRef = doc(db, collectionName, id);
 
     // Remove id from data before saving (it's the document ID)
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -132,10 +189,13 @@ export const saveDynamicQuestion = async (
     // Ensure templateId is at root level for Firestore indexing
     const dataToSave = {
       ...questionData,
-      templateId: question.state?.templateId || question.templateId,
+      templateId: question.state?.templateId || question.templateId || null,
     };
 
-    await setDoc(questionRef, dataToSave, { merge: true });
+    // Remove undefined values to prevent Firestore errors
+    const cleanData = JSON.parse(JSON.stringify(dataToSave));
+
+    await setDoc(questionRef, cleanData, { merge: true });
   } catch (error) {
     console.error('Error saving dynamic question:', error);
     throw error;
@@ -198,10 +258,14 @@ export const getDynamicQuestionsByTemplate = async (
 
     const questions: DynamicQuestion[] = [];
     querySnapshot.forEach((docSnapshot) => {
-      if (docSnapshot.data().templateId === templateId) {
+      // Check for templateId in root or state
+      const data = docSnapshot.data();
+      const tId = data.templateId || data.state?.templateId;
+
+      if (tId === templateId) {
         questions.push({
           id: docSnapshot.id,
-          ...docSnapshot.data(),
+          ...data,
         } as DynamicQuestion);
       }
     });
@@ -218,7 +282,8 @@ export const getDynamicQuestionsByTemplate = async (
  * @param questionId - The ID of the question to delete
  */
 export const deleteDynamicQuestion = async (
-  questionId: string
+  questionId: string,
+  isCommunity: boolean = false
 ): Promise<void> => {
   if (!db) {
     throw new Error(
@@ -227,7 +292,10 @@ export const deleteDynamicQuestion = async (
   }
 
   try {
-    const questionRef = doc(db, 'DynamicQuestions', questionId);
+    const collectionName = isCommunity
+      ? 'CommunityQuestions'
+      : 'DynamicQuestions';
+    const questionRef = doc(db, collectionName, questionId);
     await deleteDoc(questionRef);
   } catch (error) {
     console.error('Error deleting dynamic question:', error);
@@ -237,6 +305,7 @@ export const deleteDynamicQuestion = async (
 
 const CRUDDynamicQuestions = {
   getDynamicQuestions,
+  getCommunityQuestions,
   getDynamicQuestion,
   getDynamicQuestionsByTemplate,
   saveDynamicQuestion,

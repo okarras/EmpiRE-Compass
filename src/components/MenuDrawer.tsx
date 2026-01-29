@@ -27,6 +27,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EditIcon from '@mui/icons-material/Edit';
 import { useAuthData } from '../auth/useAuthData';
+import Groups3Icon from '@mui/icons-material/Groups3';
 
 const drawerWidth = 280;
 
@@ -271,6 +272,39 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 News
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* Community Questions Link */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/community-questions`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/community-questions')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <Groups3Icon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/community-questions') ? 600 : 500,
+                }}
+              >
+                Community Questions
               </Typography>
             }
           />

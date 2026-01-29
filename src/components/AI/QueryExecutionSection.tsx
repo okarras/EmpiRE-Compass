@@ -23,6 +23,8 @@ import {
   Visibility,
   VisibilityOff,
   Clear,
+  Save,
+  Groups3 as Groups3Icon,
 } from '@mui/icons-material';
 import AIConfigurationButton from './AIConfigurationButton';
 import DynamicQuestionManager from './DynamicQuestionManager';
@@ -54,6 +56,9 @@ interface QueryExecutionSectionProps {
   iterationHistory?: IterationDetail[];
   templateMapping?: PredicatesMapping;
   targetClassId?: string | null;
+  onSave?: () => void;
+  onShare?: () => void;
+  isAdmin?: boolean;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -78,6 +83,9 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   iterationHistory = [],
   templateMapping,
   targetClassId,
+  onSave,
+  onShare,
+  isAdmin,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -129,7 +137,64 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
         <Typography variant="body2" color="text.secondary">
           Configure AI settings to use OpenAI or Groq models
         </Typography>
-        <Box sx={{ ml: 'auto' }}>
+        <Box sx={{ ml: 'auto', display: 'flex', gap: 1, alignItems: 'center' }}>
+          {onShare && (
+            <Button
+              variant="contained"
+              startIcon={<Groups3Icon />}
+              onClick={onShare}
+              size="small"
+              disabled={!question || !question.trim()}
+              sx={{
+                backgroundColor: '#e86161',
+                color: 'white',
+                textTransform: 'none',
+                fontWeight: 600,
+                boxShadow: '0 2px 8px 0 rgba(232, 97, 97, 0.39)',
+                '&:hover': {
+                  backgroundColor: '#d45151',
+                  boxShadow: '0 4px 12px 0 rgba(232, 97, 97, 0.23)',
+                },
+                '&:disabled': {
+                  backgroundColor: 'rgba(0, 0, 0, 0.12)',
+                  color: 'rgba(0, 0, 0, 0.26)',
+                  boxShadow: 'none',
+                },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Share
+            </Button>
+          )}
+          {isAdmin && onSave && (
+            <Button
+              variant="outlined"
+              startIcon={<Save />}
+              onClick={onSave}
+              size="small"
+              disabled={!question || !question.trim()}
+              sx={{
+                borderColor: '#e86161',
+                color: '#e86161',
+                textTransform: 'none',
+                fontWeight: 600,
+                borderWidth: '1px',
+                '&:hover': {
+                  borderColor: '#d45555',
+                  backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                  borderWidth: '1px',
+                },
+                '&:disabled': {
+                  borderColor: 'rgba(0, 0, 0, 0.12)',
+                  color: 'rgba(0, 0, 0, 0.26)',
+                  borderWidth: '1px',
+                },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Save Example
+            </Button>
+          )}
           <Tooltip title="Manage LLM Context History">
             <Button
               variant="outlined"

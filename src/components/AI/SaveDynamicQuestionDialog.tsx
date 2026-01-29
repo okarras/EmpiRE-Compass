@@ -9,15 +9,18 @@ import {
   Box,
   Typography,
   Alert,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
-import { Save } from '@mui/icons-material';
+import { Save, Groups3 as Groups3Icon } from '@mui/icons-material';
 
 interface SaveDynamicQuestionDialogProps {
   open: boolean;
   onClose: () => void;
-  onSave: (name: string) => Promise<void>;
+  onSave: (name: string, isCommunity: boolean) => Promise<void>;
   defaultName?: string;
   loading?: boolean;
+  mode: 'save' | 'share';
 }
 
 const SaveDynamicQuestionDialog = ({
@@ -26,6 +29,7 @@ const SaveDynamicQuestionDialog = ({
   onSave,
   defaultName = '',
   loading = false,
+  mode,
 }: SaveDynamicQuestionDialogProps) => {
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +42,9 @@ const SaveDynamicQuestionDialog = ({
 
     try {
       setError(null);
-      await onSave(name.trim());
+      // If mode is 'share', it is a community question (true).
+      // If mode is 'save', it is a system example (false).
+      await onSave(name.trim(), mode === 'share');
       setName('');
       onClose();
     } catch (err) {
@@ -56,15 +62,21 @@ const SaveDynamicQuestionDialog = ({
     }
   };
 
+  const title = mode === 'save' ? 'Save as Example' : 'Share with Community';
+  const description =
+    mode === 'save'
+      ? 'Save this dynamic question as a system example.'
+      : 'Share this dynamic question with the community. It will be visible to all users.';
+  const buttonLabel = mode === 'save' ? 'Save Example' : 'Share Question';
+  const icon = mode === 'save' ? <Save /> : <Groups3Icon />; // Need to import Groups3Icon if using it, or just use Save/Share icon
+
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Save as Example Question</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         <Box sx={{ pt: 1 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Save this dynamic question as an example that other users can load
-            and reference. The example will include the question, SPARQL query,
-            results, chart, and all interpretations.
+            {description}
           </Typography>
 
           {error && (
@@ -76,7 +88,7 @@ const SaveDynamicQuestionDialog = ({
           <TextField
             autoFocus
             margin="dense"
-            label="Example Name"
+            label="Question Name"
             fullWidth
             variant="outlined"
             value={name}
@@ -86,7 +98,7 @@ const SaveDynamicQuestionDialog = ({
             }}
             placeholder="e.g., Empirical studies by periods"
             disabled={loading}
-            helperText="Enter a descriptive name for this example question"
+            helperText="Enter a descriptive name"
           />
         </Box>
       </DialogContent>
@@ -97,7 +109,7 @@ const SaveDynamicQuestionDialog = ({
         <Button
           onClick={handleSave}
           variant="contained"
-          startIcon={<Save />}
+          startIcon={icon}
           disabled={loading || !name.trim()}
           sx={{
             backgroundColor: '#e86161',
@@ -106,7 +118,7 @@ const SaveDynamicQuestionDialog = ({
             },
           }}
         >
-          {loading ? 'Saving...' : 'Save Example'}
+          {loading ? 'Processing...' : buttonLabel}
         </Button>
       </DialogActions>
     </Dialog>
