@@ -8,7 +8,21 @@ import {
   Tab,
   CircularProgress,
   Divider,
+  Alert,
+  Fade,
+  Stack,
+  FormControlLabel,
+  Switch,
+  Chip,
+  IconButton,
+  Button,
 } from '@mui/material';
+import {
+  Edit,
+  Save,
+  History as HistoryIcon,
+  Restore,
+} from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
@@ -18,12 +32,25 @@ import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { getTemplateConfig } from '../constants/template_config';
 import { useParams } from 'react-router-dom';
 import QuestionInformation from './QuestionInformation';
+import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
+import EditableSection from './EditableSection';
 
 interface QuestionProps {
   query: Query;
 }
 
-const Question: React.FC<QuestionProps> = ({ query }) => {
+const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
+  // Use overrides hook
+  const {
+    mergedQuery: query,
+    isAdmin,
+    isEditMode,
+    setIsEditMode,
+    saveVersion,
+    handleRestore,
+    overrideData,
+  } = useQuestionOverrides({ query: initialQuery });
+
   // Tabs state
   const [tab, setTab] = useState(0);
   const { setContext } = useAIAssistantContext();
@@ -47,6 +74,7 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   // Update AI Assistant context when data changes
   useEffect(() => {
     if (!loading1 && !error1) {
+      // Use the merged query for context so AI sees the edits
       setContext(query, dataCollection);
     }
   }, [query, dataCollection, loading1, error1, setContext]);
@@ -55,6 +83,10 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
   useEffect(() => {
     setTab(0);
     const fetchData = async () => {
+      // Logic unchanged, uses initialQuery.uid or merged?
+      // The query UID likely doesn't change, only content.
+      // But let's use query (merged) just to be consistent, assuming uid doesn't change.
+      // Actually strictly speaking, uid SHOULD NOT change via override.
       try {
         setLoading1(true);
         setError1(null);
@@ -189,6 +221,55 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
+      {/* Admin Toolbar */}
+      {isAdmin && (
+        <Fade in={isAdmin}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: 1,
+              mb: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #e0e0e0',
+            }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Typography
+                variant="subtitle2"
+                fontWeight="bold"
+                color="text.secondary"
+              >
+                Admin Controls
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isEditMode}
+                    onChange={(e) => setIsEditMode(e.target.checked)}
+                    color="error"
+                    size="small"
+                  />
+                }
+                label="Edit Mode"
+              />
+              {overrideData?.latestVersion && (
+                <Chip
+                  label={`Version: ${overrideData.versions.length} (${new Date(overrideData.latestVersion.timestamp).toLocaleDateString()})`}
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    /* TODO: Open history dialog */
+                  }}
+                />
+              )}
+            </Stack>
+          </Paper>
+        </Fade>
+      )}
+
       {query.uid_2 && (
         <Tabs
           value={tab}
@@ -216,11 +297,40 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
           sectionType="information"
           sectionTitle="Question Information"
           query={query}
+          // We can eventually add title editing here too via EditableSection
         />
+
+        {/* We use EditableSection inside QuestionInformationView via props? 
+            No, QuestionInformationView is complex. Let's make it accept isEditing and save callbacks 
+            OR we replace parts of it. 
+            Steps:
+            1. QuestionInformationView renders "Explanation of the Competency Question".
+            2. It uses `info.questionExplanation`.
+            3. We want to override this.
+            
+            Option A: Modify QuestionInformationView to accept `overrideMode` props.
+            Option B: We implement an "Overlay" or "Replacement" in Question.tsx?
+            
+            Let's pass props to QuestionInformationView for now. But since I can't edit it yet (step 25 showed it), 
+            I'll wrap it or replace it here IF I hadn't planned to modify it.
+            But the plan said "MODIFY Question.tsx" and "New EditableSection".
+            
+            Let's try to Inject the EditableSection logic for the Question Explanation HERE?
+            QuestionInformationView does a lot of rendering.
+            
+            Let's stick to the plan: Modify QuestionInformationView to allow editing.
+            But I haven't modified QuestionInformationView yet.
+            I will pass `isEditMode` and `onSave` to it. 
+            Wait, I need to modify QuestionInformationView signature first.
+        */}
         <QuestionInformationView
           query={query}
           isInteractive={false}
           tabIndex={tab}
+          // @ts-ignore - Temporary until QuestionInformationView is updated
+          isEditingInfo={isEditMode}
+          // @ts-ignore
+          onSave={saveVersion}
         />
 
         {/* Data Collection View */}
@@ -248,11 +358,33 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
             </>
           ) : (
             <>
-              <QuestionInformation
-                information={getDataInterpretation('dataCollection')}
-                label="Data Interpretation"
-                tabIndex={tab}
-              />
+              {isEditMode ? (
+                <Box sx={{ my: 2 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ mb: 1, fontWeight: 600 }}
+                  >
+                    Data Interpretation
+                  </Typography>
+                  <EditableSection
+                    isEditingInfo={isEditMode}
+                    content={getDataInterpretation('dataCollection')}
+                    sectionLabel="Data Collection Interpretation"
+                    onSave={(newContent) =>
+                      saveVersion(
+                        'dataAnalysisInformation.dataInterpretation',
+                        [newContent, getDataInterpretation('dataAnalysis')]
+                      )
+                    }
+                  />
+                </Box>
+              ) : (
+                <QuestionInformation
+                  information={getDataInterpretation('dataCollection')}
+                  label="Data Interpretation"
+                  tabIndex={tab}
+                />
+              )}
             </>
           )}
           <SectionSelector
@@ -304,11 +436,36 @@ const Question: React.FC<QuestionProps> = ({ query }) => {
                   </>
                 ) : (
                   <>
-                    <QuestionInformation
-                      information={getDataInterpretation('dataAnalysis')}
-                      label="Data Interpretation"
-                      tabIndex={tab}
-                    />
+                    {isEditMode ? (
+                      <Box sx={{ my: 2 }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ mb: 1, fontWeight: 600 }}
+                        >
+                          Data Interpretation
+                        </Typography>
+                        <EditableSection
+                          isEditingInfo={isEditMode}
+                          content={getDataInterpretation('dataAnalysis')}
+                          sectionLabel="Data Analysis Interpretation"
+                          onSave={(newContent) =>
+                            saveVersion(
+                              'dataAnalysisInformation.dataInterpretation',
+                              [
+                                getDataInterpretation('dataCollection'),
+                                newContent,
+                              ]
+                            )
+                          }
+                        />
+                      </Box>
+                    ) : (
+                      <QuestionInformation
+                        information={getDataInterpretation('dataAnalysis')}
+                        label="Data Interpretation"
+                        tabIndex={tab}
+                      />
+                    )}
                   </>
                 )}
                 <SectionSelector

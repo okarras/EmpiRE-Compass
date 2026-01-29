@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminGuard from './auth/AdminGuard';
 import ErrorFallback from './pages/ErrorFallback';
+import CommunityQuestions from './pages/CommunityQuestions';
 
 const Home = lazy(() => import('./pages/Home'));
 const Statistics = lazy(() => import('./pages/Statistics'));
@@ -72,6 +73,11 @@ const Router = () => {
             <Route
               path="news/:newsId"
               element={<NewsDetail />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="community-questions"
+              element={<CommunityQuestions />}
               errorElement={<ErrorFallback />}
             />
             <Route
