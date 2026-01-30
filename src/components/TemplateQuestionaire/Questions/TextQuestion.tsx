@@ -21,8 +21,9 @@ import SuggestionBox from '../SuggestionBox';
 import InlineValidationFeedback from '../InlineValidationFeedback';
 import type { Suggestion } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
-
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
+import type { SemanticDocument } from '../../../utils/semanticChunker';
+import type { ParentContext } from '../../../types/context';
 
 const TextQuestion: React.FC<{
   q: any;
@@ -32,6 +33,8 @@ const TextQuestion: React.FC<{
   level?: number;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  semanticDocument?: SemanticDocument | null;
+  isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -44,6 +47,12 @@ const TextQuestion: React.FC<{
   validationError?: string | null;
   questionRef?: (element: HTMLElement | null) => void;
   onAIVerificationComplete?: (result: AIVerificationResult) => void;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
 }> = ({
   q,
   value,
@@ -52,6 +61,7 @@ const TextQuestion: React.FC<{
   level = 0,
   pdfContent,
   structuredDocument,
+  isProcessingPdf,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -59,6 +69,12 @@ const TextQuestion: React.FC<{
   validationError,
   questionRef,
   onAIVerificationComplete,
+  parentContext,
+  allAnswers,
+  siblingQuestionIds,
+  questionDefinitions,
+  allEntries,
+  currentEntryIndex,
 }) => {
   const commonLabel = q.label ?? q.title ?? '';
   const desc = q.desc ?? q.description ?? '';
@@ -201,7 +217,14 @@ const TextQuestion: React.FC<{
                 onError={handleError}
                 pdfContent={pdfContent}
                 structuredDocument={structuredDocument}
+                isProcessingPdf={isProcessingPdf}
                 hasSuggestions={suggestions.length > 0}
+                parentContext={parentContext}
+                allAnswers={allAnswers}
+                siblingQuestionIds={siblingQuestionIds}
+                questionDefinitions={questionDefinitions}
+                allEntries={allEntries}
+                currentEntryIndex={currentEntryIndex}
               />
             )}
           </Box>

@@ -1,5 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Paper, Snackbar, Alert } from '@mui/material';
+import {
+  Box,
+  Typography,
+  Paper,
+  Snackbar,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
 
 import SectionAccordion from '../components/TemplateQuestionaire/SectionAccordion';
 import TopSummaryBar from '../components/TemplateQuestionaire/TopSummaryBar';
@@ -19,6 +26,7 @@ type Props = {
   setAnswers: (next: Record<string, any>) => void;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   pdfExtractionError?: Error | null;
   onRetryExtraction?: () => void;
@@ -52,6 +60,7 @@ const TemplateQuestionaire: React.FC<Props> = ({
   setAnswers,
   pdfContent,
   structuredDocument,
+  isProcessingPdf,
   onNavigateToPage,
   pdfExtractionError,
   onRetryExtraction,
@@ -1268,41 +1277,70 @@ const TemplateQuestionaire: React.FC<Props> = ({
         />
       </Box>
 
+      {isProcessingPdf && (
+        <Box sx={{ mb: 2 }}>
+          <Alert severity="info" icon={<CircularProgress size={20} />}>
+            Processing PDF for intelligent content retrieval... This may take a
+            few seconds.
+          </Alert>
+        </Box>
+      )}
+
       <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
         <Box sx={{ flex: 1 }}>
           <Box>
-            {(templateSpec?.sections || []).map((sec: any, si: number) => (
-              <Box id={`section-${si}`} key={sec.id ?? si} sx={{ mb: 3 }}>
-                <SectionAccordion
-                  sec={sec}
-                  si={si}
-                  answers={answers}
-                  expandedSection={expandedSection}
-                  toggleSection={(s) =>
-                    setExpandedSection((cur) => (cur === s ? null : s))
-                  }
-                  computeSectionProgress={computeSectionProgress}
-                  addSectionEntry={addSectionEntry}
-                  removeSectionEntry={removeSectionEntry}
-                  setSingleAnswer={setSingleAnswer}
-                  setSectionEntryValue={setSectionEntryValue}
-                  isManySection={isManySection}
-                  setExpandedKey={setExpandedKey}
-                  isExpandedKey={isExpandedKey}
-                  pdfContent={pdfContent}
-                  structuredDocument={structuredDocument}
-                  onNavigateToPage={onNavigateToPage}
-                  onHighlightsChange={onHighlightsChange}
-                  pdfUrl={pdfUrl}
-                  pageWidth={pageWidth}
-                  invalidFieldCount={invalidFieldsPerSection[sec.id] || 0}
-                  validationErrors={validationErrorsByQuestion}
-                  onRegisterQuestionRef={handleRegisterQuestionRef}
-                  onAIVerificationComplete={handleVerificationComplete}
-                  aiVerifications={aiVerifications}
-                />
-              </Box>
-            ))}
+            {(templateSpec?.sections || []).map((sec: any, si: number) => {
+              const siblingQuestionIds = (sec.questions || []).map(
+                (q: any) => q.id
+              );
+
+              const questionDefinitions: Record<string, any> = {};
+              (sec.questions || []).forEach((q: any) => {
+                if (q.id) {
+                  questionDefinitions[q.id] = q;
+                }
+              });
+
+              return (
+                <Box id={`section-${si}`} key={sec.id ?? si} sx={{ mb: 3 }}>
+                  <SectionAccordion
+                    sec={sec}
+                    si={si}
+                    answers={answers}
+                    expandedSection={expandedSection}
+                    toggleSection={(s) =>
+                      setExpandedSection((cur) => (cur === s ? null : s))
+                    }
+                    computeSectionProgress={computeSectionProgress}
+                    addSectionEntry={addSectionEntry}
+                    removeSectionEntry={removeSectionEntry}
+                    setSingleAnswer={setSingleAnswer}
+                    setSectionEntryValue={setSectionEntryValue}
+                    isManySection={isManySection}
+                    setExpandedKey={setExpandedKey}
+                    isExpandedKey={isExpandedKey}
+                    pdfContent={pdfContent}
+                    structuredDocument={structuredDocument}
+                    isProcessingPdf={isProcessingPdf}
+                    onNavigateToPage={onNavigateToPage}
+                    onHighlightsChange={onHighlightsChange}
+                    pdfUrl={pdfUrl}
+                    pageWidth={pageWidth}
+                    invalidFieldCount={invalidFieldsPerSection[sec.id] || 0}
+                    validationErrors={validationErrorsByQuestion}
+                    onRegisterQuestionRef={handleRegisterQuestionRef}
+                    onAIVerificationComplete={handleVerificationComplete}
+                    aiVerifications={aiVerifications}
+                    parentContext={undefined}
+                    allAnswers={answers}
+                    siblingQuestionIds={siblingQuestionIds}
+                    questionDefinitions={questionDefinitions}
+                    allEntries={answers[sec.id]}
+                    currentEntryIndex={undefined}
+                  />
+                </Box>
+              );
+            })}
           </Box>
         </Box>
       </Box>

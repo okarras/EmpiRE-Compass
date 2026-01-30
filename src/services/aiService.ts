@@ -66,10 +66,13 @@ export class AIService {
     throw new Error(`Unsupported provider: ${provider}`);
   }
 
-  private getModel(provider: AIProvider) {
+  private getModel(provider: AIProvider, customModelName?: string) {
     const aiProvider = this.createProvider(provider);
     let modelName: string;
-    if (provider === 'openai') {
+
+    if (customModelName) {
+      modelName = customModelName;
+    } else if (provider === 'openai') {
       modelName = this.config.openaiModel;
     } else if (provider === 'groq') {
       modelName = this.config.groqModel;
@@ -82,10 +85,10 @@ export class AIService {
     return aiProvider.languageModel(modelName);
   }
 
-  public getEnhancedModel(provider?: AIProvider) {
+  public getEnhancedModel(provider?: AIProvider, modelName?: string) {
     const targetProvider = provider || this.config.provider;
     // Return the provider model directly; cast to satisfy SDK typings
-    return this.getModel(targetProvider) as unknown as any;
+    return this.getModel(targetProvider, modelName) as unknown as any;
   }
 
   public async generateText(
@@ -94,11 +97,12 @@ export class AIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
-    const model = this.getEnhancedModel(targetProvider);
+    const model = this.getEnhancedModel(targetProvider, options?.model);
 
     const result = await generateText({
       model,

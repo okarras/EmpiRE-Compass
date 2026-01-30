@@ -258,12 +258,14 @@ export class BackendAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{ text: string; reasoning?: string }> {
     const request: GenerateTextRequest = {
       prompt,
       provider: options?.provider || this.config.provider,
+      model: options?.model,
       temperature: options?.temperature ?? 0.3,
       maxTokens: options?.maxTokens ?? 2000,
       systemContext: options?.systemContext,
@@ -431,6 +433,66 @@ Please evaluate this answer and provide your assessment in JSON format with supp
     return results;
   }
 
+  /**
+   * Get relevant PDF chunks using backend semantic chunking
+   */
+  public async getSemanticChunks(
+    question: string,
+    pages: Array<{ pageNumber: number; text: string; wordCount: number }>,
+    maxTokens: number = 4000
+  ): Promise<{
+    chunks: Array<{
+      text: string;
+      pageNumber: number;
+      similarity: number;
+      tokenEstimate: number;
+    }>;
+    totalTokens: number;
+    totalChunks: number;
+  }> {
+    try {
+      const token = getKeycloakToken();
+      if (!token) {
+        throw new Error('Authentication required. Please log in.');
+      }
+
+      const response = await fetch(`${this.baseUrl}/api/ai/semantic-chunks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question,
+          pages,
+          maxTokens,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        }
+
+        if (response.status === 429) {
+          throw new Error('Rate limit exceeded. Please try again later.');
+        }
+
+        throw new Error(
+          errorData.error || `Semantic chunking failed: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('[BackendAIService] Semantic chunking error:', error);
+      throw error;
+    }
+  }
+
   public async generateSuggestions(
     request: GenerateSuggestionsRequest
   ): Promise<GenerateSuggestionsResponse> {
@@ -447,49 +509,88 @@ Please evaluate this answer and provide your assessment in JSON format with supp
         throw new Error('questionType is required and must be a string');
       }
 
-      const feedbackContext =
-        request.previousFeedback && request.previousFeedback.length > 0
+      // Format parent context
+      const parentContextSection = request.parentContext
+        ? `
+
+PARENT QUESTION CONTEXT:
+Question: ${request.parentContext.questionText}
+Answer: ${
+            typeof request.parentContext.answer === 'string'
+              ? request.parentContext.answer
+              : JSON.stringify(request.parentContext.answer)
+          }
+
+IMPORTANT: The current question is a sub-question of the parent above.
+Your suggestions should:
+- Be consistent with the parent answer
+- Build upon the parent context
+- Provide specific details related to the parent question
+- Avoid contradicting or repeating the parent answer
+`
+        : '';
+
+      // Format sibling context
+      const siblingContextSection =
+        request.siblingContext && request.siblingContext.length > 0
           ? `
 
-IMPORTANT - Previous Suggestions and User Feedback:
-The user has already seen suggestions for this question and provided feedback. Use this to improve your new suggestions:
-
-${request.previousFeedback
+SIBLING QUESTIONS (Already Answered):
+${request.siblingContext
   .map(
-    (fb, idx) => `
-${idx + 1}. Previous Suggestion (Rank ${fb.suggestionRank || 'N/A'}):
-   Text: "${fb.suggestionText || 'Not available'}"
-   Rating: ${fb.rating === 'positive' ? '👍 HELPFUL' : '👎 NOT HELPFUL'}
-   ${fb.comment ? `User Comment: "${fb.comment}"` : 'No comment provided'}
-   Timestamp: ${new Date(fb.timestamp).toLocaleString()}`
+    (s, idx) => `
+${idx + 1}. ${s.questionText}
+   Answer: "${typeof s.answer === 'string' ? s.answer : JSON.stringify(s.answer)}"`
   )
   .join('\n')}
 
-Based on this feedback:
-- If a suggestion was rated NEGATIVE, understand why it wasn't helpful and avoid similar approaches
-- If a suggestion was rated POSITIVE, build upon that approach but provide NEW and DIFFERENT suggestions
-- Pay attention to user comments for specific guidance on what to improve
-- DO NOT repeat previous suggestions - generate completely NEW ones
-- Address any concerns or issues mentioned in the feedback
-- Learn from what worked and what didn't to provide better suggestions this time`
+IMPORTANT: Generate suggestions that:
+- Are CONSISTENT and ALIGNED with sibling answers
+- Complement and build upon the information in sibling answers
+- Maintain the same level of detail and perspective as siblings
+- Ensure coherence across all questions at this level
+- Avoid contradicting information provided in sibling answers
+`
+          : '';
+
+      // Format previous entry context
+      const previousEntryContextSection =
+        request.previousEntryContext && request.previousEntryContext.length > 0
+          ? `
+
+PREVIOUS ENTRIES IN THIS GROUP:
+${request.previousEntryContext
+  .map(
+    (entry) => `
+Entry #${entry.entryNumber}:
+${entry.questions.map((q) => `  - ${q.questionText}: "${typeof q.answer === 'string' ? q.answer : JSON.stringify(q.answer)}"`).join('\n')}`
+  )
+  .join('\n')}
+
+IMPORTANT: Generate suggestions that:
+- Are DIFFERENT from previous entries
+- Complement but don't duplicate previous content
+- Explore new aspects or variations
+- Provide fresh perspectives not covered in earlier entries
+`
           : '';
 
       // Build the AI prompt for suggestion generation
       const systemPrompt = `You are an AI assistant helping researchers extract information from academic papers.
 Your task is to analyze the provided PDF content and suggest answers to specific questions.
 
-The PDF content is organized by sections (e.g., [ABSTRACT], [METHODS], [RESULTS]) or pages (e.g., [PAGE 1]).
-Use these markers to identify the source of your evidence.
+The PDF content is organized by chunks and pages (e.g., [PAGE 1], [PAGE 3], [PAGE 4]).
+Use these markers to identify the exact source of your evidence.
 
 For each suggestion:
 1. Provide a clear, concise answer
 2. Include supporting evidence with exact page numbers and text excerpts
 3. Rank suggestions by relevance and confidence
-${request.previousFeedback && request.previousFeedback.length > 0 ? '4. Learn from previous feedback to generate BETTER and DIFFERENT suggestions' : ''}
+${request.contextHistory && request.contextHistory.length > 0 ? '4. Learn from previous suggestions and feedback to generate BETTER and DIFFERENT suggestions' : ''}
 
 CRITICAL INSTRUCTIONS FOR EVIDENCE EXCERPTS:
 - Extract EXACT text from the PDF - copy it word-for-word as it appears
-- Use the page numbers from the section headers (e.g., [METHODS - Pages 3-5] means content is from pages 3-5)
+- Use the exact page numbers from the chunks headers (e.g., [PAGE 3] means content is from page 3)
 - DO NOT add punctuation (periods, commas) that isn't in the original text
 - DO NOT paraphrase or summarize - use the exact wording
 - Keep excerpts between 10-50 words for best highlighting results
@@ -506,6 +607,7 @@ Generate exactly 3 suggestions in the following JSON format:
       "confidence": 0.95,
       "evidence": [
         {
+          "lineNumber": 4,
           "pageNumber": 3,
           "excerpt": "exact text copied from page 3 without modifications"
         }
@@ -525,43 +627,48 @@ Generate exactly 3 suggestions in the following JSON format:
         ? `\nPDF Filename: ${request.pdfMetadata.filename}\nTotal Pages: ${request.pdfMetadata.totalPages}`
         : '';
 
-      // Build context history section
+      // Build context history section - unified list with feedback included
       const contextHistorySection =
         request.contextHistory && request.contextHistory.length > 0
           ? `
 
-CONTEXT - Previous Suggestions for Reference:
+PREVIOUS SUGGESTIONS - Learn from History:
 ${request.contextHistory
   .map(
     (item, idx) => `
 ${idx + 1}. Previous Suggestion:
    Content: "${item.content}"
-   ${item.metadata?.feedback ? `Feedback: ${item.metadata.feedback.rating === 'positive' ? '👍 HELPFUL' : '👎 NOT HELPFUL'}${item.metadata.feedback.comment ? ` - "${item.metadata.feedback.comment}"` : ''}` : 'No feedback provided'}
+   ${item.metadata?.feedback ? `User Feedback: ${item.metadata.feedback.rating === 'positive' ? '👍 HELPFUL' : '👎 NOT HELPFUL'}${item.metadata.feedback.comment ? ` - "${item.metadata.feedback.comment}"` : ''}` : 'No feedback provided'}
    Generated: ${new Date(item.timestamp).toLocaleString()}`
   )
   .join('\n')}
 
-Use this context to:
-- Understand what has been suggested before
-- Avoid repeating the same suggestions
-- Build upon helpful suggestions with new variations
-- Learn from feedback to improve quality`
+IMPORTANT Instructions:
+- DO NOT repeat any of the suggestions above - generate completely NEW ones
+- If a suggestion was rated 👍 HELPFUL, build upon that approach with new variations
+- If a suggestion was rated 👎 NOT HELPFUL, understand why and avoid similar approaches
+- Pay attention to user comments for specific guidance
+- Learn from what worked and what didn't to provide better suggestions this time`
           : '';
 
       const userPrompt = `${metadataText}
+${parentContextSection}
+${siblingContextSection}
+${previousEntryContextSection}
 
 Question: ${request.questionText}
-Question Type: ${request.questionType}${optionsText}${feedbackContext}${contextHistorySection}
+Question Type: ${request.questionType}${optionsText}${contextHistorySection}
 
 PDF Content:
 ${request.pdfContent}
 
-Generate exactly 3 ${(request.previousFeedback && request.previousFeedback.length > 0) || (request.contextHistory && request.contextHistory.length > 0) ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.
+Generate exactly 3 ${request.contextHistory && request.contextHistory.length > 0 ? 'NEW and IMPROVED' : ''} suggestions with supporting evidence from the PDF content above.
 
-REMEMBER: For evidence excerpts, copy the EXACT text from the PDF without adding or removing any punctuation. The excerpts will be used to highlight text in the PDF viewer, so they must match exactly.`;
+REMEMBER: For evidence excerpts, copy the EXACT text from the PDF without correcting typos, errors, adding or removing any punctuation. The excerpts and the page number will be used to highlight text in the PDF viewer, so they must match exactly.`;
 
       const result = await this.generateText(userPrompt, {
         provider: (request.provider as AIProvider) || this.config.provider,
+        model: request.model,
         temperature: 0.3,
         maxTokens: 2000,
         systemContext: systemPrompt,
@@ -759,6 +866,7 @@ export class UnifiedAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{ text: string; reasoning?: string }> {
@@ -769,6 +877,7 @@ export class UnifiedAIService {
         temperature: options?.temperature,
         maxTokens: options?.maxTokens,
         provider: options?.provider,
+        model: options?.model,
         systemContext: options?.systemContext,
       });
     }
@@ -782,6 +891,27 @@ export class UnifiedAIService {
     request: GenerateSuggestionsRequest
   ): Promise<GenerateSuggestionsResponse> {
     return this.getBackendService().generateSuggestions(request);
+  }
+
+  public async getSemanticChunks(
+    question: string,
+    pages: Array<{ pageNumber: number; text: string; wordCount: number }>,
+    maxTokens: number = 4000
+  ): Promise<{
+    chunks: Array<{
+      text: string;
+      pageNumber: number;
+      similarity: number;
+      tokenEstimate: number;
+    }>;
+    totalTokens: number;
+    totalChunks: number;
+  }> {
+    return this.getBackendService().getSemanticChunks(
+      question,
+      pages,
+      maxTokens
+    );
   }
 
   public async getConfiguration(): Promise<AIConfigResponse> {

@@ -298,4 +298,80 @@ router.post(
   }
 );
 
+router.post(
+  '/semantic-chunks',
+  validateKeycloakToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { question, pages, maxTokens = 4000 } = req.body;
+
+      if (!question || typeof question !== 'string') {
+        return res
+          .status(400)
+          .json({ error: 'Question is required and must be a string' });
+      }
+
+      if (!Array.isArray(pages) || pages.length === 0) {
+        return res
+          .status(400)
+          .json({ error: 'Pages array is required and must not be empty' });
+      }
+
+      for (const page of pages) {
+        if (
+          typeof page.pageNumber !== 'number' ||
+          typeof page.text !== 'string'
+        ) {
+          return res.status(400).json({
+            error: 'Each page must have pageNumber (number) and text (string)',
+          });
+        }
+      }
+
+      console.log(
+        `[API] Semantic chunking request: ${pages.length} pages, question length: ${question.length}`
+      );
+
+      const { backendSemanticChunker } = await import(
+        '../services/semanticChunker.js'
+      );
+
+      const relevantChunks = await backendSemanticChunker.findRelevantChunks(
+        question,
+        pages,
+        maxTokens
+      );
+
+      const totalTokens = relevantChunks.reduce(
+        (sum, chunk) => sum + chunk.tokenEstimate,
+        0
+      );
+
+      console.log(
+        `[API] Returning ${relevantChunks.length} chunks (${totalTokens} tokens)`
+      );
+
+      res.json({
+        chunks: relevantChunks.map((chunk) => ({
+          text: chunk.text,
+          pageNumber: chunk.pageNumber,
+          similarity: chunk.similarity,
+          tokenEstimate: chunk.tokenEstimate,
+        })),
+        totalTokens,
+        totalChunks: relevantChunks.length,
+      });
+    } catch (error) {
+      console.error('[API] Semantic chunking error:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+
+      res.status(500).json({
+        error: 'Failed to perform semantic chunking. Please try again later.',
+        details: errorMessage,
+      });
+    }
+  }
+);
+
 export default router;

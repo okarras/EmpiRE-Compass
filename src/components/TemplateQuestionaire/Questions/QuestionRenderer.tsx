@@ -7,6 +7,8 @@ import RepeatGroupQuestion from './RepeatGroupQuestion';
 import GroupQuestion from './GroupQuestion';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
+import type { SemanticDocument } from '../../../utils/semanticChunker';
+import type { ParentContext } from '../../../types/context';
 
 const QuestionRenderer: React.FC<{
   q: any;
@@ -16,6 +18,8 @@ const QuestionRenderer: React.FC<{
   level?: number;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  semanticDocument?: SemanticDocument | null;
+  isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -28,6 +32,12 @@ const QuestionRenderer: React.FC<{
   validationError?: string | null;
   questionRef?: (element: HTMLElement | null) => void;
   onAIVerificationComplete?: (result: AIVerificationResult) => void;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
 }> = ({
   q,
   value,
@@ -36,6 +46,7 @@ const QuestionRenderer: React.FC<{
   level = 0,
   pdfContent,
   structuredDocument,
+  isProcessingPdf,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -43,6 +54,12 @@ const QuestionRenderer: React.FC<{
   validationError,
   questionRef,
   onAIVerificationComplete,
+  parentContext,
+  allAnswers,
+  siblingQuestionIds,
+  questionDefinitions,
+  allEntries,
+  currentEntryIndex,
 }) => {
   if (q.type === 'text' || q.type === 'url' || !q.type) {
     return (
@@ -54,6 +71,7 @@ const QuestionRenderer: React.FC<{
         level={level}
         pdfContent={pdfContent}
         structuredDocument={structuredDocument}
+        isProcessingPdf={isProcessingPdf}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
@@ -61,6 +79,12 @@ const QuestionRenderer: React.FC<{
         validationError={validationError}
         questionRef={questionRef}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
+        allAnswers={allAnswers}
+        siblingQuestionIds={siblingQuestionIds}
+        questionDefinitions={questionDefinitions}
+        allEntries={allEntries}
+        currentEntryIndex={currentEntryIndex}
       />
     );
   }
@@ -78,12 +102,19 @@ const QuestionRenderer: React.FC<{
         level={level}
         pdfContent={pdfContent}
         structuredDocument={structuredDocument}
+        isProcessingPdf={isProcessingPdf}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
         questionRef={questionRef}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
+        allAnswers={allAnswers}
+        siblingQuestionIds={siblingQuestionIds}
+        questionDefinitions={questionDefinitions}
+        allEntries={allEntries}
+        currentEntryIndex={currentEntryIndex}
       />
     );
   }
@@ -97,12 +128,19 @@ const QuestionRenderer: React.FC<{
         level={level}
         pdfContent={pdfContent}
         structuredDocument={structuredDocument}
+        isProcessingPdf={isProcessingPdf}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
         questionRef={questionRef}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
+        allAnswers={allAnswers}
+        siblingQuestionIds={siblingQuestionIds}
+        questionDefinitions={questionDefinitions}
+        allEntries={allEntries}
+        currentEntryIndex={currentEntryIndex}
       />
     );
   }
@@ -116,12 +154,19 @@ const QuestionRenderer: React.FC<{
         level={level}
         pdfContent={pdfContent}
         structuredDocument={structuredDocument}
+        isProcessingPdf={isProcessingPdf}
         onNavigateToPage={onNavigateToPage}
         onHighlightsChange={onHighlightsChange}
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
         questionRef={questionRef}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
+        allAnswers={allAnswers}
+        siblingQuestionIds={siblingQuestionIds}
+        questionDefinitions={questionDefinitions}
+        allEntries={allEntries}
+        currentEntryIndex={currentEntryIndex}
       />
     );
   }
@@ -171,6 +216,7 @@ const QuestionRenderer: React.FC<{
       level={level}
       pdfContent={pdfContent}
       structuredDocument={structuredDocument}
+      isProcessingPdf={isProcessingPdf}
       onNavigateToPage={onNavigateToPage}
       onHighlightsChange={onHighlightsChange}
       pdfUrl={pdfUrl}
@@ -178,6 +224,12 @@ const QuestionRenderer: React.FC<{
       validationError={validationError}
       questionRef={questionRef}
       onAIVerificationComplete={onAIVerificationComplete}
+      parentContext={parentContext}
+      allAnswers={allAnswers}
+      siblingQuestionIds={siblingQuestionIds}
+      questionDefinitions={questionDefinitions}
+      allEntries={allEntries}
+      currentEntryIndex={currentEntryIndex}
     />
   );
 };

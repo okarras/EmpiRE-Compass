@@ -45,6 +45,7 @@ import {
   useQuestionnaireAI,
   QuestionnaireAIHistory,
 } from '../../context/QuestionnaireAIContext';
+import { FeedbackService } from '../../utils/suggestions';
 
 interface QuestionnaireAIHistoryDialogProps {
   open: boolean;
@@ -253,12 +254,22 @@ const QuestionnaireAIHistoryDialog: React.FC<
 
   const deleteAllContext = () => {
     clearHistory();
+    FeedbackService.clearAllFeedback();
+    setExcludedItems(new Set());
     setDeleteMenuAnchor(null);
   };
 
   const deleteContextForCurrentQuestion = () => {
     if (currentQuestionId) {
+      const itemsToDelete = promptHistory
+        .filter((item) => item.questionId === currentQuestionId)
+        .map((item) => item.id);
+
       clearHistoryForQuestion(currentQuestionId);
+      FeedbackService.clearFeedbackForQuestion(currentQuestionId);
+      const newExcluded = new Set(excludedItems);
+      itemsToDelete.forEach((id) => newExcluded.delete(id));
+      setExcludedItems(newExcluded);
     }
     setDeleteMenuAnchor(null);
   };
@@ -269,12 +280,39 @@ const QuestionnaireAIHistoryDialog: React.FC<
         (item.contextSection || getSectionFromType(item.type)) === section
     );
     const idsToDelete = sectionItems.map((item) => item.id);
+
+    const suggestionIdsToDelete = sectionItems
+      .map((item) => item.metadata?.originalSuggestionId)
+      .filter((id): id is string => id !== undefined);
+
     removeMultipleFromHistory(idsToDelete);
+    if (suggestionIdsToDelete.length > 0) {
+      FeedbackService.deleteFeedbackBySuggestionIds(suggestionIdsToDelete);
+    }
+
+    const newExcluded = new Set(excludedItems);
+    idsToDelete.forEach((id) => newExcluded.delete(id));
+    setExcludedItems(newExcluded);
+
     setDeleteMenuAnchor(null);
   };
 
   const deleteContextItem = (id: string) => {
+    const item = promptHistory.find((h) => h.id === id);
+
     removeFromHistory(id);
+
+    if (item?.metadata?.originalSuggestionId) {
+      FeedbackService.deleteFeedbackBySuggestionId(
+        item.metadata.originalSuggestionId
+      );
+    }
+
+    if (excludedItems.has(id)) {
+      const newExcluded = new Set(excludedItems);
+      newExcluded.delete(id);
+      setExcludedItems(newExcluded);
+    }
   };
 
   const excludeAllContext = () => {

@@ -15,8 +15,9 @@ import AIAssistantButton, {
 import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
-
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
+import type { SemanticDocument } from '../../../utils/semanticChunker';
+import type { ParentContext } from '../../../types/context';
 
 const RepeatTextQuestion: React.FC<{
   q: any;
@@ -26,6 +27,8 @@ const RepeatTextQuestion: React.FC<{
   level?: number;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  semanticDocument?: SemanticDocument | null;
+  isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -37,6 +40,12 @@ const RepeatTextQuestion: React.FC<{
   pageWidth?: number | null;
   questionRef?: (element: HTMLElement | null) => void;
   onAIVerificationComplete?: (result: AIVerificationResult) => void;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
 }> = ({
   q,
   value,
@@ -45,12 +54,19 @@ const RepeatTextQuestion: React.FC<{
   level = 0,
   pdfContent,
   structuredDocument,
+  isProcessingPdf,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
   pageWidth,
   questionRef,
   onAIVerificationComplete,
+  parentContext,
+  allAnswers,
+  siblingQuestionIds,
+  questionDefinitions,
+  allEntries,
+  currentEntryIndex,
 }) => {
   const arr: string[] = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
@@ -172,6 +188,13 @@ const RepeatTextQuestion: React.FC<{
                 onError={handleError}
                 pdfContent={pdfContent}
                 structuredDocument={structuredDocument}
+                isProcessingPdf={isProcessingPdf}
+                parentContext={parentContext}
+                allAnswers={allAnswers}
+                siblingQuestionIds={siblingQuestionIds}
+                questionDefinitions={questionDefinitions}
+                allEntries={allEntries}
+                currentEntryIndex={currentEntryIndex}
               />
             </Box>
           )}

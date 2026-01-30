@@ -32,7 +32,8 @@ import {
   type Evidence,
 } from '../../utils/suggestions';
 import {
-  generateSingleEvidenceHighlightMap,
+  generateEvidenceHighlight,
+  evidenceHighlightsToPageMap,
   loadPDFDocument,
 } from '../../utils/pdf';
 import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
@@ -492,24 +493,40 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
   };
 
   const handlePageClick = async (evidence: Evidence, suggestionId: string) => {
-    onNavigateToPage(evidence.pageNumber);
-
     if (pdfDoc && pageWidth && onHighlightsChange) {
       try {
         const evidenceId = `${suggestionId}-${evidence.pageNumber}`;
         setActiveEvidenceId(evidenceId);
 
-        const highlights = await generateSingleEvidenceHighlightMap(
+        const highlight = await generateEvidenceHighlight(
           pdfDoc,
           pageWidth,
           evidence,
           suggestionId
         );
 
-        onHighlightsChange(highlights);
+        if (highlight) {
+          const actualPageNumber = highlight.evidence.pageNumber;
+          onNavigateToPage(actualPageNumber);
+
+          const highlights = evidenceHighlightsToPageMap([highlight]);
+          onHighlightsChange(highlights);
+
+          if (actualPageNumber !== evidence.pageNumber) {
+            console.log(
+              `[SuggestionBox] Evidence found on page ${actualPageNumber} (originally specified as page ${evidence.pageNumber})`
+            );
+          }
+        } else {
+          onNavigateToPage(evidence.pageNumber);
+          onHighlightsChange({});
+        }
       } catch (error) {
         console.error('Error generating highlights:', error);
+        onNavigateToPage(evidence.pageNumber);
       }
+    } else {
+      onNavigateToPage(evidence.pageNumber);
     }
   };
 

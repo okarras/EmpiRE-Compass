@@ -4,9 +4,15 @@ import type {
   TextContent,
 } from 'pdfjs-dist/types/src/display/api';
 import {
-  findRobustMatch,
+  findSimpleMatch,
   preprocessSearchText,
-} from '../utils/robustPdfMatcher';
+} from '../utils/simplePdfMatcher';
+
+// Old robust matcher (kept as fallback, currently unused)
+// import {
+//   findRobustMatch,
+//   preprocessSearchText,
+// } from '../utils/robustPdfMatcher';
 
 interface PdfTextItem {
   str: string;
@@ -109,37 +115,33 @@ export async function findMatchesOnPage(
   const rects: Rect[] = [];
 
   if (typeof search === 'string') {
-    // Use robust multi-strategy matching
+    // Use simple fast matcher
     const cleanedSearch = preprocessSearchText(search);
 
-    console.log('[PdfHighlights] Using robust matcher for:', cleanedSearch);
+    console.log('[PdfHighlights] Using simple matcher for:', cleanedSearch);
 
-    const matchResult = findRobustMatch(fullText, cleanedSearch, {
-      similarityThreshold: 0.85,
-      allowSkipReferences: true,
-      tryAllStrategies: false,
-      enablePartialMatch: true,
+    const matchResult = findSimpleMatch(fullText, cleanedSearch, {
+      maxSearchTime: 50,
     });
 
     if (matchResult.found) {
       console.log(
-        '[PdfHighlights] ✓ Match found using strategy:',
-        matchResult.strategy
+        `[PdfHighlights] Match found using "${matchResult.strategy.toUpperCase()}" strategy`
       );
       console.log(
-        '[PdfHighlights] Confidence:',
+        '[PdfHighlights]   Confidence:',
         (matchResult.confidence * 100).toFixed(1) + '%'
       );
 
       const originalStart = matchResult.startIndex;
       const originalEnd = matchResult.endIndex;
 
-      console.log('[PdfHighlights] Match positions:', {
+      console.log('[PdfHighlights]   Match positions:', {
         originalStart,
         originalEnd,
       });
       console.log(
-        '[PdfHighlights] Matched text in PDF:',
+        '[PdfHighlights]   Matched text in PDF:',
         fullText.substring(originalStart, originalEnd).replace(/\n/g, '\\n')
       );
 
@@ -164,7 +166,7 @@ export async function findMatchesOnPage(
         }
       }
     } else {
-      console.warn('[PdfHighlights] ✗ No match found using robust matcher');
+      console.warn('[PdfHighlights] No match found using simple matcher');
       console.warn('  - Search text:', cleanedSearch);
       console.warn('  - PDF text (first 500):', fullText.substring(0, 500));
     }

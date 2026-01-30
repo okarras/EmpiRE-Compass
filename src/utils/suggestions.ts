@@ -65,6 +65,9 @@ export interface GenerateSuggestionsRequest {
     timestamp: number;
     metadata?: any;
   }>;
+  parentContext?: import('../types/context').ParentContext;
+  siblingContext?: import('../types/context').SiblingContext[];
+  previousEntryContext?: import('../types/context').PreviousEntryContext[];
 }
 
 export interface GenerateSuggestionsResponse {
@@ -244,6 +247,39 @@ export class FeedbackService {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     } catch (error) {
       console.error('Failed to clear feedback for question:', error);
+    }
+  }
+
+  static deleteFeedbackBySuggestionId(suggestionId: string): void {
+    try {
+      const allFeedback = this.getAllFeedback();
+      const filtered = allFeedback.filter(
+        (f) => f.suggestionId !== suggestionId
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete feedback by suggestion ID:', error);
+    }
+  }
+
+  static deleteFeedbackBySuggestionIds(suggestionIds: string[]): void {
+    try {
+      const allFeedback = this.getAllFeedback();
+      const suggestionIdSet = new Set(suggestionIds);
+      const filtered = allFeedback.filter(
+        (f) => !suggestionIdSet.has(f.suggestionId)
+      );
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    } catch (error) {
+      console.error('Failed to delete feedback by suggestion IDs:', error);
+    }
+  }
+
+  static clearAllFeedback(): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    } catch (error) {
+      console.error('Failed to clear all feedback:', error);
     }
   }
 }

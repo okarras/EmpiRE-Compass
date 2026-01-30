@@ -126,8 +126,22 @@ export const QuestionnaireAIProvider: React.FC<{ children: ReactNode }> = ({
   }, [state]);
 
   const getHistoryByQuestion = (questionId: string) => {
+    let excludedItems: Set<string> = new Set();
+    try {
+      const stored = localStorage.getItem('questionnaire_ai_excluded_items');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        excludedItems = new Set(parsed);
+      }
+    } catch (error) {
+      console.error('Failed to load excluded items:', error);
+    }
+
     return state.history
-      .filter((entry) => entry.questionId === questionId)
+      .filter(
+        (entry) =>
+          entry.questionId === questionId && !excludedItems.has(entry.id)
+      )
       .sort((a, b) => b.timestamp - a.timestamp);
   };
 

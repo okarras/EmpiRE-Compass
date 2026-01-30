@@ -15,6 +15,7 @@ import InfoTooltip from '../InfoTooltip';
 import QuestionRenderer from './QuestionRenderer';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
+import type { ParentContext } from '../../../types/context';
 
 const RepeatGroupQuestion: React.FC<{
   q: any;
@@ -133,27 +134,54 @@ const RepeatGroupQuestion: React.FC<{
                 </AccordionSummary>
                 <AccordionDetails>
                   <Box sx={{ display: 'grid', gap: 1 }}>
-                    {(q.item_fields || []).map((f: any) => (
-                      <QuestionRenderer
-                        key={f.id}
-                        q={f}
-                        value={item[f.id]}
-                        onChange={(nv) => {
-                          const copy = [...arr];
-                          copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
-                          onChange(copy);
-                        }}
-                        idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
-                        level={level + 1}
-                        pdfContent={pdfContent}
-                        structuredDocument={structuredDocument}
-                        onNavigateToPage={onNavigateToPage}
-                        onHighlightsChange={onHighlightsChange}
-                        pdfUrl={pdfUrl}
-                        pageWidth={pageWidth}
-                        onAIVerificationComplete={onAIVerificationComplete}
-                      />
-                    ))}
+                    {(q.item_fields || []).map((f: any) => {
+                      const parentContext: ParentContext = {
+                        questionText: q.label,
+                        answer: JSON.stringify(item),
+                        questionId: q.id,
+                        questionType: 'repeat_group',
+                      };
+
+                      const siblingQuestionIds = (q.item_fields || []).map(
+                        (field: any) => field.id
+                      );
+
+                      const questionDefinitions = (q.item_fields || []).reduce(
+                        (acc: Record<string, any>, field: any) => {
+                          acc[field.id] = field;
+                          return acc;
+                        },
+                        {}
+                      );
+
+                      return (
+                        <QuestionRenderer
+                          key={f.id}
+                          q={f}
+                          value={item[f.id]}
+                          onChange={(nv) => {
+                            const copy = [...arr];
+                            copy[idx] = { ...(copy[idx] ?? {}), [f.id]: nv };
+                            onChange(copy);
+                          }}
+                          idAttr={`${idAttr ?? q.id}-item-${idx}-f-${f.id}`}
+                          level={level + 1}
+                          pdfContent={pdfContent}
+                          structuredDocument={structuredDocument}
+                          onNavigateToPage={onNavigateToPage}
+                          onHighlightsChange={onHighlightsChange}
+                          pdfUrl={pdfUrl}
+                          pageWidth={pageWidth}
+                          onAIVerificationComplete={onAIVerificationComplete}
+                          parentContext={parentContext}
+                          allAnswers={item}
+                          siblingQuestionIds={siblingQuestionIds}
+                          questionDefinitions={questionDefinitions}
+                          allEntries={arr}
+                          currentEntryIndex={idx}
+                        />
+                      );
+                    })}
                   </Box>
                 </AccordionDetails>
               </Accordion>

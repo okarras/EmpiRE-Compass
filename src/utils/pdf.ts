@@ -4,6 +4,10 @@ import { findMatchesOnPage } from '../pages/PdfHighlights';
 import type { Evidence, EvidenceHighlight, HighlightRect } from './suggestions';
 import { preprocessSearchText } from './robustPdfMatcher';
 
+if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+}
+
 //  Service for extracting text from PDF documents with caching
 
 export class PDFTextExtractor {
@@ -227,17 +231,11 @@ export async function generateEvidenceHighlight(
 
     if (rects.length === 0) {
       console.warn(
-        `[Evidence Highlighter] No matches on page ${evidence.pageNumber}, searching nearby pages...`
+        `[Evidence Highlighter] No matches on page ${evidence.pageNumber}, searching all pages...`
       );
 
-      const searchRange = 2;
-      const startPage = Math.max(1, evidence.pageNumber - searchRange);
-      const endPage = Math.min(
-        pdfDoc.numPages,
-        evidence.pageNumber + searchRange
-      );
-
-      for (let pageNum = startPage; pageNum <= endPage; pageNum++) {
+      // Search all pages in the document
+      for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
         if (pageNum === evidence.pageNumber) continue;
 
         console.log(`[Evidence Highlighter] Trying page ${pageNum}...`);
@@ -248,17 +246,23 @@ export async function generateEvidenceHighlight(
 
         if (rects.length > 0) {
           actualPageNumber = pageNum;
-          console.log(`[Evidence Highlighter] ✓ Found on page ${pageNum}!`);
+          console.log(
+            `[Evidence Highlighter] Match found on page ${pageNum} (originally page ${evidence.pageNumber})`
+          );
           break;
         }
       }
+    } else {
+      console.log(
+        `[Evidence Highlighter] Match found on specified page ${evidence.pageNumber}`
+      );
     }
 
     console.log('[Evidence Highlighter] Found rectangles:', rects);
 
     if (rects.length === 0) {
       console.warn(
-        `[Evidence Highlighter] No matches found for evidence (searched pages ${Math.max(1, evidence.pageNumber - 2)} to ${Math.min(pdfDoc.numPages, evidence.pageNumber + 2)}):`,
+        `[Evidence Highlighter] No matches found for evidence (searched all ${pdfDoc.numPages} pages):`,
         searchText
       );
       return null;

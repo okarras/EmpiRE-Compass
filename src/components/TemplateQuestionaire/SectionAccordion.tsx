@@ -16,6 +16,8 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import QuestionRenderer from './Questions/QuestionRenderer';
 import type { StructuredDocument } from '../../utils/structuredPdfExtractor';
+import type { SemanticDocument } from '../../utils/semanticChunker';
+import type { ParentContext } from '../../types/context';
 
 type Props = {
   sec: any;
@@ -38,6 +40,8 @@ type Props = {
   isExpandedKey: (k: string) => boolean;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  semanticDocument?: SemanticDocument | null;
+  isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
     highlights: Record<
@@ -55,6 +59,12 @@ type Props = {
   ) => void;
   onAIVerificationComplete?: (result: any) => void;
   aiVerifications?: Record<string, any>;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
 };
 
 const SectionAccordion: React.FC<Props> = ({
@@ -73,6 +83,8 @@ const SectionAccordion: React.FC<Props> = ({
   isExpandedKey,
   pdfContent,
   structuredDocument,
+  semanticDocument,
+  isProcessingPdf,
   onNavigateToPage,
   onHighlightsChange,
   pdfUrl,
@@ -81,7 +93,13 @@ const SectionAccordion: React.FC<Props> = ({
   validationErrors = {},
   onRegisterQuestionRef,
   onAIVerificationComplete,
-  aiVerifications = {},
+  aiVerifications: _aiVerifications = {},
+  parentContext,
+  allAnswers,
+  siblingQuestionIds,
+  questionDefinitions,
+  allEntries,
+  currentEntryIndex,
 }) => {
   const many = isManySection(sec);
   const secKey = sec.id ?? String(si);
@@ -188,6 +206,8 @@ const SectionAccordion: React.FC<Props> = ({
                   level={1}
                   pdfContent={pdfContent}
                   structuredDocument={structuredDocument}
+                  semanticDocument={semanticDocument}
+                  isProcessingPdf={isProcessingPdf}
                   onNavigateToPage={onNavigateToPage}
                   onHighlightsChange={onHighlightsChange}
                   pdfUrl={pdfUrl}
@@ -199,6 +219,12 @@ const SectionAccordion: React.FC<Props> = ({
                       : undefined
                   }
                   onAIVerificationComplete={onAIVerificationComplete}
+                  parentContext={parentContext}
+                  allAnswers={allAnswers}
+                  siblingQuestionIds={siblingQuestionIds}
+                  questionDefinitions={questionDefinitions}
+                  allEntries={allEntries}
+                  currentEntryIndex={currentEntryIndex}
                 />
               );
             })}
@@ -269,6 +295,8 @@ const SectionAccordion: React.FC<Props> = ({
                               level={1}
                               pdfContent={pdfContent}
                               structuredDocument={structuredDocument}
+                              semanticDocument={semanticDocument}
+                              isProcessingPdf={isProcessingPdf}
                               onNavigateToPage={onNavigateToPage}
                               onHighlightsChange={onHighlightsChange}
                               pdfUrl={pdfUrl}
@@ -283,6 +311,12 @@ const SectionAccordion: React.FC<Props> = ({
                               onAIVerificationComplete={
                                 onAIVerificationComplete
                               }
+                              parentContext={parentContext}
+                              allAnswers={allAnswers}
+                              siblingQuestionIds={siblingQuestionIds}
+                              questionDefinitions={questionDefinitions}
+                              allEntries={allEntries}
+                              currentEntryIndex={idx}
                             />
                           );
                         })}

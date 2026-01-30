@@ -74,10 +74,6 @@ const ContributePage: React.FC = () => {
     };
   }, [uploading]);
 
-  function openFilePicker() {
-    inputRef.current?.click();
-  }
-
   function validateAndSet(f: File | null) {
     setSnackbarOpen(false);
     if (!f) return;

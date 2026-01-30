@@ -32,10 +32,8 @@ import {
 } from '../../utils/suggestions';
 import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
 import QuestionnaireAIHistoryDialog from './QuestionnaireAIHistoryDialog';
-import {
-  structuredPdfExtractor,
-  type StructuredDocument,
-} from '../../utils/structuredPdfExtractor';
+import { type StructuredDocument } from '../../utils/structuredPdfExtractor';
+import type { ParentContext } from '../../types/context';
 
 interface AIAssistantButtonProps {
   questionId: string;
@@ -49,8 +47,15 @@ interface AIAssistantButtonProps {
   disabled?: boolean;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
+  isProcessingPdf?: boolean;
   context?: string;
   hasSuggestions?: boolean;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
 }
 
 export interface AIAssistantButtonRef {
@@ -75,8 +80,15 @@ const AIAssistantButton = React.forwardRef<
       disabled = false,
       pdfContent,
       structuredDocument,
+      isProcessingPdf = false,
       context,
       hasSuggestions = false,
+      parentContext,
+      allAnswers,
+      siblingQuestionIds,
+      questionDefinitions,
+      allEntries,
+      currentEntryIndex,
     },
     ref
   ) => {
@@ -99,26 +111,12 @@ const AIAssistantButton = React.forwardRef<
       setTimeout(() => setAnnounceMessage(''), 100);
     }, []);
 
-    // Use intelligent content retrieval if structured document is available
+    // Use intelligent content retrieval
     const relevantPdfContent = useMemo(() => {
-      if (structuredDocument) {
-        // Use selective retrieval based on question text
-        const retrieval = structuredPdfExtractor.retrieveForQuestion(
-          structuredDocument,
-          questionText,
-          4000 // max tokens
-        );
-        console.log('[AIAssistantButton] Using intelligent retrieval:', {
-          question: questionText.substring(0, 50),
-          sections: retrieval.sections,
-          pages: retrieval.pages,
-          tokenEstimate: retrieval.tokenEstimate,
-        });
-        return retrieval.content;
-      }
-      // Fallback to full content
+      // Backend semantic chunking is handled in useSuggestionGenerator hook
+      // Just return the PDF content as-is
       return pdfContent;
-    }, [structuredDocument, questionText, pdfContent]);
+    }, [pdfContent]);
 
     const {
       suggestions,
@@ -132,6 +130,13 @@ const AIAssistantButton = React.forwardRef<
       questionOptions,
       pdfContent: relevantPdfContent,
       questionId,
+      parentContext,
+      allAnswers,
+      siblingQuestionIds,
+      questionDefinitions,
+      allEntries,
+      currentEntryIndex,
+      structuredDocument,
     });
 
     const notifiedSuggestionsRef = useRef<string>('');
@@ -340,13 +345,23 @@ const AIAssistantButton = React.forwardRef<
     );
 
     const isDisabled =
-      disabled || suggestLoading || isVerifying || !questionText.trim();
+      disabled ||
+      suggestLoading ||
+      isVerifying ||
+      !questionText.trim() ||
+      isProcessingPdf;
     const isRetryable =
       lastError &&
       rawError &&
       !isAuthError(rawError) &&
       !isConfigError(rawError);
     const isLoading = suggestLoading || isVerifying;
+
+    const buttonText = isProcessingPdf
+      ? 'Processing PDF...'
+      : isLoading
+        ? 'Processing...'
+        : 'AI Assistant';
 
     return (
       <>
@@ -371,9 +386,11 @@ const AIAssistantButton = React.forwardRef<
               ? 'Question text is required'
               : !isConfigured
                 ? 'Configure AI to use assistant'
-                : isLoading
-                  ? 'Processing...'
-                  : 'AI Assistant - Suggest or Verify answers'
+                : isProcessingPdf
+                  ? 'Processing PDF, please wait...'
+                  : isLoading
+                    ? 'Processing...'
+                    : 'AI Assistant - Suggest or Verify answers'
           }
         >
           <span>
@@ -383,7 +400,11 @@ const AIAssistantButton = React.forwardRef<
               onClick={handleMenuOpen}
               disabled={isDisabled}
               endIcon={
-                isLoading ? <CircularProgress size={16} /> : <ArrowDropDown />
+                isLoading || isProcessingPdf ? (
+                  <CircularProgress size={16} />
+                ) : (
+                  <ArrowDropDown />
+                )
               }
               startIcon={<AutoAwesome sx={{ fontSize: 18 }} />}
               sx={{
@@ -407,7 +428,7 @@ const AIAssistantButton = React.forwardRef<
               aria-haspopup="true"
               aria-expanded={Boolean(anchorEl)}
             >
-              {isLoading ? 'Processing...' : 'AI Assistant'}
+              {buttonText}
             </Button>
           </span>
         </Tooltip>

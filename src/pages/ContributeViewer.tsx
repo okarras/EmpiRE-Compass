@@ -41,6 +41,7 @@ const ContributeViewer: React.FC = () => {
   );
   const [structuredDocument, setStructuredDocument] =
     useState<StructuredDocument | null>(null);
+  const [isProcessingPdf, setIsProcessingPdf] = useState<boolean>(false);
   const [pdfExtractionError, setPdfExtractionError] = useState<Error | null>(
     null
   );
@@ -153,20 +154,35 @@ const ContributeViewer: React.FC = () => {
     console.log('[ContributeViewer] PDF text extracted, length:', text.length);
     setExtractedPdfText(text);
 
-    // Also extract structured document for intelligent retrieval
+    // Also extract structured document for backend semantic chunking
+    console.log('[ContributeViewer] pdfUrl available:', !!pdfUrl);
     if (pdfUrl) {
+      let structured: StructuredDocument | null = null;
+
       try {
-        const structured =
-          await structuredPdfExtractor.extractStructuredDocument(
-            pdfUrl,
-            locState.filename
-          );
+        console.log(
+          '[ContributeViewer] Calling structuredPdfExtractor.extractStructuredDocument...'
+        );
+        structured = await structuredPdfExtractor.extractStructuredDocument(
+          pdfUrl,
+          locState.filename
+        );
+        console.log(
+          '[ContributeViewer] Structured extraction returned, checking result...'
+        );
+        console.log(
+          '[ContributeViewer] structured is null?',
+          structured === null
+        );
+
         setStructuredDocument(structured);
         console.log('[ContributeViewer] Structured document extracted:', {
           pages: structured.metadata.totalPages,
-          sections: structured.sections.map((s) => s.name),
-          hasStructure: structured.metadata.hasStructuredSections,
+          words: structured.metadata.totalWords,
         });
+        console.log(
+          '[ContributeViewer] Backend will handle semantic chunking when generating suggestions'
+        );
       } catch (err) {
         console.warn(
           '[ContributeViewer] Structured extraction failed, using fallback:',
@@ -174,6 +190,10 @@ const ContributeViewer: React.FC = () => {
         );
         // Continue with basic text extraction as fallback
       }
+    } else {
+      console.warn(
+        '[ContributeViewer] No pdfUrl available, skipping structured extraction'
+      );
     }
 
     // Set a global flag for debugging (can be removed later)
@@ -194,6 +214,7 @@ const ContributeViewer: React.FC = () => {
     // Clear the error state
     setPdfExtractionError(null);
     setStructuredDocument(null);
+    setIsProcessingPdf(false);
 
     // Force re-extraction by clearing the cache and resetting the PDF URL
     if (pdfUrl) {
@@ -243,6 +264,7 @@ const ContributeViewer: React.FC = () => {
           setAnswers={setAnswers}
           pdfContent={extractedPdfText}
           structuredDocument={structuredDocument}
+          isProcessingPdf={isProcessingPdf}
           onNavigateToPage={handleGoToPage}
           pdfExtractionError={pdfExtractionError}
           onRetryExtraction={handleRetryExtraction}

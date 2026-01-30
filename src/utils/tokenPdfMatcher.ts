@@ -118,7 +118,6 @@ export function findTokenMatch(
 }
 
 function findTokenCharPosition(text: string, tokenIndex: number): number {
-  const tokens = text.toLowerCase().split(/\s+/);
   let charPos = 0;
   let currentToken = 0;
 

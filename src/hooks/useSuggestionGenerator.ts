@@ -5,7 +5,11 @@ import {
   type Suggestion,
   FeedbackService,
 } from '../utils/suggestions';
+import type { ParentContext } from '../types/context';
+import { contextGatherer } from '../utils/contextGatherer';
 import { useQuestionnaireAI } from '../context/QuestionnaireAIContext';
+import type { StructuredDocument } from '../utils/structuredPdfExtractor';
+import { useAppSelector } from '../store/hooks';
 
 interface UseSuggestionGeneratorProps {
   questionText: string;
@@ -13,6 +17,13 @@ interface UseSuggestionGeneratorProps {
   questionOptions?: string[];
   pdfContent?: string;
   questionId?: string;
+  parentContext?: ParentContext;
+  allAnswers?: Record<string, any>;
+  siblingQuestionIds?: string[];
+  questionDefinitions?: Record<string, any>;
+  allEntries?: any[];
+  currentEntryIndex?: number;
+  structuredDocument?: StructuredDocument | null;
 }
 
 interface UseSuggestionGeneratorReturn {
@@ -41,32 +52,25 @@ const generateCacheKey = (questionText: string, pdfContent: string): string => {
   return `suggestion_${questionHash}_${pdfHash}`;
 };
 
-// Get excluded items from localStorage
-const getExcludedItems = (): Set<string> => {
-  try {
-    const stored = localStorage.getItem('questionnaire_ai_excluded_items');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      return new Set(parsed);
-    }
-  } catch (error) {
-    console.error('Failed to load excluded items:', error);
-  }
-  return new Set<string>();
-};
-
-//  Hook for generating AI-powered suggestions for questionnaire questions.
-//  Handles caching, validation, and error states.
-
 const useSuggestionGenerator = ({
   questionText,
   questionType,
   questionOptions,
   pdfContent,
   questionId,
+  parentContext,
+  allAnswers,
+  siblingQuestionIds,
+  questionDefinitions,
+  allEntries,
+  currentEntryIndex,
+  structuredDocument,
 }: UseSuggestionGeneratorProps): UseSuggestionGeneratorReturn => {
   const aiService = useAIService();
   const { getHistoryByQuestion } = useQuestionnaireAI();
+
+  const aiConfig = useAppSelector((state) => state.ai);
+
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,24 +107,129 @@ const useSuggestionGenerator = ({
         ? FeedbackService.getFeedbackForQuestion(questionId)
         : [];
 
-      const contextHistory = questionId ? getHistoryByQuestion(questionId) : [];
+      let contextHistory = questionId ? getHistoryByQuestion(questionId) : [];
 
-      const excludedItems = getExcludedItems();
+      if (previousFeedback.length > 0) {
+        const feedbackMap = new Map(
+          previousFeedback.map((f) => [f.suggestionId, f])
+        );
 
-      const includedContext = contextHistory.filter(
-        (item) => !excludedItems.has(item.id)
-      );
+        contextHistory = contextHistory.map((item) => {
+          const suggestionId = item.metadata?.originalSuggestionId;
+          if (suggestionId && feedbackMap.has(suggestionId)) {
+            const feedback = feedbackMap.get(suggestionId)!;
+            return {
+              ...item,
+              metadata: {
+                ...item.metadata,
+                feedback: {
+                  rating: feedback.rating,
+                  comment: feedback.comment,
+                },
+              },
+            };
+          }
+          return item;
+        });
+      }
 
-      const contextToSend = includedContext;
+      const siblingContext =
+        siblingQuestionIds && allAnswers && questionDefinitions && questionId
+          ? contextGatherer.gatherSiblingContext(
+              questionId,
+              siblingQuestionIds,
+              allAnswers,
+              questionDefinitions
+            )
+          : undefined;
+
+      const previousEntryContext =
+        allEntries &&
+        currentEntryIndex !== undefined &&
+        questionDefinitions &&
+        currentEntryIndex > 0
+          ? contextGatherer.gatherPreviousEntryContext(
+              currentEntryIndex,
+              allEntries,
+              Object.values(questionDefinitions)
+            )
+          : undefined;
+
+      const truncatedContexts = contextGatherer.applyTokenLimits({
+        parentContext,
+        siblingContext,
+        previousEntryContext,
+      });
+
+      if (truncatedContexts.truncated) {
+        console.log('Context was truncated to fit within token limits');
+      }
+
+      let pdfContentForLLM = pdfContent;
+
+      if (structuredDocument) {
+        try {
+          console.log(
+            '[useSuggestionGenerator] Using backend semantic chunking for content selection'
+          );
+
+          const semanticResult = await aiService.getSemanticChunks(
+            questionText,
+            structuredDocument.pages,
+            4000
+          );
+
+          console.log(
+            `[useSuggestionGenerator] Backend returned ${semanticResult.totalChunks} relevant chunks (${semanticResult.totalTokens} tokens)`
+          );
+
+          const formattedChunks = semanticResult.chunks
+            .map(
+              (chunk: {
+                text: string;
+                pageNumber: number;
+                similarity: number;
+                tokenEstimate: number;
+              }) => {
+                return `[PAGE ${chunk.pageNumber}]\n${chunk.text}`;
+              }
+            )
+            .join('\n\n');
+
+          pdfContentForLLM = formattedChunks;
+
+          console.log(
+            `[useSuggestionGenerator] Formatted content length: ${pdfContentForLLM.length} chars`
+          );
+        } catch (error) {
+          console.error(
+            '[useSuggestionGenerator] Backend semantic chunking failed, falling back to full text:',
+            error
+          );
+          pdfContentForLLM = pdfContent;
+        }
+      } else {
+        console.log(
+          '[useSuggestionGenerator] No structured document available, using full PDF content'
+        );
+      }
 
       const response = await aiService.generateSuggestions({
         questionText,
         questionType,
         questionOptions,
-        pdfContent,
-        previousFeedback:
-          previousFeedback.length > 0 ? previousFeedback : undefined,
-        contextHistory: contextToSend.length > 0 ? contextToSend : undefined,
+        pdfContent: pdfContentForLLM,
+        contextHistory: contextHistory.length > 0 ? contextHistory : undefined,
+        parentContext: truncatedContexts.parentContext,
+        siblingContext: truncatedContexts.siblingContext,
+        previousEntryContext: truncatedContexts.previousEntryContext,
+        provider: aiConfig.provider,
+        model:
+          aiConfig.provider === 'openai'
+            ? aiConfig.openaiModel
+            : aiConfig.provider === 'groq'
+              ? aiConfig.groqModel
+              : aiConfig.mistralModel,
       });
 
       if (!response.suggestions?.length) {
@@ -148,6 +257,18 @@ const useSuggestionGenerator = ({
     questionId,
     aiService,
     loading,
+    parentContext,
+    allAnswers,
+    allEntries,
+    currentEntryIndex,
+    siblingQuestionIds,
+    questionDefinitions,
+    structuredDocument,
+    aiConfig.provider,
+    aiConfig.openaiModel,
+    aiConfig.groqModel,
+    aiConfig.mistralModel,
+    getHistoryByQuestion,
   ]);
 
   const clearSuggestions = useCallback(() => {

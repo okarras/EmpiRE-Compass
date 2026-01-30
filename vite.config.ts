@@ -91,6 +91,11 @@ export default defineConfig({
       '@mui/icons-material',
       '@mui/x-charts',
       '@mui/x-data-grid',
+      'pdfjs-dist',
     ],
+    exclude: ['@xenova/transformers'],
+  },
+  worker: {
+    format: 'es',
   },
 });
