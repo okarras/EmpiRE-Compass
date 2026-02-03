@@ -40,54 +40,75 @@ export interface DynamicQuestion {
     templateMapping?: Record<string, any> | null;
     targetClassId?: string | null;
   };
+  // Community features
+  status?: 'pending' | 'published' | 'rejected';
+  publishedAt?: number;
+  reviewerId?: string;
+  likes?: number;
+  likedBy?: string[]; // Array of user IDs who liked the question
 }
 
 /**
- * Get all dynamic questions (examples) from Firebase
- * @param limitCount - Maximum number of questions to return (default: 50)
+ * Toggle like for a dynamic question
+ * @param questionId - The ID of the question
+ * @param userId - The ID of the user toggling like
+ * @param isCommunity - Whether it's a community question (default true)
  */
-export const getDynamicQuestions = async (
-  limitCount = 50
-): Promise<DynamicQuestion[]> => {
+export const toggleLike = async (
+  questionId: string,
+  userId: string,
+  isCommunity: boolean = true
+): Promise<DynamicQuestion | null> => {
   if (!db) {
-    console.warn(
-      'Firebase is not initialized. Cannot fetch dynamic questions.'
-    );
-    return [];
+    throw new Error('Firebase not initialized');
   }
 
   try {
-    const questionsRef = collection(db, 'DynamicQuestions');
-    // We filter OUT community questions from the main list if needed, or keeping them separate?
-    // The requirement says "Community Questions should be something like the dashboard... to show questions of CommunityQuestions"
-    // Usually "Examples" are curated, "Community" are user submitted.
-    // For now, let's assume getDynamicQuestions fetches ALL or just curated ones?
-    // Let's rely on isCommunity flag. If undefined/false, it might be a system example.
+    const collectionName = isCommunity
+      ? 'CommunityQuestions'
+      : 'DynamicQuestions';
+    const questionRef = doc(db, collectionName, questionId);
 
-    // For backward compatibility, we just order by timestamp.
-    // But maybe we want to filter OUT community questions here if this function is used for "System Examples"?
-    // The DynamicQuestionExamples component uses this.
-    // Let's assume this returns EVERYTHING for now unless we want to filter.
-    // Actually, usually "Examples" are mixed. But let's add a specific getter for Community ones.
+    // We use a transaction to ensure atomic updates
+    // But for simplicity/speed, we can just read-update-write if contention is low.
+    // Given the prompt context, standardized transaction or just simple get/set is fine.
+    // Let's do a simple get/set for now to keep file size manageable,
+    // but ideally this should be a transaction.
 
-    const q = query(
-      questionsRef,
-      orderBy('timestamp', 'desc'),
-      limit(limitCount)
-    );
-    const querySnapshot = await getDocs(q);
+    // Actually, let's just do a normal update.
+    const snap = await getDoc(questionRef);
+    if (!snap.exists()) return null;
 
-    const questions: DynamicQuestion[] = [];
-    querySnapshot.forEach((docSnapshot) => {
-      questions.push({
-        id: docSnapshot.id,
-        ...docSnapshot.data(),
-      } as DynamicQuestion);
-    });
+    const data = snap.data() as DynamicQuestion;
+    const likedBy = data.likedBy || [];
+    const hasLiked = likedBy.includes(userId);
 
-    return questions;
+    let newLikedBy = [...likedBy];
+    let newLikes = data.likes || 0;
+
+    if (hasLiked) {
+      newLikedBy = newLikedBy.filter((id) => id !== userId);
+      newLikes = Math.max(0, newLikes - 1);
+    } else {
+      newLikedBy.push(userId);
+      newLikes = newLikes + 1;
+    }
+
+    const updates = {
+      likes: newLikes,
+      likedBy: newLikedBy,
+    };
+
+    await setDoc(questionRef, updates, { merge: true });
+
+    return {
+      ...data,
+      ...updates,
+      id: snap.id,
+      isCommunity, // helper return
+    };
   } catch (error) {
-    console.error('Error fetching dynamic questions:', error);
+    console.error('Error toggling like:', error);
     throw error;
   }
 };
@@ -161,6 +182,39 @@ export const getDynamicQuestion = async (
 };
 
 /**
+ * Get a single community question by ID
+ * @param questionId - The ID of the question to fetch
+ */
+export const getCommunityQuestion = async (
+  questionId: string
+): Promise<DynamicQuestion | null> => {
+  if (!db) {
+    console.warn(
+      'Firebase is not initialized. Cannot fetch community question.'
+    );
+    return null;
+  }
+
+  try {
+    const questionRef = doc(db, 'CommunityQuestions', questionId);
+    const questionSnap = await getDoc(questionRef);
+
+    if (questionSnap.exists()) {
+      return {
+        id: questionSnap.id,
+        ...questionSnap.data(),
+        isCommunity: true, // Ensure flag is set when fetched from this collection
+      } as DynamicQuestion;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching community question:', error);
+    throw error;
+  }
+};
+
+/**
  * Create or update a dynamic question
  * @param question - The dynamic question data
  * @param questionId - Optional ID, if not provided uses question.id
@@ -190,6 +244,12 @@ export const saveDynamicQuestion = async (
     const dataToSave = {
       ...questionData,
       templateId: question.state?.templateId || question.templateId || null,
+      status: question.status || 'pending', // Default to pending if not specified for community? Or keep undefined?
+      // Actually, for backward compatibility, if it's NOT community, status might be undefined.
+      // If it IS community, default to pending if missing.
+      ...(question.isCommunity && !question.status
+        ? { status: 'pending' }
+        : {}),
     };
 
     // Remove undefined values to prevent Firestore errors
@@ -303,14 +363,54 @@ export const deleteDynamicQuestion = async (
   }
 };
 
+/**
+ * Get all dynamic questions (examples) from Firebase
+ * @param limitCount - Maximum number of questions to return (default: 50)
+ */
+export const getDynamicQuestions = async (
+  limitCount = 50
+): Promise<DynamicQuestion[]> => {
+  if (!db) {
+    console.warn(
+      'Firebase is not initialized. Cannot fetch dynamic questions.'
+    );
+    return [];
+  }
+
+  try {
+    const questionsRef = collection(db, 'DynamicQuestions');
+    const q = query(
+      questionsRef,
+      orderBy('timestamp', 'desc'),
+      limit(limitCount)
+    );
+    const querySnapshot = await getDocs(q);
+
+    const questions: DynamicQuestion[] = [];
+    querySnapshot.forEach((docSnapshot) => {
+      questions.push({
+        id: docSnapshot.id,
+        ...docSnapshot.data(),
+      } as DynamicQuestion);
+    });
+
+    return questions;
+  } catch (error) {
+    console.error('Error fetching dynamic questions:', error);
+    throw error;
+  }
+};
+
 const CRUDDynamicQuestions = {
   getDynamicQuestions,
   getCommunityQuestions,
+  getCommunityQuestion,
   getDynamicQuestion,
   getDynamicQuestionsByTemplate,
   saveDynamicQuestion,
   deleteDynamicQuestion,
   importDynamicQuestions,
+  toggleLike,
 };
 
 export default CRUDDynamicQuestions;

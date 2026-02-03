@@ -62,12 +62,12 @@ const SaveDynamicQuestionDialog = ({
     }
   };
 
-  const title = mode === 'save' ? 'Save as Example' : 'Share with Community';
+  const title = mode === 'save' ? 'Save as Example' : 'Publish in Community';
   const description =
     mode === 'save'
       ? 'Save this dynamic question as a system example.'
-      : 'Share this dynamic question with the community. It will be visible to all users.';
-  const buttonLabel = mode === 'save' ? 'Save Example' : 'Share Question';
+      : 'Share this dynamic question with the community. It will be reviewed by an admin before being published.';
+  const buttonLabel = mode === 'save' ? 'Save Example' : 'Publish in Community';
   const icon = mode === 'save' ? <Save /> : <Groups3Icon />; // Need to import Groups3Icon if using it, or just use Save/Share icon
 
   return (
