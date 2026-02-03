@@ -6,7 +6,15 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
+  Tabs,
+  Tab,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputAdornment,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import Groups3Icon from '@mui/icons-material/Groups3';
 import CRUDDynamicQuestions, {
   DynamicQuestion,
@@ -22,6 +30,69 @@ const CommunityQuestions = () => {
 
   const { user } = useAuthData();
   const isAdmin = user?.is_admin === true;
+  console.log(questions);
+
+  const [filterStatus, setFilterStatus] = useState<
+    'all' | 'pending' | 'published' | 'rejected'
+  >('published');
+
+  // If user is admin, default to 'pending' if any? Or stick to 'published'?
+  // Let's stick to 'published' as default for everyone, but admins see tabs.
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<
+    'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'popular'
+  >('newest');
+
+  const filteredQuestions = questions
+    .filter((q) => {
+      // 1. Filter by Status/Role
+      if (!isAdmin) {
+        // Regular users only see published or their own
+        if (
+          !(
+            q.status === 'published' ||
+            q.status === undefined ||
+            q.createdBy === user?.id
+          )
+        ) {
+          return false;
+        }
+      } else if (filterStatus !== 'all') {
+        // Admin filter
+        const status = q.status || 'published';
+        if (status !== filterStatus) return false;
+      }
+
+      // 2. Filter by Search Term
+      if (searchTerm) {
+        const lowerTerm = searchTerm.toLowerCase();
+        const matchesName = q.name?.toLowerCase().includes(lowerTerm);
+        const matchesCreator = q.creatorName?.toLowerCase().includes(lowerTerm);
+        if (!matchesName && !matchesCreator) return false;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      // 3. Sort
+      if (sortBy === 'newest') {
+        return b.timestamp - a.timestamp;
+      }
+      if (sortBy === 'oldest') {
+        return a.timestamp - b.timestamp;
+      }
+      if (sortBy === 'popular') {
+        return (b.likes || 0) - (a.likes || 0);
+      }
+      if (sortBy === 'name_asc') {
+        return a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'name_desc') {
+        return b.name.localeCompare(a.name);
+      }
+      return 0;
+    });
 
   const fetchQuestions = async () => {
     try {
@@ -102,6 +173,85 @@ const CommunityQuestions = () => {
       </Box>
 
       <Box sx={{ width: '100%', maxWidth: '1000px' }}>
+        {/* Controls Area */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            mb: 3,
+            gap: 2,
+          }}
+        >
+          {/* Search Bar */}
+          <TextField
+            placeholder="Search questions or creators..."
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ flexGrow: 1, width: { xs: '100%', md: 'auto' } }}
+          />
+
+          {/* Sort Dropdown */}
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              displayEmpty
+              inputProps={{ 'aria-label': 'Sort by' }}
+            >
+              <MenuItem value="newest">Newest First</MenuItem>
+              <MenuItem value="popular">Most Popular</MenuItem>
+              <MenuItem value="oldest">Oldest First</MenuItem>
+              <MenuItem value="name_asc">Name (A-Z)</MenuItem>
+              <MenuItem value="name_desc">Name (Z-A)</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        {isAdmin && (
+          <Box sx={{ width: '100%', mb: 3 }}>
+            <Tabs
+              value={filterStatus}
+              onChange={(_, val) => setFilterStatus(val)}
+              textColor="primary"
+              indicatorColor="primary"
+              variant="scrollable"
+            >
+              <Tab label="Published" value="published" />
+              <Tab
+                label="Pending"
+                value="pending"
+                icon={
+                  questions.some((q) => q.status === 'pending') ? (
+                    <Box
+                      component="span"
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        bgcolor: 'error.main',
+                        borderRadius: '50%',
+                      }}
+                    />
+                  ) : undefined
+                }
+                iconPosition="end"
+              />
+              <Tab label="Rejected" value="rejected" />
+              <Tab label="All" value="all" />
+            </Tabs>
+          </Box>
+        )}
+
         {loading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress sx={{ color: '#e86161' }} />
@@ -125,19 +275,23 @@ const CommunityQuestions = () => {
           </Alert>
         </Snackbar>
 
-        {!loading && !error && questions.length === 0 && (
+        {!loading && !error && filteredQuestions.length === 0 && (
           <Alert severity="info" sx={{ mb: 4 }}>
-            No community questions available yet. Be the first to share one from
-            the Playground!
+            {searchTerm
+              ? 'No questions match your search.'
+              : filterStatus === 'pending'
+                ? 'No pending questions.'
+                : 'No community questions available in this category yet.'}
           </Alert>
         )}
 
         {!loading &&
-          questions.map((q) => (
+          filteredQuestions.map((q) => (
             <Box key={q.id} sx={{ mb: 3 }}>
               <CommunityQuestionAccordion
                 question={q}
                 onDelete={isAdmin ? () => handleDelete(q.id) : undefined}
+                // Pass isAdmin to component if needed, or context usage inside
               />
             </Box>
           ))}

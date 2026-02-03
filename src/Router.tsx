@@ -24,6 +24,10 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 
+const CommunityQuestionDetailsPage = lazy(
+  () => import('./pages/CommunityQuestionDetailsPage')
+);
+
 const Router = () => {
   return (
     <>
@@ -78,6 +82,11 @@ const Router = () => {
             <Route
               path="community-questions"
               element={<CommunityQuestions />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="community-questions/:id"
+              element={<CommunityQuestionDetailsPage />}
               errorElement={<ErrorFallback />}
             />
             <Route

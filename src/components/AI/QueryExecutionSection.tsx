@@ -163,7 +163,7 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
                 whiteSpace: 'nowrap',
               }}
             >
-              Share
+              Publish in Community
             </Button>
           )}
           {isAdmin && onSave && (

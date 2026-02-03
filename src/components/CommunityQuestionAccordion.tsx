@@ -14,13 +14,18 @@ import {
 import { useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FeedIcon from '@mui/icons-material/Feed';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HTMLRenderer from './AI/HTMLRenderer';
 import SectionSelector from './SectionSelector';
-import QuestionInformation from './QuestionInformation';
 import QuestionDataGridView from './QuestionDataGridView';
-import { DynamicQuestion } from '../firestore/CRUDDynamicQuestions';
-import { useNavigate } from 'react-router';
+import CRUDDynamicQuestions, {
+  DynamicQuestion,
+} from '../firestore/CRUDDynamicQuestions';
+import { useAuthData } from '../auth/useAuthData';
+import { useNavigate, useParams } from 'react-router';
 
 // Helper to convert DynamicQuestion state to a Query-like object for SectionSelector
 // Note: Dynamic questions might not have everything a full "Query" has, but enough for display
@@ -62,6 +67,14 @@ const CommunityQuestionAccordion = ({
   const [expanded, setExpanded] = useState(false);
   const [tab, setTab] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuthData();
+
+  // Local state for optimistic updates
+  const [likes, setLikes] = useState(question.likes || 0);
+  const [likedBy, setLikedBy] = useState<string[]>(question.likedBy || []);
+  const hasLiked = user ? likedBy.includes(user.id) : false;
+
+  const { templateId } = useParams();
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
@@ -71,9 +84,35 @@ const CommunityQuestionAccordion = ({
   };
 
   const openInPlayground = () => {
-    // Navigate to playground and maybe pre-load this question?
-    // For now just go to playground. Implementing "load" might require URL params or context.
-    navigate(`/playground`);
+    navigate(`/${templateId}/dynamic-question`, {
+      state: { questionToEdit: question },
+    });
+  };
+
+  const handleToggleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return; // Should ideally prompt login
+
+    // Optimistic update
+    const previousLikes = likes;
+    const previousLikedBy = likedBy;
+
+    if (hasLiked) {
+      setLikes(Math.max(0, likes - 1));
+      setLikedBy(likedBy.filter((id) => id !== user.id));
+    } else {
+      setLikes(likes + 1);
+      setLikedBy([...likedBy, user.id]);
+    }
+
+    try {
+      await CRUDDynamicQuestions.toggleLike(question.id, user.id, true);
+    } catch (error) {
+      // Revert on error
+      console.error('Failed to toggle like', error);
+      setLikes(previousLikes);
+      setLikedBy(previousLikedBy);
+    }
   };
 
   // Use stored state
@@ -186,7 +225,16 @@ const CommunityQuestionAccordion = ({
           </Box>
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+            ml: 2,
+          }}
+        >
           <Chip
             label={
               question.state.templateId
@@ -195,7 +243,28 @@ const CommunityQuestionAccordion = ({
             }
             size="small"
             variant="outlined"
+            sx={{ display: { xs: 'none', md: 'inline-flex' } }} // Hide on small screens if needed
           />
+
+          <Button
+            startIcon={hasLiked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            variant="outlined"
+            onClick={handleToggleLike}
+            size="small"
+            color={hasLiked ? 'error' : 'inherit'}
+            sx={{
+              minWidth: 'auto',
+              borderColor: hasLiked ? 'error.main' : 'divider',
+              color: hasLiked ? 'error.main' : 'text.secondary',
+              '&:hover': {
+                borderColor: hasLiked ? 'error.dark' : 'text.primary',
+                color: hasLiked ? 'error.dark' : 'text.primary',
+              },
+            }}
+          >
+            {likes > 0 ? likes : '0'}
+          </Button>
+
           {onDelete && (
             <Tooltip title="Delete Question (Admin)">
               <IconButton
@@ -206,13 +275,35 @@ const CommunityQuestionAccordion = ({
                 size="small"
                 sx={{
                   color: 'text.secondary',
-                  '&:hover': { color: 'error.main' },
+                  '&:hover': { color: 'error.main', bgcolor: 'error.lighter' },
                 }}
               >
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
           )}
+
+          <Button
+            startIcon={<FeedIcon />}
+            variant="outlined"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/${templateId}/community-questions/${question.id}`);
+            }}
+            size="small"
+            sx={{
+              borderColor: 'divider',
+              color: 'text.primary',
+              '&:hover': {
+                borderColor: 'primary.main',
+                color: 'primary.main',
+                bgcolor: 'primary.lighter',
+              },
+            }}
+          >
+            Details
+          </Button>
+
           <Button
             startIcon={<BarChartIcon />}
             variant="outlined"
@@ -231,7 +322,7 @@ const CommunityQuestionAccordion = ({
               },
             }}
           >
-            Edit in Playground
+            Playground
           </Button>
         </Box>
       </AccordionSummary>

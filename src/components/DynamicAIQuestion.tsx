@@ -107,6 +107,17 @@ const DynamicAIQuestion = () => {
     setTemplateId(location.pathname.split('/')[1] || 'R186491');
   }, [location.pathname]);
 
+  // Handle loading question from navigation state (Edit mode)
+  useEffect(() => {
+    const state = location.state as { questionToEdit?: DynamicQuestion };
+    if (state?.questionToEdit) {
+      handleLoadExample(state.questionToEdit);
+      // Clear state to prevent reloading on simple reflows?
+      // Actually, standard behavior is fine.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
   // Initialize template ID in context
   useEffect(() => {
     const hasMappingData =
@@ -646,8 +657,25 @@ const DynamicAIQuestion = () => {
     }
   };
 
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+    null
+  );
+  const [editingQuestionStatus, setEditingQuestionStatus] = useState<
+    DynamicQuestion['status'] | undefined
+  >(undefined);
+  const [editingQuestionTimestamp, setEditingQuestionTimestamp] = useState<
+    number | undefined
+  >(undefined);
+
+  // ... (previous code) ...
+
   const handleLoadExample = (example: DynamicQuestion) => {
     const exampleState = example.state;
+    setEditingQuestionId(example.id);
+    setEditingQuestionStatus(example.status);
+    setEditingQuestionTimestamp(example.timestamp);
+
+    // ... (rest of loading logic) ...
 
     // Reset iteration history when loading a new example
     resetIterationHistory();
@@ -746,7 +774,11 @@ const DynamicAIQuestion = () => {
     updateProcessingFunctionCode('', 'Cleared all fields');
     updateCosts([]);
     setDynamicQuery(null);
+    setDynamicQuery(null);
     setError(null);
+    setEditingQuestionId(null);
+    setEditingQuestionStatus(undefined);
+    setEditingQuestionTimestamp(undefined);
     setShowUndoSnackbar(true);
   };
 
@@ -785,19 +817,31 @@ const DynamicAIQuestion = () => {
     setSaveError(null);
 
     try {
+      // Determine ID: use existing if editing, else generate new
+      const id = editingQuestionId || crypto.randomUUID();
+
+      // If editing a published community question as non-admin, revert to pending?
+      // Or keep existing status? Let's default to 'pending' if it's a new community share,
+      // but if editing, maybe keep it unless we want strict re-review.
+      // Plan: If editing, keep status unless user explicitly wants to "Publish" again (but dialog mode logic is simple).
+      // For now: If editing, preserve status. If new share, status undefined (will become pending in backend logic).
+      // Actually, backend logic (CRUD) sets pending if status is missing and isCommunity is true.
+      // So if we pass existing status, it should be fine.
+
       const question: DynamicQuestion = {
-        id: crypto.randomUUID(),
+        id,
         name,
-        timestamp: Date.now(),
+        timestamp: editingQuestionTimestamp || Date.now(),
         // Store templateId at root for indexing
-        templateId: state.templateId || null,
+        templateId: state.templateId || undefined,
         isCommunity,
+        status: editingQuestionStatus, // Preserve status if editing
         // Add creator info if it's a community question
         ...(isCommunity && user
           ? {
               createdBy: user.id,
               creatorName:
-                user.name || user.email || 'Anonymous Community Member',
+                user.display_name || user.email || 'Anonymous Community Member',
             }
           : {}),
         state: {
