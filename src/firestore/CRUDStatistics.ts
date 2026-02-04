@@ -5,11 +5,7 @@ import {
   createStatistic as createStatisticApi,
 } from '../services/backendApi';
 import { getTemplateConfig } from '../constants/template_config';
-
-/**
- * UPDATED: Now uses backend API instead of direct Firestore access
- * Statistics are stored in: Templates/{templateId}/Statistics/{statisticId}
- */
+import BackupService from '../services/BackupService';
 
 /**
  * Get statistics from backend API
@@ -20,18 +16,29 @@ const getStatistics = async (templateId = 'R186491') => {
     const config = getTemplateConfig(templateId);
     const statisticId = config.statisticsKey;
 
-    // Get all statistics from backend
     const statisticsList = await getStatisticsApi(templateId);
 
-    // Find the specific statistic by ID
     const statisticsData = Array.isArray(statisticsList)
       ? statisticsList.find((stat: DocumentData) => stat.id === statisticId)
       : null;
 
     return statisticsData || null;
   } catch (error) {
-    console.error('Error fetching statistics from backend:', error);
-    throw error;
+    console.warn('Backend API failed, falling back to local backup:', error);
+    try {
+      const statisticsList = await BackupService.getStatistics(templateId);
+      const config = getTemplateConfig(templateId);
+      const statisticId = config.statisticsKey;
+
+      const statisticsData = Array.isArray(statisticsList)
+        ? statisticsList.find((stat: any) => stat.id === statisticId)
+        : null;
+
+      return statisticsData || null;
+    } catch (backupError) {
+      console.error('Error fetching statistics from backup:', backupError);
+      throw backupError;
+    }
   }
 };
 

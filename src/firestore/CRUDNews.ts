@@ -41,8 +41,7 @@ const convertApiNewsItem = (apiItem: ApiNewsItem): NewsItem => {
 const getAuthInfo = () => {
   try {
     const token = getKeycloakToken();
-    // Note: We'll need to get userId and userEmail from auth context
-    // For now, we'll pass undefined and let the backend handle it
+    // Auth info handled by backend if token is present
     return { token, userId: undefined, userEmail: undefined };
   } catch {
     return { token: undefined, userId: undefined, userEmail: undefined };

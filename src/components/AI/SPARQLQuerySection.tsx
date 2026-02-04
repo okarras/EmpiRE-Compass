@@ -315,7 +315,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     const predicateIds = extractPredicateIds(sparqlQuery);
     const predicateDetails: PredicateDetail[] = predicateIds.map(
       (predicateId) => {
-        // Try to find mapping - check both with and without P prefix, and case variations
+        // Normalize predicate ID
         const normalizedId = predicateId.toUpperCase();
         const idWithoutP = normalizedId.startsWith('P')
           ? normalizedId.substring(1)
@@ -532,7 +532,7 @@ LIMIT 1`;
                 description: binding.description?.value,
               });
             } else {
-              // Fallback: try fetching from ORKG properties API
+              // Fallback: ORKG properties API
               try {
                 const propResponse = await fetch(
                   `https://orkg.org/api/properties/${predicateId}`,

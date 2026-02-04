@@ -14,7 +14,7 @@ import { queries as nlp4reQueriesFromCode } from '../constants/queries_nlp4re_ch
 /**
  * Serialize chart settings - remove functions and make Firebase-safe
  */
-const serializeChartSettings = (chartSettings: any): any => {
+export const serializeChartSettings = (chartSettings: any): any => {
   if (!chartSettings) return null;
 
   const serialized: any = {};
@@ -254,7 +254,7 @@ const createNestedTemplate = async (
  * Convert backup questions to new format with EVERYTHING from code
  * Merges backup data with complete chart settings, SPARQL queries, etc.
  */
-const convertBackupQuestionsToNewFormat = (
+export const convertBackupQuestionsToNewFormat = (
   backupQuestions: any[],
   codeQueries: any[]
 ): any[] => {
@@ -359,7 +359,9 @@ const convertBackupQuestionsToNewFormat = (
  * Convert statistics queries to new format
  * Combines backup data with SPARQL queries from code
  */
-const convertStatisticsToNewFormat = (backupStatistics?: any[]): any[] => {
+export const convertStatisticsToNewFormat = (
+  backupStatistics?: any[]
+): any[] => {
   const statsFromCode = Object.entries(STATISTICS_SPARQL_QUERIES).map(
     ([key, query]) => ({
       id: key,
