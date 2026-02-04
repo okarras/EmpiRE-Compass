@@ -69,13 +69,6 @@ export const toggleLike = async (
       : 'DynamicQuestions';
     const questionRef = doc(db, collectionName, questionId);
 
-    // We use a transaction to ensure atomic updates
-    // But for simplicity/speed, we can just read-update-write if contention is low.
-    // Given the prompt context, standardized transaction or just simple get/set is fine.
-    // Let's do a simple get/set for now to keep file size manageable,
-    // but ideally this should be a transaction.
-
-    // Actually, let's just do a normal update.
     const snap = await getDoc(questionRef);
     if (!snap.exists()) return null;
 
@@ -244,9 +237,7 @@ export const saveDynamicQuestion = async (
     const dataToSave = {
       ...questionData,
       templateId: question.state?.templateId || question.templateId || null,
-      status: question.status || 'pending', // Default to pending if not specified for community? Or keep undefined?
-      // Actually, for backward compatibility, if it's NOT community, status might be undefined.
-      // If it IS community, default to pending if missing.
+      // Default status to pending for community questions if missing
       ...(question.isCommunity && !question.status
         ? { status: 'pending' }
         : {}),

@@ -27,8 +27,7 @@ import CRUDDynamicQuestions, {
 import { useAuthData } from '../auth/useAuthData';
 import { useNavigate, useParams } from 'react-router';
 
-// Helper to convert DynamicQuestion state to a Query-like object for SectionSelector
-// Note: Dynamic questions might not have everything a full "Query" has, but enough for display
+// Convert DynamicQuestion state to a Query-like object for SectionSelector
 const dynamicQuestionToQuery = (dq: DynamicQuestion) => {
   return {
     id: dq.id,
@@ -50,10 +49,7 @@ const dynamicQuestionToQuery = (dq: DynamicQuestion) => {
       tab1_name: 'Data Collection',
       tab2_name: 'Data Analysis',
     },
-    // We pretend we have chart settings if we have chart HTML?
-    // Actually SectionSelector expects `query` object.
-    // For dynamic questions, we might just pass a mock object.
-    uid_2: 'dynamic_second_tab_placeholder', // To enable tabs logic if we want default structure
+    uid_2: 'dynamic_second_tab_placeholder',
   };
 };
 
@@ -118,11 +114,7 @@ const CommunityQuestionAccordion = ({
   // Use stored state
   const dataCollection = question.state.queryResults || [];
 
-  // Dynamic questions typically have one main result set.
-  // We can treat it as "Data Collection".
-  // If there's a chart, we render the HTML directly or use a generic viewer.
-  // The original QuestionAccordion uses QuestionChartView which expects ChartSettings.
-  // DynamicAIQuestion saves `chartHtml`. We should prefer displaying that.
+  // Use `chartHtml` for display
 
   // Mock query object for reuse of some components
   const mockQuery = dynamicQuestionToQuery(question);

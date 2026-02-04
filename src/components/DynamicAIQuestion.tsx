@@ -8,13 +8,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-import {
-  Save,
-  Undo,
-  Login,
-  Psychology,
-  Groups3 as Groups3Icon,
-} from '@mui/icons-material';
+import { Undo, Login, Psychology } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
@@ -112,8 +106,6 @@ const DynamicAIQuestion = () => {
     const state = location.state as { questionToEdit?: DynamicQuestion };
     if (state?.questionToEdit) {
       handleLoadExample(state.questionToEdit);
-      // Clear state to prevent reloading on simple reflows?
-      // Actually, standard behavior is fine.
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -126,7 +118,7 @@ const DynamicAIQuestion = () => {
     if (templateId && state.templateId !== templateId) {
       void handleTemplateChange(templateId);
       // Set default target class IDs for known templates
-      //TODO: this section should be done dynamically this is a temporary solution
+      // TODO: Implement dynamic target class assignment
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');
       } else if (
@@ -362,9 +354,6 @@ const DynamicAIQuestion = () => {
         state.question,
         false
       );
-
-      // Note: Processing function cost will be tracked separately if needed
-      // For now, we track costs from query generation iterations
 
       // Transform data
       let transformedData: Record<string, unknown>[] = [];
