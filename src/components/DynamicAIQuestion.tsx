@@ -655,6 +655,8 @@ const DynamicAIQuestion = () => {
   const [editingQuestionTimestamp, setEditingQuestionTimestamp] = useState<
     number | undefined
   >(undefined);
+  const [isEditingCommunityQuestion, setIsEditingCommunityQuestion] =
+    useState<boolean>(false);
 
   // ... (previous code) ...
 
@@ -663,6 +665,7 @@ const DynamicAIQuestion = () => {
     setEditingQuestionId(example.id);
     setEditingQuestionStatus(example.status);
     setEditingQuestionTimestamp(example.timestamp);
+    setIsEditingCommunityQuestion(!!example.isCommunity);
 
     // ... (rest of loading logic) ...
 
@@ -768,6 +771,7 @@ const DynamicAIQuestion = () => {
     setEditingQuestionId(null);
     setEditingQuestionStatus(undefined);
     setEditingQuestionTimestamp(undefined);
+    setIsEditingCommunityQuestion(false);
     setShowUndoSnackbar(true);
   };
 
@@ -809,14 +813,6 @@ const DynamicAIQuestion = () => {
       // Determine ID: use existing if editing, else generate new
       const id = editingQuestionId || crypto.randomUUID();
 
-      // If editing a published community question as non-admin, revert to pending?
-      // Or keep existing status? Let's default to 'pending' if it's a new community share,
-      // but if editing, maybe keep it unless we want strict re-review.
-      // Plan: If editing, keep status unless user explicitly wants to "Publish" again (but dialog mode logic is simple).
-      // For now: If editing, preserve status. If new share, status undefined (will become pending in backend logic).
-      // Actually, backend logic (CRUD) sets pending if status is missing and isCommunity is true.
-      // So if we pass existing status, it should be fine.
-
       const question: DynamicQuestion = {
         id,
         name,
@@ -825,8 +821,9 @@ const DynamicAIQuestion = () => {
         templateId: state.templateId || undefined,
         isCommunity,
         status: editingQuestionStatus, // Preserve status if editing
-        // Add creator info if it's a community question
-        ...(isCommunity && user
+        // Add creator info if it's a new community question
+        // If editing an existing community question, do NOT overwrite the creator
+        ...(isCommunity && user && !isEditingCommunityQuestion
           ? {
               createdBy: user.id,
               creatorName:
@@ -993,6 +990,7 @@ const DynamicAIQuestion = () => {
           setSaveDialogOpen(true);
         }}
         isAdmin={isAdmin}
+        isEditingCommunityQuestion={isEditingCommunityQuestion}
       />
 
       <DataProcessingCodeSection
@@ -1038,6 +1036,7 @@ const DynamicAIQuestion = () => {
         defaultName={state.question ? state.question.substring(0, 50) : ''}
         loading={savingExample}
         mode={saveMode}
+        isUpdate={isEditingCommunityQuestion && saveMode === 'share'}
       />
 
       <Snackbar

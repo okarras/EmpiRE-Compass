@@ -26,6 +26,7 @@ import { useParams } from 'react-router-dom';
 import QuestionInformation from './QuestionInformation';
 import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
+import { useBackupChange } from '../hooks/useBackupChange';
 
 interface QuestionProps {
   query: Query;
@@ -46,6 +47,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
   const [tab, setTab] = useState(0);
   const { setContext } = useAIAssistantContext();
   const { templateId } = useParams();
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   // State for primary data (uid)
   const [dataCollection, setDataCollection] = useState<
@@ -72,12 +74,15 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
 
   // Fetch primary data (uid)
   useEffect(() => {
+    // Reset state when query changes
     setTab(0);
+    setNormalized(true);
+    setError1(null);
+    setError2(null);
+    setDataCollection([]);
+    setDataAnalysis([]);
+
     const fetchData = async () => {
-      // Logic unchanged, uses initialQuery.uid or merged?
-      // The query UID likely doesn't change, only content.
-      // But let's use query (merged) just to be consistent, assuming uid doesn't change.
-      // Actually strictly speaking, uid SHOULD NOT change via override.
       try {
         setLoading1(true);
         setError1(null);
@@ -93,12 +98,16 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
         setLoading1(false);
       }
     };
-    setNormalized(true);
     fetchData();
-  }, [query.uid, templateId]);
+  }, [query.uid, templateId, backupVersion]); // Re-fetch when backup changes
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
+    // Reset secondary data state when query changes
+    setDataAnalysis([]);
+    setError2(null);
+    setLoading2(false);
+
     if (query?.uid_2) {
       const fetchData = async () => {
         try {
@@ -136,7 +145,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge, templateId]);
+  }, [query.uid, query?.uid_2, query?.uid_2_merge, templateId, backupVersion]); // Re-fetch when backup changes
 
   const getProcessedChartData = () => {
     if (query.uid_2_merge) {
@@ -291,29 +300,6 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
           // We can eventually add title editing here too via EditableSection
         />
 
-        {/* We use EditableSection inside QuestionInformationView via props? 
-            No, QuestionInformationView is complex. Let's make it accept isEditing and save callbacks 
-            OR we replace parts of it. 
-            Steps:
-            1. QuestionInformationView renders "Explanation of the Competency Question".
-            2. It uses `info.questionExplanation`.
-            3. We want to override this.
-            
-            Option A: Modify QuestionInformationView to accept `overrideMode` props.
-            Option B: We implement an "Overlay" or "Replacement" in Question.tsx?
-            
-            Let's pass props to QuestionInformationView for now. But since I can't edit it yet (step 25 showed it), 
-            I'll wrap it or replace it here IF I hadn't planned to modify it.
-            But the plan said "MODIFY Question.tsx" and "New EditableSection".
-            
-            Let's try to Inject the EditableSection logic for the Question Explanation HERE?
-            QuestionInformationView does a lot of rendering.
-            
-            Let's stick to the plan: Modify QuestionInformationView to allow editing.
-            But I haven't modified QuestionInformationView yet.
-            I will pass `isEditMode` and `onSave` to it. 
-            Wait, I need to modify QuestionInformationView signature first.
-        */}
         <QuestionInformationView
           query={query}
           isInteractive={false}

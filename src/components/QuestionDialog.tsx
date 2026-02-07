@@ -43,12 +43,6 @@ const QuestionDialog = (props: Props) => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   if (open) {
-  //     query.additionalData?.charts?.forEach((chart) => {});
-  //   }
-  // }, [open]);
-
   return (
     <>
       <Button

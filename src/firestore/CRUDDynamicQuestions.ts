@@ -15,6 +15,7 @@ import {
   orderBy,
   limit,
 } from 'firebase/firestore';
+import BackupService from '../services/BackupService';
 
 export interface DynamicQuestion {
   id: string;
@@ -150,6 +151,21 @@ export const getCommunityQuestions = async (
 export const getDynamicQuestion = async (
   questionId: string
 ): Promise<DynamicQuestion | null> => {
+  // If user has explicitly selected a backup/offline mode, use that first
+  if (BackupService.isExplicitlyUsingBackup()) {
+    console.log(
+      'CRUDDynamicQuestions: Using explicit backup for dynamic question'
+    );
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      const question = questions.find((q: any) => q.id === questionId);
+      return question ? (question as DynamicQuestion) : null;
+    } catch (error) {
+      console.error('Error fetching dynamic question from backup:', error);
+      // Fall through to Firebase
+    }
+  }
+
   if (!db) {
     console.warn('Firebase is not initialized. Cannot fetch dynamic question.');
     return null;
@@ -168,8 +184,20 @@ export const getDynamicQuestion = async (
 
     return null;
   } catch (error) {
-    console.error('Error fetching dynamic question:', error);
-    throw error;
+    console.warn('Firebase failed, falling back to backup:', error);
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      const question = questions.find(
+        (q) => (q as DynamicQuestion).id === questionId
+      );
+      return question ? (question as DynamicQuestion) : null;
+    } catch (backupError) {
+      console.error(
+        'Error fetching dynamic question from backup:',
+        backupError
+      );
+      throw error;
+    }
   }
 };
 
@@ -290,6 +318,32 @@ export const getDynamicQuestionsByTemplate = async (
   templateId: string,
   limitCount = 50
 ): Promise<DynamicQuestion[]> => {
+  // If user has explicitly selected a backup/offline mode, use that first
+  if (BackupService.isExplicitlyUsingBackup()) {
+    console.log(
+      'CRUDDynamicQuestions: Using explicit backup for dynamic questions by template'
+    );
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      const filtered = questions
+        .filter((q) => {
+          const question = q as DynamicQuestion;
+          const tId = question.templateId || question.state?.templateId;
+          return tId === templateId;
+        })
+        .sort(
+          (a, b) =>
+            ((b as DynamicQuestion).timestamp || 0) -
+            ((a as DynamicQuestion).timestamp || 0)
+        )
+        .slice(0, limitCount);
+      return filtered as DynamicQuestion[];
+    } catch (error) {
+      console.error('Error fetching dynamic questions from backup:', error);
+      // Fall through to Firebase
+    }
+  }
+
   if (!db) {
     console.warn(
       'Firebase is not initialized. Cannot fetch dynamic questions.'
@@ -322,8 +376,29 @@ export const getDynamicQuestionsByTemplate = async (
 
     return questions;
   } catch (error) {
-    console.error('Error fetching dynamic questions by template:', error);
-    throw error;
+    console.warn('Firebase failed, falling back to backup:', error);
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      const filtered = questions
+        .filter((q) => {
+          const question = q as DynamicQuestion;
+          const tId = question.templateId || question.state?.templateId;
+          return tId === templateId;
+        })
+        .sort(
+          (a, b) =>
+            ((b as DynamicQuestion).timestamp || 0) -
+            ((a as DynamicQuestion).timestamp || 0)
+        )
+        .slice(0, limitCount);
+      return filtered as DynamicQuestion[];
+    } catch (backupError) {
+      console.error(
+        'Error fetching dynamic questions from backup:',
+        backupError
+      );
+      throw error;
+    }
   }
 };
 
@@ -360,6 +435,28 @@ export const deleteDynamicQuestion = async (
 export const getDynamicQuestions = async (
   limitCount = 50
 ): Promise<DynamicQuestion[]> => {
+  // If user has explicitly selected a backup/offline mode, use that first
+  if (BackupService.isExplicitlyUsingBackup()) {
+    console.log(
+      'CRUDDynamicQuestions: Using explicit backup for dynamic questions'
+    );
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      // Sort by timestamp descending and limit
+      const sorted = questions
+        .sort(
+          (a, b) =>
+            ((b as DynamicQuestion).timestamp || 0) -
+            ((a as DynamicQuestion).timestamp || 0)
+        )
+        .slice(0, limitCount);
+      return sorted as DynamicQuestion[];
+    } catch (error) {
+      console.error('Error fetching dynamic questions from backup:', error);
+      // Fall through to Firebase
+    }
+  }
+
   if (!db) {
     console.warn(
       'Firebase is not initialized. Cannot fetch dynamic questions.'
@@ -386,8 +483,20 @@ export const getDynamicQuestions = async (
 
     return questions;
   } catch (error) {
-    console.error('Error fetching dynamic questions:', error);
-    throw error;
+    console.warn('Firebase failed, falling back to backup:', error);
+    try {
+      const questions = await BackupService.getDynamicQuestions();
+      const sorted = questions
+        .sort((a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0))
+        .slice(0, limitCount);
+      return sorted as DynamicQuestion[];
+    } catch (backupError) {
+      console.error(
+        'Error fetching dynamic questions from backup:',
+        backupError
+      );
+      throw error;
+    }
   }
 };
 

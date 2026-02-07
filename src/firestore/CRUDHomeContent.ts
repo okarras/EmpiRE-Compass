@@ -223,6 +223,14 @@ export const defaultHomeContent: HomeContentData = {
  */
 export const getHomeContent = async (): Promise<HomeContentData> => {
   try {
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('CRUDHomeContent: Using explicit backup for home content');
+      const content = await BackupService.getHomeContent();
+      console.log('CRUDHomeContent: Got content from backup:', content);
+      return content as HomeContentData;
+    }
+
     const content = await getHomeContentApi();
     // If backend returns data, use it; otherwise fall back to default
     if (content && typeof content === 'object') {

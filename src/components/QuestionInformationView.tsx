@@ -24,11 +24,6 @@ const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   const getSectionContent = (
     section: 'question' | 'dataCollection' | 'dataAnalysis'
   ) => {
-    // If we are in "static" mode but have overridden query, the "info" object is already updated in parent
-
-    // Fallback to static info if interactive mode is off (which it is for this task)
-    // DynamicAIQuestion uses its own logic in parent mostly, but let's stick to reading from `info`
-
     switch (section) {
       case 'question':
         return info.questionExplanation || '';

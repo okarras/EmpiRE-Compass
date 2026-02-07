@@ -5,6 +5,7 @@ import CRUDStaticQuestionOverrides, {
   QuestionVersion,
 } from '../firestore/CRUDStaticQuestionOverrides';
 import type { Query } from '../constants/queries_chart_info';
+import BackupService from '../services/BackupService';
 
 interface UseQuestionOverridesProps {
   query: Query;
@@ -23,6 +24,14 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
 
   const fetchOverrides = useCallback(async () => {
     if (!query.uid) return;
+
+    // Skip fetching overrides when using backup - they're not available
+    if (BackupService.isExplicitlyUsingBackup()) {
+      setMergedQuery(query);
+      setOverrideData(null);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -70,8 +79,16 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
       } else {
         setMergedQuery(query);
       }
-    } catch (err) {
-      console.error('Failed to load question overrides:', err);
+    } catch (err: any) {
+      // Only log non-permission errors (permission errors are expected when using backup)
+      if (
+        err?.code !== 'permission-denied' &&
+        !err?.message?.includes('permission')
+      ) {
+        console.error('Failed to load question overrides:', err);
+      }
+      // Set merged query to original query on error
+      setMergedQuery(query);
     } finally {
       setLoading(false);
     }
