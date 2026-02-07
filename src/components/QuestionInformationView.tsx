@@ -13,7 +13,6 @@ interface QuestionInformationViewProps {
 
 const QuestionInformationView: React.FC<QuestionInformationViewProps> = ({
   query,
-  isInteractive = false,
   tabIndex = 0,
   isEditingInfo = false,
   onSave,

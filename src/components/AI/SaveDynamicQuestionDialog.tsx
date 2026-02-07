@@ -9,8 +9,6 @@ import {
   Box,
   Typography,
   Alert,
-  FormControlLabel,
-  Checkbox,
 } from '@mui/material';
 import { Save, Groups3 as Groups3Icon } from '@mui/icons-material';
 
