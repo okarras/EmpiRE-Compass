@@ -5,6 +5,7 @@
 
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import BackupService from '../services/BackupService';
 
 export interface QuestionVersion {
   versionId: string;
@@ -40,6 +41,11 @@ export interface QuestionOverrideDocument {
 export const getQuestionOverride = async (
   queryUid: string
 ): Promise<QuestionOverrideDocument | null> => {
+  // Skip Firebase calls when using backup - overrides are not available in backup mode
+  if (BackupService.isExplicitlyUsingBackup()) {
+    return null;
+  }
+
   if (!db) return null;
 
   try {
@@ -53,7 +59,16 @@ export const getQuestionOverride = async (
       } as QuestionOverrideDocument;
     }
     return null;
-  } catch (error) {
+  } catch (error: any) {
+    // Handle permission errors gracefully - they're expected when using backup or offline
+    if (
+      error?.code === 'permission-denied' ||
+      error?.message?.includes('permission')
+    ) {
+      // Silently return null for permission errors (common when using backup)
+      return null;
+    }
+    // Only log non-permission errors
     console.error('Error fetching question override:', error);
     throw error;
   }

@@ -19,6 +19,7 @@ import { useNavigate, useParams } from 'react-router';
 import QuestionChartView from './QuestionChartView';
 import { getTemplateConfig } from '../constants/template_config';
 import SectionSelector from './SectionSelector';
+import { useBackupChange } from '../hooks/useBackupChange';
 
 const QuestionAccordion = ({ query }: { query: Query }) => {
   const [normalized, setNormalized] = useState(true);
@@ -36,9 +37,16 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const { templateId } = useParams();
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   // Fetch primary data (uid)
   useEffect(() => {
+    // Reset state when query changes
+    if (query.uid) {
+      setDataCollection([]);
+      setError1(null);
+    }
+
     const fetchData = async () => {
       if (!expanded) return;
       try {
@@ -57,10 +65,15 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       }
     };
     fetchData();
-  }, [query.uid, expanded, templateId]);
+  }, [query.uid, expanded, templateId, backupVersion]); // Re-fetch when backup changes
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
+    // Reset secondary data state when query changes
+    setDataAnalysis([]);
+    setError2(null);
+    setLoading2(false);
+
     if (!expanded) return;
     if (query?.uid_2) {
       const fetchData = async () => {
@@ -99,7 +112,14 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
       };
       fetchData();
     }
-  }, [query, query?.uid_2, query?.uid_2_merge, expanded, templateId]);
+  }, [
+    query.uid,
+    query?.uid_2,
+    query?.uid_2_merge,
+    expanded,
+    templateId,
+    backupVersion,
+  ]); // Re-fetch when backup changes
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,

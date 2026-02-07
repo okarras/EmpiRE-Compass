@@ -19,6 +19,7 @@ interface SaveDynamicQuestionDialogProps {
   defaultName?: string;
   loading?: boolean;
   mode: 'save' | 'share';
+  isUpdate?: boolean;
 }
 
 const SaveDynamicQuestionDialog = ({
@@ -28,6 +29,7 @@ const SaveDynamicQuestionDialog = ({
   defaultName = '',
   loading = false,
   mode,
+  isUpdate = false,
 }: SaveDynamicQuestionDialogProps) => {
   const [name, setName] = useState(defaultName);
   const [error, setError] = useState<string | null>(null);
@@ -60,12 +62,27 @@ const SaveDynamicQuestionDialog = ({
     }
   };
 
-  const title = mode === 'save' ? 'Save as Example' : 'Publish in Community';
-  const description =
+  let title = mode === 'save' ? 'Save as Example' : 'Publish in Community';
+  if (mode === 'share' && isUpdate) {
+    title = 'Update Community Question';
+  }
+
+  let description =
     mode === 'save'
       ? 'Save this dynamic question as a system example.'
       : 'Share this dynamic question with the community. It will be reviewed by an admin before being published.';
-  const buttonLabel = mode === 'save' ? 'Save Example' : 'Publish in Community';
+
+  if (mode === 'share' && isUpdate) {
+    description =
+      'Update this community question. Changes will be reflected immediately.';
+  }
+
+  let buttonLabel = mode === 'save' ? 'Save Example' : 'Publish in Community';
+
+  if (mode === 'share' && isUpdate) {
+    buttonLabel = 'Update Question';
+  }
+
   const icon = mode === 'save' ? <Save /> : <Groups3Icon />; // Need to import Groups3Icon if using it, or just use Save/Share icon
 
   return (

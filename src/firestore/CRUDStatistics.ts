@@ -16,6 +16,16 @@ const getStatistics = async (templateId = 'R186491') => {
     const config = getTemplateConfig(templateId);
     const statisticId = config.statisticsKey;
 
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('Using explicit backup for statistics');
+      const statisticsList = await BackupService.getStatistics(templateId);
+      const statisticsData = Array.isArray(statisticsList)
+        ? statisticsList.find((stat: any) => stat.id === statisticId)
+        : null;
+      return statisticsData || null;
+    }
+
     const statisticsList = await getStatisticsApi(templateId);
 
     const statisticsData = Array.isArray(statisticsList)

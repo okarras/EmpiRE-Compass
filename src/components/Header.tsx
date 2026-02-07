@@ -42,6 +42,7 @@ import CRUDNews from '../firestore/CRUDNews';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BackupSelector from './BackupSelector';
 import BackupService from '../services/BackupService';
+import { useBackupChange } from '../hooks/useBackupChange';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -60,17 +61,13 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const { templateId } = useParams<{ templateId: string }>();
   const [backupSelectorOpen, setBackupSelectorOpen] = useState(false);
   const [currentBackupName, setCurrentBackupName] = useState<string>('');
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   useEffect(() => {
-    // Check for current backup on mount and every few seconds
-    const checkBackup = () => {
-      const name = BackupService.getCurrentBackupName();
-      if (name) setCurrentBackupName(name);
-    };
-    checkBackup();
-    const interval = setInterval(checkBackup, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    // Check for current backup and update state
+    const name = BackupService.getCurrentBackupName();
+    setCurrentBackupName(name || ''); // Clear if no backup
+  }, [backupVersion]); // Re-run when backup changes
 
   // Load templates from Firebase
   useEffect(() => {
@@ -84,7 +81,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       }
     };
     loadTemplates();
-  }, []);
+  }, [currentBackupName]); // Re-fetch when backup changes (currentBackupName updates via interval)
 
   // Fetch high priority news count
   useEffect(() => {
@@ -598,6 +595,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       <BackupSelector
         open={backupSelectorOpen}
         onClose={() => setBackupSelectorOpen(false)}
+        templateId={selectedTemplate}
       />
     </AppBar>
   );

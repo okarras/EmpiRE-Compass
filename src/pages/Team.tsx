@@ -20,10 +20,13 @@ import CRUDTeam, { TeamMember } from '../firestore/CRUDTeam';
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2U4NjE2MSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
 
+import { useBackupChange } from '../hooks/useBackupChange';
+
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -47,7 +50,7 @@ const Team = () => {
     };
 
     fetchTeamMembers();
-  }, []);
+  }, [backupVersion]); // Re-fetch when backup changes
 
   if (loading) {
     return (

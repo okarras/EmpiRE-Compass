@@ -1,4 +1,5 @@
 import { getTeamMembers as getTeamMembersApi } from '../services/backendApi';
+import BackupService from '../services/BackupService';
 
 /**
  * Team member structure:
@@ -30,12 +31,25 @@ export interface TeamMember {
  */
 const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('CRUDTeam: Using explicit backup for team members');
+      const teamMembers = await BackupService.getTeamMembers();
+      return Array.isArray(teamMembers) ? teamMembers : [];
+    }
+
     const teamMembers = await getTeamMembersApi();
     // Ensure the response is an array and has the correct structure
     return Array.isArray(teamMembers) ? teamMembers : [];
   } catch (error) {
-    console.error('Error fetching team members:', error);
-    throw error;
+    console.warn('Backend API failed, falling back to local backup:', error);
+    try {
+      const teamMembers = await BackupService.getTeamMembers();
+      return Array.isArray(teamMembers) ? teamMembers : [];
+    } catch (backupError) {
+      console.error('Error fetching team members from backup:', backupError);
+      throw error;
+    }
   }
 };
 

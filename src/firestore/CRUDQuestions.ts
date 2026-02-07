@@ -43,6 +43,12 @@ const addQuestion = async (
  */
 const getQuestions = async (templateId = 'R186491') => {
   try {
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('Using explicit backup for questions');
+      return await BackupService.getQuestions(templateId);
+    }
+
     const questions = await getQuestionsApi(templateId);
     return Array.isArray(questions) ? questions : [];
   } catch (error) {

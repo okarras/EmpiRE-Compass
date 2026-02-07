@@ -59,6 +59,7 @@ interface QueryExecutionSectionProps {
   onSave?: () => void;
   onShare?: () => void;
   isAdmin?: boolean;
+  isEditingCommunityQuestion?: boolean;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -86,6 +87,7 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onSave,
   onShare,
   isAdmin,
+  isEditingCommunityQuestion,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -163,7 +165,9 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
                 whiteSpace: 'nowrap',
               }}
             >
-              Publish in Community
+              {isEditingCommunityQuestion
+                ? 'Update Community Question'
+                : 'Publish in Community'}
             </Button>
           )}
           {isAdmin && onSave && (
