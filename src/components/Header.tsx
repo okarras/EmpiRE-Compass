@@ -463,15 +463,17 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               size="small"
               id="header-templates-select"
             >
-              {templates.map((template) => (
-                <MenuItem
-                  key={template.id}
-                  value={template.id}
-                  sx={{ fontSize: '0.875rem' }}
-                >
-                  {template.title}
-                </MenuItem>
-              ))}
+              {templates
+                .filter((t): t is Template => !!t && !!t.id)
+                .map((template) => (
+                  <MenuItem
+                    key={template.id}
+                    value={template.id}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {template.title ?? template.id ?? 'Unknown'}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </Box>
