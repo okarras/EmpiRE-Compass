@@ -14,6 +14,7 @@ export interface BackupData {
   Templates: any[];
   Statistics: any[];
   HomeContent?: any;
+  homeContent?: any; // Some exports use lowercase
   Team?: any[];
   DynamicQuestions?: any[];
 }
@@ -50,6 +51,17 @@ export const getAvailableBackups = () => {
 };
 
 /**
+ * Get the latest backup filename by date (firebase-backup-YYYY-MM-DDTHH-MM-SS-SSSZ.json)
+ */
+const getLatestBackupFilename = (): string => {
+  const backups = getAvailableBackups();
+  if (backups.length === 0) return '';
+  // Sort descending - newest first (ISO-like filenames sort correctly)
+  const sorted = [...backups].sort((a, b) => b.localeCompare(a));
+  return sorted[0];
+};
+
+/**
  * Initialize data from default backup file
  */
 const initializeDefaultData = async () => {
@@ -66,7 +78,6 @@ const initializeDefaultData = async () => {
     if (storedFilename) {
       if (storedFilename === 'UPLOADED_FILE') {
         // If it was an uploaded file, we can't reload it automatically from disk
-        // effectively we just don't load anything and let the user re-upload or select default
         console.log(
           'Last session used an uploaded file. Please re-upload or select a backup.'
         );
@@ -86,9 +97,13 @@ const initializeDefaultData = async () => {
       }
     }
 
-    // Priority 3: fallback to first available
+    // Priority 3: fallback to latest backup (when live fails or no selection)
     if (!fileToLoad && availableBackups.length > 0) {
-      fileToLoad = availableBackups[availableBackups.length - 1]; // Use latest (usually)
+      fileToLoad = getLatestBackupFilename();
+      console.log(
+        'BackupService: No explicit selection, using latest backup:',
+        fileToLoad
+      );
     }
 
     if (fileToLoad) {
@@ -212,9 +227,10 @@ export const isLiveModeEnabled = () => {
 
 // Ensure data is initialized before access
 const ensureData = async () => {
-  // Only initialize default data if we're explicitly using a backup
-  // If backup selection was cleared, we want to return null so components can use live data
-  if (!currentData && isExplicitlyUsingBackup()) {
+  // Initialize backup data when needed:
+  // - When explicitly using backup (user selected one)
+  // - When no data yet (fallback: live failed, load latest backup so we have data)
+  if (!currentData) {
     await initializeDefaultData();
   }
   return currentData;
@@ -337,28 +353,57 @@ export const getStatistics = async (templateId: string) => {
   return [];
 };
 
+// Normalize backup home content to match HomeContentData (header, templates, etc.)
+const normalizeHomeContent = (doc: any): any => {
+  if (!doc) return null;
+  const normalized = { ...doc };
+  // Map heroSection -> header (some backup formats use heroSection)
+  if (doc.heroSection && !doc.header) {
+    normalized.header = doc.heroSection;
+  }
+  // Ensure templates array exists (derive from templateInfoBoxes if missing)
+  if (!normalized.templates || !Array.isArray(normalized.templates)) {
+    const boxes = doc.templateInfoBoxes || {};
+    normalized.templates = Object.entries(boxes).map(
+      ([id, box]: [string, any]) => ({
+        id,
+        title: box?.title || id,
+      })
+    );
+  }
+  return normalized;
+};
+
+// Extract home content from backup data (handles various structures)
+const extractHomeContent = (data: BackupData): any => {
+  // Check both HomeContent and homeContent (different export formats)
+  const homeContent = data?.HomeContent ?? data?.homeContent;
+  if (!homeContent) return null;
+
+  // Handle array structure (Firebase export)
+  if (Array.isArray(homeContent) && homeContent.length > 0) {
+    const sectionsDoc =
+      homeContent.find((doc: any) => doc?.id === 'sections') || homeContent[0];
+    return normalizeHomeContent(sectionsDoc);
+  }
+  // Handle object structure
+  if (homeContent && typeof homeContent === 'object') {
+    return normalizeHomeContent(homeContent);
+  }
+  return null;
+};
+
 export const getHomeContent = async () => {
   const data = await ensureData();
 
-  if (data?.HomeContent) {
-    // Handle array structure from backup (firebase export often makes collections arrays)
-    if (Array.isArray(data.HomeContent) && data.HomeContent.length > 0) {
-      const sectionsDoc =
-        data.HomeContent.find((doc: any) => doc.id === 'sections') ||
-        data.HomeContent[0];
-      console.log(
-        'BackupService: Returning home content from backup (array format)'
-      );
-      return sectionsDoc;
-    }
-    console.log(
-      'BackupService: Returning home content from backup (object format)'
-    );
-    return data.HomeContent;
+  const content = data ? extractHomeContent(data) : null;
+  if (content) {
+    console.log('BackupService: Returning home content from backup');
+    return content;
   }
 
   console.log('BackupService: No home content in backup, returning default');
-  return {
+  return normalizeHomeContent({
     templateInfoBoxes: {
       R186491: {
         title: 'Empirical Research Practice',
@@ -370,11 +415,15 @@ export const getHomeContent = async () => {
           'Natural Language Processing for Requirements Engineering.',
       },
     },
-    heroSection: {
+    header: {
       title: 'Welcome to EmpiRE Compass',
       subtitle: 'Navigating Empirical Research in Software Engineering',
     },
-  };
+    templates: [
+      { id: 'R186491', title: 'Empirical Research Practice' },
+      { id: 'R1544125', title: 'NLP4RE ID Card' },
+    ],
+  });
 };
 
 export const getTemplates = async () => {
