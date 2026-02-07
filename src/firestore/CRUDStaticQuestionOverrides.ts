@@ -4,7 +4,7 @@
  */
 
 import { db } from '../firebase';
-import { collection, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export interface QuestionVersion {
   versionId: string;

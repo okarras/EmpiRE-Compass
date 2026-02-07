@@ -8,21 +8,13 @@ import {
   Tab,
   CircularProgress,
   Divider,
-  Alert,
   Fade,
   Stack,
   FormControlLabel,
   Switch,
   Chip,
-  IconButton,
-  Button,
 } from '@mui/material';
-import {
-  Edit,
-  Save,
-  History as HistoryIcon,
-  Restore,
-} from '@mui/icons-material';
+
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
@@ -47,7 +39,6 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     isEditMode,
     setIsEditMode,
     saveVersion,
-    handleRestore,
     overrideData,
   } = useQuestionOverrides({ query: initialQuery });
 
@@ -370,12 +361,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                     isEditingInfo={isEditMode}
                     content={getDataInterpretation('dataCollection')}
                     sectionLabel="Data Collection Interpretation"
-                    onSave={(newContent) =>
-                      saveVersion(
+                    onSave={async (newContent) => {
+                      await saveVersion(
                         'dataAnalysisInformation.dataInterpretation',
                         [newContent, getDataInterpretation('dataAnalysis')]
-                      )
-                    }
+                      );
+                    }}
                   />
                 </Box>
               ) : (
@@ -448,15 +439,15 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                           isEditingInfo={isEditMode}
                           content={getDataInterpretation('dataAnalysis')}
                           sectionLabel="Data Analysis Interpretation"
-                          onSave={(newContent) =>
-                            saveVersion(
+                          onSave={async (newContent) => {
+                            await saveVersion(
                               'dataAnalysisInformation.dataInterpretation',
                               [
                                 getDataInterpretation('dataCollection'),
                                 newContent,
                               ]
-                            )
-                          }
+                            );
+                          }}
                         />
                       </Box>
                     ) : (

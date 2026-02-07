@@ -114,8 +114,8 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
       await CRUDStaticQuestionOverrides.saveQuestionVersion(
         query.uid,
         updateData,
-        user.uid || 'unknown',
-        user.name || user.email || 'Admin',
+        user.id || 'unknown',
+        user.display_name || user.email || 'Admin',
         changeDescription
       );
 
@@ -134,8 +134,8 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
       await CRUDStaticQuestionOverrides.restoreQuestionVersion(
         query.uid,
         versionId,
-        user.uid || 'unknown',
-        user.name
+        user.id || 'unknown',
+        user.display_name
       );
       await fetchOverrides();
     } catch (err) {

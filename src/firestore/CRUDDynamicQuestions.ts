@@ -14,7 +14,6 @@ import {
   query,
   orderBy,
   limit,
-  where,
 } from 'firebase/firestore';
 
 export interface DynamicQuestion {
