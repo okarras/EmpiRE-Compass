@@ -90,6 +90,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const [showGroqKey, setShowGroqKey] = useState(false);
   const [showMistralKey, setShowMistralKey] = useState(false);
   const [showGoogleKey, setShowGoogleKey] = useState(false);
+  const [riskAccepted, setRiskAccepted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Reset local state when dialog opens
@@ -105,6 +106,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       setLocalMistralApiKey(mistralApiKey);
       setLocalGoogleApiKey(googleApiKey);
       setLocalUseEnvironmentKeys(useEnvironmentKeys);
+      setRiskAccepted(useEnvironmentKeys); // Auto-accept if using env keys
       setError(null);
     }
   }, [
@@ -125,6 +127,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     try {
       // Validate configuration
       if (!localUseEnvironmentKeys) {
+        if (!riskAccepted) {
+          setError('You must accept the security risks to continue');
+          return;
+        }
         if (localProvider === 'openai' && !localOpenAIApiKey.trim()) {
           setError('OpenAI API key is required');
           return;
@@ -578,7 +584,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
               control={
                 <Switch
                   checked={localUseEnvironmentKeys}
-                  onChange={(e) => setLocalUseEnvironmentKeys(e.target.checked)}
+                  onChange={(e) => {
+                    setLocalUseEnvironmentKeys(e.target.checked);
+                    if (e.target.checked) setRiskAccepted(true);
+                  }}
                   color="primary"
                 />
               }
@@ -613,7 +622,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
                 ) : localProvider === 'groq' ? (
                   <TextField
@@ -632,7 +640,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
                 ) : localProvider === 'mistral' ? (
                   <TextField
@@ -651,7 +658,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
                 ) : (
                   <TextField
@@ -670,17 +676,70 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         </IconButton>
                       ),
                     }}
-                    helperText="Your API key is sent securely to the backend and never exposed"
                   />
                 )}
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ fontWeight: 600, mb: 0.5 }}
+                  >
+                    Security & Risk Notice
+                  </Typography>
+                  <Typography variant="body2" paragraph sx={{ mb: 1 }}>
+                    Your API keys are stored in <strong>session memory</strong>{' '}
+                    and cleared when you close this tab. They are never sent to
+                    our servers.
+                  </Typography>
+                  <Typography variant="body2" paragraph sx={{ mb: 1 }}>
+                    <strong>Warning:</strong> Browser storage is not fully
+                    secure. Malicious browser extensions or compromised devices
+                    could access these keys. We strongly recommend using{' '}
+                    <strong>restricted keys</strong> with usage limits/caps.
+                  </Typography>
+                  <Typography variant="body2">
+                    By using this feature you acknowledge that you are solely
+                    responsible for any potential exposure or misuse of your API
+                    keys, and the EmpiRE-Compass team cannot be held liable for
+                    any resulting damage or loss.
+                  </Typography>
+                </Alert>
+
+                {/* Risk Acceptance Checkbox */}
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 2,
+                    bgcolor: 'rgba(232, 97, 97, 0.05)',
+                    borderRadius: 1,
+                    border: '1px solid rgba(232, 97, 97, 0.2)',
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={riskAccepted}
+                        onChange={(e) => setRiskAccepted(e.target.checked)}
+                        color="error"
+                        size="small"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        I understand and accept the security risks.
+                      </Typography>
+                    }
+                  />
+                </Box>
               </Box>
             ) : (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                <Typography variant="body2">
-                  Using API keys from backend environment variables. If not
-                  configured, you'll need to provide your own API key above.
-                </Typography>
-              </Alert>
+              <Box sx={{ mt: 2 }}>
+                <Alert severity="info">
+                  <Typography variant="body2">
+                    Using API keys from backend environment variables. If not
+                    configured, you'll need to provide your own API key above.
+                  </Typography>
+                </Alert>
+              </Box>
             )}
           </Box>
 
@@ -706,7 +765,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           variant="contained"
           disabled={
             !localUseEnvironmentKeys &&
-            ((localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
+            (!riskAccepted ||
+              (localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
               (localProvider === 'groq' && !localGroqApiKey.trim()) ||
               (localProvider === 'mistral' && !localMistralApiKey.trim()) ||
               (localProvider === 'google' && !localGoogleApiKey.trim()))
