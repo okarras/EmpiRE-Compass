@@ -29,6 +29,7 @@ import {
   isAuthError,
   isConfigError,
   type Suggestion,
+  suggestionTextToString,
 } from '../../utils/suggestions';
 import { useQuestionnaireAI } from '../../context/QuestionnaireAIContext';
 import QuestionnaireAIHistoryDialog from './QuestionnaireAIHistoryDialog';
@@ -157,7 +158,7 @@ const AIAssistantButton = React.forwardRef<
               questionText,
               type: 'suggestion',
               action: 'generated',
-              content: suggestion.text,
+              content: suggestionTextToString(suggestion.text),
               metadata: {
                 originalSuggestionId: suggestion.id,
                 suggestionRank: suggestion.rank,

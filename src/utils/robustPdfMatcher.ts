@@ -1,13 +1,5 @@
-import {
-  findFuzzyMatch,
-  aggressiveNormalize,
-  type FuzzyMatchResult,
-} from './fuzzyPdfMatcher';
-import {
-  findTokenMatch,
-  stripReferences,
-  type TokenMatchResult,
-} from './tokenPdfMatcher';
+import { findFuzzyMatch, aggressiveNormalize } from './fuzzyPdfMatcher';
+import { findTokenMatch } from './tokenPdfMatcher';
 import { normalizeUnicode, unicodeFindIndex } from './unicodeNormalizer';
 
 export interface RobustMatchResult {
@@ -71,9 +63,7 @@ export function findRobustMatch(
     () => {
       const index = unicodeFindIndex(pdfText, searchText);
       if (index >= 0) {
-        const normalizedPdf = normalizeUnicode(pdfText);
         const normalizedSearch = normalizeUnicode(searchText);
-        const normalizedIndex = normalizedPdf.indexOf(normalizedSearch);
         let originalEnd = index;
         let normalizedCount = 0;
         while (

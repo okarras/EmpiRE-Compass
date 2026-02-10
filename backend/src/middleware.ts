@@ -23,7 +23,7 @@ const getAllowedOrigins = (): string[] => {
 // rate limit
 export const createRateLimiter = (
   windowMs: number = 15 * 60 * 1000,
-  max: number = 100
+  max: number = 100000000
 ) => {
   return rateLimit({
     windowMs,

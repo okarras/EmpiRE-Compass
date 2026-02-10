@@ -20,6 +20,7 @@ import AIAssistantButton, {
 import SuggestionBox from '../SuggestionBox';
 import InlineValidationFeedback from '../InlineValidationFeedback';
 import type { Suggestion } from '../../../utils/suggestions';
+import { suggestionTextToString } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
 import type { SemanticDocument } from '../../../utils/semanticChunker';
@@ -107,7 +108,7 @@ const TextQuestion: React.FC<{
   };
 
   const handleApplySuggestion = (suggestion: Suggestion) => {
-    onChange(suggestion.text);
+    onChange(suggestionTextToString(suggestion.text));
     setIsCollapsed(true);
   };
 

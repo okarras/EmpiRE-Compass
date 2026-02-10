@@ -11,6 +11,7 @@ import AIAssistantButton, {
 } from '../AIAssistantButton';
 import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
+import { suggestionTextToString } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
 import type { SemanticDocument } from '../../../utils/semanticChunker';
@@ -97,7 +98,8 @@ const SelectQuestion: React.FC<{
   };
 
   const handleApplySuggestion = (suggestion: Suggestion) => {
-    const suggestionLower = suggestion.text.toLowerCase().trim();
+    const suggestionText = suggestionTextToString(suggestion.text);
+    const suggestionLower = suggestionText.toLowerCase().trim();
     const matchedOption = opts.find(
       (opt: string) => opt.toLowerCase().trim() === suggestionLower
     );
@@ -116,9 +118,9 @@ const SelectQuestion: React.FC<{
       } else {
         console.warn(
           'Suggestion does not match any available options:',
-          suggestion.text
+          suggestionText
         );
-        onChange(suggestion.text);
+        onChange(suggestionText);
       }
     }
 

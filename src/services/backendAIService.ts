@@ -597,6 +597,8 @@ CRITICAL INSTRUCTIONS FOR EVIDENCE EXCERPTS:
 - Include enough context to be meaningful but not too much
 - If the text has references like [1] or [Smith 2020], include them as they appear
 - The excerpt will be used to highlight text in the PDF, so accuracy is critical
+- If the question includes "Available Options", your suggestions MUST use ONLY those exact choices
+
 
 Generate exactly 3 suggestions in the following JSON format:
 {

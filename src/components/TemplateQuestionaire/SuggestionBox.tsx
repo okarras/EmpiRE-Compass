@@ -30,6 +30,7 @@ import {
   type Suggestion,
   type FeedbackData,
   type Evidence,
+  suggestionTextToString,
 } from '../../utils/suggestions';
 import {
   generateEvidenceHighlight,
@@ -432,7 +433,9 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
         rating,
         comment: comment || undefined,
         timestamp: Date.now(),
-        suggestionText: suggestion?.text,
+        suggestionText: suggestion
+          ? suggestionTextToString(suggestion.text)
+          : undefined,
         suggestionRank: suggestion?.rank,
       };
 
@@ -479,7 +482,7 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
       questionText,
       type: 'answer',
       action: 'applied',
-      content: suggestion.text,
+      content: suggestionTextToString(suggestion.text),
       metadata: {
         originalSuggestionId: suggestion.id,
         suggestionRank: suggestion.rank,

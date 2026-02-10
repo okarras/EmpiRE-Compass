@@ -166,7 +166,7 @@ export function findFuzzyMatch(
 
 function mapNormalizedToOriginal(
   originalText: string,
-  normalizedText: string,
+  _normalizedText: string,
   normalizedIndex: number
 ): number {
   let originalIndex = 0;
@@ -190,7 +190,7 @@ function mapNormalizedToOriginal(
 
 function mapAggressiveToOriginal(
   originalText: string,
-  aggressiveText: string,
+  _aggressiveText: string,
   aggressiveIndex: number
 ): number {
   let originalIndex = 0;

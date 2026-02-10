@@ -29,10 +29,20 @@ export interface EvidenceHighlight {
 export interface Suggestion {
   id: string;
   rank: number;
-  text: string;
+  text: string | string[]; // Can be array for multi-select questions
   confidence: number;
   evidence: Evidence[];
   createdAt: number;
+}
+
+export function suggestionTextToString(text: string | string[] | any): string {
+  if (typeof text === 'string') {
+    return text;
+  }
+  if (Array.isArray(text)) {
+    return text.map((item) => String(item)).join(', ');
+  }
+  return String(text || '');
 }
 
 export interface FeedbackData {

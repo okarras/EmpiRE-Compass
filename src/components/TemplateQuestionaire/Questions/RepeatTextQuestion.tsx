@@ -94,19 +94,26 @@ const RepeatTextQuestion: React.FC<{
     setLoading(false);
   };
 
-  const parseSuggestionText = (text: string): string[] => {
+  const parseSuggestionText = (text: string | string[]): string[] => {
+    if (Array.isArray(text)) {
+      return text
+        .map((item) => String(item).trim())
+        .filter((item) => item.length > 0);
+    }
+
+    const textStr = String(text);
     const separators = ['\n', ';', ',', '|'];
 
     for (const separator of separators) {
-      if (text.includes(separator)) {
-        return text
+      if (textStr.includes(separator)) {
+        return textStr
           .split(separator)
           .map((item) => item.trim())
           .filter((item) => item.length > 0);
       }
     }
 
-    return [text.trim()];
+    return [textStr.trim()];
   };
 
   const handleApplySuggestion = (suggestion: Suggestion) => {
