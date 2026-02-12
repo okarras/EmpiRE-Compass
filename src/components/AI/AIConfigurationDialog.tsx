@@ -8,21 +8,12 @@ import {
   FormControl,
   Select,
   MenuItem,
-  TextField,
-  FormControlLabel,
-  Switch,
   Box,
   Typography,
   Alert,
   Chip,
-  IconButton,
 } from '@mui/material';
-import {
-  Visibility,
-  VisibilityOff,
-  Settings,
-  CheckCircle,
-} from '@mui/icons-material';
+import { Settings, CheckCircle } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import {
   setProvider,
@@ -46,6 +37,7 @@ import {
   type MistralModel,
   type GoogleModel,
 } from '../../store/slices/aiSlice';
+import { useAuth } from '../../auth/useAuth';
 
 interface AIConfigurationDialogProps {
   open: boolean;
@@ -71,6 +63,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     useEnvironmentKeys,
   } = useAppSelector((state) => state.ai);
 
+  const { isAuthenticated } = useAuth();
+
   // Local state for form
   const [localProvider, setLocalProvider] = useState<AIProvider>(provider);
   const [localOpenAIModel, setLocalOpenAIModel] =
@@ -84,13 +78,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
   const [localGroqApiKey, setLocalGroqApiKey] = useState(groqApiKey);
   const [localMistralApiKey, setLocalMistralApiKey] = useState(mistralApiKey);
   const [localGoogleApiKey, setLocalGoogleApiKey] = useState(googleApiKey);
-  const [localUseEnvironmentKeys, setLocalUseEnvironmentKeys] =
-    useState(useEnvironmentKeys);
-  const [showOpenAIKey, setShowOpenAIKey] = useState(false);
-  const [showGroqKey, setShowGroqKey] = useState(false);
-  const [showMistralKey, setShowMistralKey] = useState(false);
-  const [showGoogleKey, setShowGoogleKey] = useState(false);
-  const [riskAccepted, setRiskAccepted] = useState(false);
+  const [localUseEnvironmentKeys, setLocalUseEnvironmentKeys] = useState(true);
+
   const [error, setError] = useState<string | null>(null);
 
   // Reset local state when dialog opens
@@ -105,8 +94,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
       setLocalGroqApiKey(groqApiKey);
       setLocalMistralApiKey(mistralApiKey);
       setLocalGoogleApiKey(googleApiKey);
-      setLocalUseEnvironmentKeys(useEnvironmentKeys);
-      setRiskAccepted(useEnvironmentKeys); // Auto-accept if using env keys
+      setLocalUseEnvironmentKeys(true);
       setError(null);
     }
   }, [
@@ -127,10 +115,6 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
     try {
       // Validate configuration
       if (!localUseEnvironmentKeys) {
-        if (!riskAccepted) {
-          setError('You must accept the security risks to continue');
-          return;
-        }
         if (localProvider === 'openai' && !localOpenAIApiKey.trim()) {
           setError('OpenAI API key is required');
           return;
@@ -247,13 +231,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 </MenuItem>
                 <MenuItem
                   value="mistral"
-                  disabled={localUseEnvironmentKeys}
-                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
-                  title={
-                    localUseEnvironmentKeys
-                      ? 'Login or provide your own API key to use this provider'
-                      : undefined
-                  }
+                  disabled={true}
+                  sx={{ opacity: 0.5 }}
+                  title={'Coming soon'}
                 >
                   <Box
                     sx={{
@@ -268,10 +248,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Mistral AI
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        High-performance models • Requires API key
+                        High-performance models • Coming soon
                       </Typography>
                     </Box>
-                    {localUseEnvironmentKeys && (
+                    {localUseEnvironmentKeys && !isAuthenticated && (
                       <Chip
                         label="Requires Login"
                         size="small"
@@ -283,13 +263,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 </MenuItem>
                 <MenuItem
                   value="groq"
-                  disabled={localUseEnvironmentKeys}
-                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
-                  title={
-                    localUseEnvironmentKeys
-                      ? 'Login or provide your own API key to use this provider'
-                      : undefined
-                  }
+                  disabled={true}
+                  sx={{ opacity: 0.5 }}
+                  title={'Coming soon'}
                 >
                   <Box
                     sx={{
@@ -304,10 +280,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Groq
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Fast inference • Requires API key
+                        Fast inference • Coming soon
                       </Typography>
                     </Box>
-                    {localUseEnvironmentKeys && (
+                    {localUseEnvironmentKeys && !isAuthenticated && (
                       <Chip
                         label="Requires Login"
                         size="small"
@@ -319,13 +295,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 </MenuItem>
                 <MenuItem
                   value="google"
-                  disabled={localUseEnvironmentKeys}
-                  sx={{ opacity: localUseEnvironmentKeys ? 0.5 : 1 }}
-                  title={
-                    localUseEnvironmentKeys
-                      ? 'Login or provide your own API key to use this provider'
-                      : undefined
-                  }
+                  disabled={true}
+                  sx={{ opacity: 0.5 }}
+                  title={'Coming soon'}
                 >
                   <Box
                     sx={{
@@ -340,10 +312,10 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                         Google Gemini
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Gemini 2.5 Flash, Gemma models • Requires API key
+                        Gemini 2.5 Flash, Gemma models • Coming soon
                       </Typography>
                     </Box>
-                    {localUseEnvironmentKeys && (
+                    {localUseEnvironmentKeys && !isAuthenticated && (
                       <Chip
                         label="Requires Login"
                         size="small"
@@ -391,7 +363,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                   ? OPENAI_MODELS.map((model) => {
                       const isGpt4oMini = model === 'gpt-4o-mini';
                       const isDisabled =
-                        localUseEnvironmentKeys && !isGpt4oMini;
+                        localUseEnvironmentKeys &&
+                        !isGpt4oMini &&
+                        !isAuthenticated;
 
                       return (
                         <MenuItem
@@ -400,9 +374,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                           disabled={isDisabled}
                           sx={{ opacity: isDisabled ? 0.5 : 1 }}
                           title={
-                            isDisabled
-                              ? 'Login or provide your own API key to use this model'
-                              : undefined
+                            isDisabled ? 'Login to use this model' : undefined
                           }
                         >
                           <Box
@@ -580,167 +552,12 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
               API Key Setup
             </Typography>
 
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={localUseEnvironmentKeys}
-                  onChange={(e) => {
-                    setLocalUseEnvironmentKeys(e.target.checked);
-                    if (e.target.checked) setRiskAccepted(true);
-                  }}
-                  color="primary"
-                />
-              }
-              label={
-                <Box>
-                  <Typography variant="body2">
-                    Use backend environment variables
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Use API keys configured in backend (if available)
-                  </Typography>
-                </Box>
-              }
-            />
-
-            {!localUseEnvironmentKeys ? (
-              <Box sx={{ mt: 2 }}>
-                {localProvider === 'openai' ? (
-                  <TextField
-                    fullWidth
-                    label="OpenAI API Key"
-                    type={showOpenAIKey ? 'text' : 'password'}
-                    value={localOpenAIApiKey}
-                    onChange={(e) => setLocalOpenAIApiKey(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton
-                          onClick={() => setShowOpenAIKey(!showOpenAIKey)}
-                          edge="end"
-                        >
-                          {showOpenAIKey ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                ) : localProvider === 'groq' ? (
-                  <TextField
-                    fullWidth
-                    label="Groq API Key"
-                    type={showGroqKey ? 'text' : 'password'}
-                    value={localGroqApiKey}
-                    onChange={(e) => setLocalGroqApiKey(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton
-                          onClick={() => setShowGroqKey(!showGroqKey)}
-                          edge="end"
-                        >
-                          {showGroqKey ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                ) : localProvider === 'mistral' ? (
-                  <TextField
-                    fullWidth
-                    label="Mistral API Key"
-                    type={showMistralKey ? 'text' : 'password'}
-                    value={localMistralApiKey}
-                    onChange={(e) => setLocalMistralApiKey(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton
-                          onClick={() => setShowMistralKey(!showMistralKey)}
-                          edge="end"
-                        >
-                          {showMistralKey ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                ) : (
-                  <TextField
-                    fullWidth
-                    label="Google API Key"
-                    type={showGoogleKey ? 'text' : 'password'}
-                    value={localGoogleApiKey}
-                    onChange={(e) => setLocalGoogleApiKey(e.target.value)}
-                    InputProps={{
-                      endAdornment: (
-                        <IconButton
-                          onClick={() => setShowGoogleKey(!showGoogleKey)}
-                          edge="end"
-                        >
-                          {showGoogleKey ? <VisibilityOff /> : <Visibility />}
-                        </IconButton>
-                      ),
-                    }}
-                  />
-                )}
-                <Alert severity="warning" sx={{ mt: 2 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 600, mb: 0.5 }}
-                  >
-                    Security & Risk Notice
-                  </Typography>
-                  <Typography variant="body2" paragraph sx={{ mb: 1 }}>
-                    Your API keys are stored in <strong>session memory</strong>{' '}
-                    and cleared when you close this tab. They are never sent to
-                    our servers.
-                  </Typography>
-                  <Typography variant="body2" paragraph sx={{ mb: 1 }}>
-                    <strong>Warning:</strong> Browser storage is not fully
-                    secure. Malicious browser extensions or compromised devices
-                    could access these keys. We strongly recommend using{' '}
-                    <strong>restricted keys</strong> with usage limits/caps.
-                  </Typography>
-                  <Typography variant="body2">
-                    By using this feature you acknowledge that you are solely
-                    responsible for any potential exposure or misuse of your API
-                    keys, and the EmpiRE-Compass team cannot be held liable for
-                    any resulting damage or loss.
-                  </Typography>
-                </Alert>
-
-                {/* Risk Acceptance Checkbox */}
-                <Box
-                  sx={{
-                    mt: 2,
-                    p: 2,
-                    bgcolor: 'rgba(232, 97, 97, 0.05)',
-                    borderRadius: 1,
-                    border: '1px solid rgba(232, 97, 97, 0.2)',
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={riskAccepted}
-                        onChange={(e) => setRiskAccepted(e.target.checked)}
-                        color="error"
-                        size="small"
-                      />
-                    }
-                    label={
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        I understand and accept the security risks.
-                      </Typography>
-                    }
-                  />
-                </Box>
-              </Box>
-            ) : (
-              <Box sx={{ mt: 2 }}>
-                <Alert severity="info">
-                  <Typography variant="body2">
-                    Using API keys from backend environment variables. If not
-                    configured, you'll need to provide your own API key above.
-                  </Typography>
-                </Alert>
-              </Box>
-            )}
+            <Alert severity="info">
+              <Typography variant="body2">
+                Using API keys from backend environment variables. Custom API
+                keys are disabled for security reasons.
+              </Typography>
+            </Alert>
           </Box>
 
           {/* Error Display */}
@@ -765,8 +582,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
           variant="contained"
           disabled={
             !localUseEnvironmentKeys &&
-            (!riskAccepted ||
-              (localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
+            ((localProvider === 'openai' && !localOpenAIApiKey.trim()) ||
               (localProvider === 'groq' && !localGroqApiKey.trim()) ||
               (localProvider === 'mistral' && !localMistralApiKey.trim()) ||
               (localProvider === 'google' && !localGoogleApiKey.trim()))
