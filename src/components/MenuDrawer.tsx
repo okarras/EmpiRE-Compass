@@ -175,37 +175,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 Home
               </Typography>
             }
-          />
-        </ListItem>
-
-        {/* Statistics Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/statistics`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/statistics')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <BarChartIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/statistics') ? 600 : 500,
-                }}
-              >
-                Statistics
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Overview and project introduction
               </Typography>
             }
           />
@@ -241,6 +213,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 Team
               </Typography>
             }
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Project team and contributors
+              </Typography>
+            }
           />
         </ListItem>
 
@@ -272,6 +249,49 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 News
+              </Typography>
+            }
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Latest updates and announcements
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* Statistics Link */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/statistics`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/statistics')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <BarChartIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/statistics') ? 600 : 500,
+                }}
+              >
+                Statistics
+              </Typography>
+            }
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Data visualizations and metrics
               </Typography>
             }
           />
@@ -307,37 +327,9 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 Community Questions
               </Typography>
             }
-          />
-        </ListItem>
-
-        {/* All Questions Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/allquestions`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/allquestions')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <QuestionAnswerIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
-                }}
-              >
-                {templateTitle || 'Loading...'} Questions
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Questions from the community
               </Typography>
             }
           />
@@ -371,6 +363,49 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                 }}
               >
                 Dynamic Question
+              </Typography>
+            }
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                AI-powered question generation
+              </Typography>
+            }
+          />
+        </ListItem>
+
+        {/* All Questions Link (Empirical/Curated) */}
+        <ListItem
+          onClick={() => {
+            navigate(`/${selectedTemplate}/allquestions`);
+            handleDrawerClose();
+          }}
+          sx={{
+            mb: 1,
+            borderRadius: 2,
+            backgroundColor: isCurrentPath('/allquestions')
+              ? 'rgba(232, 97, 97, 0.08)'
+              : 'transparent',
+            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
+          }}
+        >
+          <ListItemIcon>
+            <QuestionAnswerIcon sx={{ color: '#e86161' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary={
+              <Typography
+                variant="subtitle1"
+                sx={{
+                  color: '#e86161',
+                  fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
+                }}
+              >
+                {templateTitle || 'Loading...'} Questions
+              </Typography>
+            }
+            secondary={
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Curated research questions
               </Typography>
             }
           />
@@ -426,6 +461,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     Dashboard
                   </Typography>
                 }
+                secondary={
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    Admin overview and controls
+                  </Typography>
+                }
               />
             </ListItem>
 
@@ -463,6 +506,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     }}
                   >
                     Data Management
+                  </Typography>
+                }
+                secondary={
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    Import and manage data
                   </Typography>
                 }
               />
@@ -504,6 +555,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     Backup
                   </Typography>
                 }
+                secondary={
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    Backup and restore data
+                  </Typography>
+                }
               />
             </ListItem>
 
@@ -541,6 +600,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     }}
                   >
                     Home Content
+                  </Typography>
+                }
+                secondary={
+                  <Typography
+                    variant="caption"
+                    sx={{ color: 'text.secondary' }}
+                  >
+                    Edit home page content
                   </Typography>
                 }
               />
