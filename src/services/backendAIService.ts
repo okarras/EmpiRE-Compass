@@ -225,6 +225,7 @@ export class BackendAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{
@@ -236,6 +237,7 @@ export class BackendAIService {
     const request: GenerateTextRequest = {
       prompt,
       provider: options?.provider || this.config.provider,
+      model: options?.model,
       temperature: options?.temperature ?? 0.3,
       maxTokens: options?.maxTokens ?? 2000,
       systemContext: options?.systemContext,
@@ -417,6 +419,7 @@ export class UnifiedAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{
@@ -432,6 +435,7 @@ export class UnifiedAIService {
         temperature: options?.temperature,
         maxTokens: options?.maxTokens,
         provider: options?.provider,
+        model: options?.model,
         systemContext: options?.systemContext,
       });
     }
