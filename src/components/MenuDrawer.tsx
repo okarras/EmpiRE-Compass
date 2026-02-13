@@ -6,67 +6,294 @@ import {
   Divider,
   List,
   ListItem,
+  ListItemIcon,
   ListItemText,
   Tooltip,
   Typography,
-  ListItemIcon,
 } from '@mui/material';
+import {
+  BarChart,
+  QuestionAnswer,
+  Home,
+  Psychology,
+  People,
+  Article,
+  Backup,
+  Storage,
+  AdminPanelSettings,
+  Edit,
+  MenuBook,
+  Groups3,
+} from '@mui/icons-material';
+import type { SxProps, Theme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router';
 import { useEffect, useState } from 'react';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import HomeIcon from '@mui/icons-material/Home';
-import PsychologyIcon from '@mui/icons-material/Psychology';
-import PeopleIcon from '@mui/icons-material/People';
-import ArticleIcon from '@mui/icons-material/Article';
 import TemplateManagement, {
-  QuestionData,
+  type QuestionData,
 } from '../firestore/TemplateManagement';
-import BackupIcon from '@mui/icons-material/Backup';
-import StorageIcon from '@mui/icons-material/Storage';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import EditIcon from '@mui/icons-material/Edit';
 import { useAuthData } from '../auth/useAuthData';
-import Groups3Icon from '@mui/icons-material/Groups3';
 
-const drawerWidth = 280;
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const DRAWER_WIDTH = 280;
+
+const ACCENT_COLOR = '#e86161';
+const ACTIVE_BG = 'rgba(232, 97, 97, 0.08)';
+const HOVER_BG = 'rgba(232, 97, 97, 0.05)';
+
+const listItemStyles: SxProps<Theme> = {
+  mb: 1,
+  borderRadius: 2,
+  '&:hover': { backgroundColor: HOVER_BG },
+};
+
+const sectionHeaderStyles: SxProps<Theme> = {
+  color: 'text.secondary',
+  fontWeight: 600,
+  pl: 2,
+  display: 'block',
+  mb: 1,
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface NavItemConfig {
+  path: string;
+  label: string;
+  tooltip: string;
+  Icon: React.ComponentType<{ sx?: SxProps<Theme> }>;
+}
 
 interface MenuDrawerProps {
   open: boolean;
   handleDrawerClose: () => void;
 }
 
+// ---------------------------------------------------------------------------
+// Navigation Items Config
+// ---------------------------------------------------------------------------
+
+const GENERAL_NAV_ITEMS: NavItemConfig[] = [
+  {
+    path: '/',
+    label: 'Project Overview',
+    tooltip: 'Overview and project introduction',
+    Icon: Home,
+  },
+  {
+    path: '/team',
+    label: 'Team',
+    tooltip: 'Project team and published papers',
+    Icon: People,
+  },
+  {
+    path: '/news',
+    label: 'News',
+    tooltip: 'Latest updates and announcements',
+    Icon: Article,
+  },
+  {
+    path: '/statistics',
+    label: 'Statistics',
+    tooltip: 'Data visualizations and metrics',
+    Icon: BarChart,
+  },
+];
+
+const ADMIN_NAV_ITEMS: NavItemConfig[] = [
+  {
+    path: '/admin',
+    label: 'Dashboard',
+    tooltip: 'Admin overview and controls',
+    Icon: AdminPanelSettings,
+  },
+  {
+    path: '/admin/data',
+    label: 'Data Management',
+    tooltip: 'Import and manage data',
+    Icon: Storage,
+  },
+  {
+    path: '/admin/backup',
+    label: 'Backup',
+    tooltip: 'Backup and restore data',
+    Icon: Backup,
+  },
+  {
+    path: '/admin/home-content',
+    label: 'Home Content',
+    tooltip: 'Edit home page content',
+    Icon: Edit,
+  },
+  {
+    path: '/admin/news',
+    label: 'News Management',
+    tooltip: 'Create and manage news announcements',
+    Icon: Article,
+  },
+  {
+    path: '/admin/papers',
+    label: 'Papers',
+    tooltip: 'Manage published papers',
+    Icon: MenuBook,
+  },
+];
+
+const COMMUNITY_NAV_ITEMS: NavItemConfig[] = [
+  {
+    path: '/community-questions',
+    label: 'Community Questions',
+    tooltip: 'Questions from the community',
+    Icon: Groups3,
+  },
+  {
+    path: '/dynamic-question',
+    label: 'Dynamic Question',
+    tooltip: 'AI-powered question generation',
+    Icon: Psychology,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Sub-Components
+// ---------------------------------------------------------------------------
+
+interface SectionHeaderProps {
+  children: React.ReactNode;
+}
+
+function SectionHeader({ children }: SectionHeaderProps) {
+  return (
+    <Typography variant="overline" sx={sectionHeaderStyles}>
+      {children}
+    </Typography>
+  );
+}
+
+interface NavItemProps {
+  path: string;
+  label: string;
+  tooltip: string;
+  Icon: React.ComponentType<{ sx?: SxProps<Theme> }>;
+  templateId: string;
+  isCurrentPath: (path: string) => boolean;
+  onNavigate: (path: string) => void;
+}
+
+function NavItem({
+  path,
+  label,
+  tooltip,
+  Icon,
+  templateId,
+  isCurrentPath,
+  onNavigate,
+}: NavItemProps) {
+  const fullPath = path === '/' ? `/${templateId}/` : `/${templateId}${path}`;
+  const isActive = path === '/' ? isCurrentPath('/') : isCurrentPath(path);
+
+  return (
+    <Tooltip title={tooltip} placement="right" arrow>
+      <ListItem
+        onClick={() => onNavigate(fullPath)}
+        sx={{
+          ...listItemStyles,
+          backgroundColor: isActive ? ACTIVE_BG : 'transparent',
+        }}
+      >
+        <ListItemIcon>
+          <Icon sx={{ color: ACCENT_COLOR }} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <Typography
+              variant="subtitle1"
+              sx={{ color: ACCENT_COLOR, fontWeight: isActive ? 600 : 500 }}
+            >
+              {label}
+            </Typography>
+          }
+        />
+      </ListItem>
+    </Tooltip>
+  );
+}
+
+interface QuestionNavItemProps {
+  question: QuestionData;
+  isCurrentPath: (path: string) => boolean;
+  onQuestionClick: (id: number) => void;
+}
+
+function QuestionNavItem({
+  question,
+  isCurrentPath,
+  onQuestionClick,
+}: QuestionNavItemProps) {
+  const path = `/questions/${question.id}`;
+  const isActive = isCurrentPath(path);
+
+  return (
+    <Tooltip
+      title={question.dataAnalysisInformation.question}
+      placement="right"
+      arrow
+    >
+      <ListItem
+        onClick={() => onQuestionClick(question.id)}
+        sx={{
+          mb: 0.5,
+          borderRadius: 2,
+          backgroundColor: isActive ? ACTIVE_BG : 'transparent',
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            backgroundColor: HOVER_BG,
+            transform: 'translateX(4px)',
+          },
+        }}
+      >
+        <ListItemText
+          primary={
+            <Typography
+              variant="body2"
+              sx={{
+                color: 'text.primary',
+                fontWeight: isActive ? 600 : 400,
+                fontSize: '0.9rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {`${question.id}. ${question.dataAnalysisInformation.question}`}
+            </Typography>
+          }
+        />
+      </ListItem>
+    </Tooltip>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
+
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuthData();
 
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+  const [selectedTemplate, setSelectedTemplate] = useState('R186491');
   const [questions, setQuestions] = useState<QuestionData[]>([]);
-  const [templateTitle, setTemplateTitle] = useState<string>('');
+  const [templateTitle, setTemplateTitle] = useState('');
 
-  useEffect(() => {
-    //TODO: we should fetch data once and use that everywhere else
-    const fetchTemplateData = async () => {
-      try {
-        const templateData =
-          await TemplateManagement.getTemplate(selectedTemplate);
-        if (templateData) {
-          setTemplateTitle(templateData.title);
-        }
-
-        const questionsData =
-          await TemplateManagement.getAllQuestions(selectedTemplate);
-        setQuestions(questionsData);
-      } catch (error) {
-        console.error('Error fetching template data:', error);
-      }
-    };
-
-    fetchTemplateData();
-  }, [selectedTemplate]);
-
-  // Read template from URL on mount
+  // Sync template from URL
   useEffect(() => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const templateFromUrl = pathSegments[0];
@@ -75,36 +302,69 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
     }
   }, [location.pathname]);
 
-  const handleListItemClick = (id: number) => {
-    navigate(`/${selectedTemplate}/questions/${id}`);
-    handleDrawerClose();
-  };
+  // Fetch template data
+  useEffect(() => {
+    const fetchTemplateData = async () => {
+      try {
+        const [templateData, questionsData] = await Promise.all([
+          TemplateManagement.getTemplate(selectedTemplate),
+          TemplateManagement.getAllQuestions(selectedTemplate),
+        ]);
+        setTemplateTitle(templateData?.title ?? '');
+        setQuestions(questionsData);
+      } catch (error) {
+        console.error('Error fetching template data:', error);
+      }
+    };
+    fetchTemplateData();
+  }, [selectedTemplate]);
 
-  const isCurrentPath = (path: string) => {
-    // Handle home route
+  // Close drawer on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleDrawerClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleDrawerClose]);
+
+  const isCurrentPath = (path: string): boolean => {
     if (path === '/') {
-      const homePath = `/${selectedTemplate}/`;
       return (
-        location.pathname === homePath ||
+        location.pathname === `/${selectedTemplate}/` ||
         location.pathname === `/${selectedTemplate}`
       );
     }
     const fullPath = `/${selectedTemplate}${path}`;
     return (
       location.pathname === fullPath ||
-      location.pathname.startsWith(fullPath + '/')
+      location.pathname.startsWith(`${fullPath}/`)
     );
   };
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        handleDrawerClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleDrawerClose]);
+  const handleNavigate = (fullPath: string) => {
+    navigate(fullPath);
+    handleDrawerClose();
+  };
+
+  const handleQuestionClick = (id: number) => {
+    navigate(`/${selectedTemplate}/questions/${id}`);
+    handleDrawerClose();
+  };
+
+  const renderNavItems = (items: NavItemConfig[]) =>
+    items.map(({ path, label, tooltip, Icon }) => (
+      <NavItem
+        key={path}
+        path={path}
+        label={label}
+        tooltip={tooltip}
+        Icon={Icon}
+        templateId={selectedTemplate}
+        isCurrentPath={isCurrentPath}
+        onNavigate={handleNavigate}
+      />
+    ));
 
   return (
     <Drawer
@@ -112,10 +372,10 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
       open={open}
       variant="persistent"
       sx={{
-        width: drawerWidth,
+        width: DRAWER_WIDTH,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: drawerWidth,
+          width: DRAWER_WIDTH,
           boxSizing: 'border-box',
           backgroundColor: 'background.paper',
           borderRight: '1px solid',
@@ -125,14 +385,14 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         },
       }}
     >
-      {/* Top header bar */}
+      {/* Header */}
       <Box
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           p: 2,
-          backgroundColor: '#e86161',
+          backgroundColor: ACCENT_COLOR,
           color: 'white',
         }}
       >
@@ -145,541 +405,63 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
       </Box>
 
       <List sx={{ p: 2 }}>
-        {/* Home Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <HomeIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/') ? 600 : 500,
-                }}
-              >
-                Home
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Overview and project introduction
-              </Typography>
-            }
-          />
-        </ListItem>
+        {/* General */}
+        <SectionHeader>General</SectionHeader>
+        {renderNavItems(GENERAL_NAV_ITEMS)}
 
-        {/* Team Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/team`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/team')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <PeopleIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/team') ? 600 : 500,
-                }}
-              >
-                Team
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Project team and contributors
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        {/* News Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/news`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/news')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <ArticleIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/news') ? 600 : 500,
-                }}
-              >
-                News
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Latest updates and announcements
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        {/* Statistics Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/statistics`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/statistics')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <BarChartIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/statistics') ? 600 : 500,
-                }}
-              >
-                Statistics
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Data visualizations and metrics
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        {/* Community Questions Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/community-questions`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/community-questions')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <Groups3Icon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/community-questions') ? 600 : 500,
-                }}
-              >
-                Community Questions
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Questions from the community
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        {/* Dynamic Question Link */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/dynamic-question`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/dynamic-question')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <PsychologyIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/dynamic-question') ? 600 : 500,
-                }}
-              >
-                Dynamic Question
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                AI-powered question generation
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        {/* All Questions Link (Empirical/Curated) */}
-        <ListItem
-          onClick={() => {
-            navigate(`/${selectedTemplate}/allquestions`);
-            handleDrawerClose();
-          }}
-          sx={{
-            mb: 1,
-            borderRadius: 2,
-            backgroundColor: isCurrentPath('/allquestions')
-              ? 'rgba(232, 97, 97, 0.08)'
-              : 'transparent',
-            '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-          }}
-        >
-          <ListItemIcon>
-            <QuestionAnswerIcon sx={{ color: '#e86161' }} />
-          </ListItemIcon>
-          <ListItemText
-            primary={
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: '#e86161',
-                  fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
-                }}
-              >
-                {templateTitle || 'Loading...'} Questions
-              </Typography>
-            }
-            secondary={
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Curated research questions
-              </Typography>
-            }
-          />
-        </ListItem>
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* Admin Section */}
+        {/* Admin (guarded) */}
         {user?.is_admin && (
           <>
-            <Typography
-              variant="overline"
-              sx={{
-                color: 'text.secondary',
-                fontWeight: 600,
-                pl: 2,
-                display: 'block',
-                mb: 1,
-              }}
-            >
-              Admin Tools
-            </Typography>
-
-            {/* Admin Dashboard Link */}
-            <ListItem
-              onClick={() => {
-                navigate(`/${selectedTemplate}/admin`);
-                handleDrawerClose();
-              }}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                backgroundColor: isCurrentPath(`/${selectedTemplate}/admin`)
-                  ? 'rgba(232, 97, 97, 0.08)'
-                  : 'transparent',
-                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-              }}
-            >
-              <ListItemIcon>
-                <AdminPanelSettingsIcon sx={{ color: '#e86161' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      color: '#e86161',
-                      fontWeight: isCurrentPath(`/${selectedTemplate}/admin`)
-                        ? 600
-                        : 500,
-                    }}
-                  >
-                    Dashboard
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    Admin overview and controls
-                  </Typography>
-                }
-              />
-            </ListItem>
-
-            {/* Data Management Link */}
-            <ListItem
-              onClick={() => {
-                navigate(`/${selectedTemplate}/admin/data`);
-                handleDrawerClose();
-              }}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                backgroundColor: isCurrentPath(
-                  `/${selectedTemplate}/admin/data`
-                )
-                  ? 'rgba(232, 97, 97, 0.08)'
-                  : 'transparent',
-                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-              }}
-            >
-              <ListItemIcon>
-                <StorageIcon sx={{ color: '#e86161' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      color: '#e86161',
-                      fontWeight: isCurrentPath(
-                        `/${selectedTemplate}/admin/data`
-                      )
-                        ? 600
-                        : 500,
-                    }}
-                  >
-                    Data Management
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    Import and manage data
-                  </Typography>
-                }
-              />
-            </ListItem>
-
-            {/* Admin Backup Link */}
-            <ListItem
-              onClick={() => {
-                navigate(`/${selectedTemplate}/admin/backup`);
-                handleDrawerClose();
-              }}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                backgroundColor: isCurrentPath(
-                  `/${selectedTemplate}/admin/backup`
-                )
-                  ? 'rgba(232, 97, 97, 0.08)'
-                  : 'transparent',
-                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-              }}
-            >
-              <ListItemIcon>
-                <BackupIcon sx={{ color: '#e86161' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      color: '#e86161',
-                      fontWeight: isCurrentPath(
-                        `/${selectedTemplate}/admin/backup`
-                      )
-                        ? 600
-                        : 500,
-                    }}
-                  >
-                    Backup
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    Backup and restore data
-                  </Typography>
-                }
-              />
-            </ListItem>
-
-            {/* Home Content Management Link */}
-            <ListItem
-              onClick={() => {
-                navigate(`/${selectedTemplate}/admin/home-content`);
-                handleDrawerClose();
-              }}
-              sx={{
-                mb: 1,
-                borderRadius: 2,
-                backgroundColor: isCurrentPath(
-                  `/${selectedTemplate}/admin/home-content`
-                )
-                  ? 'rgba(232, 97, 97, 0.08)'
-                  : 'transparent',
-                '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.05)' },
-              }}
-            >
-              <ListItemIcon>
-                <EditIcon sx={{ color: '#e86161' }} />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      color: '#e86161',
-                      fontWeight: isCurrentPath(
-                        `/${selectedTemplate}/admin/home-content`
-                      )
-                        ? 600
-                        : 500,
-                    }}
-                  >
-                    Home Content
-                  </Typography>
-                }
-                secondary={
-                  <Typography
-                    variant="caption"
-                    sx={{ color: 'text.secondary' }}
-                  >
-                    Edit home page content
-                  </Typography>
-                }
-              />
-            </ListItem>
-
             <Divider sx={{ my: 2 }} />
+            <SectionHeader>Admin</SectionHeader>
+            {renderNavItems(ADMIN_NAV_ITEMS)}
           </>
         )}
 
-        {/* Questions List */}
-        <Typography
-          variant="overline"
-          sx={{
-            color: 'text.secondary',
-            fontWeight: 600,
-            pl: 2,
-            display: 'block',
-            mb: 1,
-          }}
-        >
-          Research Questions
-        </Typography>
+        {/* Community */}
+        <Divider sx={{ my: 2 }} />
+        <SectionHeader>Community</SectionHeader>
+        {renderNavItems(COMMUNITY_NAV_ITEMS)}
+
+        {/* Curated Questions */}
+        <Divider sx={{ my: 2 }} />
+        <SectionHeader>Curated Questions</SectionHeader>
+        <Tooltip title="Curated research questions" placement="right" arrow>
+          <ListItem
+            onClick={() => handleNavigate(`/${selectedTemplate}/allquestions`)}
+            sx={{
+              ...listItemStyles,
+              backgroundColor: isCurrentPath('/allquestions')
+                ? ACTIVE_BG
+                : 'transparent',
+            }}
+          >
+            <ListItemIcon>
+              <QuestionAnswer sx={{ color: ACCENT_COLOR }} />
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    color: ACCENT_COLOR,
+                    fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
+                  }}
+                >
+                  {templateTitle || 'Loading...'} Questions
+                </Typography>
+              }
+            />
+          </ListItem>
+        </Tooltip>
 
         {questions.map((question) => (
-          <Tooltip
-            title={question.dataAnalysisInformation.question}
-            placement="right"
-            arrow
+          <QuestionNavItem
             key={question.id}
-          >
-            <ListItem
-              onClick={() => handleListItemClick(question.id)}
-              sx={{
-                mb: 0.5,
-                borderRadius: 2,
-                backgroundColor: isCurrentPath(
-                  `/${selectedTemplate}/questions/${question.id}`
-                )
-                  ? 'rgba(232, 97, 97, 0.08)'
-                  : 'transparent',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  backgroundColor: 'rgba(232, 97, 97, 0.05)',
-                  transform: 'translateX(4px)',
-                },
-              }}
-            >
-              <ListItemText
-                primary={
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: 'text.primary',
-                      fontWeight: isCurrentPath(
-                        `/${selectedTemplate}/questions/${question.id}`
-                      )
-                        ? 600
-                        : 400,
-                      fontSize: '0.9rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {`${question.id}. ${question.dataAnalysisInformation.question}`}
-                  </Typography>
-                }
-              />
-            </ListItem>
-          </Tooltip>
+            question={question}
+            isCurrentPath={isCurrentPath}
+            onQuestionClick={handleQuestionClick}
+          />
         ))}
       </List>
     </Drawer>
