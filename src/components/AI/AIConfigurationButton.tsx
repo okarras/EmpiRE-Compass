@@ -11,7 +11,7 @@ const AIConfigurationButton: React.FC = () => {
   // Check if settings are loaded from localStorage
   const hasStoredSettings = () => {
     try {
-      return localStorage.getItem('ai-configuration') !== null;
+      return localStorage.getItem('ai-configuration-settings') !== null;
     } catch {
       return false;
     }

@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminGuard from './auth/AdminGuard';
 import ErrorFallback from './pages/ErrorFallback';
+import CommunityQuestions from './pages/CommunityQuestions';
 
 const Home = lazy(() => import('./pages/Home'));
 const Statistics = lazy(() => import('./pages/Statistics'));
@@ -22,6 +23,11 @@ const AdminHomeContent = lazy(() => import('./pages/AdminHomeContent'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
+const AdminPapers = lazy(() => import('./pages/AdminPapers'));
+
+const CommunityQuestionDetailsPage = lazy(
+  () => import('./pages/CommunityQuestionDetailsPage')
+);
 
 const Router = () => {
   return (
@@ -75,6 +81,16 @@ const Router = () => {
               errorElement={<ErrorFallback />}
             />
             <Route
+              path="community-questions"
+              element={<CommunityQuestions />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="community-questions/:id"
+              element={<CommunityQuestionDetailsPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
               path="admin"
               element={
                 <AdminGuard>
@@ -124,6 +140,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminNews />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/papers"
+              element={
+                <AdminGuard>
+                  <AdminPapers />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}

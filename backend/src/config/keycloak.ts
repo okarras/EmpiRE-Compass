@@ -68,10 +68,6 @@ export const verifyKeycloakToken = async (token: string) => {
     const config = getKeycloakConfig();
     const jwks = getKeycloakJWKS();
 
-    // Verify the token signature and decode it
-    // Note: We don't validate audience in jwtVerify because Keycloak tokens can have
-    // different audience values ("account" for account API, or client ID)
-    // We'll verify the authorized party (azp) manually after verification
     const { payload } = await jwtVerify(token, jwks, {
       issuer: `${config.url}/realms/${config.realm}`,
       // Don't validate audience here - we'll check it manually below

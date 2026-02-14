@@ -47,6 +47,7 @@ import {
   Security,
   PersonRemove,
   Article,
+  MenuBook,
 } from '@mui/icons-material';
 import {
   collection,
@@ -673,6 +674,26 @@ const AdminDashboard = () => {
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Manage news & announcements
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+              onClick={() => navigate(`/${templateId}/admin/papers`)}
+            >
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <MenuBook sx={{ color: '#e86161' }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Papers Management
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Manage published papers on Team page
                   </Typography>
                 </Box>
               </CardContent>

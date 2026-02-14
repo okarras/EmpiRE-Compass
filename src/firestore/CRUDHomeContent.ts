@@ -2,6 +2,7 @@ import {
   getHomeContent as getHomeContentApi,
   updateHomeContent as updateHomeContentApi,
 } from '../services/backendApi';
+import BackupService from '../services/BackupService';
 
 /**
  * Home content structure:
@@ -222,6 +223,14 @@ export const defaultHomeContent: HomeContentData = {
  */
 export const getHomeContent = async (): Promise<HomeContentData> => {
   try {
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('CRUDHomeContent: Using explicit backup for home content');
+      const content = await BackupService.getHomeContent();
+      console.log('CRUDHomeContent: Got content from backup:', content);
+      return content as HomeContentData;
+    }
+
     const content = await getHomeContentApi();
     // If backend returns data, use it; otherwise fall back to default
     if (content && typeof content === 'object') {
@@ -230,9 +239,14 @@ export const getHomeContent = async (): Promise<HomeContentData> => {
       return defaultHomeContent;
     }
   } catch (error) {
-    console.error('Error fetching home content:', error);
-    // Return default content on error
-    return defaultHomeContent;
+    console.warn('Backend API failed, falling back to local backup:', error);
+    try {
+      const content = await BackupService.getHomeContent();
+      return content as HomeContentData;
+    } catch (backupError) {
+      console.error('Error fetching home content from backup:', backupError);
+      return defaultHomeContent;
+    }
   }
 };
 
@@ -308,7 +322,7 @@ export const initializeHomeContent = async (
 
 /**
  * Get all documents in HomeContent collection (for backup purposes)
- * Note: This now returns a single document array since home content is a single document
+ * Returns single document array containing home content
  */
 export const getAllHomeContent = async (): Promise<
   Array<{ id: string } & HomeContentData>

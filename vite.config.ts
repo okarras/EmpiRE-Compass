@@ -33,6 +33,7 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MB limit
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globIgnores: ['**/node_modules/**/*', '**/firebase-backup*'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/orkg\.org\/.*$/,
