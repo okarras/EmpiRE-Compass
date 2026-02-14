@@ -9,6 +9,19 @@ import {
 } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
 
+// Type for placeholder widget
+interface PlaceholderWidget extends editor.IContentWidget {
+  domNode: HTMLElement;
+  show: () => void;
+  hide: () => void;
+}
+
+// WeakMap to store placeholder widgets per editor instance
+const placeholderWidgets = new WeakMap<
+  editor.IStandaloneCodeEditor,
+  PlaceholderWidget
+>();
+
 export type CodeLanguage =
   | 'sparql'
   | 'html'
@@ -34,6 +47,7 @@ interface CodeEditorProps {
   copyable?: boolean;
   formattable?: boolean;
   fullscreenable?: boolean;
+  width?: string | number;
 }
 
 const CodeEditor: React.FC<CodeEditorProps> = ({
@@ -41,6 +55,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
   onChange,
   language = 'plaintext',
   height = '400px',
+  width = '100%',
   minHeight,
   readOnly = false,
   theme = 'vs',
@@ -64,11 +79,93 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       registerSPARQLLanguage(monaco);
     }
 
-    // Set placeholder if empty
-    if (!value && placeholder) {
-      editor.setValue(placeholder);
-      editor.setSelection(new monaco.Selection(1, 1, 1, 1));
+    // Set up placeholder using content widget (Monaco doesn't have built-in placeholder)
+    if (placeholder) {
+      setupPlaceholder(editor, monaco, placeholder);
     }
+
+    // Update placeholder visibility when value changes
+    const updatePlaceholder = () => {
+      const placeholderWidget = placeholderWidgets.get(editor);
+      if (placeholderWidget) {
+        const currentValue = editor.getValue();
+        if (currentValue.trim() === '') {
+          placeholderWidget.show();
+        } else {
+          placeholderWidget.hide();
+        }
+      }
+    };
+
+    // Listen to content changes
+    editor.onDidChangeModelContent(updatePlaceholder);
+
+    // Initial check
+    updatePlaceholder();
+  };
+
+  // Setup placeholder content widget
+  const setupPlaceholder = (
+    editor: editor.IStandaloneCodeEditor,
+    monaco: Monaco,
+    placeholderText: string
+  ) => {
+    const domNode = document.createElement('div');
+
+    // Style the placeholder
+    domNode.style.cssText = `
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      color: #999;
+      font-style: italic;
+      padding: 8px 0 0 4px;
+      font-size: 14px;
+      font-family: Monaco, Menlo, "Courier New", monospace;
+      user-select: none;
+    `;
+    domNode.textContent = placeholderText;
+
+    const placeholderWidget: PlaceholderWidget = {
+      domNode,
+      getId: () => 'placeholder-widget',
+      getDomNode: () => domNode,
+      getPosition: () => ({
+        position: { lineNumber: 1, column: 1 },
+        preference: [monaco.editor.ContentWidgetPositionPreference.EXACT],
+      }),
+      show: () => {
+        domNode.style.display = 'block';
+      },
+      hide: () => {
+        domNode.style.display = 'none';
+      },
+    };
+
+    // Store reference for later access
+    placeholderWidgets.set(editor, placeholderWidget);
+
+    // Add widget to editor
+    editor.addContentWidget(placeholderWidget);
+
+    // Show/hide based on content
+    const currentValue = editor.getValue();
+    if (currentValue.trim() === '') {
+      placeholderWidget.show();
+    } else {
+      placeholderWidget.hide();
+    }
+
+    // Update placeholder visibility when content changes
+    editor.onDidChangeModelContent(() => {
+      const value = editor.getValue();
+      if (value.trim() === '') {
+        placeholderWidget.show();
+      } else {
+        placeholderWidget.hide();
+      }
+    });
   };
 
   const handleCopy = async () => {
@@ -100,6 +197,20 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
       editorRef.current.layout();
     }
   }, [isFullscreen]);
+
+  // Update placeholder visibility when value changes
+  useEffect(() => {
+    if (editorRef.current && placeholder) {
+      const placeholderWidget = placeholderWidgets.get(editorRef.current);
+      if (placeholderWidget) {
+        if (!value || value.trim() === '') {
+          placeholderWidget.show();
+        } else {
+          placeholderWidget.hide();
+        }
+      }
+    }
+  }, [value, placeholder]);
 
   const editorOptions: editor.IStandaloneEditorConstructionOptions = {
     readOnly,
@@ -142,6 +253,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({
     : {
         position: 'relative' as const,
         minHeight: minHeight || height,
+        width: width,
       };
 
   return (
@@ -262,6 +374,7 @@ function registerSPARQLLanguage(monaco: Monaco) {
       'DESCRIBE',
     ],
     operators: ['=', '!=', '<', '>', '<=', '>=', '&&', '||', '!'],
+    // eslint-disable-next-line no-useless-escape
     symbols: /[=><!~?:&|+\-*\/\^%]+/,
     escapes:
       /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -284,7 +397,7 @@ function registerSPARQLLanguage(monaco: Monaco) {
         [/#.*$/, 'comment'],
         [/\d+/, 'number'],
         [/@symbols/, { cases: { '@operators': 'operator', '@default': '' } }],
-        [/[{}()\[\]]/, '@brackets'],
+        [/[{}()[\]]/, '@brackets'],
         [/[;,.]/, 'delimiter'],
         [/\s+/, 'white'],
       ],

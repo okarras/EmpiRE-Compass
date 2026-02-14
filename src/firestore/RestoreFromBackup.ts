@@ -14,7 +14,7 @@ import { queries as nlp4reQueriesFromCode } from '../constants/queries_nlp4re_ch
 /**
  * Serialize chart settings - remove functions and make Firebase-safe
  */
-const serializeChartSettings = (chartSettings: any): any => {
+export const serializeChartSettings = (chartSettings: any): any => {
   if (!chartSettings) return null;
 
   const serialized: any = {};
@@ -254,10 +254,17 @@ const createNestedTemplate = async (
  * Convert backup questions to new format with EVERYTHING from code
  * Merges backup data with complete chart settings, SPARQL queries, etc.
  */
-const convertBackupQuestionsToNewFormat = (
+export const convertBackupQuestionsToNewFormat = (
   backupQuestions: any[],
   codeQueries: any[]
 ): any[] => {
+  if (!backupQuestions || backupQuestions.length === 0) {
+    console.warn(
+      'convertBackupQuestionsToNewFormat: No backup questions provided'
+    );
+    return [];
+  }
+
   return backupQuestions.map((backupQ) => {
     const questionId = backupQ.uid || `query_${backupQ.id}`;
 
@@ -266,73 +273,82 @@ const convertBackupQuestionsToNewFormat = (
       (q) => q.uid === backupQ.uid || q.id === backupQ.id
     );
 
+    if (!codeQuery) {
+      console.warn(
+        `convertBackupQuestionsToNewFormat: No matching code query found for ${questionId}`
+      );
+    }
+
     // Build the complete question document - EVERYTHING
+    // Start with backup data as base, then merge code defaults
     const questionDoc: any = {
       id: backupQ.id,
       uid: backupQ.uid,
       title: backupQ.title || codeQuery?.title || '',
 
+      // Preserve SPARQL query from backup if it exists, otherwise use code
+      sparqlQuery:
+        backupQ.sparqlQuery ||
+        SPARQL_QUERIES[questionId as keyof typeof SPARQL_QUERIES] ||
+        '',
+
+      // Preserve chart type from backup if it exists, otherwise use code
+      chartType: backupQ.chartType || codeQuery?.chartType,
+
+      // Preserve chart settings from backup if they exist, otherwise use code
+      chartSettings: backupQ.chartSettings
+        ? serializeChartSettings(backupQ.chartSettings)
+        : codeQuery?.chartSettings
+          ? serializeChartSettings(codeQuery.chartSettings)
+          : undefined,
+
+      chartSettings2: backupQ.chartSettings2
+        ? serializeChartSettings(backupQ.chartSettings2)
+        : codeQuery?.chartSettings2
+          ? serializeChartSettings(codeQuery.chartSettings2)
+          : undefined,
+
       // Preserve ALL dataAnalysisInformation from backup (priority) or code
+      // Start with backup data, then merge code defaults for missing fields
       dataAnalysisInformation: {
+        // Always include question (from backup or code)
         question:
           backupQ.dataAnalysisInformation?.question ||
           codeQuery?.dataAnalysisInformation?.question ||
           '',
-        ...(backupQ.dataAnalysisInformation?.questionExplanation && {
-          questionExplanation:
-            backupQ.dataAnalysisInformation.questionExplanation,
-        }),
-        ...(backupQ.dataAnalysisInformation?.dataAnalysis && {
-          dataAnalysis: backupQ.dataAnalysisInformation.dataAnalysis,
-        }),
-        ...(backupQ.dataAnalysisInformation?.dataInterpretation && {
-          dataInterpretation:
-            backupQ.dataAnalysisInformation.dataInterpretation,
-        }),
-        ...(backupQ.dataAnalysisInformation?.requiredDataForAnalysis && {
-          requiredDataForAnalysis:
-            backupQ.dataAnalysisInformation.requiredDataForAnalysis,
-        }),
+        // Preserve all fields from backup if they exist (even if empty string)
+        questionExplanation:
+          backupQ.dataAnalysisInformation?.questionExplanation !== undefined
+            ? backupQ.dataAnalysisInformation.questionExplanation
+            : codeQuery?.dataAnalysisInformation?.questionExplanation || '',
+        dataAnalysis:
+          backupQ.dataAnalysisInformation?.dataAnalysis !== undefined
+            ? backupQ.dataAnalysisInformation.dataAnalysis
+            : codeQuery?.dataAnalysisInformation?.dataAnalysis || '',
+        dataInterpretation:
+          backupQ.dataAnalysisInformation?.dataInterpretation !== undefined
+            ? backupQ.dataAnalysisInformation.dataInterpretation
+            : codeQuery?.dataAnalysisInformation?.dataInterpretation || '',
+        requiredDataForAnalysis:
+          backupQ.dataAnalysisInformation?.requiredDataForAnalysis !== undefined
+            ? backupQ.dataAnalysisInformation.requiredDataForAnalysis
+            : codeQuery?.dataAnalysisInformation?.requiredDataForAnalysis || '',
       },
     };
 
-    // Add SPARQL query from code
-    if (SPARQL_QUERIES[questionId as keyof typeof SPARQL_QUERIES]) {
-      questionDoc.sparqlQuery =
-        SPARQL_QUERIES[questionId as keyof typeof SPARQL_QUERIES];
-    }
-
-    // Add second UID and SPARQL query for dual queries
-    if (codeQuery?.uid_2) {
-      questionDoc.uid_2 = codeQuery.uid_2;
-      if (SPARQL_QUERIES[codeQuery.uid_2 as keyof typeof SPARQL_QUERIES]) {
-        questionDoc.sparqlQuery2 =
-          SPARQL_QUERIES[codeQuery.uid_2 as keyof typeof SPARQL_QUERIES];
-      }
+    // Add second UID and SPARQL query for dual queries (preserve from backup if exists)
+    if (backupQ.uid_2 || codeQuery?.uid_2) {
+      questionDoc.uid_2 = backupQ.uid_2 || codeQuery.uid_2;
+      questionDoc.sparqlQuery2 =
+        backupQ.sparqlQuery2 ||
+        (codeQuery?.uid_2 &&
+          SPARQL_QUERIES[codeQuery.uid_2 as keyof typeof SPARQL_QUERIES]) ||
+        '';
     }
 
     // Add merged UID for special queries (15, 16)
-    if (codeQuery?.uid_2_merge) {
-      questionDoc.uid_2_merge = codeQuery.uid_2_merge;
-    }
-
-    // Add chart type from code
-    if (codeQuery?.chartType) {
-      questionDoc.chartType = codeQuery.chartType;
-    }
-
-    // Add COMPLETE chart settings from code (serialize - remove functions)
-    if (codeQuery?.chartSettings) {
-      questionDoc.chartSettings = serializeChartSettings(
-        codeQuery.chartSettings
-      );
-    }
-
-    // Add second chart settings from code (serialize - remove functions)
-    if (codeQuery?.chartSettings2) {
-      questionDoc.chartSettings2 = serializeChartSettings(
-        codeQuery.chartSettings2
-      );
+    if (backupQ.uid_2_merge || codeQuery?.uid_2_merge) {
+      questionDoc.uid_2_merge = backupQ.uid_2_merge || codeQuery.uid_2_merge;
     }
 
     // Store processing function names as references
@@ -351,6 +367,52 @@ const convertBackupQuestionsToNewFormat = (
       questionDoc.tabs = backupQ.tabs || codeQuery.tabs;
     }
 
+    // Preserve gridOptions from backup if they exist
+    if (backupQ.gridOptions) {
+      questionDoc.gridOptions = backupQ.gridOptions;
+    } else if (codeQuery?.gridOptions) {
+      questionDoc.gridOptions = codeQuery.gridOptions;
+    }
+
+    // Preserve dataProcessingFunction name from backup if it exists
+    if (backupQ.dataProcessingFunction) {
+      questionDoc.dataProcessingFunctionName =
+        typeof backupQ.dataProcessingFunction === 'string'
+          ? backupQ.dataProcessingFunction
+          : backupQ.dataProcessingFunction.name || 'unknown';
+    } else if (codeQuery?.dataProcessingFunction) {
+      questionDoc.dataProcessingFunctionName =
+        codeQuery.dataProcessingFunction.name || 'unknown';
+    }
+
+    if (backupQ.dataProcessingFunction2) {
+      questionDoc.dataProcessingFunctionName2 =
+        typeof backupQ.dataProcessingFunction2 === 'string'
+          ? backupQ.dataProcessingFunction2
+          : backupQ.dataProcessingFunction2.name || 'unknown';
+    } else if (codeQuery?.dataProcessingFunction2) {
+      questionDoc.dataProcessingFunctionName2 =
+        codeQuery.dataProcessingFunction2.name || 'unknown';
+    }
+
+    // Debug logging for first question to verify conversion
+    if (backupQ.id === 1 || backupQ.uid === 'query_1') {
+      console.log(
+        'convertBackupQuestionsToNewFormat: Sample conversion for question 1',
+        {
+          backupDataAnalysisInfo: backupQ.dataAnalysisInformation,
+          convertedDataAnalysisInfo: questionDoc.dataAnalysisInformation,
+          hasQuestionExplanation:
+            !!questionDoc.dataAnalysisInformation.questionExplanation,
+          hasDataAnalysis: !!questionDoc.dataAnalysisInformation.dataAnalysis,
+          hasDataInterpretation:
+            !!questionDoc.dataAnalysisInformation.dataInterpretation,
+          hasRequiredData:
+            !!questionDoc.dataAnalysisInformation.requiredDataForAnalysis,
+        }
+      );
+    }
+
     return questionDoc;
   });
 };
@@ -359,7 +421,9 @@ const convertBackupQuestionsToNewFormat = (
  * Convert statistics queries to new format
  * Combines backup data with SPARQL queries from code
  */
-const convertStatisticsToNewFormat = (backupStatistics?: any[]): any[] => {
+export const convertStatisticsToNewFormat = (
+  backupStatistics?: any[]
+): any[] => {
   const statsFromCode = Object.entries(STATISTICS_SPARQL_QUERIES).map(
     ([key, query]) => ({
       id: key,

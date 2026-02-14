@@ -17,8 +17,7 @@ interface UserRateLimit {
  */
 export const createUserRateLimiter = () => {
   const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const MAX_REQUESTS = 50; // 5 requests per window for non-admin users
-
+  const MAX_REQUESTS = 50;
   return async (
     req: AuthenticatedRequest,
     res: Response,

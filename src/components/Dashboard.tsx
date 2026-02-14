@@ -9,12 +9,14 @@ import { Query } from '../constants/queries_chart_info';
 import InfoIcon from '@mui/icons-material/Info';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
+import { useBackupChange } from '../hooks/useBackupChange';
 
 //* Dashboard component that displays the questions for a given template
 const Dashboard = () => {
   const params = useParams();
   const templateId = params.templateId;
   const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   const firebaseQuestions = useSelector<
     RootState,
@@ -30,7 +32,7 @@ const Dashboard = () => {
       setHomeContent(content);
     };
     loadHomeContent();
-  }, []);
+  }, [backupVersion]); // Re-fetch when backup changes
 
   const sortedFirebaseQuestions = Object.values(firebaseQuestions).sort(
     (a, b) => a.id - b.id

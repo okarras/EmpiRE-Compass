@@ -315,7 +315,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     const predicateIds = extractPredicateIds(sparqlQuery);
     const predicateDetails: PredicateDetail[] = predicateIds.map(
       (predicateId) => {
-        // Try to find mapping - check both with and without P prefix, and case variations
+        // Normalize predicate ID
         const normalizedId = predicateId.toUpperCase();
         const idWithoutP = normalizedId.startsWith('P')
           ? normalizedId.substring(1)
@@ -532,7 +532,7 @@ LIMIT 1`;
                 description: binding.description?.value,
               });
             } else {
-              // Fallback: try fetching from ORKG properties API
+              // Fallback: ORKG properties API
               try {
                 const propResponse = await fetch(
                   `https://orkg.org/api/properties/${predicateId}`,
@@ -989,9 +989,17 @@ Modified SPARQL Query:`;
                                 flexWrap="wrap"
                                 mt={0.5}
                               >
-                                {predicate.classLabel && (
+                                {predicate.classLabel && predicate.classId && (
                                   <Chip
                                     label={`Class: ${predicate.classLabel}${predicate.classId ? ` (${predicate.classId})` : ''}`}
+                                    component="a"
+                                    href={`https://orkg.org/classes/${predicate.classId.startsWith('C') ? predicate.classId : `C${predicate.classId}`}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    clickable
+                                    onClick={(e: React.MouseEvent) => {
+                                      e.stopPropagation();
+                                    }}
                                     size="small"
                                     variant="outlined"
                                     sx={{
@@ -1003,6 +1011,14 @@ Modified SPARQL Query:`;
                                 )}
                                 {predicate.subtemplateLabel && (
                                   <Chip
+                                    component="a"
+                                    href={`https://orkg.org/templates/${predicate.subtemplateId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    clickable
+                                    onClick={(e: React.MouseEvent) => {
+                                      e.stopPropagation();
+                                    }}
                                     label={`Template: ${predicate.subtemplateLabel}${predicate.subtemplateId ? ` (${predicate.subtemplateId})` : ''}`}
                                     size="small"
                                     variant="outlined"
@@ -1091,7 +1107,11 @@ Modified SPARQL Query:`;
                             >
                               <Chip
                                 component="a"
-                                href={`https://orkg.org/classes/${cls.id.startsWith('C') ? cls.id : `C${cls.id}`}`}
+                                href={
+                                  cls.id.startsWith('R')
+                                    ? `https://orkg.org/resources/${cls.id}`
+                                    : `https://orkg.org/classes/${cls.id.startsWith('C') ? cls.id : `C${cls.id}`}`
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 label={`orkgc:${cls.id}`}
@@ -1163,8 +1183,13 @@ Modified SPARQL Query:`;
                               flexWrap="wrap"
                             >
                               <Chip
+                                component="a"
+                                href={`https://orkg.org/resources/${resource.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 label={resource.id}
                                 size="small"
+                                clickable
                                 sx={{
                                   backgroundColor:
                                     resource.type === 'active'

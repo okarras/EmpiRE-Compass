@@ -9,6 +9,7 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { fetchQuestionsFromFirebase } from '../store/slices/questionSlice';
 import { useDispatch } from 'react-redux';
 import type { AppDispatch } from '../store';
+import BackupWarningBanner from '../components/BackupWarningBanner';
 
 const Layout = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -41,6 +42,7 @@ const Layout = () => {
     >
       <Header handleDrawerOpen={handleDrawerOpen} />
       <MenuDrawer open={drawerOpen} handleDrawerClose={handleDrawerClose} />
+      <BackupWarningBanner />
 
       <Box
         component="main"

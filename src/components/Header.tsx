@@ -14,6 +14,7 @@ import {
   FormControl,
   InputLabel,
   SelectChangeEvent,
+  Badge,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
@@ -23,7 +24,13 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ApiIcon from '@mui/icons-material/Api';
-import { useLocation, Link as RouterLink, useNavigate } from 'react-router-dom';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import {
+  useLocation,
+  Link as RouterLink,
+  useNavigate,
+  useParams,
+} from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
 // import { useTheme } from '../contexts/ThemeContext';
 import LoginORKG from './LoginORKG';
@@ -31,6 +38,11 @@ import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { Template } from '../firestore/CRUDHomeContent';
 import { toast } from 'react-hot-toast';
+import CRUDNews from '../firestore/CRUDNews';
+import SettingsIcon from '@mui/icons-material/Settings';
+import BackupSelector from './BackupSelector';
+import BackupService from '../services/BackupService';
+import { useBackupChange } from '../hooks/useBackupChange';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -45,6 +57,17 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
+  const [highPriorityNewsCount, setHighPriorityNewsCount] = useState<number>(0);
+  const { templateId } = useParams<{ templateId: string }>();
+  const [backupSelectorOpen, setBackupSelectorOpen] = useState(false);
+  const [currentBackupName, setCurrentBackupName] = useState<string>('');
+  const backupVersion = useBackupChange(); // Listen for backup changes
+
+  useEffect(() => {
+    // Check for current backup and update state
+    const name = BackupService.getCurrentBackupName();
+    setCurrentBackupName(name || ''); // Clear if no backup
+  }, [backupVersion]); // Re-run when backup changes
 
   // Load templates from Firebase
   useEffect(() => {
@@ -58,7 +81,25 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       }
     };
     loadTemplates();
-  }, []);
+  }, [currentBackupName]); // Re-fetch when backup changes (currentBackupName updates via interval)
+
+  // Fetch high priority news count
+  useEffect(() => {
+    const fetchHighPriorityNewsCount = async () => {
+      try {
+        const items = await CRUDNews.getAllNews(true); // Only published news
+        const highPriorityCount = items.filter(
+          (item) => item.priority === 'high'
+        ).length;
+        setHighPriorityNewsCount(highPriorityCount);
+      } catch (err) {
+        console.error('Error fetching high priority news count:', err);
+        // Don't show error to user, just set count to 0
+        setHighPriorityNewsCount(0);
+      }
+    };
+    fetchHighPriorityNewsCount();
+  }, [location.pathname]); // Refetch when route changes
 
   // Read template from URL on mount
   useEffect(() => {
@@ -110,6 +151,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = 'Team';
         } else if (path === 'dynamic-question') {
           label = 'Dynamic Question';
+        } else if (path === 'community-questions') {
+          label = 'Community Questions';
         } else if (path === 'schema') {
           label = 'Schema';
         } else if (path === 'questions') {
@@ -162,6 +205,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
 
   const redirectToSwagger = () => {
     window.open('https://empire-compass-backend.tib.eu/api-docs/', '_blank');
+  };
+
+  const redirectToNews = () => {
+    const currentTemplateId = templateId || selectedTemplate;
+    navigate(`/${currentTemplateId}/news`);
   };
 
   return (
@@ -314,6 +362,69 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             <LoginORKG />
           </Box>
 
+          {currentBackupName && (
+            <Tooltip title={`Using data from: ${currentBackupName}`}>
+              <Box
+                onClick={() => setBackupSelectorOpen(true)}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 1.5,
+                  height: 34,
+                  boxSizing: 'border-box',
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(237, 108, 2, 0.1)',
+                  border: '1px solid rgba(237, 108, 2, 0.3)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'rgba(237, 108, 2, 0.15)',
+                    borderColor: 'rgba(237, 108, 2, 0.5)',
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    backgroundColor: '#ed6c02',
+                    boxShadow: '0 0 8px #ed6c02',
+                    animation: 'pulse 2s infinite',
+                    '@keyframes pulse': {
+                      '0%': {
+                        opacity: 1,
+                        boxShadow: '0 0 0 0 rgba(237, 108, 2, 0.7)',
+                      },
+                      '70%': {
+                        opacity: 1,
+                        boxShadow: '0 0 0 6px rgba(237, 108, 2, 0)',
+                      },
+                      '100%': {
+                        opacity: 1,
+                        boxShadow: '0 0 0 0 rgba(237, 108, 2, 0)',
+                      },
+                    },
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#ed6c02',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                  }}
+                >
+                  {isMobile ? 'Backup' : 'Backup Mode'}
+                </Typography>
+              </Box>
+            </Tooltip>
+          )}
+
           {/* Templates dropdown */}
           <FormControl
             size="small"
@@ -354,15 +465,17 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               size="small"
               id="header-templates-select"
             >
-              {templates.map((template) => (
-                <MenuItem
-                  key={template.id}
-                  value={template.id}
-                  sx={{ fontSize: '0.875rem' }}
-                >
-                  {template.title}
-                </MenuItem>
-              ))}
+              {templates
+                .filter((t): t is Template => !!t && !!t.id)
+                .map((template) => (
+                  <MenuItem
+                    key={template.id}
+                    value={template.id}
+                    sx={{ fontSize: '0.875rem' }}
+                  >
+                    {template.title ?? template.id ?? 'Unknown'}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
         </Box>
@@ -375,6 +488,37 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             gap: 0.5,
           }}
         >
+          {highPriorityNewsCount > 0 && (
+            <Tooltip title={`${highPriorityNewsCount} High Priority News`}>
+              <IconButton
+                onClick={redirectToNews}
+                size="small"
+                sx={{
+                  color:
+                    highPriorityNewsCount > 0 ? '#e86161' : 'text.secondary',
+                  '&:hover': {
+                    color: '#e86161',
+                    backgroundColor: 'rgba(232, 97, 97, 0.08)',
+                  },
+                }}
+              >
+                <Badge
+                  badgeContent={highPriorityNewsCount}
+                  color="error"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      fontSize: '0.65rem',
+                      height: '18px',
+                      minWidth: '18px',
+                      padding: '0 4px',
+                    },
+                  }}
+                >
+                  <NotificationsIcon sx={{ fontSize: '1.1rem' }} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Components">
             <IconButton
               onClick={redirectToStorybook}
@@ -435,8 +579,28 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               <GitHubIcon sx={{ fontSize: '1.1rem' }} />
             </IconButton>
           </Tooltip>
+          <Tooltip title="Data Source">
+            <IconButton
+              onClick={() => setBackupSelectorOpen(true)}
+              size="small"
+              sx={{
+                color: 'text.secondary',
+                '&:hover': {
+                  color: 'text.primary',
+                  backgroundColor: 'action.hover',
+                },
+              }}
+            >
+              <SettingsIcon sx={{ fontSize: '1.1rem' }} />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Toolbar>
+      <BackupSelector
+        open={backupSelectorOpen}
+        onClose={() => setBackupSelectorOpen(false)}
+        templateId={selectedTemplate}
+      />
     </AppBar>
   );
 };

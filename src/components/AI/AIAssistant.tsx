@@ -12,6 +12,7 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  Alert,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
@@ -20,11 +21,13 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import LoginIcon from '@mui/icons-material/Login';
 import { Query } from '../../constants/queries_chart_info';
 // import useBackendAIAssistant from '../../hooks/useBackendAIAssistant';
 import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import AIConfigurationButton from './AIConfigurationButton';
 import useAIAssistant from '../../hooks/useAIAssistant';
+import { useAuthData } from '../../auth/useAuthData';
 
 // Lazy load components to reduce initial bundle size
 const InitialAnalysis = lazy(() => import('./InitialAnalysis'));
@@ -37,6 +40,7 @@ interface AIAssistantProps {
 }
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
+  const { isAuthenticated, isLoading: authLoading, login } = useAuthData();
   const {
     prompt,
     setPrompt,
@@ -64,6 +68,18 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  const handleLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      await login();
+    } catch (err) {
+      console.error('Login failed:', err);
+    } finally {
+      setIsLoggingIn(false);
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,6 +113,109 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     handleMenuClose();
     exportChatHistory();
   };
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          gap: 2,
+        }}
+      >
+        <CircularProgress sx={{ color: '#e86161' }} />
+        <Typography variant="body2" color="text.secondary">
+          Checking authentication...
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Sticky Header */}
+        <Paper
+          elevation={0}
+          sx={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: 'background.paper',
+            p: 2,
+          }}
+        >
+          <Typography variant="h6" sx={{ color: 'text.primary' }}>
+            AI Assistant
+          </Typography>
+        </Paper>
+
+        {/* Login Prompt */}
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 4,
+          }}
+        >
+          <Paper
+            elevation={3}
+            sx={{
+              p: 4,
+              maxWidth: 500,
+              textAlign: 'center',
+              border: '2px solid',
+              borderColor: 'divider',
+            }}
+          >
+            <PsychologyIcon
+              sx={{ fontSize: 64, color: '#e86161', mb: 2, opacity: 0.7 }}
+            />
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+              Authentication Required
+            </Typography>
+            <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+              <Typography variant="body2">
+                Please sign in to use the AI Assistant. This feature requires
+                authentication to access AI-powered research assistance.
+              </Typography>
+            </Alert>
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleLogin}
+              disabled={isLoggingIn}
+              startIcon={
+                isLoggingIn ? (
+                  <CircularProgress size={20} sx={{ color: 'white' }} />
+                ) : (
+                  <LoginIcon />
+                )
+              }
+              sx={{
+                backgroundColor: '#e86161',
+                '&:hover': {
+                  backgroundColor: '#d45151',
+                },
+                minWidth: 200,
+              }}
+            >
+              {isLoggingIn ? 'Signing in...' : 'Sign In to Continue'}
+            </Button>
+          </Paper>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
