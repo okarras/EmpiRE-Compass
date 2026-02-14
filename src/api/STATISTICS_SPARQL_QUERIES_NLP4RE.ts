@@ -76,6 +76,11 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
     ?paper orkgp:HAS_VENUE ?venueResource .
     ?venueResource rdfs:label ?venue .
   }`,
+  TOTAL_ORKG_PAPERS_QUERY: `
+  SELECT (COUNT(?paper) AS ?total_papers)
+  WHERE {
+    ?paper a orkgc:Paper .
+  }`,
 };
 
 export default STATISTICS_SPARQL_QUERIES;
