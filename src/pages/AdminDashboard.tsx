@@ -23,6 +23,13 @@ import {
   IconButton,
   Tooltip,
   Badge,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  Button,
+  CircularProgress,
 } from '@mui/material';
 import {
   People,
@@ -36,6 +43,11 @@ import {
   Backup,
   DataObject,
   MonitorHeart,
+  Delete,
+  Security,
+  PersonRemove,
+  Article,
+  MenuBook,
 } from '@mui/icons-material';
 import {
   collection,
@@ -44,6 +56,9 @@ import {
   orderBy,
   limit,
   Timestamp,
+  deleteDoc,
+  updateDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -95,9 +110,15 @@ const AdminDashboard = () => {
   const [templates, setTemplates] = useState<TemplateStats[]>([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalAdmins, setTotalAdmins] = useState(0);
+  const [totalRegularUsers, setTotalRegularUsers] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
   const [totalStatistics, setTotalStatistics] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<FirebaseUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [updatingRole, setUpdatingRole] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -122,7 +143,9 @@ const AdminDashboard = () => {
       });
       setUsers(usersData);
       setTotalUsers(usersData.length);
-      setTotalAdmins(usersData.filter((u) => u.is_admin).length);
+      const adminCount = usersData.filter((u) => u.is_admin).length;
+      setTotalAdmins(adminCount);
+      setTotalRegularUsers(usersData.length - adminCount);
 
       // Fetch Templates and their subcollections
       const templatesSnapshot = await getDocs(collection(db, 'Templates'));
@@ -175,6 +198,80 @@ const AdminDashboard = () => {
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const handleDeleteClick = (user: FirebaseUser) => {
+    setUserToDelete(user);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete || !db) return;
+
+    setDeleting(true);
+    setError(null);
+    try {
+      const userRef = doc(db, 'Users', userToDelete.id);
+      await deleteDoc(userRef);
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+      setTotalUsers((prev) => prev - 1);
+      if (userToDelete.is_admin) {
+        setTotalAdmins((prev) => prev - 1);
+      } else {
+        setTotalRegularUsers((prev) => prev - 1);
+      }
+      setSuccess(
+        `User "${userToDelete.display_name || userToDelete.email}" deleted successfully`
+      );
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError('Failed to delete user. Please check Firebase permissions.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleToggleAdminRole = async (user: FirebaseUser) => {
+    if (!db) return;
+
+    setUpdatingRole(user.id);
+    setError(null);
+    try {
+      const userRef = doc(db, 'Users', user.id);
+      const newAdminStatus = !user.is_admin;
+      await updateDoc(userRef, { is_admin: newAdminStatus });
+
+      // Update local state
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === user.id ? { ...u, is_admin: newAdminStatus } : u
+        )
+      );
+
+      // Update counts
+      if (newAdminStatus) {
+        setTotalAdmins((prev) => prev + 1);
+        setTotalRegularUsers((prev) => prev - 1);
+      } else {
+        setTotalAdmins((prev) => prev - 1);
+        setTotalRegularUsers((prev) => prev + 1);
+      }
+
+      setSuccess(
+        `User "${user.display_name || user.email}" is now ${newAdminStatus ? 'admin' : 'regular user'}`
+      );
+      setTimeout(() => setSuccess(null), 5000);
+    } catch (err) {
+      console.error('Error updating user role:', err);
+      setError(
+        'Failed to update user role. Please check Firebase permissions.'
+      );
+    } finally {
+      setUpdatingRole(null);
+    }
   };
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -245,8 +342,18 @@ const AdminDashboard = () => {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
           {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert
+          severity="success"
+          sx={{ mb: 3 }}
+          onClose={() => setSuccess(null)}
+        >
+          {success}
         </Alert>
       )}
 
@@ -279,7 +386,8 @@ const AdminDashboard = () => {
                     {totalUsers}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {totalAdmins} admin{totalAdmins !== 1 ? 's' : ''}
+                    {totalAdmins} admin{totalAdmins !== 1 ? 's' : ''},{' '}
+                    {totalRegularUsers} regular
                   </Typography>
                 </Box>
                 <Badge badgeContent={totalAdmins} color="error">
@@ -287,6 +395,84 @@ const AdminDashboard = () => {
                     sx={{ fontSize: 48, color: '#4c72b0', opacity: 0.3 }}
                   />
                 </Badge>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{ height: '100%', backgroundColor: 'rgba(232, 97, 97, 0.05)' }}
+          >
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Admins
+                  </Typography>
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: 600, color: '#e86161' }}
+                  >
+                    {totalAdmins}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {totalUsers > 0
+                      ? `${Math.round((totalAdmins / totalUsers) * 100)}% of users`
+                      : '0% of users'}
+                  </Typography>
+                </Box>
+                <AdminPanelSettings
+                  sx={{ fontSize: 48, color: '#e86161', opacity: 0.3 }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card
+            sx={{ height: '100%', backgroundColor: 'rgba(76, 114, 176, 0.05)' }}
+          >
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    Regular Users
+                  </Typography>
+                  <Typography
+                    variant="h4"
+                    sx={{ fontWeight: 600, color: '#4c72b0' }}
+                  >
+                    {totalRegularUsers}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {totalUsers > 0
+                      ? `${Math.round((totalRegularUsers / totalUsers) * 100)}% of users`
+                      : '0% of users'}
+                  </Typography>
+                </Box>
+                <People sx={{ fontSize: 48, color: '#4c72b0', opacity: 0.3 }} />
               </Box>
             </CardContent>
           </Card>
@@ -473,6 +659,46 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+              onClick={() => navigate(`/${templateId}/admin/news`)}
+            >
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <Article sx={{ color: '#e86161' }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    News Management
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Manage news & announcements
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+              onClick={() => navigate(`/${templateId}/admin/papers`)}
+            >
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <MenuBook sx={{ color: '#e86161' }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Papers Management
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Manage published papers on Team page
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
       </Paper>
 
@@ -509,12 +735,13 @@ const AdminDashboard = () => {
                   <TableCell>Role</TableCell>
                   <TableCell>Created At</TableCell>
                   <TableCell>Last Login</TableCell>
+                  <TableCell align="right">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {users.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center">
+                    <TableCell colSpan={7} align="center">
                       <Typography variant="body2" color="text.secondary">
                         No users found
                       </Typography>
@@ -591,6 +818,47 @@ const AdminDashboard = () => {
                         <Typography variant="caption" color="text.secondary">
                           {formatDate(user.last_login as Timestamp)}
                         </Typography>
+                      </TableCell>
+                      <TableCell align="right">
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            gap: 1,
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <Tooltip
+                            title={
+                              user.is_admin
+                                ? 'Remove admin privileges'
+                                : 'Make admin'
+                            }
+                          >
+                            <IconButton
+                              size="small"
+                              onClick={() => handleToggleAdminRole(user)}
+                              disabled={updatingRole === user.id}
+                              color={user.is_admin ? 'warning' : 'primary'}
+                            >
+                              {updatingRole === user.id ? (
+                                <CircularProgress size={20} />
+                              ) : user.is_admin ? (
+                                <PersonRemove />
+                              ) : (
+                                <Security />
+                              )}
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete user">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDeleteClick(user)}
+                              color="error"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))
@@ -695,6 +963,41 @@ const AdminDashboard = () => {
           </Grid>
         </TabPanel>
       </Paper>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => !deleting && setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete User</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete the user "
+            {userToDelete?.display_name || userToDelete?.email || 'Unknown'}"?
+            <br />
+            <br />
+            <strong>This action cannot be undone.</strong> All user data will be
+            permanently removed from the system.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={deleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleConfirmDelete}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+            startIcon={deleting ? <CircularProgress size={16} /> : <Delete />}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

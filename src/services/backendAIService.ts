@@ -105,7 +105,22 @@ export class BackendAIService {
 
   constructor(config: BackendAIConfig) {
     this.config = config;
-    this.baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+
+    // Determine backend URL based on frontend domain
+    const isVercel =
+      typeof window !== 'undefined' &&
+      (window.location.hostname.includes('.vercel.app') ||
+        window.location.hostname.includes('.vercel'));
+
+    if (isVercel) {
+      this.baseUrl =
+        import.meta.env.VITE_BACKEND_FEATURE_URL ||
+        import.meta.env.VITE_BACKEND_URL ||
+        'http://localhost:5001';
+    } else {
+      this.baseUrl =
+        import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+    }
   }
 
   private async makeRequest<T>(
@@ -225,6 +240,7 @@ export class BackendAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{
@@ -236,10 +252,10 @@ export class BackendAIService {
     const request: GenerateTextRequest = {
       prompt,
       provider: options?.provider || this.config.provider,
+      model: options?.model,
       temperature: options?.temperature ?? 0.3,
       maxTokens: options?.maxTokens ?? 2000,
       systemContext: options?.systemContext,
-      // NOTE: API keys are NEVER sent to backend - backend uses its own environment keys
     };
 
     const response = await this.makeRequest<GenerateTextResponse>(
@@ -373,7 +389,7 @@ export class UnifiedAIService {
       return true;
     }
 
-    // Fallback to backend if no user keys provided
+    // Fallback if no user keys provided
     return false;
   }
 
@@ -417,6 +433,7 @@ export class UnifiedAIService {
       temperature?: number;
       maxTokens?: number;
       provider?: AIProvider;
+      model?: string;
       systemContext?: string;
     }
   ): Promise<{
@@ -432,6 +449,7 @@ export class UnifiedAIService {
         temperature: options?.temperature,
         maxTokens: options?.maxTokens,
         provider: options?.provider,
+        model: options?.model,
         systemContext: options?.systemContext,
       });
     }

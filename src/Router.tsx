@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AdminGuard from './auth/AdminGuard';
 import ErrorFallback from './pages/ErrorFallback';
+import CommunityQuestions from './pages/CommunityQuestions';
 
 const Home = lazy(() => import('./pages/Home'));
 const Statistics = lazy(() => import('./pages/Statistics'));
@@ -14,11 +15,19 @@ const QuestionDashboardPage = lazy(
 const DynamicQuestionPage = lazy(() => import('./pages/DynamicQuestionPage'));
 const TemplateGraphPage = lazy(() => import('./pages/TemplateGraphPage'));
 const Team = lazy(() => import('./pages/Team'));
+const News = lazy(() => import('./pages/News'));
+const NewsDetail = lazy(() => import('./pages/NewsDetail'));
 const AdminBackup = lazy(() => import('./pages/AdminBackup'));
 const AdminDataManagement = lazy(() => import('./pages/AdminDataManagement'));
 const AdminHomeContent = lazy(() => import('./pages/AdminHomeContent'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
+const AdminNews = lazy(() => import('./pages/AdminNews'));
+const AdminPapers = lazy(() => import('./pages/AdminPapers'));
+
+const CommunityQuestionDetailsPage = lazy(
+  () => import('./pages/CommunityQuestionDetailsPage')
+);
 
 const Router = () => {
   return (
@@ -62,6 +71,26 @@ const Router = () => {
               errorElement={<ErrorFallback />}
             />
             <Route
+              path="news"
+              element={<News />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="news/:newsId"
+              element={<NewsDetail />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="community-questions"
+              element={<CommunityQuestions />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="community-questions/:id"
+              element={<CommunityQuestionDetailsPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
               path="admin"
               element={
                 <AdminGuard>
@@ -102,6 +131,24 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminRequestMonitor />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/news"
+              element={
+                <AdminGuard>
+                  <AdminNews />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/papers"
+              element={
+                <AdminGuard>
+                  <AdminPapers />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}
