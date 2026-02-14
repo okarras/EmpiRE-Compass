@@ -133,7 +133,141 @@ const Team = () => {
               </Alert>
             )}
 
-          {/* Published Papers Section */}
+          {/* Team Members Grid */}
+          {teamMembers.length > 0 && (
+            <Grid container spacing={4} sx={{ mt: 2, mb: { xs: 5, md: 7 } }}>
+              {teamMembers.map((member) => (
+                <Grid item xs={12} sm={6} md={4} key={member.id}>
+                  <Card
+                    component={member.link ? 'a' : 'div'}
+                    href={member.link || undefined}
+                    target={
+                      member.link?.startsWith('http') ? '_blank' : undefined
+                    }
+                    rel={
+                      member.link?.startsWith('http')
+                        ? 'noopener noreferrer'
+                        : undefined
+                    }
+                    sx={{
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition:
+                        'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                      cursor: member.link ? 'pointer' : 'default',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: 6,
+                      },
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      boxShadow: 2,
+                    }}
+                  >
+                    {/* Member Image */}
+                    <CardMedia
+                      component="img"
+                      image={(() => {
+                        const imgUrl = member.image?.trim();
+                        return imgUrl && imgUrl.length > 0
+                          ? imgUrl.replace(/\n/g, '').trim()
+                          : PLACEHOLDER_IMAGE;
+                      })()}
+                      alt={member.name}
+                      sx={{
+                        width: '100%',
+                        height: { xs: 250, sm: 280, md: 300 },
+                        objectFit: 'cover',
+                        backgroundColor: 'grey.100',
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== PLACEHOLDER_IMAGE) {
+                          target.src = PLACEHOLDER_IMAGE;
+                        }
+                      }}
+                    />
+
+                    {/* Member Info */}
+                    <CardContent
+                      sx={{
+                        flexGrow: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        p: { xs: 2, sm: 2.5, md: 3 },
+                      }}
+                    >
+                      <Typography
+                        variant="h5"
+                        component="h2"
+                        sx={{
+                          fontWeight: 600,
+                          mb: member.role ? 0.5 : 1.5,
+                          color: 'text.primary',
+                          fontSize: { xs: '1.25rem', sm: '1.4rem' },
+                        }}
+                      >
+                        {member.name}
+                      </Typography>
+                      {member.role && (
+                        <Typography
+                          variant="subtitle2"
+                          sx={{
+                            color: '#e86161',
+                            fontWeight: 500,
+                            mb: 1.5,
+                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                          }}
+                        >
+                          {member.role}
+                        </Typography>
+                      )}
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          color: 'text.secondary',
+                          lineHeight: 1.7,
+                          fontSize: { xs: '0.9rem', sm: '1rem' },
+                          flexGrow: 1,
+                          mb: member.email ? 2 : 0,
+                        }}
+                      >
+                        {member.description}
+                      </Typography>
+                      {member.email && (
+                        <Link
+                          href={`mailto:${member.email}`}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            color: '#e86161',
+                            textDecoration: 'none',
+                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                            '&:hover': {
+                              textDecoration: 'underline',
+                              color: '#d45555',
+                            },
+                            transition: 'color 0.2s ease-in-out',
+                          }}
+                        >
+                          <EmailIcon sx={{ fontSize: '1.1rem' }} />
+                          {member.email}
+                        </Link>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
+          {/* Publications Section */}
           {papers.length > 0 && (
             <Box sx={{ mb: { xs: 5, md: 7 } }}>
               <Typography
@@ -150,7 +284,7 @@ const Team = () => {
                 }}
               >
                 <MenuBookIcon sx={{ color: '#e86161' }} />
-                Published Papers
+                Publications
               </Typography>
               <Paper
                 component={List}
@@ -252,142 +386,6 @@ const Team = () => {
                 ))}
               </Paper>
             </Box>
-          )}
-
-          {/* Team Members Grid */}
-          {teamMembers.length > 0 && (
-            <Grid container spacing={4} sx={{ mt: 2 }}>
-              {teamMembers.map((member) => (
-                <Grid item xs={12} sm={6} md={4} key={member.id}>
-                  <Card
-                    component={member.link ? 'a' : 'div'}
-                    href={member.link || undefined}
-                    target={
-                      member.link?.startsWith('http') ? '_blank' : undefined
-                    }
-                    rel={
-                      member.link?.startsWith('http')
-                        ? 'noopener noreferrer'
-                        : undefined
-                    }
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition:
-                        'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-                      cursor: member.link ? 'pointer' : 'default',
-                      textDecoration: 'none',
-                      color: 'inherit',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: 6,
-                      },
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      boxShadow: 2,
-                    }}
-                  >
-                    {/* Member Image */}
-                    <CardMedia
-                      component="img"
-                      image={(() => {
-                        const imgUrl = member.image?.trim();
-                        // Remove any trailing newlines or whitespace
-                        return imgUrl && imgUrl.length > 0
-                          ? imgUrl.replace(/\n/g, '').trim()
-                          : PLACEHOLDER_IMAGE;
-                      })()}
-                      alt={member.name}
-                      sx={{
-                        width: '100%',
-                        height: { xs: 250, sm: 280, md: 300 },
-                        objectFit: 'cover',
-                        backgroundColor: 'grey.100',
-                      }}
-                      onError={(e) => {
-                        // If image fails to load, set placeholder
-                        const target = e.target as HTMLImageElement;
-                        if (target.src !== PLACEHOLDER_IMAGE) {
-                          target.src = PLACEHOLDER_IMAGE;
-                        }
-                      }}
-                    />
-
-                    {/* Member Info */}
-                    <CardContent
-                      sx={{
-                        flexGrow: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        p: { xs: 2, sm: 2.5, md: 3 },
-                      }}
-                    >
-                      <Typography
-                        variant="h5"
-                        component="h2"
-                        sx={{
-                          fontWeight: 600,
-                          mb: member.role ? 0.5 : 1.5,
-                          color: 'text.primary',
-                          fontSize: { xs: '1.25rem', sm: '1.4rem' },
-                        }}
-                      >
-                        {member.name}
-                      </Typography>
-                      {member.role && (
-                        <Typography
-                          variant="subtitle2"
-                          sx={{
-                            color: '#e86161',
-                            fontWeight: 500,
-                            mb: 1.5,
-                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.5px',
-                          }}
-                        >
-                          {member.role}
-                        </Typography>
-                      )}
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          color: 'text.secondary',
-                          lineHeight: 1.7,
-                          fontSize: { xs: '0.9rem', sm: '1rem' },
-                          flexGrow: 1,
-                          mb: member.email ? 2 : 0,
-                        }}
-                      >
-                        {member.description}
-                      </Typography>
-                      {member.email && (
-                        <Link
-                          href={`mailto:${member.email}`}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            color: '#e86161',
-                            textDecoration: 'none',
-                            fontSize: { xs: '0.85rem', sm: '0.9rem' },
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: '#d45555',
-                            },
-                            transition: 'color 0.2s ease-in-out',
-                          }}
-                        >
-                          <EmailIcon sx={{ fontSize: '1.1rem' }} />
-                          {member.email}
-                        </Link>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
           )}
         </Container>
       </Box>
