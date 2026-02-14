@@ -8,11 +8,60 @@ import {
   updateStatistics,
   updateEmpireStatistics,
   updateNlp4reStatistics,
+  getStatisticsProgress,
   type TemplateKey,
 } from '../services/orkgStatisticsService.js';
 import { logRequest } from '../services/requestLogger.js';
 
 const router = Router();
+
+/**
+ * @swagger
+ * /api/statistics/progress/{template}:
+ *   get:
+ *     summary: Get current statistics update progress
+ *     description: Returns progress for ongoing or completed statistics update. Use for progress bar.
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: template
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [empire, nlp4re]
+ *     responses:
+ *       '200':
+ *         description: Progress data
+ *       '400':
+ *         description: Invalid template
+ *       '401':
+ *         description: Unauthorized
+ */
+router.get(
+  '/progress/:template',
+  validateKeycloakToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const template = req.params.template;
+      if (!template || !['empire', 'nlp4re'].includes(template)) {
+        return res.status(400).json({
+          error: 'Invalid template. Must be "empire" or "nlp4re"',
+        });
+      }
+      const progress = await getStatisticsProgress(template as TemplateKey);
+      res.json(progress || { status: 'idle' });
+    } catch (error) {
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : 'Failed to get progress',
+      });
+    }
+  }
+);
 
 /**
  * @swagger
@@ -107,7 +156,13 @@ router.post(
   requireAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { template, limit, updateFirebase = true } = req.body;
+      const {
+        template,
+        limit,
+        updateFirebase = true,
+        resume = true,
+        stream = false,
+      } = req.body;
 
       // Validate template
       if (!template || !['empire', 'nlp4re'].includes(template)) {
@@ -123,62 +178,112 @@ router.post(
         });
       }
 
-      console.log(
-        `📊 Admin ${req.userEmail} (${req.userId}) requested statistics update for template: ${template}`
-      );
+      const templateKey = template as TemplateKey;
 
-      // Update statistics
-      const result = await updateStatistics(template as TemplateKey, {
-        limit,
-        updateFirebase,
-      });
+      if (stream) {
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders?.();
 
-      // Log the request
-      await logRequest(
-        'write',
-        'Statistics',
-        `update-${template}`,
-        result.success,
-        req.userId,
-        req.userEmail,
-        result.error,
-        { method: 'POST', template, limit, updateFirebase },
-        result.globalStats
-      );
+        const sendEvent = (data: object) => {
+          res.write(`data: ${JSON.stringify(data)}\n\n`);
+          if (typeof (res as any).flush === 'function') (res as any).flush();
+        };
 
-      if (result.success) {
-        res.json({
-          success: true,
+        const result = await updateStatistics(templateKey, {
+          limit,
+          updateFirebase,
+          resume,
+          onProgress: (progress) =>
+            sendEvent({ type: 'progress', ...progress }),
+        });
+
+        await logRequest(
+          'write',
+          'Statistics',
+          `update-${template}`,
+          result.success,
+          req.userId,
+          req.userEmail,
+          result.error,
+          { method: 'POST', template, limit, updateFirebase, stream: true },
+          result.globalStats
+        );
+
+        sendEvent({
+          type: 'complete',
+          success: result.success,
           globalStats: result.globalStats,
           firebaseUpdated: result.firebaseUpdated,
-          message: `Statistics updated successfully for ${template}`,
+          error: result.error,
         });
+        res.end();
       } else {
-        res.status(500).json({
-          success: false,
-          error: result.error || 'Unknown error occurred',
+        const result = await updateStatistics(templateKey, {
+          limit,
+          updateFirebase,
+          resume,
         });
+
+        await logRequest(
+          'write',
+          'Statistics',
+          `update-${template}`,
+          result.success,
+          req.userId,
+          req.userEmail,
+          result.error,
+          { method: 'POST', template, limit, updateFirebase },
+          result.globalStats
+        );
+
+        if (result.success) {
+          res.json({
+            success: true,
+            globalStats: result.globalStats,
+            firebaseUpdated: result.firebaseUpdated,
+            message: `Statistics updated successfully for ${template}`,
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: result.error || 'Unknown error occurred',
+          });
+        }
       }
     } catch (error) {
-      console.error('Error updating statistics:', error);
-
       await logRequest(
         'write',
         'Statistics',
-        `update-${req.body.template || 'unknown'}`,
+        `update-${req.body?.template || 'unknown'}`,
         false,
         req.userId,
         req.userEmail,
         error instanceof Error ? error.message : 'Unknown error'
       );
 
-      res.status(500).json({
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Failed to update statistics',
-      });
+      if (req.body?.stream) {
+        res.write(
+          `data: ${JSON.stringify({
+            type: 'error',
+            error:
+              error instanceof Error
+                ? error.message
+                : 'Failed to update statistics',
+          })}\n\n`
+        );
+        res.end();
+      } else {
+        res.status(500).json({
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Failed to update statistics',
+        });
+      }
     }
   }
 );
@@ -221,13 +326,13 @@ router.post(
   requireAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { limit, updateFirebase = true } = req.body;
+      const { limit, updateFirebase = true, resume = true } = req.body;
 
-      console.log(
-        `📊 Admin ${req.userEmail} (${req.userId}) requested KG-EmpiRE statistics update`
-      );
-
-      const result = await updateEmpireStatistics({ limit, updateFirebase });
+      const result = await updateEmpireStatistics({
+        limit,
+        updateFirebase,
+        resume,
+      });
 
       await logRequest(
         'write',
@@ -255,8 +360,6 @@ router.post(
         });
       }
     } catch (error) {
-      console.error('Error updating KG-EmpiRE statistics:', error);
-
       await logRequest(
         'write',
         'Statistics',
@@ -316,13 +419,13 @@ router.post(
   requireAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
-      const { limit, updateFirebase = true } = req.body;
+      const { limit, updateFirebase = true, resume = true } = req.body;
 
-      console.log(
-        `📊 Admin ${req.userEmail} (${req.userId}) requested NLP4RE statistics update`
-      );
-
-      const result = await updateNlp4reStatistics({ limit, updateFirebase });
+      const result = await updateNlp4reStatistics({
+        limit,
+        updateFirebase,
+        resume,
+      });
 
       await logRequest(
         'write',
@@ -350,8 +453,6 @@ router.post(
         });
       }
     } catch (error) {
-      console.error('Error updating NLP4RE statistics:', error);
-
       await logRequest(
         'write',
         'Statistics',
