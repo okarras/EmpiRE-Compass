@@ -88,6 +88,25 @@ export interface GlobalStatistics {
   paperCount: number;
 }
 
+export type StatisticsProgressStatus =
+  | 'idle'
+  | 'running'
+  | 'completed'
+  | 'failed';
+
+export interface StatisticsProgress {
+  templateKey: TemplateKey;
+  status: StatisticsProgressStatus;
+  totalPapers: number;
+  processedCount: number;
+  currentPaper?: string;
+  error?: string;
+  updatedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  globalStats?: GlobalStatistics;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Template Configurations
 // ──────────────────────────────────────────────────────────────────────────────
@@ -143,6 +162,9 @@ const ORKG_API_BASE = 'https://www.orkg.org/api';
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 5000; // 5 seconds
 
+const PROGRESS_DOC_SUFFIX = '-progress';
+const STATISTICS_PAPERS_COLLECTION = 'StatisticsPapers';
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Helper Functions
 // ──────────────────────────────────────────────────────────────────────────────
@@ -171,9 +193,6 @@ async function retryWithBackoff<T>(
       lastError = error instanceof Error ? error : new Error(String(error));
       if (attempt < maxRetries - 1) {
         const waitTime = delay * Math.pow(2, attempt);
-        console.log(
-          `Attempt ${attempt + 1} failed, retrying in ${waitTime}ms...`
-        );
         await sleep(waitTime);
       }
     }
@@ -397,12 +416,18 @@ export async function updateFirebaseStatistics(
         },
         { merge: true }
       );
-      console.log(`Created Template document: ${templateId}`);
     }
 
-    // Prepare statistics data
+    // Prepare statistics data - use snake_case for frontend compatibility
     const statsData = {
-      ...statistics,
+      total_statements: statistics.totalStatements,
+      total_resources: statistics.totalResources,
+      total_literals: statistics.totalLiterals,
+      total_predicates: statistics.totalPredicates,
+      global_distinct_resources: statistics.globalDistinctResources,
+      global_distinct_literals: statistics.globalDistinctLiterals,
+      global_distinct_predicates: statistics.globalDistinctPredicates,
+      paperCount: statistics.paperCount,
       updatedAt: new Date().toISOString(),
       id: statisticId,
     };
@@ -415,99 +440,240 @@ export async function updateFirebaseStatistics(
       .doc(statisticId);
 
     await docRef.set(statsData, { merge: false });
-
-    // Small delay to ensure write propagates
     await sleep(500);
 
-    // Verify the write
     const verifyDoc = await docRef.get();
     if (!verifyDoc.exists) {
-      console.error(
-        `ERROR: Document was not created in Firebase! Path: Templates/${templateId}/Statistics/${statisticId}`
-      );
       return false;
     }
-
-    const verifyData = verifyDoc.data();
-    console.log(`✅ Statistics verified in Firebase`);
-    console.log(`   Document ID: ${verifyDoc.id}`);
-    console.log(
-      `   Fields written: ${Object.keys(verifyData || {}).length} fields`
-    );
-
-    // Check critical fields
-    const criticalFields = [
-      'total_statements',
-      'paperCount',
-      'global_distinct_resources',
-    ];
-    const missingFields = criticalFields.filter(
-      (f) => !(f in (verifyData || {}))
-    );
-    if (missingFields.length > 0) {
-      console.warn(
-        `   ⚠️  WARNING: Missing fields: ${missingFields.join(', ')}`
-      );
-    } else {
-      console.log(`   ✅ All critical fields present`);
-    }
-
     return true;
-  } catch (error) {
-    console.error(`❌ Error updating statistics in Firebase:`, error);
-    if (error instanceof Error) {
-      console.error(`   Traceback: ${error.stack}`);
-    }
+  } catch {
     return false;
   }
+}
+
+/**
+ * Get Firebase paths for progress and cached papers within the template
+ */
+function getTemplateProgressPaths(templateKey: TemplateKey) {
+  const config = TEMPLATE_CONFIGS[templateKey];
+  const templateId = config.firebaseTemplateId;
+  const statisticId = config.firebaseStatisticId;
+  const progressDocId = `${statisticId}${PROGRESS_DOC_SUFFIX}`;
+  return {
+    templateId,
+    statisticId,
+    progressRef: db
+      .collection('Templates')
+      .doc(templateId)
+      .collection('Statistics')
+      .doc(progressDocId),
+    papersRef: db
+      .collection('Templates')
+      .doc(templateId)
+      .collection(STATISTICS_PAPERS_COLLECTION),
+  };
+}
+
+/**
+ * Save or update statistics progress in Firebase (for resume & progress bar)
+ * Stored under Templates/{templateId}/Statistics/{statisticId}-progress
+ */
+export async function saveProgressToFirebase(
+  templateKey: TemplateKey,
+  progress: Partial<StatisticsProgress>
+): Promise<void> {
+  const { progressRef } = getTemplateProgressPaths(templateKey);
+  await progressRef.set(
+    {
+      ...progress,
+      templateKey,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Save a single paper result to Firebase (for resume - allows skipping on restart)
+ * Stored under Templates/{templateId}/StatisticsPapers/{paperId}
+ */
+export async function savePaperResultToFirebase(
+  templateKey: TemplateKey,
+  paperId: string,
+  result: PaperAnalysisResult
+): Promise<void> {
+  const { papersRef } = getTemplateProgressPaths(templateKey);
+  const docRef = papersRef.doc(paperId);
+  await docRef.set(
+    {
+      paperId,
+      totalStatements: result.totalStatements,
+      resourceCount: result.resourceCount,
+      literalCount: result.literalCount,
+      predicateCount: result.predicateCount,
+      resourceIds: result.resourceIds,
+      literalIds: result.literalIds,
+      predicateIds: result.predicateIds,
+      updatedAt: new Date().toISOString(),
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Load saved progress from Firebase (for resume)
+ * Reads from Templates/{templateId}/StatisticsPapers/
+ */
+export async function loadProgressFromFirebase(
+  templateKey: TemplateKey
+): Promise<{
+  processedPaperIds: Set<string>;
+  cachedResults: PaperAnalysisResult[];
+}> {
+  const { papersRef } = getTemplateProgressPaths(templateKey);
+  const snapshot = await papersRef.get();
+
+  const processedPaperIds = new Set<string>();
+  const cachedResults: PaperAnalysisResult[] = [];
+
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    processedPaperIds.add(data.paperId);
+    cachedResults.push({
+      paperId: data.paperId,
+      paperTitle: data.paperId,
+      totalStatements: data.totalStatements || 0,
+      resourceCount: data.resourceCount || 0,
+      literalCount: data.literalCount || 0,
+      predicateCount: data.predicateCount || 0,
+      resourceIds: data.resourceIds || [],
+      literalIds: data.literalIds || [],
+      predicateIds: data.predicateIds || [],
+    });
+  });
+
+  return { processedPaperIds, cachedResults };
+}
+
+/**
+ * Clear progress from Firebase (for full refresh)
+ * Removes Templates/{templateId}/Statistics/{statisticId}-progress and StatisticsPapers
+ */
+export async function clearProgressFromFirebase(
+  templateKey: TemplateKey
+): Promise<void> {
+  const { progressRef, papersRef } = getTemplateProgressPaths(templateKey);
+  const snapshot = await papersRef.get();
+
+  const batch = db.batch();
+  snapshot.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+  await batch.commit();
+  await progressRef.delete();
+}
+
+/**
+ * Get current statistics progress from Firebase
+ * Reads from Templates/{templateId}/Statistics/{statisticId}-progress
+ */
+export async function getStatisticsProgress(
+  templateKey: TemplateKey
+): Promise<StatisticsProgress | null> {
+  const { progressRef } = getTemplateProgressPaths(templateKey);
+  const doc = await progressRef.get();
+  if (!doc.exists) return null;
+  return doc.data() as StatisticsProgress;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Main Processing Function
 // ──────────────────────────────────────────────────────────────────────────────
 
+export interface ProcessPapersOptions {
+  limit?: number;
+  resume?: boolean;
+  onProgress?: (progress: StatisticsProgress) => void;
+}
+
 /**
  * Process papers and calculate statistics for a template
+ * Supports resume from Firebase and progress callback for UI
  */
 export async function processPapers(
   templateKey: TemplateKey,
-  limit?: number
+  options: ProcessPapersOptions | number = {}
 ): Promise<{
   results: PaperAnalysisResult[];
   globalStats: GlobalStatistics;
 }> {
+  const opts: ProcessPapersOptions =
+    typeof options === 'number' ? { limit: options } : options;
+  const { limit, resume = true, onProgress } = opts;
+
   const config = TEMPLATE_CONFIGS[templateKey];
 
-  console.log(`🔍 Fetching ${config.name} papers from ORKG...`);
   const paperIds = await fetchPaperList(config.sparqlQuery);
-
-  const papersToProcess = limit ? paperIds.slice(0, limit) : paperIds;
-  console.log(`📊 Processing ${papersToProcess.length} papers...`);
+  let papersToProcess = limit ? paperIds.slice(0, limit) : paperIds;
 
   const results: PaperAnalysisResult[] = [];
-  const allStatements: Record<string, ORKGStatement[]> = {};
   const allResIds = new Set<string>();
   const allLitIds = new Set<string>();
   const allPredIds = new Set<string>();
 
+  const currentPaperIdSet = new Set(papersToProcess);
+
+  // Resume: load cached results, only process papers not yet done
+  if (resume) {
+    const { processedPaperIds, cachedResults } =
+      await loadProgressFromFirebase(templateKey);
+    const { papersRef } = getTemplateProgressPaths(templateKey);
+
+    for (const r of cachedResults) {
+      if (currentPaperIdSet.has(r.paperId)) {
+        results.push(r);
+        r.resourceIds.forEach((id) => allResIds.add(id));
+        r.literalIds.forEach((id) => allLitIds.add(id));
+        r.predicateIds.forEach((id) => allPredIds.add(id));
+      } else {
+        await papersRef.doc(r.paperId).delete();
+      }
+    }
+
+    papersToProcess = papersToProcess.filter(
+      (id) => !processedPaperIds.has(id)
+    );
+  } else {
+    await clearProgressFromFirebase(templateKey);
+  }
+
+  const totalToProcess = papersToProcess.length;
+  const initialCount = results.length;
+  const totalPapers = initialCount + totalToProcess;
+
+  await saveProgressToFirebase(templateKey, {
+    status: 'running',
+    totalPapers,
+    processedCount: initialCount,
+    startedAt: new Date().toISOString(),
+  });
+
   for (let i = 0; i < papersToProcess.length; i++) {
     const paperId = papersToProcess[i];
-    console.log(`[${i + 1}/${papersToProcess.length}] Processing: ${paperId}`);
+    const processedCount = initialCount + i + 1;
 
     try {
       const statements = await fetchStatementsBundle(paperId);
-      allStatements[paperId] = statements;
-
       const analysis = analyzePaper(statements);
 
-      // Add to global sets for distinct calculation
       analysis.resourceIds.forEach((id) => allResIds.add(id));
       analysis.literalIds.forEach((id) => allLitIds.add(id));
       analysis.predicateIds.forEach((id) => allPredIds.add(id));
 
-      results.push({
+      const result: PaperAnalysisResult = {
         paperId,
-        paperTitle: paperId, // Could be enhanced with actual title if available
+        paperTitle: paperId,
         totalStatements: analysis.total,
         resourceCount: analysis.resourceCount,
         literalCount: analysis.literalCount,
@@ -515,13 +681,28 @@ export async function processPapers(
         resourceIds: analysis.resourceIds,
         literalIds: analysis.literalIds,
         predicateIds: analysis.predicateIds,
+      };
+      results.push(result);
+
+      await savePaperResultToFirebase(templateKey, paperId, result);
+      await saveProgressToFirebase(templateKey, {
+        status: 'running',
+        totalPapers,
+        processedCount,
+        currentPaper: paperId,
       });
 
-      console.log(`  ✓ Processed: ${analysis.total} statements`);
-    } catch (error) {
-      console.error(`  ✗ Error processing ${paperId}:`, error);
-      // Continue processing other papers
-      allStatements[paperId] = [];
+      if (onProgress) {
+        onProgress({
+          templateKey,
+          status: 'running',
+          totalPapers,
+          processedCount,
+          currentPaper: paperId,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch {
       results.push({
         paperId,
         paperTitle: paperId,
@@ -533,10 +714,26 @@ export async function processPapers(
         literalIds: [],
         predicateIds: [],
       });
+      await savePaperResultToFirebase(templateKey, paperId, {
+        paperId,
+        paperTitle: paperId,
+        totalStatements: 0,
+        resourceCount: 0,
+        literalCount: 0,
+        predicateCount: 0,
+        resourceIds: [],
+        literalIds: [],
+        predicateIds: [],
+      });
+      await saveProgressToFirebase(templateKey, {
+        status: 'running',
+        totalPapers,
+        processedCount: initialCount + i + 1,
+        currentPaper: paperId,
+      });
     }
   }
 
-  // Calculate global statistics
   const globalStats: GlobalStatistics = {
     totalStatements: results.reduce((sum, r) => sum + r.totalStatements, 0),
     totalResources: results.reduce((sum, r) => sum + r.resourceCount, 0),
@@ -547,6 +744,26 @@ export async function processPapers(
     globalDistinctPredicates: allPredIds.size,
     paperCount: results.length,
   };
+
+  await saveProgressToFirebase(templateKey, {
+    status: 'completed',
+    totalPapers: results.length,
+    processedCount: results.length,
+    completedAt: new Date().toISOString(),
+    globalStats,
+  });
+
+  if (onProgress) {
+    onProgress({
+      templateKey,
+      status: 'completed',
+      totalPapers: results.length,
+      processedCount: results.length,
+      updatedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      globalStats,
+    });
+  }
 
   return { results, globalStats };
 }
@@ -560,6 +777,8 @@ export async function updateStatistics(
   options: {
     limit?: number;
     updateFirebase?: boolean;
+    resume?: boolean;
+    onProgress?: (progress: StatisticsProgress) => void;
   } = {}
 ): Promise<{
   success: boolean;
@@ -568,71 +787,24 @@ export async function updateStatistics(
   firebaseUpdated?: boolean;
   error?: string;
 }> {
-  const { limit, updateFirebase = true } = options;
+  const { limit, updateFirebase = true, resume = true, onProgress } = options;
 
   try {
-    // Process papers and calculate statistics
-    const { results, globalStats } = await processPapers(templateKey, limit);
-
-    // Print summary
-    console.log(`\n📈 Summary for ${TEMPLATE_CONFIGS[templateKey].name}:`);
-    console.log(`  Papers processed: ${results.length}`);
-    console.log(
-      `  Total statements: ${globalStats.totalStatements.toLocaleString()}`
-    );
-    console.log(
-      `  Total resources: ${globalStats.totalResources.toLocaleString()}`
-    );
-    console.log(
-      `  Total literals: ${globalStats.totalLiterals.toLocaleString()}`
-    );
-    console.log(
-      `  Total predicates: ${globalStats.totalPredicates.toLocaleString()}`
-    );
-    console.log(
-      `  Global distinct resources: ${globalStats.globalDistinctResources.toLocaleString()}`
-    );
-    console.log(
-      `  Global distinct literals: ${globalStats.globalDistinctLiterals.toLocaleString()}`
-    );
-    console.log(
-      `  Global distinct predicates: ${globalStats.globalDistinctPredicates.toLocaleString()}`
-    );
-
-    // Calculate reuse ratios
-    const resourceReuse =
-      globalStats.globalDistinctResources > 0
-        ? globalStats.totalResources / globalStats.globalDistinctResources
-        : 0;
-    const literalReuse =
-      globalStats.globalDistinctLiterals > 0
-        ? globalStats.totalLiterals / globalStats.globalDistinctLiterals
-        : 0;
-    const predicateReuse =
-      globalStats.globalDistinctPredicates > 0
-        ? globalStats.totalPredicates / globalStats.globalDistinctPredicates
-        : 0;
-
-    console.log(`  Resource reuse ratio: ${resourceReuse.toFixed(2)}`);
-    console.log(`  Literal reuse ratio: ${literalReuse.toFixed(2)}`);
-    console.log(`  Predicate reuse ratio: ${predicateReuse.toFixed(2)}`);
+    const { results, globalStats } = await processPapers(templateKey, {
+      limit,
+      resume,
+      onProgress,
+    });
 
     // Update Firebase if requested
     let firebaseUpdated = false;
     if (updateFirebase) {
-      console.log(`\n🔥 Updating Firebase...`);
       const config = TEMPLATE_CONFIGS[templateKey];
       firebaseUpdated = await updateFirebaseStatistics(
         globalStats,
         config.firebaseTemplateId,
         config.firebaseStatisticId
       );
-
-      if (firebaseUpdated) {
-        console.log(`✅ Firebase updated successfully`);
-      } else {
-        console.log(`❌ Firebase update failed`);
-      }
     }
 
     return {
@@ -641,9 +813,8 @@ export async function updateStatistics(
       globalStats,
       firebaseUpdated,
     };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`❌ Error updating statistics:`, errorMessage);
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
     return {
       success: false,
       results: [],
@@ -666,6 +837,7 @@ export async function updateStatistics(
 export async function updateEmpireStatistics(options?: {
   limit?: number;
   updateFirebase?: boolean;
+  resume?: boolean;
 }) {
   return updateStatistics('empire', options);
 }
@@ -673,6 +845,7 @@ export async function updateEmpireStatistics(options?: {
 export async function updateNlp4reStatistics(options?: {
   limit?: number;
   updateFirebase?: boolean;
+  resume?: boolean;
 }) {
   return updateStatistics('nlp4re', options);
 }

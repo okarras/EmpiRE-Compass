@@ -49,6 +49,7 @@ import {
   Article,
   MenuBook,
 } from '@mui/icons-material';
+import StatisticsUpdateSection from '../components/Admin/StatisticsUpdateSection';
 import {
   collection,
   getDocs,
@@ -701,6 +702,11 @@ const AdminDashboard = () => {
           </Grid>
         </Grid>
       </Paper>
+
+      {/* ORKG Statistics Update */}
+      <Box sx={{ mb: 4 }}>
+        <StatisticsUpdateSection />
+      </Box>
 
       {/* Tabs */}
       <Paper sx={{ width: '100%' }}>

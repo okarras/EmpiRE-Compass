@@ -10,13 +10,7 @@ export interface FirebaseRequest {
   userEmail?: string;
   success: boolean;
   error?: string;
-  metadata?: {
-    method?: string;
-    path?: string;
-    dataSize?: number;
-    queryType?: string;
-    resultCount?: number;
-  };
+  metadata?: Record<string, unknown>;
   requestBody?: any;
   responseData?: any;
 }
