@@ -227,7 +227,7 @@ export async function fetchPaperList(sparqlQuery: string): Promise<string[]> {
       const paperIri = binding.paper?.value;
       if (!paperIri) return null;
       // Extract resource ID from IRI (e.g., "http://orkg.org/orkg/resource/R12345" -> "R12345")
-      const match = paperIri.match(/\/resource\/([^\/]+)$/);
+      const match = paperIri.match(/\/resource\/([^/]+)$/);
       return match ? match[1] : paperIri.split('/').pop() || null;
     })
     .filter((id): id is string => id !== null);
