@@ -11,9 +11,9 @@ import {
   updateStatistic as updateStatisticApi,
   deleteStatistic as deleteStatisticApi,
 } from '../services/backendApi';
+import BackupService from '../services/BackupService';
 
 /**
- * New Firebase Structure:
  *
  * Templates (collection)
  *   └─ {templateId} (document)
@@ -85,7 +85,6 @@ export interface StatisticData {
 
 /**
  * Template CRUD Operations
- * Write operations now use backend API
  */
 export const createTemplate = async (
   templateId: string,
@@ -106,37 +105,57 @@ export const getTemplate = async (
   templateId: string
 ): Promise<TemplateData | null> => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
-    );
+    const templates = await BackupService.getTemplates();
+    const template = templates.find((t) => t.id === templateId);
+    return template ? (template as TemplateData) : null;
   }
 
-  const templateRef = doc(db, 'Templates', templateId);
-  const templateSnap = await getDoc(templateRef);
+  try {
+    const templateRef = doc(db, 'Templates', templateId);
+    const templateSnap = await getDoc(templateRef);
 
-  if (templateSnap.exists()) {
-    return templateSnap.data() as TemplateData;
+    if (templateSnap.exists()) {
+      return templateSnap.data() as TemplateData;
+    }
+    return null;
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const templates = await BackupService.getTemplates();
+    const template = templates.find((t) => t.id === templateId);
+    return template ? (template as TemplateData) : null;
   }
-  return null;
 };
 
 export const getAllTemplates = async (): Promise<
   Record<string, TemplateData>
 > => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
-    );
+    const templatesList = await BackupService.getTemplates();
+    const templates: Record<string, TemplateData> = {};
+    templatesList.forEach((template) => {
+      templates[template.id] = template as TemplateData;
+    });
+    return templates;
   }
 
-  const templatesSnapshot = await getDocs(collection(db, 'Templates'));
-  const templates: Record<string, TemplateData> = {};
+  try {
+    const templatesSnapshot = await getDocs(collection(db, 'Templates'));
+    const templates: Record<string, TemplateData> = {};
 
-  templatesSnapshot.forEach((doc) => {
-    templates[doc.id] = doc.data() as TemplateData;
-  });
+    templatesSnapshot.forEach((doc) => {
+      templates[doc.id] = doc.data() as TemplateData;
+    });
 
-  return templates;
+    return templates;
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const templatesList = await BackupService.getTemplates();
+    const templates: Record<string, TemplateData> = {};
+    templatesList.forEach((template) => {
+      templates[template.id] = template as TemplateData;
+    });
+    return templates;
+  }
 };
 
 export const updateTemplate = async (
@@ -189,39 +208,67 @@ export const getQuestion = async (
   questionId: string
 ): Promise<QuestionData | null> => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
+    const questions = await BackupService.getQuestions(templateId);
+    const question = questions.find(
+      (q: any) =>
+        q.uid === questionId ||
+        q.id.toString() === questionId ||
+        q.id === questionId
     );
+    return question ? (question as QuestionData) : null;
   }
 
-  const questionRef = doc(db, 'Templates', templateId, 'Questions', questionId);
-  const questionSnap = await getDoc(questionRef);
+  try {
+    const questionRef = doc(
+      db,
+      'Templates',
+      templateId,
+      'Questions',
+      questionId
+    );
+    const questionSnap = await getDoc(questionRef);
 
-  if (questionSnap.exists()) {
-    return questionSnap.data() as QuestionData;
+    if (questionSnap.exists()) {
+      return questionSnap.data() as QuestionData;
+    }
+    return null;
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const questions = await BackupService.getQuestions(templateId);
+    const question = questions.find(
+      (q: any) =>
+        q.uid === questionId ||
+        q.id.toString() === questionId ||
+        q.id === questionId
+    );
+    return question ? (question as QuestionData) : null;
   }
-  return null;
 };
 
 export const getAllQuestions = async (
   templateId: string
 ): Promise<QuestionData[]> => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
-    );
+    const questions = await BackupService.getQuestions(templateId);
+    return questions.sort((a: any, b: any) => a.id - b.id) as QuestionData[];
   }
 
-  const questionsSnapshot = await getDocs(
-    collection(db, 'Templates', templateId, 'Questions')
-  );
-  const questions: QuestionData[] = [];
+  try {
+    const questionsSnapshot = await getDocs(
+      collection(db, 'Templates', templateId, 'Questions')
+    );
+    const questions: QuestionData[] = [];
 
-  questionsSnapshot.forEach((doc) => {
-    questions.push(doc.data() as QuestionData);
-  });
+    questionsSnapshot.forEach((doc) => {
+      questions.push(doc.data() as QuestionData);
+    });
 
-  return questions.sort((a, b) => a.id - b.id);
+    return questions.sort((a, b) => a.id - b.id);
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const questions = await BackupService.getQuestions(templateId);
+    return questions.sort((a: any, b: any) => a.id - b.id) as QuestionData[];
+  }
 };
 
 export const updateQuestion = async (
@@ -286,45 +333,57 @@ export const getStatistic = async (
   statisticId: string
 ): Promise<StatisticData | null> => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
+    const statistics = await BackupService.getStatistics(templateId);
+    const statistic = statistics.find((s: any) => s.id === statisticId);
+    return statistic ? (statistic as StatisticData) : null;
+  }
+
+  try {
+    const statisticRef = doc(
+      db,
+      'Templates',
+      templateId,
+      'Statistics',
+      statisticId
     );
-  }
+    const statisticSnap = await getDoc(statisticRef);
 
-  const statisticRef = doc(
-    db,
-    'Templates',
-    templateId,
-    'Statistics',
-    statisticId
-  );
-  const statisticSnap = await getDoc(statisticRef);
-
-  if (statisticSnap.exists()) {
-    return statisticSnap.data() as StatisticData;
+    if (statisticSnap.exists()) {
+      return statisticSnap.data() as StatisticData;
+    }
+    return null;
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const statistics = await BackupService.getStatistics(templateId);
+    const statistic = statistics.find((s: any) => s.id === statisticId);
+    return statistic ? (statistic as StatisticData) : null;
   }
-  return null;
 };
 
 export const getAllStatistics = async (
   templateId: string
 ): Promise<StatisticData[]> => {
   if (!db) {
-    throw new Error(
-      'Firebase is not initialized. Please configure Firebase environment variables.'
-    );
+    const statistics = await BackupService.getStatistics(templateId);
+    return statistics as StatisticData[];
   }
 
-  const statisticsSnapshot = await getDocs(
-    collection(db, 'Templates', templateId, 'Statistics')
-  );
-  const statistics: StatisticData[] = [];
+  try {
+    const statisticsSnapshot = await getDocs(
+      collection(db, 'Templates', templateId, 'Statistics')
+    );
+    const statistics: StatisticData[] = [];
 
-  statisticsSnapshot.forEach((doc) => {
-    statistics.push(doc.data() as StatisticData);
-  });
+    statisticsSnapshot.forEach((doc) => {
+      statistics.push(doc.data() as StatisticData);
+    });
 
-  return statistics;
+    return statistics;
+  } catch (error) {
+    console.warn('Firestore failed, falling back to local backup:', error);
+    const statistics = await BackupService.getStatistics(templateId);
+    return statistics as StatisticData[];
+  }
 };
 
 export const updateStatistic = async (
@@ -379,8 +438,6 @@ export const importTemplateWithQuestions = async (
   userEmail: string,
   keycloakToken?: string
 ): Promise<void> => {
-  // Note: This function should use backend API instead of direct Firestore writes
-  // Use individual backend API calls for each operation
   if (!userId || !userEmail) {
     throw new Error(
       'UserId and userEmail are required for importing templates'
@@ -395,7 +452,6 @@ export const importTemplateWithQuestions = async (
     keycloakToken
   );
 
-  // Create questions via backend API
   for (const question of questions) {
     await createQuestionApi(
       templateId,

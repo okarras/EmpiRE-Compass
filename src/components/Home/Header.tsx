@@ -25,7 +25,7 @@ const Header = ({ content }: HeaderProps) => {
           letterSpacing: '-0.02em',
         }}
       >
-        {content.title}
+        {content.title ?? 'undefined title'}
       </Typography>
       <Typography
         variant="h5"

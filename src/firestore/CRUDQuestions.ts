@@ -1,14 +1,9 @@
-// DocumentData no longer needed - using backend API types
 import {
   getQuestions as getQuestionsApi,
   createQuestion as createQuestionApi,
 } from '../services/backendApi';
+import BackupService from '../services/BackupService';
 import { queries } from '../constants/queries_chart_info.js';
-
-/**
- * UPDATED: Now uses backend API instead of direct Firestore access
- * Questions are stored in: Templates/{templateId}/Questions/{questionId}
- */
 
 /**
  * Add multiple questions via backend API (legacy function - use createQuestion from backendApi directly)
@@ -48,11 +43,22 @@ const addQuestion = async (
  */
 const getQuestions = async (templateId = 'R186491') => {
   try {
+    // If user has explicitly selected a backup/offline mode, use that first
+    if (BackupService.isExplicitlyUsingBackup()) {
+      console.log('Using explicit backup for questions');
+      return await BackupService.getQuestions(templateId);
+    }
+
     const questions = await getQuestionsApi(templateId);
     return Array.isArray(questions) ? questions : [];
   } catch (error) {
-    console.error('Error fetching questions from backend:', error);
-    throw error;
+    console.warn('Backend API failed, falling back to local backup:', error);
+    try {
+      return await BackupService.getQuestions(templateId);
+    } catch (backupError) {
+      console.error('Error fetching questions from backup:', backupError);
+      throw backupError;
+    }
   }
 };
 

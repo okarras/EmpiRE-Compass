@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useAIService } from '../services/backendAIService';
+import { useAppSelector } from '../store/hooks';
 import {
   extractFromMarkdown,
   SPARQLBlock,
@@ -43,6 +44,19 @@ export const useQueryGeneration = ({
   updateSparqlQuery,
 }: UseQueryGenerationProps) => {
   const aiService = useAIService();
+  const { provider, openaiModel, groqModel, mistralModel, googleModel } =
+    useAppSelector((state) => state.ai);
+
+  // Determine current model based on provider
+  const currentModel =
+    provider === 'openai'
+      ? openaiModel
+      : provider === 'groq'
+        ? groqModel
+        : provider === 'mistral'
+          ? mistralModel
+          : googleModel;
+
   const [currentIteration, setCurrentIteration] = useState(0);
   const [iterationFeedback, setIterationFeedback] = useState('');
   const [iterationHistory, setIterationHistory] = useState<IterationDetail[]>(
@@ -289,6 +303,8 @@ ${
         const sparqlResult = await aiService.generateText(currentPrompt, {
           temperature: 0.1 + (iteration - 1) * 0.05,
           maxTokens: 2000,
+          provider,
+          model: currentModel,
         });
 
         const { sparqlBlocks } = extractFromMarkdown(sparqlResult.text);

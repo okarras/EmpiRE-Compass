@@ -9,45 +9,66 @@ import {
   CardMedia,
   Grid,
   Link,
+  List,
+  ListItem,
+  Paper,
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { ThemeProvider } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 import theme from '../utils/theme';
 import CRUDTeam, { TeamMember } from '../firestore/CRUDTeam';
+import CRUDPapers, { Paper as PaperType } from '../firestore/CRUDPapers';
 
 // Placeholder image as data URI
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2U4NjE2MSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
 
+import { useBackupChange } from '../hooks/useBackupChange';
+
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [papers, setPapers] = useState<PaperType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const backupVersion = useBackupChange(); // Listen for backup changes
 
   useEffect(() => {
-    const fetchTeamMembers = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        const members = await CRUDTeam.getTeamMembers();
-        // Sort by priority (lower number = higher priority)
+        const [members, papersData] = await Promise.all([
+          CRUDTeam.getTeamMembers(),
+          CRUDPapers.getPapers(true), // Only papers to show on Team page
+        ]);
+        // Sort team by priority (lower number = higher priority)
         const sortedMembers = [...members].sort((a, b) => {
           const priorityA = a.priority ?? 999;
           const priorityB = b.priority ?? 999;
           return priorityA - priorityB;
         });
         setTeamMembers(sortedMembers);
+        // Sort papers by priority, then year
+        const sortedPapers = [...papersData].sort((a, b) => {
+          const priorityA = a.priority ?? 999;
+          const priorityB = b.priority ?? 999;
+          if (priorityA !== priorityB) return priorityA - priorityB;
+          return (b.year ?? 0) - (a.year ?? 0);
+        });
+        setPapers(sortedPapers);
       } catch (err) {
-        console.error('Error fetching team members:', err);
-        setError('Failed to load team members. Please try again later.');
+        console.error('Error fetching team data:', err);
+        setError('Failed to load team data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTeamMembers();
-  }, []);
+    fetchData();
+  }, [backupVersion]); // Re-fetch when backup changes
 
   if (loading) {
     return (
@@ -103,15 +124,18 @@ const Team = () => {
             </Alert>
           )}
 
-          {teamMembers.length === 0 && !loading && !error && (
-            <Alert severity="info" sx={{ mb: 4 }}>
-              No team members found.
-            </Alert>
-          )}
+          {teamMembers.length === 0 &&
+            papers.length === 0 &&
+            !loading &&
+            !error && (
+              <Alert severity="info" sx={{ mb: 4 }}>
+                No team members or papers found.
+              </Alert>
+            )}
 
           {/* Team Members Grid */}
           {teamMembers.length > 0 && (
-            <Grid container spacing={4} sx={{ mt: 2 }}>
+            <Grid container spacing={4} sx={{ mt: 2, mb: { xs: 5, md: 7 } }}>
               {teamMembers.map((member) => (
                 <Grid item xs={12} sm={6} md={4} key={member.id}>
                   <Card
@@ -148,7 +172,6 @@ const Team = () => {
                       component="img"
                       image={(() => {
                         const imgUrl = member.image?.trim();
-                        // Remove any trailing newlines or whitespace
                         return imgUrl && imgUrl.length > 0
                           ? imgUrl.replace(/\n/g, '').trim()
                           : PLACEHOLDER_IMAGE;
@@ -161,7 +184,6 @@ const Team = () => {
                         backgroundColor: 'grey.100',
                       }}
                       onError={(e) => {
-                        // If image fails to load, set placeholder
                         const target = e.target as HTMLImageElement;
                         if (target.src !== PLACEHOLDER_IMAGE) {
                           target.src = PLACEHOLDER_IMAGE;
@@ -243,6 +265,127 @@ const Team = () => {
                 </Grid>
               ))}
             </Grid>
+          )}
+
+          {/* Publications Section */}
+          {papers.length > 0 && (
+            <Box sx={{ mb: { xs: 5, md: 7 } }}>
+              <Typography
+                variant="h4"
+                component="h2"
+                sx={{
+                  fontWeight: 600,
+                  mb: 3,
+                  color: 'text.primary',
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <MenuBookIcon sx={{ color: '#e86161' }} />
+                Publications
+              </Typography>
+              <Paper
+                component={List}
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: 2,
+                  overflow: 'hidden',
+                }}
+              >
+                {papers.map((paper: PaperType) => (
+                  <ListItem
+                    key={paper.id}
+                    component={paper.link ? 'a' : 'div'}
+                    href={paper.link || undefined}
+                    target={
+                      paper.link?.startsWith('http') ? '_blank' : undefined
+                    }
+                    rel={
+                      paper.link?.startsWith('http')
+                        ? 'noopener noreferrer'
+                        : undefined
+                    }
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      py: 2.5,
+                      px: 3,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider',
+                      cursor: paper.link ? 'pointer' : 'default',
+                      textDecoration: 'none',
+                      color: 'inherit',
+                      '&:hover': paper.link
+                        ? { backgroundColor: 'rgba(232, 97, 97, 0.04)' }
+                        : {},
+                      '&:last-child': { borderBottom: 'none' },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        gap: 2,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: 'text.primary',
+                            fontSize: { xs: '1rem', sm: '1.1rem' },
+                          }}
+                        >
+                          {paper.title}
+                        </Typography>
+                        {(paper.authors || paper.venue || paper.year) && (
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              mt: 0.5,
+                              fontSize: { xs: '0.85rem', sm: '0.9rem' },
+                            }}
+                          >
+                            {[paper.authors, paper.venue, paper.year]
+                              .filter(Boolean)
+                              .join(' • ')}
+                          </Typography>
+                        )}
+                        {paper.description && (
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: 'text.secondary',
+                              mt: 1,
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {paper.description}
+                          </Typography>
+                        )}
+                      </Box>
+                      {paper.link && (
+                        <OpenInNewIcon
+                          sx={{
+                            color: '#e86161',
+                            fontSize: '1.25rem',
+                            flexShrink: 0,
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </ListItem>
+                ))}
+              </Paper>
+            </Box>
           )}
         </Container>
       </Box>

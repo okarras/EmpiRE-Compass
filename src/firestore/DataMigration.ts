@@ -245,7 +245,7 @@ export const migrateAllTemplates = async (): Promise<{
   try {
     const migratedTemplates: string[] = [];
 
-    // Note: Migration now requires authentication - use individual migration functions with auth
+    // Migration requires authentication
     throw new Error(
       'migrateAllTemplates requires authentication. Use individual migration functions with auth instead.'
     );

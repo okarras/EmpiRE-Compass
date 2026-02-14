@@ -8,7 +8,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-import { Save, Undo, Login, Psychology } from '@mui/icons-material';
+import { Undo, Login, Psychology } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
@@ -101,6 +101,15 @@ const DynamicAIQuestion = () => {
     setTemplateId(location.pathname.split('/')[1] || 'R186491');
   }, [location.pathname]);
 
+  // Handle loading question from navigation state (Edit mode)
+  useEffect(() => {
+    const state = location.state as { questionToEdit?: DynamicQuestion };
+    if (state?.questionToEdit) {
+      handleLoadExample(state.questionToEdit);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
   // Initialize template ID in context
   useEffect(() => {
     const hasMappingData =
@@ -109,7 +118,7 @@ const DynamicAIQuestion = () => {
     if (templateId && state.templateId !== templateId) {
       void handleTemplateChange(templateId);
       // Set default target class IDs for known templates
-      //TODO: this section should be done dynamically this is a temporary solution
+      // TODO: Implement dynamic target class assignment
       if (templateId === 'R186491' && state.targetClassId !== 'C27001') {
         updateTargetClassId('C27001');
       } else if (
@@ -346,9 +355,6 @@ const DynamicAIQuestion = () => {
         false
       );
 
-      // Note: Processing function cost will be tracked separately if needed
-      // For now, we track costs from query generation iterations
-
       // Transform data
       let transformedData: Record<string, unknown>[] = [];
       try {
@@ -508,6 +514,7 @@ const DynamicAIQuestion = () => {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [llmContextHistoryOpen, setLlmContextHistoryOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [saveMode, setSaveMode] = useState<'save' | 'share'>('share');
   const [savingExample, setSavingExample] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -639,8 +646,28 @@ const DynamicAIQuestion = () => {
     }
   };
 
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
+    null
+  );
+  const [editingQuestionStatus, setEditingQuestionStatus] = useState<
+    DynamicQuestion['status'] | undefined
+  >(undefined);
+  const [editingQuestionTimestamp, setEditingQuestionTimestamp] = useState<
+    number | undefined
+  >(undefined);
+  const [isEditingCommunityQuestion, setIsEditingCommunityQuestion] =
+    useState<boolean>(false);
+
+  // ... (previous code) ...
+
   const handleLoadExample = (example: DynamicQuestion) => {
     const exampleState = example.state;
+    setEditingQuestionId(example.id);
+    setEditingQuestionStatus(example.status);
+    setEditingQuestionTimestamp(example.timestamp);
+    setIsEditingCommunityQuestion(!!example.isCommunity);
+
+    // ... (rest of loading logic) ...
 
     // Reset iteration history when loading a new example
     resetIterationHistory();
@@ -739,7 +766,12 @@ const DynamicAIQuestion = () => {
     updateProcessingFunctionCode('', 'Cleared all fields');
     updateCosts([]);
     setDynamicQuery(null);
+    setDynamicQuery(null);
     setError(null);
+    setEditingQuestionId(null);
+    setEditingQuestionStatus(undefined);
+    setEditingQuestionTimestamp(undefined);
+    setIsEditingCommunityQuestion(false);
     setShowUndoSnackbar(true);
   };
 
@@ -768,23 +800,36 @@ const DynamicAIQuestion = () => {
     setShowUndoSnackbar(false);
   };
 
-  const handleSaveExample = async (name: string) => {
-    // Validate that we have at least a question
-    if (!state.question || !state.question.trim()) {
-      throw new Error('Please enter a question before saving as an example');
+  const handleSaveExample = async (name: string, isCommunity: boolean) => {
+    if (!state.question || !state.sparqlQuery) {
+      setSaveError('No question to save');
+      return;
     }
 
     setSavingExample(true);
     setSaveError(null);
 
     try {
-      // Create the dynamic question object from current state
-      const questionId = `question_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+      // Determine ID: use existing if editing, else generate new
+      const id = editingQuestionId || crypto.randomUUID();
 
-      const dynamicQuestion: DynamicQuestion = {
-        id: questionId,
-        name: name,
-        timestamp: Date.now(),
+      const question: DynamicQuestion = {
+        id,
+        name,
+        timestamp: editingQuestionTimestamp || Date.now(),
+        // Store templateId at root for indexing
+        templateId: state.templateId || undefined,
+        isCommunity,
+        status: editingQuestionStatus, // Preserve status if editing
+        // Add creator info if it's a new community question
+        // If editing an existing community question, do NOT overwrite the creator
+        ...(isCommunity && user && !isEditingCommunityQuestion
+          ? {
+              createdBy: user.id,
+              creatorName:
+                user.display_name || user.email || 'Anonymous Community Member',
+            }
+          : {}),
         state: {
           question: state.question,
           sparqlQuery: state.sparqlQuery || '',
@@ -796,25 +841,22 @@ const DynamicAIQuestion = () => {
             state.dataCollectionInterpretation || '',
           dataAnalysisInterpretation: state.dataAnalysisInterpretation || '',
           processingFunctionCode: state.processingFunctionCode || '',
-          templateId: state.templateId || undefined,
-          // templateMapping: state.templateMapping || undefined,
-          // targetClassId: state.targetClassId || undefined,
+          history: null,
+          templateId: state.templateId || null,
+          templateMapping: state.templateMapping || null,
+          targetClassId: state.targetClassId || null,
         },
       };
 
-      await CRUDDynamicQuestions.saveDynamicQuestion(
-        dynamicQuestion,
-        questionId
-      );
+      await CRUDDynamicQuestions.saveDynamicQuestion(question);
       setSaveSuccess(true);
-      // Refresh examples list to show the new example
-      setExamplesRefreshTrigger((prev) => prev + 1);
+      setExamplesRefreshTrigger((prev) => prev + 1); // Refresh examples list
     } catch (err) {
-      console.error('Error saving dynamic question example:', err);
+      console.error('Error saving example:', err);
       setSaveError(
         err instanceof Error ? err.message : 'Failed to save example question'
       );
-      throw err; // Re-throw so dialog can handle it
+      throw err; // Re-throw to be caught by dialog
     } finally {
       setSavingExample(false);
     }
@@ -916,35 +958,6 @@ const DynamicAIQuestion = () => {
             }}
           />
         </Box>
-        {isAdmin && (
-          <Button
-            variant="outlined"
-            startIcon={<Save />}
-            onClick={() => setSaveDialogOpen(true)}
-            disabled={!state.question || !state.question.trim()}
-            sx={{
-              borderColor: '#e86161',
-              color: '#e86161',
-              '&:hover': {
-                borderColor: '#d45555',
-                backgroundColor: 'rgba(232, 97, 97, 0.04)',
-              },
-              '&:disabled': {
-                borderColor: 'rgba(0, 0, 0, 0.26)',
-                color: 'rgba(0, 0, 0, 0.26)',
-              },
-              whiteSpace: 'nowrap',
-              minWidth: 'auto',
-            }}
-            title={
-              !state.question || !state.question.trim()
-                ? 'Enter a question to save as an example'
-                : 'Save current question as an example for other users'
-            }
-          >
-            Save as Example
-          </Button>
-        )}
       </Box>
       <QueryExecutionSection
         question={state.question}
@@ -968,6 +981,16 @@ const DynamicAIQuestion = () => {
         iterationHistory={iterationHistory}
         templateMapping={state.templateMapping as PredicatesMapping | undefined}
         targetClassId={state.targetClassId}
+        onShare={() => {
+          setSaveMode('share');
+          setSaveDialogOpen(true);
+        }}
+        onSave={() => {
+          setSaveMode('save');
+          setSaveDialogOpen(true);
+        }}
+        isAdmin={isAdmin}
+        isEditingCommunityQuestion={isEditingCommunityQuestion}
       />
 
       <DataProcessingCodeSection
@@ -1012,6 +1035,8 @@ const DynamicAIQuestion = () => {
         onSave={handleSaveExample}
         defaultName={state.question ? state.question.substring(0, 50) : ''}
         loading={savingExample}
+        mode={saveMode}
+        isUpdate={isEditingCommunityQuestion && saveMode === 'share'}
       />
 
       <Snackbar

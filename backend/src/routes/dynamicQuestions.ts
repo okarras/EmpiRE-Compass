@@ -14,6 +14,7 @@ export interface DynamicQuestion {
   id: string;
   name: string;
   timestamp: number;
+  isCommunity?: boolean;
   state: {
     question: string;
     sparqlQuery?: string;
@@ -31,6 +32,10 @@ export interface DynamicQuestion {
   };
 }
 
+/**
+ * GET /api/dynamic-questions
+ * Get all dynamic questions (public read)
+ */
 /**
  * GET /api/dynamic-questions
  * Get all dynamic questions (public read)
@@ -57,6 +62,36 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error fetching dynamic questions:', error);
     res.status(500).json({ error: 'Failed to fetch dynamic questions' });
+  }
+});
+
+/**
+ * GET /api/dynamic-questions/community
+ * Get community dynamic questions (public read)
+ */
+router.get('/community', async (req, res) => {
+  try {
+    const limitCount = parseInt(req.query.limit as string) || 50;
+    const questionsRef = db
+      .collection('DynamicQuestions')
+      .where('isCommunity', '==', true)
+      .orderBy('timestamp', 'desc')
+      .limit(limitCount);
+
+    const snapshot = await questionsRef.get();
+    const questions: DynamicQuestion[] = [];
+
+    snapshot.forEach((doc) => {
+      questions.push({
+        id: doc.id,
+        ...doc.data(),
+      } as DynamicQuestion);
+    });
+
+    res.json(questions);
+  } catch (error) {
+    console.error('Error fetching community questions:', error);
+    res.status(500).json({ error: 'Failed to fetch community questions' });
   }
 });
 
