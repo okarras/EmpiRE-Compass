@@ -81,25 +81,25 @@ const GENERAL_NAV_ITEMS: NavItemConfig[] = [
   {
     path: '/',
     label: 'Project Overview',
-    tooltip: 'Overview and project introduction',
+    tooltip: 'Details of the project',
     Icon: Home,
   },
   {
     path: '/team',
-    label: 'Team',
+    label: 'Team & Publications',
     tooltip: 'Project team and published papers',
     Icon: People,
   },
   {
     path: '/news',
-    label: 'News',
-    tooltip: 'Latest updates and announcements',
+    label: 'New',
+    tooltip: 'Latest updates',
     Icon: Article,
   },
   {
     path: '/statistics',
     label: 'Statistics',
-    tooltip: 'Data visualizations and metrics',
+    tooltip: 'KG Statistics',
     Icon: BarChart,
   },
 ];
@@ -153,7 +153,7 @@ const COMMUNITY_NAV_ITEMS: NavItemConfig[] = [
   {
     path: '/dynamic-question',
     label: 'Dynamic Question',
-    tooltip: 'AI-powered question generation',
+    tooltip: 'AI-supported question generation',
     Icon: Psychology,
   },
 ];
@@ -291,7 +291,6 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
   const [selectedTemplate, setSelectedTemplate] = useState('R186491');
   const [questions, setQuestions] = useState<QuestionData[]>([]);
-  const [templateTitle, setTemplateTitle] = useState('');
 
   // Sync template from URL
   useEffect(() => {
@@ -306,11 +305,8 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   useEffect(() => {
     const fetchTemplateData = async () => {
       try {
-        const [templateData, questionsData] = await Promise.all([
-          TemplateManagement.getTemplate(selectedTemplate),
-          TemplateManagement.getAllQuestions(selectedTemplate),
-        ]);
-        setTemplateTitle(templateData?.title ?? '');
+        const questionsData =
+          await TemplateManagement.getAllQuestions(selectedTemplate);
         setQuestions(questionsData);
       } catch (error) {
         console.error('Error fetching template data:', error);
@@ -426,7 +422,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         {/* Curated Questions */}
         <Divider sx={{ my: 2 }} />
         <SectionHeader>Curated Questions</SectionHeader>
-        <Tooltip title="Curated research questions" placement="right" arrow>
+        <Tooltip title="All curated questions" placement="right" arrow>
           <ListItem
             onClick={() => handleNavigate(`/${selectedTemplate}/allquestions`)}
             sx={{
@@ -448,7 +444,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
                     fontWeight: isCurrentPath('/allquestions') ? 600 : 500,
                   }}
                 >
-                  {templateTitle || 'Loading...'} Questions
+                  All Questions
                 </Typography>
               }
             />

@@ -151,6 +151,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = 'Team';
         } else if (path === 'dynamic-question') {
           label = 'Dynamic Question';
+        } else if (path === 'community-questions') {
+          label = 'Community Questions';
         } else if (path === 'schema') {
           label = 'Schema';
         } else if (path === 'questions') {
