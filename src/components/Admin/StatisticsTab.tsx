@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { Add, Edit, Delete, ExpandMore, Code } from '@mui/icons-material';
 import { StatisticData } from '../../firestore/TemplateManagement';
+import StatisticsUpdateSection from './StatisticsUpdateSection';
 
 interface StatisticsTabProps {
   statistics: StatisticData[];
@@ -29,12 +30,15 @@ const StatisticsTab = ({
 }: StatisticsTabProps) => {
   return (
     <Box sx={{ p: 3 }}>
+      <StatisticsUpdateSection />
+
       <Box
         sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           mb: 3,
+          mt: 4,
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
