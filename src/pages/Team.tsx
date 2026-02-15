@@ -19,6 +19,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { ThemeProvider } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 import theme from '../utils/theme';
+import DOMPurify from 'dompurify';
 import CRUDTeam, { TeamMember } from '../firestore/CRUDTeam';
 import CRUDPapers, { Paper as PaperType } from '../firestore/CRUDPapers';
 
@@ -360,16 +361,20 @@ const Team = () => {
                           </Typography>
                         )}
                         {paper.description && (
-                          <Typography
-                            variant="body2"
+                          <Box
+                            component="div"
                             sx={{
                               color: 'text.secondary',
                               mt: 1,
                               lineHeight: 1.6,
+                              fontSize: '0.875rem',
+                              '& p': { margin: '0 0 0.5em 0' },
+                              '& p:last-child': { marginBottom: 0 },
                             }}
-                          >
-                            {paper.description}
-                          </Typography>
+                            dangerouslySetInnerHTML={{
+                              __html: DOMPurify.sanitize(paper.description),
+                            }}
+                          />
                         )}
                       </Box>
                       {paper.link && (
