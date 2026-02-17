@@ -5,9 +5,20 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
+import Collapse from '@mui/material/Collapse';
+import Chip from '@mui/material/Chip';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import Typography from '@mui/material/Typography';
+import Close from '@mui/icons-material/Close';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Warning from '@mui/icons-material/Warning';
 import InfoTooltip from '../InfoTooltip';
 import AIAssistantButton, {
   type AIAssistantButtonRef,
@@ -78,6 +89,10 @@ const RepeatTextQuestion: React.FC<{
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationResult, setVerificationResult] =
+    useState<AIVerificationResult | null>(null);
+  const [showVerification, setShowVerification] = useState(false);
+  const [isVerificationCollapsed, setIsVerificationCollapsed] = useState(false);
 
   const handleSuggestionsGenerated = (newSuggestions: Suggestion[]) => {
     setSuggestions(newSuggestions);
@@ -153,6 +168,23 @@ const RepeatTextQuestion: React.FC<{
     }
   };
 
+  const handleVerificationComplete = (result: AIVerificationResult) => {
+    setVerificationResult(result);
+    setShowVerification(true);
+    setIsVerificationCollapsed(false);
+    if (onAIVerificationComplete) {
+      onAIVerificationComplete(result);
+    }
+  };
+
+  const handleCloseVerification = () => {
+    setShowVerification(false);
+  };
+
+  const handleToggleVerificationCollapse = () => {
+    setIsVerificationCollapsed(!isVerificationCollapsed);
+  };
+
   // Initialize required repeat_text fields with one empty entry
   useEffect(() => {
     if (q.required && (!Array.isArray(value) || value.length === 0)) {
@@ -191,7 +223,7 @@ const RepeatTextQuestion: React.FC<{
                   Array.isArray(value) ? value.join(', ') : String(value ?? '')
                 }
                 onSuggestionsGenerated={handleSuggestionsGenerated}
-                onVerificationComplete={onAIVerificationComplete}
+                onVerificationComplete={handleVerificationComplete}
                 onError={handleError}
                 pdfContent={pdfContent}
                 structuredDocument={structuredDocument}
@@ -237,6 +269,230 @@ const RepeatTextQuestion: React.FC<{
             />
           </Box>
         )}
+        {showVerification &&
+          verificationResult &&
+          verificationResult.status !== 'error' && (
+            <Box sx={{ mb: 1 }}>
+              <Card
+                sx={{
+                  width: '100%',
+                  maxWidth: '100%',
+                  boxShadow: 0,
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  position: 'relative',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <CardHeader
+                  title={
+                    <Box
+                      sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+                    >
+                      <Typography
+                        variant="body2"
+                        component="div"
+                        sx={{
+                          fontWeight: 500,
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        Verification Result
+                      </Typography>
+                    </Box>
+                  }
+                  action={
+                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                      <Tooltip
+                        title={
+                          isVerificationCollapsed
+                            ? 'Expand verification'
+                            : 'Collapse verification'
+                        }
+                      >
+                        <IconButton
+                          size="small"
+                          onClick={handleToggleVerificationCollapse}
+                          aria-label={
+                            isVerificationCollapsed
+                              ? 'Expand verification'
+                              : 'Collapse verification'
+                          }
+                          aria-expanded={!isVerificationCollapsed}
+                        >
+                          {isVerificationCollapsed ? (
+                            <ExpandMore />
+                          ) : (
+                            <ExpandLess />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Close verification">
+                        <IconButton
+                          size="small"
+                          onClick={handleCloseVerification}
+                          aria-label="Close verification"
+                        >
+                          <Close />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  }
+                  sx={{
+                    pb: 0.5,
+                    pl: 2,
+                    pr: 2,
+                    py: 0.75,
+                  }}
+                />
+
+                <Collapse
+                  in={!isVerificationCollapsed}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <CardContent
+                    sx={{
+                      pt: 0,
+                      pl: 2,
+                      pr: 2,
+                      pb: 2,
+                      '&:last-child': {
+                        pb: 2,
+                      },
+                    }}
+                  >
+                    {/* Status and Confidence */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        gap: 1,
+                        mb: 2,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Chip
+                        label={
+                          verificationResult.status === 'verified'
+                            ? 'Verified'
+                            : 'Needs Improvement'
+                        }
+                        color={
+                          verificationResult.status === 'verified'
+                            ? 'success'
+                            : 'warning'
+                        }
+                        icon={
+                          verificationResult.status === 'verified' ? (
+                            <CheckCircle />
+                          ) : (
+                            <Warning />
+                          )
+                        }
+                        size="small"
+                      />
+                      {verificationResult.confidence !== undefined && (
+                        <Chip
+                          label={`${Math.round(verificationResult.confidence * 100)}% confidence`}
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+
+                    {/* Feedback */}
+                    {verificationResult.feedback && (
+                      <Box
+                        sx={{
+                          mb: 2,
+                          p: 1.5,
+                          backgroundColor: 'background.paper',
+                          borderRadius: 1,
+                          border: '1px solid',
+                          borderColor: 'divider',
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: 'block',
+                            mb: 0.5,
+                            fontWeight: 500,
+                            color: 'text.secondary',
+                          }}
+                        >
+                          Feedback
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'text.primary',
+                            whiteSpace: 'pre-wrap',
+                          }}
+                        >
+                          {verificationResult.feedback}
+                        </Typography>
+                      </Box>
+                    )}
+
+                    {/* Evidence from Paper */}
+                    {verificationResult.evidence &&
+                      verificationResult.evidence.length > 0 && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              display: 'block',
+                              mb: 1,
+                              fontWeight: 500,
+                              color: 'text.secondary',
+                            }}
+                          >
+                            Evidence from Paper
+                          </Typography>
+                          {verificationResult.evidence.map((ev, idx) => (
+                            <Box
+                              key={idx}
+                              sx={{
+                                mb: 1.5,
+                                p: 1.5,
+                                backgroundColor: 'background.paper',
+                                borderRadius: 1,
+                                border: '1px solid',
+                                borderColor: 'divider',
+                                '&:last-child': {
+                                  mb: 0,
+                                },
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: 'text.primary',
+                                  mb: 0.5,
+                                  fontStyle: 'italic',
+                                }}
+                              >
+                                "{ev.excerpt}"
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: 'text.secondary',
+                                  display: 'block',
+                                }}
+                              >
+                                Page {ev.pageNumber}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      )}
+                  </CardContent>
+                </Collapse>
+              </Card>
+            </Box>
+          )}
         <Stack spacing={1} role="list" aria-label={`${q.label} items`}>
           {arr.map((v, i) => {
             const canDelete = !q.required || arr.length > 1;
