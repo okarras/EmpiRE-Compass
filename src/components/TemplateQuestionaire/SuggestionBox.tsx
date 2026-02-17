@@ -973,7 +973,6 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
                             display: 'flex',
                             gap: 1.5,
                             alignItems: 'center',
-                            mb: 1.5,
                             pt: 1,
                             borderTop: '1px solid',
                             borderColor: 'divider',
@@ -999,78 +998,115 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
                           >
                             Apply
                           </Button>
-
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              gap: 0.5,
-                              ml: 'auto',
-                            }}
-                            role="group"
-                            aria-label="Provide feedback on suggestion quality"
-                          >
-                            <Tooltip title="Helpful suggestion">
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleFeedbackClick(suggestion.id, 'positive')
-                                }
-                                sx={{
-                                  color:
-                                    feedbackState?.rating === 'positive'
-                                      ? 'success.main'
-                                      : 'action.active',
-                                  padding: '8px',
-                                  '&:hover': {
-                                    backgroundColor: 'success.light',
-                                    color: 'success.dark',
-                                  },
-                                }}
-                                aria-label={
-                                  feedbackState?.rating === 'positive'
-                                    ? 'Marked as helpful (selected)'
-                                    : 'Mark as helpful'
-                                }
-                                aria-pressed={
-                                  feedbackState?.rating === 'positive'
-                                }
-                              >
-                                <ThumbUpIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Not helpful">
-                              <IconButton
-                                size="small"
-                                onClick={() =>
-                                  handleFeedbackClick(suggestion.id, 'negative')
-                                }
-                                sx={{
-                                  color:
-                                    feedbackState?.rating === 'negative'
-                                      ? 'error.main'
-                                      : 'action.active',
-                                  padding: '8px',
-                                  '&:hover': {
-                                    backgroundColor: 'error.light',
-                                    color: 'error.dark',
-                                  },
-                                }}
-                                aria-label={
-                                  feedbackState?.rating === 'negative'
-                                    ? 'Marked as not helpful (selected)'
-                                    : 'Mark as not helpful'
-                                }
-                                aria-pressed={
-                                  feedbackState?.rating === 'negative'
-                                }
-                              >
-                                <ThumbDownIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
                         </Box>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+          </CardContent>
+        </Collapse>
 
-                        {/* Individual comment field for this suggestion */}
+        {/* Feedback Section - After All Suggestions */}
+        {!loading && !error && suggestions.length > 0 && (
+          <Collapse in={!isCollapsed} timeout="auto" unmountOnExit>
+            <Box
+              sx={{
+                mx: 2,
+                mb: 2,
+                mt: 3,
+                p: 2,
+                borderRadius: 1,
+                backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                border: '1px dashed',
+                borderColor: 'divider',
+              }}
+              role="region"
+              aria-label="Feedback section"
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  mb: 0.5,
+                  fontSize: '0.875rem',
+                }}
+              >
+                Help us improve (optional)
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  display: 'block',
+                  mb: 2,
+                  fontSize: '0.75rem',
+                }}
+              >
+                Give feedback on suggestions to help generate better results
+                when you click "Regenerate"
+              </Typography>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1.5,
+                }}
+              >
+                {suggestions.map((suggestion, index) => {
+                  const feedbackState = feedbackStates[suggestion.id];
+
+                  return (
+                    <Box
+                      key={suggestion.id}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 1.5,
+                        p: 1.5,
+                        borderRadius: 1,
+                        backgroundColor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Chip
+                            label={getRankLabel(suggestion.rank)}
+                            size="small"
+                            sx={{
+                              height: '20px',
+                              fontSize: '0.7rem',
+                              fontWeight: 'bold',
+                            }}
+                          />
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontSize: '0.8125rem',
+                            color: 'text.secondary',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {suggestion.text}
+                        </Typography>
+
+                        {/* Comment field for this suggestion */}
                         {feedbackState?.rating && (
                           <Box sx={{ mt: 1.5 }}>
                             <TextField
@@ -1078,7 +1114,7 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
                               size="small"
                               multiline
                               rows={2}
-                              placeholder={`Why was this ${feedbackState.rating === 'positive' ? 'helpful' : 'not helpful'}?`}
+                              placeholder={`Why was this ${feedbackState.rating === 'positive' ? 'helpful' : 'not helpful'}? (optional)`}
                               value={feedbackState.comment || ''}
                               onChange={(e) =>
                                 handleCommentChange(
@@ -1097,41 +1133,109 @@ const SuggestionBox: React.FC<SuggestionBoxProps> = ({
                           </Box>
                         )}
                       </Box>
+
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          gap: 0.5,
+                          flexShrink: 0,
+                        }}
+                        role="group"
+                        aria-label={`Rate suggestion ${index + 1}`}
+                      >
+                        <Tooltip title="Helpful">
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleFeedbackClick(suggestion.id, 'positive')
+                            }
+                            sx={{
+                              color:
+                                feedbackState?.rating === 'positive'
+                                  ? 'success.main'
+                                  : 'action.active',
+                              padding: '8px',
+                              '&:hover': {
+                                backgroundColor: 'success.light',
+                                color: 'success.dark',
+                              },
+                            }}
+                            aria-label={
+                              feedbackState?.rating === 'positive'
+                                ? 'Marked as helpful (selected)'
+                                : 'Mark as helpful'
+                            }
+                            aria-pressed={feedbackState?.rating === 'positive'}
+                          >
+                            <ThumbUpIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Not helpful">
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleFeedbackClick(suggestion.id, 'negative')
+                            }
+                            sx={{
+                              color:
+                                feedbackState?.rating === 'negative'
+                                  ? 'error.main'
+                                  : 'action.active',
+                              padding: '8px',
+                              '&:hover': {
+                                backgroundColor: 'error.light',
+                                color: 'error.dark',
+                              },
+                            }}
+                            aria-label={
+                              feedbackState?.rating === 'negative'
+                                ? 'Marked as not helpful (selected)'
+                                : 'Mark as not helpful'
+                            }
+                            aria-pressed={feedbackState?.rating === 'negative'}
+                          >
+                            <ThumbDownIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
                     </Box>
                   );
                 })}
-
-                {onRegenerate && !loading && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      pb: 2,
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={onRegenerate}
-                      aria-label="Regenerate suggestions"
-                      sx={{
-                        textTransform: 'none',
-                        borderColor: '#e86161',
-                        color: '#e86161',
-                        '&:hover': {
-                          borderColor: '#d45151',
-                          backgroundColor: 'rgba(232, 97, 97, 0.04)',
-                        },
-                      }}
-                    >
-                      Regenerate Suggestions
-                    </Button>
-                  </Box>
-                )}
               </Box>
-            )}
-          </CardContent>
-        </Collapse>
+            </Box>
+          </Collapse>
+        )}
+
+        {onRegenerate && !loading && !error && suggestions.length > 0 && (
+          <Collapse in={!isCollapsed} timeout="auto" unmountOnExit>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                mx: 2,
+                mb: 2,
+              }}
+            >
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={onRegenerate}
+                aria-label="Regenerate suggestions"
+                sx={{
+                  textTransform: 'none',
+                  borderColor: '#e86161',
+                  color: '#e86161',
+                  '&:hover': {
+                    borderColor: '#d45151',
+                    backgroundColor: 'rgba(232, 97, 97, 0.04)',
+                  },
+                }}
+              >
+                Regenerate Suggestions
+              </Button>
+            </Box>
+          </Collapse>
+        )}
       </Card>
 
       <Snackbar
