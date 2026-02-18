@@ -156,37 +156,6 @@ export default function Statistics() {
           px: { xs: 2, sm: 3 },
         }}
       >
-        {/* KPI Summary Row */}
-        <Stack
-          direction="row"
-          spacing={3}
-          useFlexGap
-          flexWrap="wrap"
-          mb={4}
-          justifyContent="center"
-        >
-          <KPICard
-            label="Total Papers"
-            value={paperCount}
-            icon={<FeedIcon />}
-          />
-          <KPICard
-            label="Total Venues"
-            value={venueCount}
-            icon={<LocationOnIcon />}
-          />
-          {/* <KPICard
-            label="Total Triples"
-            value={statistics.tripleCount}
-            icon={<StorageIcon />}
-          /> */}
-          {/* <KPICard
-            label="Avg. Papers/Venue"
-            value={venueCount > 0 ? Math.round(paperCount / venueCount) : 0}
-            icon={<TrendingUpIcon />}
-          /> */}
-        </Stack>
-
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
           <FormControlLabel
             control={
