@@ -32,6 +32,8 @@ import type { CostBreakdown } from '../utils/costCalculator';
 import type { DynamicQuestion } from '../firestore/CRUDDynamicQuestions';
 import { useAuthData } from '../auth/useAuthData';
 import CRUDDynamicQuestions from '../firestore/CRUDDynamicQuestions';
+import { askOrkg, type OrkgAskResponse } from '../services/orkgAskService';
+import type { QueryMode } from './AI/QueryExecutionSection';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -61,6 +63,10 @@ const DynamicAIQuestion = () => {
 
   const [dynamicQuery, setDynamicQuery] = useState<DynamicQuery | null>(null);
   const [maxIterations] = useState<number>(3);
+  const [queryMode, setQueryMode] = useState<QueryMode>('symbolic');
+  const [orkgAskResult, setOrkgAskResult] = useState<OrkgAskResponse | null>(
+    null
+  );
 
   const { setContext } = useAIAssistantContext();
 
@@ -306,13 +312,6 @@ const DynamicAIQuestion = () => {
       return;
     }
 
-    if (!aiService.isConfigured()) {
-      setError(
-        'AI service is not available. Please try again later or check your configuration.'
-      );
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -325,8 +324,47 @@ const DynamicAIQuestion = () => {
     updateSparqlTranslation('');
     updateQueryResults([]);
     setDynamicQuery(null);
+    setOrkgAskResult(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
     updateCosts([]); // Reset costs for new generation
+
+    // Handle ORKG ASK mode
+    if (queryMode === 'orkg-ask') {
+      try {
+        // user is already available from useAuthData hook called earlier in component
+        const result = await askOrkg(
+          {
+            question: state.question,
+            max_results: 10,
+            temperature: 0.3,
+          },
+          user?.id,
+          user?.email
+        );
+
+        setOrkgAskResult(result);
+      } catch (err: unknown) {
+        console.error('ORKG ASK error:', err);
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to get answer from ORKG ASK. Please try again.';
+        setError(errorMessage);
+        setOrkgAskResult(null);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Handle Symbolic mode (existing logic)
+    if (!aiService.isConfigured()) {
+      setError(
+        'AI service is not available. Please try again later or check your configuration.'
+      );
+      setLoading(false);
+      return;
+    }
 
     try {
       // Generate query with iterative refinement
@@ -991,6 +1029,8 @@ const DynamicAIQuestion = () => {
         }}
         isAdmin={isAdmin}
         isEditingCommunityQuestion={isEditingCommunityQuestion}
+        queryMode={queryMode}
+        onQueryModeChange={setQueryMode}
       />
 
       <DataProcessingCodeSection
@@ -1015,6 +1055,8 @@ const DynamicAIQuestion = () => {
         onError={setError}
         onChartHtmlChange={updateChartHtml}
         costs={state.costs}
+        queryMode={queryMode}
+        orkgAskResult={orkgAskResult}
       />
 
       <HistoryManager

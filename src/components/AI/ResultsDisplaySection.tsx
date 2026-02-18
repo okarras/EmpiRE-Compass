@@ -7,7 +7,10 @@ import SectionSelector from '../SectionSelector';
 import QuestionInformationView from '../QuestionInformationView';
 import QuestionDataGridView from '../QuestionDataGridView';
 import CostDisplay from './CostDisplay';
+import OrkgAskResultsSection from './OrkgAskResultsSection';
 import { CostBreakdown } from '../../utils/costCalculator';
+import type { OrkgAskResponse } from '../../services/orkgAskService';
+import type { QueryMode } from './QueryExecutionSection';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -61,6 +64,8 @@ interface ResultsDisplaySectionProps {
   onError: (error: string) => void;
   onChartHtmlChange: (html: string) => void;
   costs: CostBreakdown[];
+  queryMode?: QueryMode;
+  orkgAskResult?: OrkgAskResponse | null;
 }
 
 const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
@@ -78,6 +83,8 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
   onError,
   onChartHtmlChange,
   costs,
+  queryMode = 'symbolic',
+  orkgAskResult,
 }) => {
   const renderErrorState = (errorMessage: string) => (
     <Box
@@ -97,6 +104,19 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
     </Box>
   );
 
+  // Render ORKG ASK results if in ORKG ASK mode
+  if (queryMode === 'orkg-ask') {
+    return (
+      <OrkgAskResultsSection
+        result={orkgAskResult || null}
+        loading={loading}
+        error={error}
+        question={question}
+      />
+    );
+  }
+
+  // Render symbolic/SPARQL results (existing logic)
   return (
     <>
       {loading && !sparqlQuery && <TextSkeleton lines={12} />}

@@ -12,6 +12,8 @@ import {
   Divider,
   Chip,
   IconButton,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   History,
@@ -29,10 +31,13 @@ import {
 import AIConfigurationButton from './AIConfigurationButton';
 import DynamicQuestionManager from './DynamicQuestionManager';
 import SPARQLQuerySection from './SPARQLQuerySection';
+import OrkgAskQuestionSection from './OrkgAskQuestionSection';
 import ResourceIdInputButton from './ResourceIdInputButton';
 import { HistoryItem } from './HistoryManager';
 import { IterationDetail } from '../../hooks/useQueryGeneration';
 import { PredicatesMapping } from '../Graph/types';
+
+export type QueryMode = 'symbolic' | 'orkg-ask';
 
 interface QueryExecutionSectionProps {
   question: string;
@@ -60,6 +65,8 @@ interface QueryExecutionSectionProps {
   onShare?: () => void;
   isAdmin?: boolean;
   isEditingCommunityQuestion?: boolean;
+  queryMode?: QueryMode;
+  onQueryModeChange?: (mode: QueryMode) => void;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -88,6 +95,8 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onShare,
   isAdmin,
   isEditingCommunityQuestion,
+  queryMode = 'symbolic',
+  onQueryModeChange,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -126,8 +135,43 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
       };
     }
   };
+  const handleModeChange = (_event: React.SyntheticEvent, newValue: number) => {
+    if (onQueryModeChange) {
+      onQueryModeChange(newValue === 0 ? 'symbolic' : 'orkg-ask');
+    }
+  };
+
   return (
     <>
+      {/* Mode Toggle Tabs */}
+      {onQueryModeChange && (
+        <Box sx={{ mb: 3 }}>
+          <Tabs
+            value={queryMode === 'symbolic' ? 0 : 1}
+            onChange={handleModeChange}
+            sx={{
+              borderBottom: 1,
+              borderColor: 'divider',
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                minHeight: 48,
+              },
+              '& .Mui-selected': {
+                color: '#e86161',
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: '#e86161',
+              },
+            }}
+          >
+            <Tab label="Ask Database" iconPosition="start" />
+            <Tab label="Ask AI Researcher" iconPosition="start" />
+          </Tabs>
+        </Box>
+      )}
+
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
         <AIConfigurationButton />
         {onTemplateIdChange && (
@@ -533,22 +577,33 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
         </Box>
       )}
 
-      <SPARQLQuerySection
-        question={question}
-        sparqlQuery={sparqlQuery}
-        sparqlTranslation={sparqlTranslation}
-        loading={loading}
-        queryResults={queryResults}
-        queryError={queryError}
-        onQuestionChange={onQuestionChange}
-        onSparqlChange={onSparqlChange}
-        onGenerateAndRun={onGenerateAndRun}
-        onRunEditedQuery={onRunEditedQuery}
-        onOpenHistory={onOpenHistory}
-        templateMapping={templateMapping}
-        templateId={currentTemplateId}
-        targetClassId={targetClassId}
-      />
+      {queryMode === 'symbolic' ? (
+        <SPARQLQuerySection
+          question={question}
+          sparqlQuery={sparqlQuery}
+          sparqlTranslation={sparqlTranslation}
+          loading={loading}
+          queryResults={queryResults}
+          queryError={queryError}
+          onQuestionChange={onQuestionChange}
+          onSparqlChange={onSparqlChange}
+          onGenerateAndRun={onGenerateAndRun}
+          onRunEditedQuery={onRunEditedQuery}
+          onOpenHistory={onOpenHistory}
+          templateMapping={templateMapping}
+          templateId={currentTemplateId}
+          targetClassId={targetClassId}
+        />
+      ) : (
+        <OrkgAskQuestionSection
+          question={question}
+          loading={loading}
+          error={queryError}
+          onQuestionChange={onQuestionChange}
+          onAsk={onGenerateAndRun}
+          onOpenHistory={() => onOpenHistory('query')}
+        />
+      )}
     </>
   );
 };
