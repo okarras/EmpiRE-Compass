@@ -27,10 +27,10 @@ import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { getTemplateConfig } from '../constants/template_config';
 import GaugeChart from '../components/GaugeChart';
-import KPICard from '../components/KPICard';
+// import KPICard from '../components/KPICard';
 import { FormControlLabel, Switch, Box } from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import StorageIcon from '@mui/icons-material/Storage';
+// import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+// import StorageIcon from '@mui/icons-material/Storage';
 // import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 // import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
@@ -52,6 +52,9 @@ interface StatisticsData {
   global_distinct_literals: number;
   global_distinct_predicates: number;
   totalORKGPapersCount: number;
+  totalORKGResources: number;
+  totalORKGStatements: number;
+  totalORKGObservatories: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -67,6 +70,9 @@ const DEFAULT_STATS: StatisticsData = {
   global_distinct_literals: 0,
   global_distinct_predicates: 0,
   totalORKGPapersCount: 0,
+  totalORKGResources: 0,
+  totalORKGStatements: 0,
+  totalORKGObservatories: 0,
 };
 
 export default function Statistics() {
@@ -93,12 +99,29 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, perVenueData, venuesData, totalORKGData] = results;
+        const [
+          paperData,
+          perVenueData,
+          venuesData,
+          totalORKGData,
+          totalORKGResourcesData,
+          totalORKGStatementsData,
+          totalORKGObservatoriesData,
+        ] = results;
 
         setStatistics((prev) => ({
           ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
           totalORKGPapersCount: Number(totalORKGData[0]?.total_papers ?? 0),
+          totalORKGResources: Number(
+            totalORKGResourcesData[0]?.total_resources ?? 0
+          ),
+          totalORKGStatements: Number(
+            totalORKGStatementsData[0]?.total_statements ?? 0
+          ),
+          totalORKGObservatories: Number(
+            totalORKGObservatoriesData[0]?.total_observatories ?? 0
+          ),
 
           perVenueData: perVenueData.map((row: VenueData) => ({
             venue: row.venue,
@@ -141,6 +164,9 @@ export default function Statistics() {
     global_distinct_literals,
     global_distinct_predicates,
     totalORKGPapersCount,
+    totalORKGResources,
+    totalORKGStatements,
+    totalORKGObservatories,
   } = statistics;
 
   return (
@@ -196,7 +222,7 @@ export default function Statistics() {
               <GaugeChart
                 label="Venues"
                 value={venueCount}
-                max={venueCount}
+                max={totalORKGObservatories || venueCount}
                 color="#e86161"
                 link="https://orkg.org/observatories"
               />
@@ -205,7 +231,7 @@ export default function Statistics() {
               <GaugeChart
                 label="Resources"
                 value={total_resources}
-                max={total_resources}
+                max={totalORKGResources || total_resources}
                 color="#e86161"
                 link="https://orkg.org/resources"
               />
@@ -214,7 +240,7 @@ export default function Statistics() {
               <GaugeChart
                 label="Distinct Resources"
                 value={global_distinct_resources}
-                max={total_resources}
+                max={totalORKGResources || total_resources}
                 color="#e86161"
                 link="https://orkg.org/classes"
               />
@@ -223,7 +249,7 @@ export default function Statistics() {
               <GaugeChart
                 label="Statements"
                 value={total_statements}
-                max={total_statements}
+                max={totalORKGStatements || total_statements}
                 color="#e86161"
                 link="https://orkg.org/rs/statements"
               />
