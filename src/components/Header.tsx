@@ -187,9 +187,6 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   };
 
   const redirectToStorybook = () => {
-    // TODO: Replace with your actual Chromatic Storybook URL after deployment
-    // Example: https://64a1b2c3d4e5f6789012345.chromatic.com
-    // To deploy: npm run deploy:chromatic (requires CHROMATIC_PROJECT_TOKEN)
     window.open(
       'https://empire-compass-storybook.tib.eu/?path=/docs/layout-dashboard--docs',
       '_blank'
