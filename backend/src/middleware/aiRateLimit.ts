@@ -30,7 +30,6 @@ export const createUserRateLimiter = () => {
         req.userId ||
         `anon_${req.ip || req.connection?.remoteAddress || 'unknown'}`;
       const isAnonymous = !req.userId;
-
       // Skip rate limiting for admin users
       if (req.isAdmin) {
         return next();
