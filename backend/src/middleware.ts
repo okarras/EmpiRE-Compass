@@ -41,7 +41,7 @@ const isVercelPreviewUrl = (origin: string): boolean => {
 
 // rate limit
 export const createRateLimiter = (
-  windowMs: number = 15 * 60 * 1000,
+  windowMs: number = 5 * 60 * 1000, // 5 minutes
   max: number = 100
 ) => {
   return rateLimit({
