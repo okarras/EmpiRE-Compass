@@ -379,6 +379,7 @@ router.get(
  */
 router.post(
   '/generate',
+  validateKeycloakToken,
   createUserRateLimiter(),
   validateGenerateTextRequest,
   async (req: AuthenticatedRequest, res: Response) => {
