@@ -26,6 +26,11 @@ import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSk
 import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { getTemplateConfig } from '../constants/template_config';
+import GaugeChart from '../components/GaugeChart';
+// import KPICard from '../components/KPICard';
+import { FormControlLabel, Switch, Box } from '@mui/material';
+// import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+// import StorageIcon from '@mui/icons-material/Storage';
 // import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
 // import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
@@ -46,6 +51,10 @@ interface StatisticsData {
   global_distinct_resources: number;
   global_distinct_literals: number;
   global_distinct_predicates: number;
+  totalORKGPapersCount: number;
+  totalORKGResources: number;
+  totalORKGStatements: number;
+  totalORKGObservatories: number;
 }
 
 const DEFAULT_STATS: StatisticsData = {
@@ -60,6 +69,10 @@ const DEFAULT_STATS: StatisticsData = {
   global_distinct_resources: 0,
   global_distinct_literals: 0,
   global_distinct_predicates: 0,
+  totalORKGPapersCount: 0,
+  totalORKGResources: 0,
+  totalORKGStatements: 0,
+  totalORKGObservatories: 0,
 };
 
 export default function Statistics() {
@@ -67,6 +80,7 @@ export default function Statistics() {
   const templateId = params.templateId as string;
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
+  const [isGaugeMode, setIsGaugeMode] = useState(false);
   // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
@@ -85,11 +99,29 @@ export default function Statistics() {
           )
         );
 
-        const [paperData, perVenueData, venuesData] = results;
+        const [
+          paperData,
+          perVenueData,
+          venuesData,
+          totalORKGData,
+          totalORKGResourcesData,
+          totalORKGStatementsData,
+          totalORKGObservatoriesData,
+        ] = results;
 
         setStatistics((prev) => ({
           ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
+          totalORKGPapersCount: Number(totalORKGData[0]?.total_papers ?? 0),
+          totalORKGResources: Number(
+            totalORKGResourcesData[0]?.total_resources ?? 0
+          ),
+          totalORKGStatements: Number(
+            totalORKGStatementsData[0]?.total_statements ?? 0
+          ),
+          totalORKGObservatories: Number(
+            totalORKGObservatoriesData[0]?.total_observatories ?? 0
+          ),
 
           perVenueData: perVenueData.map((row: VenueData) => ({
             venue: row.venue,
@@ -131,6 +163,10 @@ export default function Statistics() {
     global_distinct_resources,
     global_distinct_literals,
     global_distinct_predicates,
+    totalORKGPapersCount,
+    totalORKGResources,
+    totalORKGStatements,
+    totalORKGObservatories,
   } = statistics;
 
   return (
@@ -146,67 +182,127 @@ export default function Statistics() {
           px: { xs: 2, sm: 3 },
         }}
       >
-        {/* <StatsChartTypeSelector
-          chartType={chartType}
-          setChartType={setChartType}
-        /> */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={isGaugeMode}
+                onChange={(e) => setIsGaugeMode(e.target.checked)}
+                color="primary"
+              />
+            }
+            label={
+              <Typography fontWeight={600} color="text.secondary">
+                {isGaugeMode ? 'Gauge View' : 'Card View'}
+              </Typography>
+            }
+          />
+        </Box>
 
-        {/* {chartType === 'gauge' ? (
-          <Stack direction="row" flexWrap="wrap" spacing={3} useFlexGap mb={4}>
-            <CustomGaugeChart label="Papers" value={paperCount} />
-            <CustomGaugeChart label="Venues" value={venueCount} />
-            <CustomGaugeChart label="Resources" value={resources} />
-            <CustomGaugeChart label="Literals" value={literals} />
-            <CustomGaugeChart label="Properties" value={predicates} />
-            <CustomGaugeChart label="Distinct Resources" value={statistics.distinctResources} />
-            <CustomGaugeChart label="Distinct Literals" value={statistics.distinctLiterals} />
-            <CustomGaugeChart label="Distinct Properties" value={statistics.distinctPredicates} />
+        {isGaugeMode ? (
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            spacing={3}
+            useFlexGap
+            mb={4}
+            justifyContent="center"
+          >
+            {/* Using arbitrary max values for demonstration or relative maxes */}
+            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+              <GaugeChart
+                label="Papers with Empirical Studies"
+                value={paperCount}
+                max={totalORKGPapersCount}
+                color="#e86161"
+                link="https://orkg.org/papers"
+              />
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+              <GaugeChart
+                label="Venues"
+                value={venueCount}
+                max={totalORKGObservatories || venueCount}
+                color="#e86161"
+                link="https://orkg.org/observatories"
+              />
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+              <GaugeChart
+                label="Resources"
+                value={total_resources}
+                max={totalORKGResources || total_resources}
+                color="#e86161"
+                link="https://orkg.org/resources"
+              />
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+              <GaugeChart
+                label="Distinct Resources"
+                value={global_distinct_resources}
+                max={totalORKGResources || total_resources}
+                color="#e86161"
+                link="https://orkg.org/classes"
+              />
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+              <GaugeChart
+                label="Statements"
+                value={total_statements}
+                max={totalORKGStatements || total_statements}
+                color="#e86161"
+                link="https://orkg.org/rs/statements"
+              />
+            </Box>
           </Stack>
-        ) : ( */}
-        <Stack
-          direction="row"
-          flexWrap="wrap"
-          spacing={{ xs: 2, md: 3 }}
-          useFlexGap
-          mb={4}
-          justifyContent={{ xs: 'center', md: 'flex-start' }}
-          alignItems={{ xs: 'center', md: 'stretch' }}
-        >
-          <StatCard value={paperCount} label="Papers">
-            <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={venueCount} label="Venues">
-            <LocationOnIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={total_resources} label="Resources">
-            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={total_literals} label="Literals">
-            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={total_predicates} label="Properties">
-            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={total_statements} label="Total Statements">
-            <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard
-            value={global_distinct_resources}
-            label="Distinct Resources"
+        ) : (
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            spacing={{ xs: 2, md: 3 }}
+            useFlexGap
+            mb={4}
+            justifyContent={{ xs: 'center', md: 'flex-start' }}
+            alignItems={{ xs: 'center', md: 'stretch' }}
           >
-            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard value={global_distinct_literals} label="Distinct Literals">
-            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-          <StatCard
-            value={global_distinct_predicates}
-            label="Distinct Properties"
-          >
-            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-          </StatCard>
-        </Stack>
-        {/* )} */}
+            <StatCard value={paperCount} label="Papers">
+              <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={venueCount} label="Venues">
+              <LocationOnIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_resources} label="Resources">
+              <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_literals} label="Literals">
+              <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_predicates} label="Properties">
+              <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard value={total_statements} label="Total Statements">
+              <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_resources}
+              label="Distinct Resources"
+            >
+              <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_literals}
+              label="Distinct Literals"
+            >
+              <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+            <StatCard
+              value={global_distinct_predicates}
+              label="Distinct Properties"
+            >
+              <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+            </StatCard>
+          </Stack>
+        )}
 
         <Divider sx={{ mt: 2 }} />
 
