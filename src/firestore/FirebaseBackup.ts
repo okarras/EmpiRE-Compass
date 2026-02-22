@@ -34,6 +34,9 @@ const COLLECTIONS_TO_BACKUP = [
   'FirebaseRequestLogs',
   'Team',
   'DynamicQuestions',
+  'News',
+  'Papers',
+  'AIRateLimits',
 ];
 
 /**
