@@ -15,6 +15,7 @@ import './styles/global.css';
 import AuthProvider from './auth/AuthProvider';
 import { Toaster } from 'react-hot-toast';
 import LoadingSpinner from './components/LoadingSpinner';
+import { ChunkLoadErrorBoundary } from './components/ChunkLoadErrorBoundary';
 
 // Lazy load components to reduce initial bundle size
 const Router = lazy(() => import('./Router'));
@@ -37,12 +38,14 @@ const AppContent = () => {
       >
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Router />
-            </Suspense>
-            <Suspense fallback={null}>
-              <FloatingAIAssistant />
-            </Suspense>
+            <ChunkLoadErrorBoundary>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Router />
+              </Suspense>
+              <Suspense fallback={null}>
+                <FloatingAIAssistant />
+              </Suspense>
+            </ChunkLoadErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
       </div>
