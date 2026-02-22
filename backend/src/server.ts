@@ -20,6 +20,7 @@ import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
 import statisticsRouter from './routes/statistics.js';
 import newsRouter from './routes/news.js';
 import papersRouter from './routes/papers.js';
+import restoreRouter from './routes/restore.js';
 
 dotenv.config();
 
@@ -170,6 +171,7 @@ app.use('/api/dynamic-questions', dynamicQuestionsRouter);
 app.use('/api/statistics', statisticsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/papers', papersRouter);
+app.use('/api/restore', restoreRouter);
 
 const swaggerUiOptions = {
   customCssUrl:
