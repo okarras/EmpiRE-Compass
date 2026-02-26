@@ -153,6 +153,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           label = 'Dynamic Question';
         } else if (path === 'community-questions') {
           label = 'Community Questions';
+        } else if (path === 'news') {
+          label = 'News';
         } else if (path === 'schema') {
           label = 'Schema';
         } else if (path === 'questions') {
@@ -174,6 +176,9 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
           } else {
             label = `Question ${path}`;
           }
+        } else if (actualIndex > 0 && paths[actualIndex - 1] === 'news') {
+          // Keep news item identifiers readable in breadcrumbs
+          label = 'News Details';
         }
 
         breadcrumbs.push({ path: fullPath, label });

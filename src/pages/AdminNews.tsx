@@ -29,6 +29,7 @@ import {
   FormControl,
   InputLabel,
   DialogContentText,
+  Divider,
 } from '@mui/material';
 import {
   Add,
@@ -38,6 +39,7 @@ import {
   Refresh,
   Visibility,
   VisibilityOff,
+  Pageview,
 } from '@mui/icons-material';
 import CRUDNews, { NewsItem } from '../firestore/CRUDNews';
 import { useAuth } from '../auth/useAuth';
@@ -56,6 +58,16 @@ const AdminNews = () => {
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [deletingNews, setDeletingNews] = useState<NewsItem | null>(null);
   const [saving, setSaving] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<{
+    title: string;
+    content: string;
+    imageUrl?: string;
+    tags?: string[];
+    priority: 'low' | 'normal' | 'high';
+    author?: string;
+    dateLabel?: string;
+  } | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -145,19 +157,22 @@ const AdminNews = () => {
         .split(',')
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
+      const basePayload = {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        tags: tagsArray.length > 0 ? tagsArray : undefined,
+        priority: formData.priority,
+        imageUrl: formData.imageUrl.trim() || undefined,
+      };
 
       if (editingNews) {
         // Update existing news
         await CRUDNews.updateNewsItem(
           editingNews.id,
           {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
+            ...basePayload,
             published: formData.published,
-            showOnHome: formData.showOnHome,
-            tags: tagsArray.length > 0 ? tagsArray : undefined,
-            priority: formData.priority,
-            imageUrl: formData.imageUrl.trim() || undefined,
+            showOnHome: formData.published ? formData.showOnHome : false,
           },
           user.id,
           user.email,
@@ -168,13 +183,14 @@ const AdminNews = () => {
         // Create new news
         await CRUDNews.createNewsItem(
           {
-            title: formData.title.trim(),
-            content: formData.content.trim(),
+            ...basePayload,
             published: formData.published,
-            showOnHome: formData.showOnHome,
-            tags: tagsArray.length > 0 ? tagsArray : undefined,
-            priority: formData.priority,
-            imageUrl: formData.imageUrl.trim() || undefined,
+            ...(formData.published
+              ? {
+                  showOnHome: formData.showOnHome,
+                  publishedAt: new Date(),
+                }
+              : {}),
             createdAt: new Date(),
           },
           user.id,
@@ -257,6 +273,48 @@ const AdminNews = () => {
     } catch (err) {
       console.error('Error toggling publish status:', err);
       setError('Failed to update publish status');
+    }
+  };
+
+  const openPreviewFromItem = (news: NewsItem) => {
+    setPreviewData({
+      title: news.title,
+      content: news.content,
+      imageUrl: news.imageUrl,
+      tags: news.tags,
+      priority: (news.priority as 'low' | 'normal' | 'high') || 'normal',
+      author: news.author,
+      dateLabel: formatDate(news.publishedAt || news.createdAt),
+    });
+    setPreviewOpen(true);
+  };
+
+  const openPreviewFromForm = () => {
+    setPreviewData({
+      title: formData.title || 'Untitled',
+      content: formData.content || '',
+      imageUrl: formData.imageUrl || undefined,
+      tags: formData.tags
+        ? formData.tags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : undefined,
+      priority: formData.priority,
+      author: user?.email,
+      dateLabel: 'Preview',
+    });
+    setPreviewOpen(true);
+  };
+
+  const getPriorityColor = (priority: 'low' | 'normal' | 'high') => {
+    switch (priority) {
+      case 'high':
+        return 'error';
+      case 'low':
+        return 'default';
+      default:
+        return 'primary';
     }
   };
 
@@ -513,6 +571,15 @@ const AdminNews = () => {
                             )}
                           </IconButton>
                         </Tooltip>
+                        <Tooltip title="Preview">
+                          <IconButton
+                            size="small"
+                            onClick={() => openPreviewFromItem(news)}
+                            color="inherit"
+                          >
+                            <Pageview />
+                          </IconButton>
+                        </Tooltip>
                         <Tooltip title="Edit">
                           <IconButton
                             size="small"
@@ -659,6 +726,14 @@ const AdminNews = () => {
           </Box>
         </DialogContent>
         <DialogActions>
+          <Button
+            onClick={openPreviewFromForm}
+            disabled={!formData.title.trim() || !formData.content.trim()}
+            startIcon={<Pageview />}
+          >
+            Preview
+          </Button>
+          <Box sx={{ flex: 1 }} />
           <Button onClick={handleCloseDialog} disabled={saving}>
             Cancel
           </Button>
@@ -714,6 +789,120 @@ const AdminNews = () => {
           >
             {saving ? 'Deleting...' : 'Delete'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Preview Dialog */}
+      <Dialog
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { maxHeight: '90vh' },
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Pageview fontSize="small" />
+          News Preview
+        </DialogTitle>
+        <DialogContent dividers>
+          {previewData && (
+            <Paper variant="outlined" sx={{ p: 3 }}>
+              <Box sx={{ mb: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 1,
+                    mb: 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Chip
+                    label={previewData.priority}
+                    color={getPriorityColor(previewData.priority)}
+                    size="small"
+                    variant={
+                      previewData.priority === 'low' ? 'outlined' : 'filled'
+                    }
+                  />
+                  {previewData.tags?.map((tag, idx) => (
+                    <Chip
+                      key={idx}
+                      label={tag}
+                      variant="outlined"
+                      size="small"
+                    />
+                  ))}
+                </Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: '#e86161',
+                    fontWeight: 700,
+                    mb: 1,
+                  }}
+                >
+                  {previewData.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {previewData.dateLabel}
+                  {previewData.author && ` · ${previewData.author}`}
+                </Typography>
+              </Box>
+              <Divider sx={{ my: 2 }} />
+              {previewData.imageUrl && (
+                <Box sx={{ mb: 2 }}>
+                  <img
+                    src={previewData.imageUrl}
+                    alt={previewData.title}
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      borderRadius: '8px',
+                      maxHeight: '300px',
+                      objectFit: 'cover',
+                    }}
+                  />
+                </Box>
+              )}
+              <Box
+                sx={{
+                  lineHeight: 1.8,
+                  fontSize: '1rem',
+                  '& h1, & h2, & h3, & h4, & h5, & h6': {
+                    marginTop: 2,
+                    marginBottom: 1,
+                    fontWeight: 600,
+                  },
+                  '& p': {
+                    marginBottom: 1.5,
+                  },
+                  '& ul, & ol': {
+                    marginLeft: 2,
+                    marginBottom: 1.5,
+                  },
+                  '& a': {
+                    color: '#e86161',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  },
+                  '& img': {
+                    maxWidth: '100%',
+                    height: 'auto',
+                    borderRadius: 1,
+                    marginY: 2,
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: previewData.content }}
+              />
+            </Paper>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPreviewOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Container>
