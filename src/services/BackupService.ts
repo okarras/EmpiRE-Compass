@@ -98,16 +98,19 @@ const initializeDefaultData = async () => {
     }
 
     // Priority 3: fallback to latest backup (when live fails or no selection)
+    // Don't persist - this is a temporary fallback, not an explicit user choice
+    let persistSelection = true;
     if (!fileToLoad && availableBackups.length > 0) {
       fileToLoad = getLatestBackupFilename();
+      persistSelection = false;
       console.log(
-        'BackupService: No explicit selection, using latest backup:',
+        'BackupService: Using latest backup as temporary fallback (live may recover):',
         fileToLoad
       );
     }
 
     if (fileToLoad) {
-      await loadBackupFile(fileToLoad);
+      await loadBackupFile(fileToLoad, { persistSelection });
     } else {
       console.warn('No backup files found to initialize BackupService');
     }
@@ -118,8 +121,15 @@ const initializeDefaultData = async () => {
 
 /**
  * Load a specific backup file by name
+ * @param filename - Name of the backup file to load
+ * @param options - persistSelection: if false, don't store in localStorage (used for temporary fallback when live API fails)
  */
-export const loadBackupFile = async (filename: string) => {
+export const loadBackupFile = async (
+  filename: string,
+  options?: { persistSelection?: boolean }
+) => {
+  const persistSelection = options?.persistSelection !== false;
+
   try {
     // Reconstruct the path key used in glob
     const pathKey = `../../backups/${filename}`;
@@ -143,7 +153,9 @@ export const loadBackupFile = async (filename: string) => {
     // Set new data
     setData(backupData);
     currentBackupFilename = filename;
-    localStorage.setItem(STORAGE_KEY, filename);
+    if (persistSelection) {
+      localStorage.setItem(STORAGE_KEY, filename);
+    }
     // Note: We no longer clear LIVE_MODE_KEY - users can switch between live and backup freely
     // Check for nested structure (Templates with Questions inside)
     const hasNestedQuestions = backupData.Templates?.some(
