@@ -10,6 +10,13 @@ import { logRequest } from '../services/requestLogger.js';
 
 const router = Router();
 
+/** Remove undefined (and null) fields so Firestore accepts the document (it rejects undefined). */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined && v !== null)
+  ) as T;
+}
+
 /**
  * @swagger
  * components:
@@ -236,15 +243,17 @@ router.post(
       const newsData: NewsItem = req.body;
       const now = new Date().toISOString();
 
+      const published = newsData.published === true;
       const newsItemData = {
         ...newsData,
         createdAt: newsData.createdAt || now,
         updatedAt: now,
-        published: newsData.published || false,
-        publishedAt:
-          newsData.published && !newsData.publishedAt
-            ? now
-            : newsData.publishedAt,
+        published,
+        ...(published && !newsData.publishedAt
+          ? { publishedAt: now }
+          : newsData.publishedAt != null
+            ? { publishedAt: newsData.publishedAt }
+            : {}),
         authorId: req.userId,
         author: req.userEmail,
       };
@@ -255,8 +264,9 @@ router.post(
 
       const newsRef = db.collection('News').doc(newsId);
 
-      // Remove id from document data (use it as document ID)
-      const { id: _id, ...docData } = newsItemData;
+      // Remove id and undefined values (Firestore rejects undefined)
+      const { id: _id, ...rest } = newsItemData;
+      const docData = stripUndefined(rest as Record<string, unknown>);
       await newsRef.set(docData);
 
       await logRequest(
@@ -355,8 +365,9 @@ router.put(
           }),
       };
 
-      // Remove id from update data
-      const { id: _id, ...docData } = updateData;
+      // Remove id and undefined values (Firestore rejects undefined)
+      const { id: _id, ...rest } = updateData;
+      const docData = stripUndefined(rest as Record<string, unknown>);
       await newsRef.set(docData, { merge: true });
 
       await logRequest(
