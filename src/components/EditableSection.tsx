@@ -41,6 +41,7 @@ const EditableSection: React.FC<EditableSectionProps> = ({
   );
   const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiUserInput, setAiUserInput] = useState('');
 
   const aiService = useAIService();
 
@@ -67,8 +68,11 @@ const EditableSection: React.FC<EditableSectionProps> = ({
   const handleAiGenerate = async () => {
     setAiLoading(true);
     try {
-      // Simple prompt for now
-      const prompt = `Rewrite the following text to be more clear and scientific:\n\n${currentContent}`;
+      const userInstruction = aiUserInput.trim();
+      const baseInstruction = userInstruction
+        ? userInstruction
+        : 'Rewrite the following text to be more clear and scientific';
+      const prompt = `${baseInstruction}:\n\n${currentContent || '(empty - please generate content from scratch)'}`;
       const result = await aiService.generateText(prompt);
       // We might want to remove quotes if the AI wraps it
       setCurrentContent(result.text.replace(/^"|"$/g, ''));
@@ -164,7 +168,23 @@ const EditableSection: React.FC<EditableSectionProps> = ({
         disabled={saving}
         sx={{ mb: 2 }}
       />
-      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          flexWrap: 'wrap',
+          alignItems: 'flex-start',
+          mb: 2,
+        }}
+      >
+        <TextField
+          size="small"
+          placeholder="AI instructions (e.g. 'Make it more concise' or 'Add statistical context')"
+          value={aiUserInput}
+          onChange={(e) => setAiUserInput(e.target.value)}
+          disabled={saving || aiLoading}
+          sx={{ flex: 1, minWidth: 200 }}
+        />
         <Button
           size="small"
           startIcon={
@@ -176,6 +196,8 @@ const EditableSection: React.FC<EditableSectionProps> = ({
         >
           Start with AI
         </Button>
+      </Box>
+      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
         <Box sx={{ flex: 1 }} />
         <Button
           size="small"

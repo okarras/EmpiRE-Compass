@@ -31,19 +31,31 @@ export interface ChartSetting {
   series: any;
   height: number;
   width?: number;
-  sx: Record<string, unknown>;
+  sx?: Record<string, unknown>;
   barLabel?: string;
-  layout?: string;
+  layout?: 'horizontal' | 'vertical';
   margin?: Record<string, unknown>;
   noHeadingInSeries?: boolean;
   barCategoryGap?: number;
   barGap?: number;
   barWidth?: number;
+  barCategoryGapRatio?: number;
+  barGapRatio?: number;
   hideDetailedChartLegend?: boolean;
-  detailedChartHeading?: string; //TODO: add to admin edit explanation in chart settings
+  detailedChartHeading?: string;
   doesntHaveNormalization?: boolean;
   maxLabelLength?: number | 'auto';
-  hideDetailedCharts?: boolean; // Hide individual series charts even when series.length > 1
+  hideDetailedCharts?: boolean;
+  borderRadius?: number;
+  hideLegend?: boolean;
+  showToolbar?: boolean;
+  skipAnimation?: boolean;
+  disableAxisListener?: boolean;
+  axisHighlight?: {
+    x?: 'band' | 'line' | 'none';
+    y?: 'band' | 'line' | 'none';
+  };
+  grid?: { horizontal?: boolean; vertical?: boolean };
 }
 export interface Query {
   title?: string;

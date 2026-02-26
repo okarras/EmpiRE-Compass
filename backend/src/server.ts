@@ -21,6 +21,7 @@ import statisticsRouter from './routes/statistics.js';
 import newsRouter from './routes/news.js';
 import papersRouter from './routes/papers.js';
 import restoreRouter from './routes/restore.js';
+import questionOverridesRouter from './routes/questionOverrides.js';
 
 dotenv.config();
 
@@ -172,6 +173,7 @@ app.use('/api/statistics', statisticsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/papers', papersRouter);
 app.use('/api/restore', restoreRouter);
+app.use('/api/question-overrides', questionOverridesRouter);
 
 const swaggerUiOptions = {
   customCssUrl:
