@@ -1,6 +1,9 @@
-import { db } from '../firebase';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import {
+  getTemplates as getTemplatesApi,
+  getTemplate as getTemplateApi,
+  getQuestion as getQuestionApi,
+  getQuestions as getQuestionsApi,
+  getStatistics as getStatisticsApi,
   createTemplate as createTemplateApi,
   updateTemplate as updateTemplateApi,
   deleteTemplate as deleteTemplateApi,
@@ -104,22 +107,11 @@ export const createTemplate = async (
 export const getTemplate = async (
   templateId: string
 ): Promise<TemplateData | null> => {
-  if (!db) {
-    const templates = await BackupService.getTemplates();
-    const template = templates.find((t) => t.id === templateId);
-    return template ? (template as TemplateData) : null;
-  }
-
   try {
-    const templateRef = doc(db, 'Templates', templateId);
-    const templateSnap = await getDoc(templateRef);
-
-    if (templateSnap.exists()) {
-      return templateSnap.data() as TemplateData;
-    }
-    return null;
+    const template = await getTemplateApi(templateId);
+    return (template as TemplateData) || null;
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
+    console.warn('Backend failed, falling back to local backup:', error);
     const templates = await BackupService.getTemplates();
     const template = templates.find((t) => t.id === templateId);
     return template ? (template as TemplateData) : null;
@@ -129,26 +121,15 @@ export const getTemplate = async (
 export const getAllTemplates = async (): Promise<
   Record<string, TemplateData>
 > => {
-  if (!db) {
-    const templatesList = await BackupService.getTemplates();
+  try {
+    const templatesList = (await getTemplatesApi()) as TemplateData[];
     const templates: Record<string, TemplateData> = {};
     templatesList.forEach((template) => {
       templates[template.id] = template as TemplateData;
     });
     return templates;
-  }
-
-  try {
-    const templatesSnapshot = await getDocs(collection(db, 'Templates'));
-    const templates: Record<string, TemplateData> = {};
-
-    templatesSnapshot.forEach((doc) => {
-      templates[doc.id] = doc.data() as TemplateData;
-    });
-
-    return templates;
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
+    console.warn('Backend failed, falling back to local backup:', error);
     const templatesList = await BackupService.getTemplates();
     const templates: Record<string, TemplateData> = {};
     templatesList.forEach((template) => {
@@ -207,34 +188,12 @@ export const getQuestion = async (
   templateId: string,
   questionId: string
 ): Promise<QuestionData | null> => {
-  if (!db) {
-    const questions = await BackupService.getQuestions(templateId);
-    const question = questions.find(
-      (q: any) =>
-        q.uid === questionId ||
-        q.id.toString() === questionId ||
-        q.id === questionId
-    );
-    return question ? (question as QuestionData) : null;
-  }
-
   try {
-    const questionRef = doc(
-      db,
-      'Templates',
-      templateId,
-      'Questions',
-      questionId
-    );
-    const questionSnap = await getDoc(questionRef);
-
-    if (questionSnap.exists()) {
-      return questionSnap.data() as QuestionData;
-    }
-    return null;
+    const question = await getQuestionApi(templateId, questionId);
+    return (question as QuestionData) || null;
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
-    const questions = await BackupService.getQuestions(templateId);
+    console.warn('Backend failed, falling back to local backup:', error);
+    const questions = (await BackupService.getQuestions(templateId)) || [];
     const question = questions.find(
       (q: any) =>
         q.uid === questionId ||
@@ -248,25 +207,12 @@ export const getQuestion = async (
 export const getAllQuestions = async (
   templateId: string
 ): Promise<QuestionData[]> => {
-  if (!db) {
-    const questions = await BackupService.getQuestions(templateId);
-    return questions.sort((a: any, b: any) => a.id - b.id) as QuestionData[];
-  }
-
   try {
-    const questionsSnapshot = await getDocs(
-      collection(db, 'Templates', templateId, 'Questions')
-    );
-    const questions: QuestionData[] = [];
-
-    questionsSnapshot.forEach((doc) => {
-      questions.push(doc.data() as QuestionData);
-    });
-
+    const questions = (await getQuestionsApi(templateId)) as QuestionData[];
     return questions.sort((a, b) => a.id - b.id);
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
-    const questions = await BackupService.getQuestions(templateId);
+    console.warn('Backend failed, falling back to local backup:', error);
+    const questions = (await BackupService.getQuestions(templateId)) || [];
     return questions.sort((a: any, b: any) => a.id - b.id) as QuestionData[];
   }
 };
@@ -332,29 +278,13 @@ export const getStatistic = async (
   templateId: string,
   statisticId: string
 ): Promise<StatisticData | null> => {
-  if (!db) {
-    const statistics = await BackupService.getStatistics(templateId);
-    const statistic = statistics.find((s: any) => s.id === statisticId);
-    return statistic ? (statistic as StatisticData) : null;
-  }
-
   try {
-    const statisticRef = doc(
-      db,
-      'Templates',
-      templateId,
-      'Statistics',
-      statisticId
-    );
-    const statisticSnap = await getDoc(statisticRef);
-
-    if (statisticSnap.exists()) {
-      return statisticSnap.data() as StatisticData;
-    }
-    return null;
+    const statistics = (await getStatisticsApi(templateId)) as StatisticData[];
+    const statistic = statistics.find((s: any) => s.id === statisticId);
+    return statistic || null;
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
-    const statistics = await BackupService.getStatistics(templateId);
+    console.warn('Backend failed, falling back to local backup:', error);
+    const statistics = (await BackupService.getStatistics(templateId)) || [];
     const statistic = statistics.find((s: any) => s.id === statisticId);
     return statistic ? (statistic as StatisticData) : null;
   }
@@ -363,24 +293,10 @@ export const getStatistic = async (
 export const getAllStatistics = async (
   templateId: string
 ): Promise<StatisticData[]> => {
-  if (!db) {
-    const statistics = await BackupService.getStatistics(templateId);
-    return statistics as StatisticData[];
-  }
-
   try {
-    const statisticsSnapshot = await getDocs(
-      collection(db, 'Templates', templateId, 'Statistics')
-    );
-    const statistics: StatisticData[] = [];
-
-    statisticsSnapshot.forEach((doc) => {
-      statistics.push(doc.data() as StatisticData);
-    });
-
-    return statistics;
+    return (await getStatisticsApi(templateId)) as StatisticData[];
   } catch (error) {
-    console.warn('Firestore failed, falling back to local backup:', error);
+    console.warn('Backend failed, falling back to local backup:', error);
     const statistics = await BackupService.getStatistics(templateId);
     return statistics as StatisticData[];
   }
