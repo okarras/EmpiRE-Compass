@@ -22,10 +22,41 @@ export interface QuestionVersion {
     dataInterpretation?: string | string[];
     requiredDataForAnalysis?: string | string[];
   };
-  chartSettings?: {
-    heading?: string;
-    detailedChartHeading?: string;
+  chartSettings?: ChartSettingsOverride;
+  chartSettings2?: ChartSettingsOverride;
+}
+
+/** Editable chart settings stored in overrides (MUI X Charts compatible) */
+export interface ChartSettingsOverride {
+  heading?: string;
+  detailedChartHeading?: string;
+  seriesHeadingTemplate?: string;
+  colors?: string[];
+  height?: number;
+  width?: number;
+  barLabel?: string;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
+  barCategoryGapRatio?: number;
+  barGapRatio?: number;
+  hideDetailedCharts?: boolean;
+  noHeadingInSeries?: boolean;
+  doesntHaveNormalization?: boolean;
+  maxLabelLength?: number | 'auto';
+  hideDetailedChartLegend?: boolean;
+  layout?: 'horizontal' | 'vertical';
+  borderRadius?: number;
+  hideLegend?: boolean;
+  showToolbar?: boolean;
+  skipAnimation?: boolean;
+  disableAxisListener?: boolean;
+  axisHighlight?: {
+    x?: 'band' | 'line' | 'none';
+    y?: 'band' | 'line' | 'none';
   };
+  grid?: { horizontal?: boolean; vertical?: boolean };
+  margin?: { top?: number; right?: number; bottom?: number; left?: number };
 }
 
 export interface QuestionOverrideDocument {
