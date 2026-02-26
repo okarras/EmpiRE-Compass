@@ -1,1 +1,10 @@
+# Secret scanning - block commit if API keys or credentials are staged
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --no-banner
+else
+  echo "❌ gitleaks not found. Install with: brew install gitleaks"
+  echo "   Secret scanning is required. Run 'brew install gitleaks' and try again."
+  exit 1
+fi
+
 npx lint-staged
