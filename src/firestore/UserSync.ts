@@ -1,10 +1,11 @@
-import { syncUser as syncUserApi } from '../services/backendApi';
-import { db } from '../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  getUser as getUserApi,
+  syncUser as syncUserApi,
+} from '../services/backendApi';
 
 /**
- * Firebase User Sync Service
- * Now uses backend API for write operations, Firebase for reads
+ * User Sync Service
+ * Uses backend API for reads and writes.
  */
 
 export interface FirebaseUser {
@@ -26,26 +27,16 @@ export interface FirebaseUser {
  */
 
 /**
- * Get user from Firebase (read operation - still uses direct Firestore)
+ * Get user via backend API
  */
 export const getFirebaseUser = async (
   userId: string
 ): Promise<FirebaseUser | null> => {
-  if (!db) {
-    console.warn('Firebase is not initialized. Cannot fetch user.');
-    return null;
-  }
-
   try {
-    const userRef = doc(db, 'Users', userId);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      return userSnap.data() as FirebaseUser;
-    }
-    return null;
+    const user = await getUserApi(userId, userId, '', undefined);
+    return (user as FirebaseUser) || null;
   } catch (error) {
-    console.error('Error fetching user from Firebase:', error);
+    console.error('Error fetching user from backend:', error);
     return null;
   }
 };

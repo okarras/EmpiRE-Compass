@@ -39,6 +39,32 @@ export const getFirebaseUser = async (
 };
 
 /**
+ * Get recent users from Firebase (newest first)
+ */
+export const listFirebaseUsers = async (
+  limitCount = 50
+): Promise<FirebaseUser[]> => {
+  try {
+    const snapshot = await db
+      .collection('Users')
+      .orderBy('created_at', 'desc')
+      .limit(limitCount)
+      .get();
+
+    return snapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        }) as FirebaseUser
+    );
+  } catch (error) {
+    console.error('Error listing users from Firebase:', error);
+    throw error;
+  }
+};
+
+/**
  * Sync ORKG/Keycloak user to Firebase Users collection
  * This should only be called from backend with proper authentication
  */
@@ -87,6 +113,49 @@ export const syncUserToFirebase = async (
     }
   } catch (error) {
     console.error('Error syncing user to Firebase:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update user's admin role
+ */
+export const updateUserAdminRole = async (
+  userId: string,
+  isAdmin: boolean
+): Promise<FirebaseUser> => {
+  try {
+    const userRef = db.collection('Users').doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      throw new Error('User not found');
+    }
+
+    await userRef.set({ is_admin: isAdmin }, { merge: true });
+    const updated = await userRef.get();
+    return { id: updated.id, ...updated.data() } as FirebaseUser;
+  } catch (error) {
+    console.error('Error updating user admin role:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete user by id
+ */
+export const deleteFirebaseUser = async (userId: string): Promise<void> => {
+  try {
+    const userRef = db.collection('Users').doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      throw new Error('User not found');
+    }
+
+    await userRef.delete();
+  } catch (error) {
+    console.error('Error deleting Firebase user:', error);
     throw error;
   }
 };

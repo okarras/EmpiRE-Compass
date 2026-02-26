@@ -138,6 +138,53 @@ export const getUser = async (
   });
 };
 
+export const listUsers = async (
+  limit = 50,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users?limit=${limit}`, {
+    method: 'GET',
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const updateUserRole = async (
+  targetUserId: string,
+  isAdmin: boolean,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users/${targetUserId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_admin: isAdmin }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const deleteUser = async (
+  targetUserId: string,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users/${targetUserId}`, {
+    method: 'DELETE',
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
 // ========== Team API ==========
 
 export const getTeamMembers = async () => {
@@ -580,14 +627,22 @@ export const getDynamicQuestions = async (limit?: number) => {
   return apiRequest(endpoint);
 };
 
+export const getCommunityQuestions = async (limit?: number) => {
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+  const queryString = params.toString();
+  const endpoint = `/api/dynamic-questions/community${queryString ? `?${queryString}` : ''}`;
+  return apiRequest(endpoint);
+};
+
 export const getDynamicQuestion = async (questionId: string) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`);
 };
 
 export const createDynamicQuestion = async (
   questionData: any,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest('/api/dynamic-questions', {
@@ -595,7 +650,7 @@ export const createDynamicQuestion = async (
     body: JSON.stringify(questionData),
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
     keycloakToken,
   });
 };
@@ -603,8 +658,8 @@ export const createDynamicQuestion = async (
 export const updateDynamicQuestion = async (
   questionId: string,
   questionData: any,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`, {
@@ -612,22 +667,37 @@ export const updateDynamicQuestion = async (
     body: JSON.stringify(questionData),
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
     keycloakToken,
   });
 };
 
 export const deleteDynamicQuestion = async (
   questionId: string,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`, {
     method: 'DELETE',
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
+    keycloakToken,
+  });
+};
+
+export const toggleDynamicQuestionLike = async (
+  questionId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/dynamic-questions/${questionId}/toggle-like`, {
+    method: 'PATCH',
+    userId,
+    userEmail,
+    requiresAuth: true,
     keycloakToken,
   });
 };
@@ -867,6 +937,45 @@ export const saveChartSettings = async (
   return apiRequest(`/api/question-overrides/${queryUid}/chart-settings`, {
     method: 'POST',
     body: JSON.stringify({ which, settings, changeDescription }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const getQuestionOverride = async (queryUid: string) => {
+  return apiRequest(`/api/question-overrides/${queryUid}`);
+};
+
+export const saveQuestionOverrideVersion = async (
+  queryUid: string,
+  versionData: Record<string, unknown>,
+  userId: string,
+  userEmail: string,
+  changeDescription?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/question-overrides/${queryUid}/version`, {
+    method: 'POST',
+    body: JSON.stringify({ versionData, changeDescription }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const restoreQuestionOverrideVersion = async (
+  queryUid: string,
+  versionId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/question-overrides/${queryUid}/restore`, {
+    method: 'POST',
+    body: JSON.stringify({ versionId }),
     userId,
     userEmail,
     requiresAdmin: true,

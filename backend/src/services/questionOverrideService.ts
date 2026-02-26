@@ -46,6 +46,30 @@ export interface SaveChartSettingsParams {
   changeDescription?: string;
 }
 
+export interface QuestionVersion {
+  versionId: string;
+  timestamp: number;
+  authorId: string;
+  authorName?: string;
+  changeDescription?: string;
+  title?: string;
+  dataAnalysisInformation?: {
+    question?: string;
+    questionExplanation?: string | string[];
+    dataAnalysis?: string | string[];
+    dataInterpretation?: string | string[];
+    requiredDataForAnalysis?: string | string[];
+  };
+  chartSettings?: ChartSettingsOverride;
+  chartSettings2?: ChartSettingsOverride;
+}
+
+export interface QuestionOverrideDocument {
+  id: string;
+  latestVersion: QuestionVersion;
+  versions: QuestionVersion[];
+}
+
 export async function saveChartSettings(
   params: SaveChartSettingsParams
 ): Promise<void> {
@@ -111,4 +135,89 @@ export async function saveChartSettings(
       versions: [newVersion],
     });
   }
+}
+
+export async function getQuestionOverride(
+  queryUid: string
+): Promise<QuestionOverrideDocument | null> {
+  const docRef = db.collection('QuestionOverrides').doc(queryUid);
+  const docSnap = await docRef.get();
+  if (!docSnap.exists) {
+    return null;
+  }
+  return {
+    id: docSnap.id,
+    ...(docSnap.data() as Omit<QuestionOverrideDocument, 'id'>),
+  };
+}
+
+export async function saveQuestionVersion(params: {
+  queryUid: string;
+  versionData: Partial<QuestionVersion>;
+  authorId: string;
+  authorName?: string;
+  changeDescription?: string;
+}): Promise<void> {
+  const { queryUid, versionData, authorId, authorName, changeDescription } =
+    params;
+
+  const docRef = db.collection('QuestionOverrides').doc(queryUid);
+  const docSnap = await docRef.get();
+
+  const newVersion: QuestionVersion = {
+    versionId: `v_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    timestamp: Date.now(),
+    authorId,
+    authorName,
+    changeDescription,
+    ...versionData,
+  };
+
+  if (docSnap.exists) {
+    const existing = docSnap.data() as QuestionOverrideDocument;
+    await docRef.set(
+      {
+        latestVersion: newVersion,
+        versions: [newVersion, ...(existing.versions || [])].slice(0, 50),
+      },
+      { merge: true }
+    );
+  } else {
+    await docRef.set({
+      id: queryUid,
+      latestVersion: newVersion,
+      versions: [newVersion],
+    });
+  }
+}
+
+export async function restoreQuestionVersion(params: {
+  queryUid: string;
+  versionId: string;
+  authorId: string;
+  authorName?: string;
+}): Promise<void> {
+  const { queryUid, versionId, authorId, authorName } = params;
+  const doc = await getQuestionOverride(queryUid);
+
+  if (!doc) {
+    throw new Error('Question overrides document not found');
+  }
+
+  const versionToRestore = doc.versions.find((v) => v.versionId === versionId);
+  if (!versionToRestore) {
+    throw new Error('Version not found');
+  }
+
+  await saveQuestionVersion({
+    queryUid,
+    versionData: {
+      ...versionToRestore,
+      versionId: undefined,
+      timestamp: undefined,
+    },
+    authorId,
+    authorName,
+    changeDescription: `Restored from version ${versionId}`,
+  });
 }
