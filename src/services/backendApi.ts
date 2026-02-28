@@ -138,6 +138,53 @@ export const getUser = async (
   });
 };
 
+export const listUsers = async (
+  limit = 50,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users?limit=${limit}`, {
+    method: 'GET',
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const updateUserRole = async (
+  targetUserId: string,
+  isAdmin: boolean,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users/${targetUserId}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ is_admin: isAdmin }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const deleteUser = async (
+  targetUserId: string,
+  userId?: string,
+  userEmail?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/users/${targetUserId}`, {
+    method: 'DELETE',
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
 // ========== Team API ==========
 
 export const getTeamMembers = async () => {
@@ -390,6 +437,129 @@ export const deleteStatistic = async (
   });
 };
 
+// ORKG Statistics Update (fetches from ORKG, computes RPL metrics, updates Firebase)
+export interface StatisticsProgress {
+  templateKey: string;
+  status: 'idle' | 'running' | 'completed' | 'failed';
+  totalPapers: number;
+  processedCount: number;
+  currentPaper?: string;
+  error?: string;
+  updatedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  globalStats?: Record<string, number>;
+}
+
+export const getStatisticsProgress = async (
+  template: 'empire' | 'nlp4re',
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<StatisticsProgress | null> => {
+  return apiRequest(`/api/statistics/progress/${template}`, {
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const updateOrkgStatistics = async (
+  template: 'empire' | 'nlp4re',
+  options: {
+    limit?: number;
+    updateFirebase?: boolean;
+    resume?: boolean;
+  } = {},
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+) => {
+  return apiRequest('/api/statistics/update', {
+    method: 'POST',
+    body: JSON.stringify({ template, ...options }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export type StatisticsStreamEvent =
+  | {
+      type: 'progress';
+      status?: string;
+      totalPapers: number;
+      processedCount: number;
+      currentPaper?: string;
+    }
+  | {
+      type: 'complete';
+      success: boolean;
+      globalStats?: Record<string, number>;
+      firebaseUpdated?: boolean;
+      error?: string;
+    }
+  | { type: 'error'; error: string };
+
+export const updateOrkgStatisticsStream = async (
+  template: 'empire' | 'nlp4re',
+  options: {
+    limit?: number;
+    updateFirebase?: boolean;
+    resume?: boolean;
+  } = {},
+  onEvent: (event: StatisticsStreamEvent) => void,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
+  const token = keycloakToken || getKeycloakToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (userId) headers['x-user-id'] = userId;
+  if (userEmail) headers['x-user-email'] = userEmail;
+
+  const response = await fetch(`${BACKEND_URL}/api/statistics/update`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ template, ...options, stream: true }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${response.status}`);
+  }
+
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('No response body');
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        try {
+          const data = JSON.parse(line.slice(6));
+          onEvent(data);
+        } catch {
+          // skip invalid JSON
+        }
+      }
+    }
+  }
+};
+
 // ========== Request Logs API ==========
 
 export interface RequestLog {
@@ -457,14 +627,22 @@ export const getDynamicQuestions = async (limit?: number) => {
   return apiRequest(endpoint);
 };
 
+export const getCommunityQuestions = async (limit?: number) => {
+  const params = new URLSearchParams();
+  if (limit) params.append('limit', limit.toString());
+  const queryString = params.toString();
+  const endpoint = `/api/dynamic-questions/community${queryString ? `?${queryString}` : ''}`;
+  return apiRequest(endpoint);
+};
+
 export const getDynamicQuestion = async (questionId: string) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`);
 };
 
 export const createDynamicQuestion = async (
   questionData: any,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest('/api/dynamic-questions', {
@@ -472,7 +650,7 @@ export const createDynamicQuestion = async (
     body: JSON.stringify(questionData),
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
     keycloakToken,
   });
 };
@@ -480,8 +658,8 @@ export const createDynamicQuestion = async (
 export const updateDynamicQuestion = async (
   questionId: string,
   questionData: any,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`, {
@@ -489,22 +667,37 @@ export const updateDynamicQuestion = async (
     body: JSON.stringify(questionData),
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
     keycloakToken,
   });
 };
 
 export const deleteDynamicQuestion = async (
   questionId: string,
-  userId: string,
-  userEmail: string,
+  userId?: string,
+  userEmail?: string,
   keycloakToken?: string
 ) => {
   return apiRequest(`/api/dynamic-questions/${questionId}`, {
     method: 'DELETE',
     userId,
     userEmail,
-    requiresAdmin: true,
+    requiresAuth: true,
+    keycloakToken,
+  });
+};
+
+export const toggleDynamicQuestionLike = async (
+  questionId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/dynamic-questions/${questionId}/toggle-like`, {
+    method: 'PATCH',
+    userId,
+    userEmail,
+    requiresAuth: true,
     keycloakToken,
   });
 };
@@ -691,6 +884,103 @@ export const deletePaper = async (
 ) => {
   return apiRequest(`/api/papers/${paperId}`, {
     method: 'DELETE',
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+// ========== Question Overrides API ==========
+
+export interface ChartSettingsOverride {
+  heading?: string;
+  detailedChartHeading?: string;
+  seriesHeadingTemplate?: string;
+  colors?: string[];
+  height?: number;
+  width?: number;
+  barLabel?: string;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
+  barCategoryGapRatio?: number;
+  barGapRatio?: number;
+  hideDetailedCharts?: boolean;
+  noHeadingInSeries?: boolean;
+  doesntHaveNormalization?: boolean;
+  maxLabelLength?: number | 'auto';
+  hideDetailedChartLegend?: boolean;
+  layout?: 'horizontal' | 'vertical';
+  borderRadius?: number;
+  hideLegend?: boolean;
+  showToolbar?: boolean;
+  skipAnimation?: boolean;
+  disableAxisListener?: boolean;
+  axisHighlight?: {
+    x?: 'band' | 'line' | 'none';
+    y?: 'band' | 'line' | 'none';
+  };
+  grid?: { horizontal?: boolean; vertical?: boolean };
+  margin?: { top?: number; right?: number; bottom?: number; left?: number };
+}
+
+export const saveChartSettings = async (
+  queryUid: string,
+  which: 'chartSettings' | 'chartSettings2',
+  settings: ChartSettingsOverride,
+  userId: string,
+  userEmail: string,
+  changeDescription?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/question-overrides/${queryUid}/chart-settings`, {
+    method: 'POST',
+    body: JSON.stringify({ which, settings, changeDescription }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const getQuestionOverride = async (queryUid: string) => {
+  return apiRequest(`/api/question-overrides/${queryUid}`, {
+    cache: 'no-store',
+  });
+};
+
+export const saveQuestionOverrideVersion = async (
+  queryUid: string,
+  versionData: Record<string, unknown>,
+  userId: string,
+  userEmail: string,
+  changeDescription?: string,
+  keycloakToken?: string
+) => {
+  return apiRequest(`/api/question-overrides/${queryUid}/version`, {
+    method: 'POST',
+    body: JSON.stringify({ versionData, changeDescription }),
+    userId,
+    userEmail,
+    requiresAdmin: true,
+    keycloakToken,
+  });
+};
+
+export const restoreQuestionOverrideVersion = async (
+  queryUid: string,
+  versionId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<{
+  success: boolean;
+  doc: import('../firestore/CRUDStaticQuestionOverrides').QuestionOverrideDocument;
+}> => {
+  return apiRequest(`/api/question-overrides/${queryUid}/restore`, {
+    method: 'POST',
+    body: JSON.stringify({ versionId }),
     userId,
     userEmail,
     requiresAdmin: true,

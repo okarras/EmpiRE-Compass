@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Typography, IconButton } from '@mui/material';
+import EditableSection from './EditableSection';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
 import {
@@ -12,10 +13,13 @@ import {
 } from '../api/SPARQL_QUERIES_NLP4RE';
 import CodeIcon from '@mui/icons-material/Code';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+import SettingsIcon from '@mui/icons-material/Settings';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Query, ChartSetting } from '../constants/queries_chart_info';
 import { useLocation } from 'react-router-dom';
+import ChartSettingsEditor from './CustomCharts/ChartSettingsEditor';
+import type { ChartSettingsOverride } from '../firestore/CRUDStaticQuestionOverrides';
 
 interface QuestionChartViewProps {
   query: Query;
@@ -26,6 +30,15 @@ interface QuestionChartViewProps {
   processedChartDataset: Record<string, unknown>[];
   dataInterpretation: string;
   type: string;
+  isEditMode?: boolean;
+  onSaveInterpretation?: (newContent: string) => Promise<void>;
+  chartKey?: 'chartSettings' | 'chartSettings2';
+  onSaveChartSettings?: (
+    which: 'chartSettings' | 'chartSettings2',
+    settings: ChartSettingsOverride,
+    changeDescription?: string
+  ) => Promise<void>;
+  onFetchOverrides?: () => Promise<void>;
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
@@ -37,8 +50,16 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   processedChartDataset,
   dataInterpretation,
   type,
+  isEditMode = false,
+  onSaveInterpretation,
+  chartKey = 'chartSettings',
+  onSaveChartSettings,
+  onFetchOverrides,
 }) => {
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
+  const [chartEditorOpen, setChartEditorOpen] = useState(false);
+  const [previewSettings, setPreviewSettings] =
+    useState<ChartSettingsOverride | null>(null);
 
   //TODO: we need better way to handle this
   const [prefixes, setPrefixes] = useState<string>(EMPIRICAL_PREFIXES);
@@ -61,6 +82,10 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
     );
   }, [location.pathname]);
 
+  const effectiveChartSettings = {
+    ...chartSettings,
+    ...(chartEditorOpen && previewSettings ? previewSettings : {}),
+  };
   let series = chartSettings.series;
   if (chartSettings.series.length > 1 && normalized) {
     // add normalized to each series key string
@@ -70,16 +95,15 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
     }));
   }
   const createHeading = (chart: { label: string }) => {
-    if (chartSettings?.seriesHeadingTemplate) {
-      return chartSettings.seriesHeadingTemplate.replace(
+    if (effectiveChartSettings?.seriesHeadingTemplate) {
+      return effectiveChartSettings.seriesHeadingTemplate.replace(
         '{label}',
         chart.label
       );
     }
     if (type === 'dataCollection') {
-      if (chartSettings.detailedChartHeading) {
-        //replace {label} with chart.label
-        return chartSettings.detailedChartHeading.replace(
+      if (effectiveChartSettings.detailedChartHeading) {
+        return effectiveChartSettings.detailedChartHeading.replace(
           '{label}',
           chart.label
         );
@@ -100,21 +124,52 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography
-        variant="h6"
+      <Box
         sx={{
-          color: '#e86161',
-          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           mb: 2,
-          fontSize: { xs: '1.1rem', sm: '1.2rem' },
+          flexWrap: 'wrap',
+          gap: 1,
         }}
       >
-        Data Interpretation
-      </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            color: '#e86161',
+            fontWeight: 600,
+            fontSize: { xs: '1.1rem', sm: '1.2rem' },
+          }}
+        >
+          Data Interpretation
+        </Typography>
+        {isEditMode && onSaveChartSettings && (
+          <Button
+            size="small"
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            onClick={async () => {
+              if (onFetchOverrides) await onFetchOverrides();
+              setChartEditorOpen(true);
+            }}
+            sx={{
+              borderColor: '#e86161',
+              color: '#e86161',
+              '&:hover': {
+                borderColor: '#d45151',
+                backgroundColor: 'rgba(232, 97, 97, 0.04)',
+              },
+            }}
+          >
+            Edit chart settings
+          </Button>
+        )}
+      </Box>
 
       {/* Main Chart Section */}
       <>
-        {!query.chartSettings?.doesntHaveNormalization ? (
+        {!effectiveChartSettings.doesntHaveNormalization ? (
           <Box sx={{ mb: 3 }}>
             <ChartParamsSelector
               normalized={normalized}
@@ -130,7 +185,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           question_id={queryId}
           dataset={processedChartDataset}
           chartSetting={{
-            ...chartSettings,
+            ...effectiveChartSettings,
             series: series,
           }}
           normalized={normalized}
@@ -141,7 +196,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       </>
 
       {/* Charts Section */}
-      {series.length > 1 && !chartSettings.hideDetailedCharts && (
+      {series.length > 1 && !effectiveChartSettings.hideDetailedCharts && (
         <>
           <Typography
             variant="h5"
@@ -191,13 +246,14 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                 question_id={queryId}
                 dataset={processedChartDataset}
                 chartSetting={{
-                  ...chartSettings,
+                  ...effectiveChartSettings,
                   series: [series[currentChartIndex]],
-                  heading: chartSettings.noHeadingInSeries
+                  heading: effectiveChartSettings.noHeadingInSeries
                     ? ''
                     : createHeading(series[currentChartIndex]),
                   colors: [
-                    chartSettings.colors?.[currentChartIndex] ?? '#e86161',
+                    effectiveChartSettings.colors?.[currentChartIndex] ??
+                      '#e86161',
                   ],
                   yAxis: [
                     {
@@ -244,33 +300,44 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           </Box>
         </>
       )}
-      <Box
-        component="div"
-        sx={{
-          '& p': {
-            fontSize: { xs: '0.95rem', sm: '1rem' },
-            lineHeight: 1.7,
-            color: 'text.primary',
-            mt: 4,
-            mb: 4,
-          },
-          '& a': {
-            color: '#e86161',
-            textDecoration: 'none',
-            fontWeight: 500,
-            '&:hover': {
-              textDecoration: 'underline',
+      {isEditMode && onSaveInterpretation ? (
+        <EditableSection
+          isEditingInfo={isEditMode}
+          content={dataInterpretation}
+          sectionLabel="Data Interpretation"
+          onSave={onSaveInterpretation}
+          isHtml={true}
+          multiline={true}
+        />
+      ) : (
+        <Box
+          component="div"
+          sx={{
+            '& p': {
+              fontSize: { xs: '0.95rem', sm: '1rem' },
+              lineHeight: 1.7,
+              color: 'text.primary',
+              mt: 4,
+              mb: 4,
             },
-          },
-          '& strong': {
-            color: 'text.primary',
-            fontWeight: 600,
-          },
-        }}
-        dangerouslySetInnerHTML={{
-          __html: dataInterpretation,
-        }}
-      />
+            '& a': {
+              color: '#e86161',
+              textDecoration: 'none',
+              fontWeight: 500,
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            },
+            '& strong': {
+              color: 'text.primary',
+              fontWeight: 600,
+            },
+          }}
+          dangerouslySetInnerHTML={{
+            __html: dataInterpretation,
+          }}
+        />
+      )}
 
       <Box>
         {templateId === 'R186491' && (
@@ -311,6 +378,21 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           </Typography>
         </Button>
       </Box>
+
+      {onSaveChartSettings && (
+        <ChartSettingsEditor
+          open={chartEditorOpen}
+          onClose={() => {
+            setChartEditorOpen(false);
+            setPreviewSettings(null);
+          }}
+          chartSettings={chartSettings}
+          chartKey={chartKey}
+          onSave={onSaveChartSettings}
+          onPreviewChange={setPreviewSettings}
+          onOpen={onFetchOverrides}
+        />
+      )}
     </Box>
   );
 };

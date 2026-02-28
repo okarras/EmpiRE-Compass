@@ -461,6 +461,84 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     predicateMetadata,
   ]);
 
+  const renderIntroductoryText = () => {
+    const activeTemplateId = (templateId || '').toUpperCase();
+    const schemaUrl = `/${activeTemplateId || 'R186491'}/schema`;
+
+    if (activeTemplateId === 'R1544125') {
+      // NLP4RE ID Card schema #TODO: make dynamic from firebase a HTML section
+      return (
+        <Alert
+          severity="info"
+          sx={{
+            mb: 2,
+            backgroundColor: 'rgba(232, 97, 97, 0.04)',
+            borderLeft: '4px solid #e86161',
+          }}
+        >
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            You can ask factual, comparative, and exploratory questions about
+            empirical research practice in <strong>NLP4RE</strong>, grounded in
+            the underlying{' '}
+            <a href={schemaUrl} target="_blank" rel="noopener noreferrer">
+              schema
+            </a>
+            .
+          </Typography>
+          <Typography variant="body2">
+            Main topics you can query include: <strong>RE task</strong> (which
+            RE task a study addresses), <strong>NLP task</strong> (task type,
+            input/output formats, labels and extraction elements),{' '}
+            <strong>NLP dataset</strong> (size, source type, domain, abstraction
+            level, language, license, URLs), <strong>annotation process</strong>{' '}
+            (annotators, guidelines, assignment strategy, agreement metrics),{' '}
+            <strong>implemented approach</strong> (algorithms, runtime
+            requirements, documentation, license, release details), and{' '}
+            <strong>evaluation</strong> (metrics, validation procedures, and
+            baselines).
+          </Typography>
+        </Alert>
+      );
+    }
+
+    // Default: Empirical Research Practice in RE (KG-EmpiRE) schema #TODO: make dynamic from firebase a HTML section
+    return (
+      <Alert
+        severity="info"
+        sx={{
+          mb: 2,
+          backgroundColor: 'rgba(232, 97, 97, 0.04)',
+          borderLeft: '4px solid #e86161',
+        }}
+      >
+        <Typography variant="body2" sx={{ mb: 0.5 }}>
+          You can ask factual, comparative, and exploratory questions about
+          empirical research practice in{' '}
+          <strong>Requirements Engineering (RE)</strong>, grounded in the
+          underlying{' '}
+          <a href={schemaUrl} target="_blank" rel="noopener noreferrer">
+            schema
+          </a>
+          .
+        </Typography>
+        <Typography variant="body2">
+          Main topics you can query include:{' '}
+          <strong>research questions and answers</strong> (primary questions,
+          subquestions, how answers are reported),{' '}
+          <strong>research paradigm</strong>, <strong>data collection</strong>{' '}
+          (what data were collected, data types, methods, URLs),{' '}
+          <strong>data analysis</strong> (analysis methods, inferential and
+          descriptive statistics, machine learning algorithms and metrics),{' '}
+          <strong>hypotheses</strong> (null vs. alternative),{' '}
+          <strong>measures and metrics</strong> (counts, percentages, central
+          tendency and dispersion), and <strong>threats to validity</strong>{' '}
+          (construct, internal, external, conclusion validity, reliability,
+          generalizability, repeatability, and other validity types).
+        </Typography>
+      </Alert>
+    );
+  };
+
   // Fetch predicate metadata using SPARQL if not in templateMapping
   React.useEffect(() => {
     const fetchPredicateMetadata = async () => {
@@ -796,6 +874,7 @@ Modified SPARQL Query:`;
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {renderIntroductoryText()}
           {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
           {/* @ts-expect-error */}
           {renderHistoryButton('query', 'Question History', onOpenHistory)}

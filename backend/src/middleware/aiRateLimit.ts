@@ -12,12 +12,12 @@ interface UserRateLimit {
 
 /**
  * Per-user rate limiter for AI requests
- * - Non-admin users: 5 requests per 24 hours
  * - Admin users: Unlimited requests
+ * - Non-admin users: 25 requests per 24 hours
  */
 export const createUserRateLimiter = () => {
   const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const MAX_REQUESTS = 50;
+  const MAX_REQUESTS = 25;
   return async (
     req: AuthenticatedRequest,
     res: Response,
@@ -30,7 +30,6 @@ export const createUserRateLimiter = () => {
         req.userId ||
         `anon_${req.ip || req.connection?.remoteAddress || 'unknown'}`;
       const isAnonymous = !req.userId;
-
       // Skip rate limiting for admin users
       if (req.isAdmin) {
         return next();

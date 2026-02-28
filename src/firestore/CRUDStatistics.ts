@@ -1,4 +1,3 @@
-import { DocumentData } from 'firebase/firestore';
 import {
   getStatistics as getStatisticsApi,
   updateStatistic as updateStatisticApi,
@@ -29,7 +28,7 @@ const getStatistics = async (templateId = 'R186491') => {
     const statisticsList = await getStatisticsApi(templateId);
 
     const statisticsData = Array.isArray(statisticsList)
-      ? statisticsList.find((stat: DocumentData) => stat.id === statisticId)
+      ? statisticsList.find((stat: any) => stat.id === statisticId)
       : null;
 
     return statisticsData || null;
@@ -62,7 +61,7 @@ const getStatistics = async (templateId = 'R186491') => {
  * @param keycloakToken - Keycloak token (optional)
  */
 const setStatistics = async (
-  statisticsData: DocumentData,
+  statisticsData: Record<string, any>,
   templateId = 'R186491',
   statisticId = 'empire-statistics',
   userId?: string,

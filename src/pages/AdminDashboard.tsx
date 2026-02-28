@@ -49,18 +49,16 @@ import {
   Article,
   MenuBook,
 } from '@mui/icons-material';
+import StatisticsUpdateSection from '../components/Admin/StatisticsUpdateSection';
 import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-  Timestamp,
-  deleteDoc,
-  updateDoc,
-  doc,
-} from 'firebase/firestore';
-import { db } from '../firebase';
+  deleteUser as deleteUserApi,
+  getQuestions as getQuestionsApi,
+  getStatistics as getStatisticsApi,
+  getTemplates as getTemplatesApi,
+  listUsers as listUsersApi,
+  updateUserRole as updateUserRoleApi,
+} from '../services/backendApi';
+import { getKeycloakToken } from '../auth/keycloakStore';
 
 interface FirebaseUser {
   id: string;
@@ -68,8 +66,8 @@ interface FirebaseUser {
   email?: string;
   is_admin?: boolean;
   orcid?: string;
-  created_at?: Timestamp | Date | string | number;
-  last_login?: Timestamp | Date | string | number;
+  created_at?: Date | string | number | { toDate?: () => Date };
+  last_login?: Date | string | number | { toDate?: () => Date };
 }
 
 interface TemplateStats {
@@ -124,56 +122,44 @@ const AdminDashboard = () => {
     setLoading(true);
     setError(null);
 
-    if (!db) {
-      setError(
-        'Firebase is not configured. Please set up Firebase environment variables.'
-      );
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Fetch Users
-      const usersSnapshot = await getDocs(
-        query(collection(db, 'Users'), orderBy('created_at', 'desc'), limit(50))
-      );
-      const usersData: FirebaseUser[] = [];
-      usersSnapshot.forEach((doc) => {
-        usersData.push({ id: doc.id, ...doc.data() } as FirebaseUser);
-      });
+      const token = getKeycloakToken() || undefined;
+      const usersData = (await listUsersApi(
+        50,
+        undefined,
+        undefined,
+        token
+      )) as FirebaseUser[];
       setUsers(usersData);
       setTotalUsers(usersData.length);
       const adminCount = usersData.filter((u) => u.is_admin).length;
       setTotalAdmins(adminCount);
       setTotalRegularUsers(usersData.length - adminCount);
 
-      // Fetch Templates and their subcollections
-      const templatesSnapshot = await getDocs(collection(db, 'Templates'));
+      // Fetch templates and nested counts via backend APIs
+      const templatesList = (await getTemplatesApi()) as Array<{
+        id: string;
+        title?: string;
+        description?: string;
+      }>;
       const templatesData: TemplateStats[] = [];
       let questionsTotal = 0;
       let statisticsTotal = 0;
 
-      for (const templateDoc of templatesSnapshot.docs) {
-        const templateData = templateDoc.data();
-
-        // Count questions
-        const questionsSnapshot = await getDocs(
-          collection(db, `Templates/${templateDoc.id}/Questions`)
-        );
-        const questionsCount = questionsSnapshot.size;
+      for (const template of templatesList) {
+        const questions = (await getQuestionsApi(template.id)) as any[];
+        const statistics = (await getStatisticsApi(template.id)) as any[];
+        const questionsCount = Array.isArray(questions) ? questions.length : 0;
         questionsTotal += questionsCount;
-
-        // Count statistics
-        const statisticsSnapshot = await getDocs(
-          collection(db, `Templates/${templateDoc.id}/Statistics`)
-        );
-        const statisticsCount = statisticsSnapshot.size;
+        const statisticsCount = Array.isArray(statistics)
+          ? statistics.length
+          : 0;
         statisticsTotal += statisticsCount;
 
         templatesData.push({
-          id: templateDoc.id,
-          title: templateData.title || templateDoc.id,
-          description: templateData.description || '',
+          id: template.id,
+          title: template.title || template.id,
+          description: template.description || '',
           questionsCount,
           statisticsCount,
         });
@@ -185,7 +171,7 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError(
-        'Failed to load dashboard data. Please check Firebase permissions.'
+        'Failed to load dashboard data. Please check backend permissions.'
       );
     } finally {
       setLoading(false);
@@ -206,13 +192,17 @@ const AdminDashboard = () => {
   };
 
   const handleConfirmDelete = async () => {
-    if (!userToDelete || !db) return;
+    if (!userToDelete) return;
 
     setDeleting(true);
     setError(null);
     try {
-      const userRef = doc(db, 'Users', userToDelete.id);
-      await deleteDoc(userRef);
+      await deleteUserApi(
+        userToDelete.id,
+        undefined,
+        undefined,
+        getKeycloakToken() || undefined
+      );
       setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
       setTotalUsers((prev) => prev - 1);
       if (userToDelete.is_admin) {
@@ -228,21 +218,24 @@ const AdminDashboard = () => {
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       console.error('Error deleting user:', err);
-      setError('Failed to delete user. Please check Firebase permissions.');
+      setError('Failed to delete user. Please check backend permissions.');
     } finally {
       setDeleting(false);
     }
   };
 
   const handleToggleAdminRole = async (user: FirebaseUser) => {
-    if (!db) return;
-
     setUpdatingRole(user.id);
     setError(null);
     try {
-      const userRef = doc(db, 'Users', user.id);
       const newAdminStatus = !user.is_admin;
-      await updateDoc(userRef, { is_admin: newAdminStatus });
+      await updateUserRoleApi(
+        user.id,
+        newAdminStatus,
+        undefined,
+        undefined,
+        getKeycloakToken() || undefined
+      );
 
       // Update local state
       setUsers((prev) =>
@@ -266,15 +259,13 @@ const AdminDashboard = () => {
       setTimeout(() => setSuccess(null), 5000);
     } catch (err) {
       console.error('Error updating user role:', err);
-      setError(
-        'Failed to update user role. Please check Firebase permissions.'
-      );
+      setError('Failed to update user role. Please check backend permissions.');
     } finally {
       setUpdatingRole(null);
     }
   };
 
-  const formatDate = (timestamp: Timestamp | undefined) => {
+  const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     try {
       // Handle Firestore Timestamp
@@ -702,6 +693,11 @@ const AdminDashboard = () => {
         </Grid>
       </Paper>
 
+      {/* ORKG Statistics Update */}
+      <Box sx={{ mb: 4 }}>
+        <StatisticsUpdateSection />
+      </Box>
+
       {/* Tabs */}
       <Paper sx={{ width: '100%' }}>
         <Tabs
@@ -811,12 +807,12 @@ const AdminDashboard = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.created_at as Timestamp)}
+                          {formatDate(user.created_at)}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(user.last_login as Timestamp)}
+                          {formatDate(user.last_login)}
                         </Typography>
                       </TableCell>
                       <TableCell align="right">

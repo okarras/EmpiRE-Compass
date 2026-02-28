@@ -5,7 +5,10 @@ import CRUDStaticQuestionOverrides, {
   QuestionVersion,
 } from '../firestore/CRUDStaticQuestionOverrides';
 import type { Query } from '../constants/queries_chart_info';
+import type { ChartSettingsOverride } from '../firestore/CRUDStaticQuestionOverrides';
 import BackupService from '../services/BackupService';
+import { saveChartSettings as saveChartSettingsApi } from '../services/backendApi';
+import { getKeycloakToken } from '../auth/keycloakStore';
 
 interface UseQuestionOverridesProps {
   query: Query;
@@ -21,6 +24,38 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
     useState<QuestionOverrideDocument | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  const applyOverrides = useCallback(
+    (overrides: QuestionOverrideDocument | null): Query => {
+      if (!overrides?.latestVersion) return { ...query };
+      const latest = overrides.latestVersion;
+      const newQuery: Query = { ...query };
+
+      if (latest.title !== undefined) {
+        newQuery.title = latest.title;
+      }
+      if (latest.dataAnalysisInformation) {
+        newQuery.dataAnalysisInformation = {
+          ...(query.dataAnalysisInformation || {}),
+          ...latest.dataAnalysisInformation,
+        };
+      }
+      if (latest.chartSettings && query.chartSettings) {
+        newQuery.chartSettings = {
+          ...query.chartSettings,
+          ...latest.chartSettings,
+        };
+      }
+      if (latest.chartSettings2 && query.chartSettings2) {
+        newQuery.chartSettings2 = {
+          ...query.chartSettings2,
+          ...latest.chartSettings2,
+        };
+      }
+      return newQuery;
+    },
+    [query]
+  );
 
   const fetchOverrides = useCallback(async () => {
     if (!query.uid) return;
@@ -39,46 +74,7 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
         query.uid
       );
       setOverrideData(overrides);
-
-      if (overrides?.latestVersion) {
-        // Merge overrides into the query object
-        // We do a deep merge for specific fields we allow overriding
-        const latest = overrides.latestVersion;
-        const newQuery = { ...query };
-
-        if (latest.title) {
-          newQuery.title = latest.title;
-        }
-
-        if (latest.dataAnalysisInformation) {
-          newQuery.dataAnalysisInformation = {
-            ...newQuery.dataAnalysisInformation,
-            ...latest.dataAnalysisInformation,
-          };
-        }
-
-        if (latest.chartSettings) {
-          // Ensure chartSettings exists before merging
-          newQuery.chartSettings = newQuery.chartSettings
-            ? { ...newQuery.chartSettings, ...latest.chartSettings }
-            : undefined; // Or Create strict typing if chartSettings didn't exist?
-          // The interface implies it's optional, so we only merge if it exists or if we want to allow adding it.
-          // For now, let's assume we only override properties of existing chartSettings to be safe,
-          // or if we strictly want to override headings.
-
-          // Actually, let's be careful. If the original query has chartSettings, we update it.
-          if (query.chartSettings && latest.chartSettings) {
-            newQuery.chartSettings = {
-              ...query.chartSettings,
-              ...latest.chartSettings,
-            };
-          }
-        }
-
-        setMergedQuery(newQuery);
-      } else {
-        setMergedQuery(query);
-      }
+      setMergedQuery(applyOverrides(overrides));
     } catch (err: any) {
       // Only log non-permission errors (permission errors are expected when using backup)
       if (
@@ -87,12 +83,11 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
       ) {
         console.error('Failed to load question overrides:', err);
       }
-      // Set merged query to original query on error
       setMergedQuery(query);
     } finally {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, applyOverrides]);
 
   // Initial load
   useEffect(() => {
@@ -121,10 +116,18 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
       };
     } else if (field.startsWith('chartSettings.')) {
       const subField = field.split('.')[1];
+      const existing = overrideData?.latestVersion?.chartSettings || {};
       updateData.chartSettings = {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [subField]: content as any,
-      };
+        ...existing,
+        [subField]: content,
+      } as ChartSettingsOverride;
+    } else if (field.startsWith('chartSettings2.')) {
+      const subField = field.split('.')[1];
+      const existing = overrideData?.latestVersion?.chartSettings2 || {};
+      updateData.chartSettings2 = {
+        ...existing,
+        [subField]: content,
+      } as ChartSettingsOverride;
     }
 
     try {
@@ -145,19 +148,46 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
     }
   };
 
-  const handleRestore = async (versionId: string) => {
-    if (!isAuthenticated || !user) return;
+  const saveChartSettings = async (
+    which: 'chartSettings' | 'chartSettings2',
+    settings: ChartSettingsOverride,
+    changeDescription?: string
+  ) => {
+    if (!isAuthenticated || !user) throw new Error('Not authenticated');
+
     try {
+      await saveChartSettingsApi(
+        query.uid,
+        which,
+        settings,
+        user.id || 'unknown',
+        user.email || user.display_name || 'Admin',
+        changeDescription ?? `Updated ${which}`,
+        getKeycloakToken() || undefined
+      );
+      await fetchOverrides();
+      return true;
+    } catch (err) {
+      console.error('Failed to save chart settings:', err);
+      throw err;
+    }
+  };
+
+  const handleRestore = async (versionId: string) => {
+    if (!isAuthenticated || !user) {
+      throw new Error('Not authenticated');
+    }
+    // Backend returns the restored document directly — no second round-trip needed
+    const restoredDoc =
       await CRUDStaticQuestionOverrides.restoreQuestionVersion(
         query.uid,
         versionId,
         user.id || 'unknown',
         user.display_name
       );
-      await fetchOverrides();
-    } catch (err) {
-      console.error('Failed to restore version', err);
-    }
+    // Apply the restored overrides immediately from the returned document
+    setOverrideData(restoredDoc);
+    setMergedQuery(applyOverrides(restoredDoc));
   };
 
   return {
@@ -168,6 +198,7 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
     isEditMode,
     setIsEditMode,
     saveVersion,
+    saveChartSettings,
     fetchOverrides,
     historyOpen,
     setHistoryOpen,
