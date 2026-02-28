@@ -76,6 +76,27 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
     ?paper orkgp:HAS_VENUE ?venueResource .
     ?venueResource rdfs:label ?venue .
   }`,
+  TOTAL_ORKG_PAPERS_QUERY: `
+  SELECT (COUNT(?paper) AS ?total_papers)
+  WHERE {
+    ?paper a orkgc:Paper .
+  }`,
+  TOTAL_ORKG_RESOURCES_QUERY: `
+  SELECT (COUNT(DISTINCT ?resource) AS ?total_resources)
+  WHERE {
+    ?resource a ?class .
+    FILTER(!isLiteral(?resource))
+  }`,
+  TOTAL_ORKG_STATEMENTS_QUERY: `
+  SELECT (COUNT(*) AS ?total_statements)
+  WHERE {
+    ?s ?p ?o .
+  }`,
+  TOTAL_ORKG_OBSERVATORIES_QUERY: `
+  SELECT (COUNT(DISTINCT ?observatory) AS ?total_observatories)
+  WHERE {
+    ?observatory a orkgc:Observatory .
+  }`,
 };
 
 export default STATISTICS_SPARQL_QUERIES;
