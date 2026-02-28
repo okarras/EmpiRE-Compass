@@ -1,9 +1,5 @@
 import { Router, Response } from 'express';
-import {
-  askOrkg,
-  synthesizeAbstracts,
-  type OrkgAskRequest,
-} from '../services/orkgAskService.js';
+import { orkgAskService } from '../services/orkgAskService.js';
 import {
   validateKeycloakToken,
   type AuthenticatedRequest,
@@ -80,12 +76,12 @@ const router = Router();
  *         description: Internal server error
  */
 router.post(
-  '/',
+  '/synthesize',
   validateKeycloakToken,
   createUserRateLimiter(),
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { question, max_results, temperature } = req.body;
+      const { question, itemIds } = req.body;
 
       if (!question || typeof question !== 'string' || !question.trim()) {
         return res.status(400).json({
@@ -93,13 +89,10 @@ router.post(
         });
       }
 
-      const request: OrkgAskRequest = {
-        question: question.trim(),
-        max_results: max_results || 10,
-        temperature: temperature || 0.3,
-      };
-
-      const result = await askOrkg(request);
+      const result = await orkgAskService.synthesizeAbstracts(
+        question.trim(),
+        itemIds
+      );
 
       res.json(result);
     } catch (error) {
@@ -113,52 +106,48 @@ router.post(
 
 /**
  * @swagger
- * /api/orkg-ask/synthesize:
- *   get:
- *     summary: Synthesize abstracts for a research question
- *     description: Get relevant paper abstracts for a question
+ * /api/orkg-ask/generate:
+ *   post:
+ *     summary: Generate an LLM response from a prompt
+ *     description: Pass an arbitrary prompt to the ORKG Ask API
  *     tags: [ORKG ASK]
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: question
- *         required: true
- *         schema:
- *           type: string
- *         description: 'The research question'
- *       - in: query
- *         name: max_items
- *         schema:
- *           type: number
- *           default: 10
- *         description: 'Maximum number of items to return'
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - prompt
+ *             properties:
+ *               prompt:
+ *                 type: string
+ *                 description: The prompt
  *     responses:
  *       200:
- *         description: Successful response with citations
+ *         description: Successful response
  */
-router.get(
-  '/synthesize',
+router.post(
+  '/generate',
   validateKeycloakToken,
   createUserRateLimiter(),
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { question, max_items } = req.query;
+      const { prompt } = req.body;
 
-      if (!question || typeof question !== 'string' || !question.trim()) {
+      if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
         return res.status(400).json({
-          error: 'Question query parameter is required',
+          error: 'Prompt is required and must be a non-empty string',
         });
       }
 
-      const citations = await synthesizeAbstracts(
-        question.trim(),
-        max_items ? parseInt(max_items as string, 10) : 10
-      );
+      const result = await orkgAskService.generate(prompt.trim());
 
-      res.json({ citations });
+      res.json(result);
     } catch (error) {
-      console.error('ORKG ASK synthesize error:', error);
+      console.error('ORKG ASK generate error:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
       res.status(500).json({ error: errorMessage });
