@@ -31,4 +31,7 @@ if (getApps().length === 0) {
   });
 }
 
-export const db = getFirestore();
+const db = getFirestore();
+db.settings({ ignoreUndefinedProperties: true });
+
+export { db };

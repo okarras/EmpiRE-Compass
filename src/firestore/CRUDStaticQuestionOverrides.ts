@@ -137,14 +137,15 @@ export const restoreQuestionVersion = async (
   versionId: string,
   authorId: string,
   authorName?: string
-): Promise<void> => {
-  await restoreQuestionOverrideVersionApi(
+): Promise<QuestionOverrideDocument> => {
+  const result = await restoreQuestionOverrideVersionApi(
     queryUid,
     versionId,
     authorId,
     authorName || 'Admin',
     getKeycloakToken() || undefined
   );
+  return result.doc as QuestionOverrideDocument;
 };
 
 const CRUDStaticQuestionOverrides = {

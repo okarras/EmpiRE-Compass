@@ -27,6 +27,7 @@ import QuestionInformation from './QuestionInformation';
 import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
+import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
 
 interface QuestionProps {
   query: Query;
@@ -43,6 +44,9 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     saveChartSettings,
     fetchOverrides,
     overrideData,
+    historyOpen,
+    setHistoryOpen,
+    handleRestore,
   } = useQuestionOverrides({ query: initialQuery });
 
   // Tabs state
@@ -262,15 +266,21 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                   label={`Version: ${overrideData.versions.length} (${new Date(overrideData.latestVersion.timestamp).toLocaleDateString()})`}
                   size="small"
                   variant="outlined"
-                  onClick={() => {
-                    /* TODO: Open history dialog */
-                  }}
+                  onClick={() => setHistoryOpen(true)}
+                  sx={{ cursor: 'pointer' }}
                 />
               )}
             </Stack>
           </Paper>
         </Fade>
       )}
+
+      <QuestionVersionHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        overrideData={overrideData}
+        onRestore={handleRestore}
+      />
 
       {query.uid_2 && (
         <Tabs
