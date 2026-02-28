@@ -166,7 +166,7 @@ export default function Statistics() {
     totalORKGPapersCount,
     totalORKGResources,
     totalORKGStatements,
-    totalORKGObservatories,
+    // totalORKGObservatories,
   } = statistics;
 
   return (
@@ -218,7 +218,7 @@ export default function Statistics() {
                 link="https://orkg.org/papers"
               />
             </Box>
-            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
+            {/* <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Venues"
                 value={venueCount}
@@ -226,7 +226,7 @@ export default function Statistics() {
                 color="#e86161"
                 link="https://orkg.org/observatories"
               />
-            </Box>
+            </Box> */}
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Resources"
