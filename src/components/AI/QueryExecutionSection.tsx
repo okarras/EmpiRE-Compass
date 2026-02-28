@@ -60,6 +60,8 @@ interface QueryExecutionSectionProps {
   onShare?: () => void;
   isAdmin?: boolean;
   isEditingCommunityQuestion?: boolean;
+  searchProvider?: 'local' | 'orkg-ask';
+  onProviderChange?: (provider: 'local' | 'orkg-ask') => void;
 }
 
 const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
@@ -88,6 +90,8 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
   onShare,
   isAdmin,
   isEditingCommunityQuestion,
+  searchProvider,
+  onProviderChange,
 }) => {
   const [expandedIteration, setExpandedIteration] = useState<number | false>(
     false
@@ -548,6 +552,8 @@ const QueryExecutionSection: React.FC<QueryExecutionSectionProps> = ({
         templateMapping={templateMapping}
         templateId={currentTemplateId}
         targetClassId={targetClassId}
+        searchProvider={searchProvider}
+        onProviderChange={onProviderChange}
       />
     </>
   );
