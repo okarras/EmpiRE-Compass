@@ -61,6 +61,8 @@ interface ResultsDisplaySectionProps {
   onError: (error: string) => void;
   onChartHtmlChange: (html: string) => void;
   costs: CostBreakdown[];
+  searchProvider?: 'local' | 'orkg-ask';
+  orkgAskResults?: any | null;
 }
 
 const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
@@ -78,6 +80,8 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
   onError,
   onChartHtmlChange,
   costs,
+  searchProvider = 'local',
+  orkgAskResults,
 }) => {
   const renderErrorState = (errorMessage: string) => (
     <Box
@@ -99,10 +103,49 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
 
   return (
     <>
-      {loading && !sparqlQuery && <TextSkeleton lines={12} />}
+      {loading && searchProvider === 'local' && !sparqlQuery && (
+        <TextSkeleton lines={12} />
+      )}
+      {loading && searchProvider === 'orkg-ask' && <TextSkeleton lines={12} />}
       {error && renderErrorState(error)}
 
-      {queryResults &&
+      {/* ORKG ASK Results View */}
+      {searchProvider === 'orkg-ask' && orkgAskResults && (
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 2, sm: 3, md: 4 },
+            mb: 4,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: 2,
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <Typography
+            variant="h5"
+            gutterBottom
+            sx={{ fontWeight: 600, color: '#e86161' }}
+          >
+            ORKG ASK (AI) Answer
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
+          <Typography
+            variant="body1"
+            sx={{
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.8,
+              color: '#333',
+              fontSize: '1.05rem',
+            }}
+          >
+            {orkgAskResults.synthesis || 'No synthesis text returned.'}
+          </Typography>
+        </Paper>
+      )}
+
+      {/* Symbolic Local Results View */}
+      {searchProvider === 'local' &&
+        queryResults &&
         Array.isArray(queryResults) &&
         queryResults.length > 0 &&
         question &&
@@ -118,7 +161,8 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
           />
         )}
 
-      {dynamicQuery &&
+      {searchProvider === 'local' &&
+        dynamicQuery &&
         queryResults &&
         Array.isArray(queryResults) &&
         queryResults.length > 0 && (
@@ -161,7 +205,8 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
         <CostDisplay costs={costs} />
       )}
 
-      {queryResults &&
+      {searchProvider === 'local' &&
+        queryResults &&
         Array.isArray(queryResults) &&
         queryResults.length > 0 && (
           <QuestionDataGridView
