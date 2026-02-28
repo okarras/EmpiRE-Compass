@@ -164,13 +164,40 @@ export async function saveQuestionVersion(params: {
   const docRef = db.collection('QuestionOverrides').doc(queryUid);
   const docSnap = await docRef.get();
 
+  const existingLatest = docSnap.exists
+    ? (docSnap.data()?.latestVersion as QuestionVersion | undefined)
+    : undefined;
+
+  // Merge versionData into existing latest so partial updates (e.g. only dataInterpretation)
+  // preserve other fields (chartSettings, title, etc.)
+  const base = existingLatest
+    ? {
+        ...existingLatest,
+        dataAnalysisInformation: existingLatest.dataAnalysisInformation
+          ? { ...existingLatest.dataAnalysisInformation }
+          : undefined,
+      }
+    : {};
+
+  const mergedData = {
+    ...base,
+    ...versionData,
+    dataAnalysisInformation:
+      versionData.dataAnalysisInformation !== undefined
+        ? {
+            ...(base.dataAnalysisInformation || {}),
+            ...versionData.dataAnalysisInformation,
+          }
+        : base.dataAnalysisInformation,
+  };
+
   const newVersion: QuestionVersion = {
+    ...mergedData,
     versionId: `v_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
     timestamp: Date.now(),
     authorId,
     authorName,
     changeDescription,
-    ...versionData,
   };
 
   if (docSnap.exists) {
@@ -196,7 +223,7 @@ export async function restoreQuestionVersion(params: {
   versionId: string;
   authorId: string;
   authorName?: string;
-}): Promise<void> {
+}): Promise<QuestionOverrideDocument> {
   const { queryUid, versionId, authorId, authorName } = params;
   const doc = await getQuestionOverride(queryUid);
 
@@ -206,18 +233,29 @@ export async function restoreQuestionVersion(params: {
 
   const versionToRestore = doc.versions.find((v) => v.versionId === versionId);
   if (!versionToRestore) {
-    throw new Error('Version not found');
+    throw new Error(`Version not found: ${versionId}`);
   }
 
-  await saveQuestionVersion({
-    queryUid,
-    versionData: {
-      ...versionToRestore,
-      versionId: undefined,
-      timestamp: undefined,
-    },
+  const restoredAsLatest: QuestionVersion = {
+    ...versionToRestore,
+    timestamp: Date.now(),
     authorId,
     authorName,
     changeDescription: `Restored from version ${versionId}`,
+  };
+
+  const docRef = db.collection('QuestionOverrides').doc(queryUid);
+  // Full document replace (no merge) so latestVersion is cleanly overwritten
+  await docRef.set({
+    id: queryUid,
+    latestVersion: restoredAsLatest,
+    versions: doc.versions,
   });
+
+  // Return the updated document directly so the caller doesn't need a second fetch
+  return {
+    id: queryUid,
+    latestVersion: restoredAsLatest,
+    versions: doc.versions,
+  };
 }

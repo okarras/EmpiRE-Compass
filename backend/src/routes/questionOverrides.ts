@@ -154,14 +154,14 @@ router.post(
       }
 
       const authReq = req as AuthenticatedRequest;
-      await restoreQuestionVersion({
+      const restoredDoc = await restoreQuestionVersion({
         queryUid,
         versionId,
         authorId: authReq.userId || 'unknown',
         authorName: authReq.userEmail || authReq.userId,
       });
 
-      return res.status(200).json({ success: true });
+      return res.status(200).json({ success: true, doc: restoredDoc });
     } catch (error) {
       console.error('Restore question version error:', error);
       return res.status(500).json({

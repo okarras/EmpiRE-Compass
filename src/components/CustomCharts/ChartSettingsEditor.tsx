@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Drawer,
   Box,
@@ -192,8 +192,10 @@ function getInitialValue(
   chartSettings: ChartSetting,
   type: string
 ): string | number | boolean {
-  if (key === 'colors' && Array.isArray(chartSettings.colors)) {
-    return chartSettings.colors.join(', ');
+  if (key === 'colors') {
+    return Array.isArray(chartSettings.colors)
+      ? chartSettings.colors.join(', ')
+      : '';
   }
   if (key === 'maxLabelLength' && chartSettings.maxLabelLength !== undefined) {
     return String(chartSettings.maxLabelLength);
@@ -362,6 +364,7 @@ const ChartSettingsEditor: React.FC<ChartSettingsEditorProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [opening, setOpening] = useState(false);
+  const prevOpenRef = useRef(false);
 
   const initForm = useCallback(() => {
     const initial: Record<string, string | number | boolean> = {};
@@ -371,8 +374,12 @@ const ChartSettingsEditor: React.FC<ChartSettingsEditorProps> = ({
     setForm(initial);
   }, [chartSettings]);
 
+  // Only run load when transitioning from closed to open. Avoid re-running when
+  // chartSettings changes (e.g. after fetchOverrides updates parent state),
+  // which would cause an infinite loop.
   useEffect(() => {
-    if (open && chartSettings) {
+    if (open && !prevOpenRef.current && chartSettings) {
+      prevOpenRef.current = true;
       setOpening(true);
       const load = async () => {
         if (onOpen) await onOpen();
@@ -381,6 +388,9 @@ const ChartSettingsEditor: React.FC<ChartSettingsEditorProps> = ({
         setOpening(false);
       };
       load();
+    }
+    if (!open) {
+      prevOpenRef.current = false;
     }
   }, [open, chartSettings, onOpen, initForm]);
 

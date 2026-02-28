@@ -945,7 +945,9 @@ export const saveChartSettings = async (
 };
 
 export const getQuestionOverride = async (queryUid: string) => {
-  return apiRequest(`/api/question-overrides/${queryUid}`);
+  return apiRequest(`/api/question-overrides/${queryUid}`, {
+    cache: 'no-store',
+  });
 };
 
 export const saveQuestionOverrideVersion = async (
@@ -972,7 +974,10 @@ export const restoreQuestionOverrideVersion = async (
   userId: string,
   userEmail: string,
   keycloakToken?: string
-) => {
+): Promise<{
+  success: boolean;
+  doc: import('../firestore/CRUDStaticQuestionOverrides').QuestionOverrideDocument;
+}> => {
   return apiRequest(`/api/question-overrides/${queryUid}/restore`, {
     method: 'POST',
     body: JSON.stringify({ versionId }),
