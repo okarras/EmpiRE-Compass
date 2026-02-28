@@ -17,8 +17,12 @@ import requestLogsRouter from './routes/requestLogs.js';
 import aiRouter, { initializeAIService } from './routes/ai.js';
 import healthRouter, { setAIServiceForHealth } from './routes/health.js';
 import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
+import statisticsRouter from './routes/statistics.js';
 import newsRouter from './routes/news.js';
 import papersRouter from './routes/papers.js';
+import restoreRouter from './routes/restore.js';
+import questionOverridesRouter from './routes/questionOverrides.js';
+import backupRouter from './routes/backup.js';
 
 dotenv.config();
 
@@ -166,8 +170,12 @@ app.use('/api/request-logs', requestLogsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/health', healthRouter);
 app.use('/api/dynamic-questions', dynamicQuestionsRouter);
+app.use('/api/statistics', statisticsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/papers', papersRouter);
+app.use('/api/restore', restoreRouter);
+app.use('/api/question-overrides', questionOverridesRouter);
+app.use('/api/backup', backupRouter);
 
 const swaggerUiOptions = {
   customCssUrl:

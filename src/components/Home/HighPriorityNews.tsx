@@ -15,7 +15,7 @@ import CRUDNews, { NewsItem } from '../../firestore/CRUDNews';
 const HighPriorityNews = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const [highPriorityNews, setHighPriorityNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissed, setDismissed] = useState(false);
@@ -82,8 +82,11 @@ const HighPriorityNews = () => {
     );
   };
 
-  // Don't render if there are no news items to show on home, templateId is missing, or dismissed
-  if (!loading && (highPriorityNews.length === 0 || !templateId || dismissed)) {
+  console.log('templateId', templateId, highPriorityNews.length, dismissed);
+
+  // Don't render if no news, templateId missing, or dismissed
+  // When loading with no data yet, return null to avoid showing a spinner for nothing
+  if (highPriorityNews.length === 0 || !templateId || dismissed) {
     return null;
   }
 

@@ -964,7 +964,6 @@ router.get('/:templateId/statistics', async (req, res) => {
 
     res.json(statistics);
   } catch (error) {
-    console.error('Error fetching statistics:', error);
     res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });

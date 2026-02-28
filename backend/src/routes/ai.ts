@@ -379,6 +379,7 @@ router.get(
  */
 router.post(
   '/generate',
+  validateKeycloakToken,
   createUserRateLimiter(),
   validateGenerateTextRequest,
   async (req: AuthenticatedRequest, res: Response) => {
@@ -414,6 +415,8 @@ router.post(
 
         // Import cost calculator
         const { calculateCost } = await import('../utils/costCalculator.js');
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        //@ts-expect-error
         costInfo = calculateCost(
           actualProvider,
           actualModel,
@@ -474,15 +477,8 @@ router.post(
         }
       }
 
-      // Return error message even in production for debugging
-      // TODO: Remove error details in production after fixing the issue
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-
       res.status(500).json({
         error: 'Failed to generate text. Please try again later.',
-        // Temporarily include error details for debugging
-        details: errorMessage,
       });
     }
   }

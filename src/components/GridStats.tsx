@@ -218,7 +218,7 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
             if (useUniquePapers && paperId) {
               // Track unique papers per value per group
               if (!papersByGroup) {
-                return; // Safety check
+                return;
               }
               if (!papersByGroup.has(groupValue)) {
                 papersByGroup.set(groupValue, new Map());

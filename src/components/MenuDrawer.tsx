@@ -92,7 +92,7 @@ const GENERAL_NAV_ITEMS: NavItemConfig[] = [
   },
   {
     path: '/news',
-    label: 'New',
+    label: 'News',
     tooltip: 'Latest updates',
     Icon: Article,
   },

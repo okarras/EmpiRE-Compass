@@ -3,9 +3,13 @@
  * Allows admins to edit "static" questions and maintains a version history.
  */
 
-import { db } from '../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import BackupService from '../services/BackupService';
+import {
+  getQuestionOverride as getQuestionOverrideApi,
+  saveQuestionOverrideVersion as saveQuestionOverrideVersionApi,
+  restoreQuestionOverrideVersion as restoreQuestionOverrideVersionApi,
+} from '../services/backendApi';
+import { getKeycloakToken } from '../auth/keycloakStore';
 
 export interface QuestionVersion {
   versionId: string;
@@ -22,10 +26,41 @@ export interface QuestionVersion {
     dataInterpretation?: string | string[];
     requiredDataForAnalysis?: string | string[];
   };
-  chartSettings?: {
-    heading?: string;
-    detailedChartHeading?: string;
+  chartSettings?: ChartSettingsOverride;
+  chartSettings2?: ChartSettingsOverride;
+}
+
+/** Editable chart settings stored in overrides (MUI X Charts compatible) */
+export interface ChartSettingsOverride {
+  heading?: string;
+  detailedChartHeading?: string;
+  seriesHeadingTemplate?: string;
+  colors?: string[];
+  height?: number;
+  width?: number;
+  barLabel?: string;
+  barCategoryGap?: number;
+  barGap?: number;
+  barWidth?: number;
+  barCategoryGapRatio?: number;
+  barGapRatio?: number;
+  hideDetailedCharts?: boolean;
+  noHeadingInSeries?: boolean;
+  doesntHaveNormalization?: boolean;
+  maxLabelLength?: number | 'auto';
+  hideDetailedChartLegend?: boolean;
+  layout?: 'horizontal' | 'vertical';
+  borderRadius?: number;
+  hideLegend?: boolean;
+  showToolbar?: boolean;
+  skipAnimation?: boolean;
+  disableAxisListener?: boolean;
+  axisHighlight?: {
+    x?: 'band' | 'line' | 'none';
+    y?: 'band' | 'line' | 'none';
   };
+  grid?: { horizontal?: boolean; vertical?: boolean };
+  margin?: { top?: number; right?: number; bottom?: number; left?: number };
 }
 
 export interface QuestionOverrideDocument {
@@ -46,29 +81,16 @@ export const getQuestionOverride = async (
     return null;
   }
 
-  if (!db) return null;
-
   try {
-    const docRef = doc(db, 'QuestionOverrides', queryUid);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return {
-        id: docSnap.id,
-        ...docSnap.data(),
-      } as QuestionOverrideDocument;
-    }
-    return null;
+    const result = await getQuestionOverrideApi(queryUid);
+    return (result as QuestionOverrideDocument) || null;
   } catch (error: any) {
-    // Handle permission errors gracefully - they're expected when using backup or offline
     if (
-      error?.code === 'permission-denied' ||
-      error?.message?.includes('permission')
+      error?.message?.includes('404') ||
+      error?.message?.includes('Not found')
     ) {
-      // Silently return null for permission errors (common when using backup)
       return null;
     }
-    // Only log non-permission errors
     console.error('Error fetching question override:', error);
     throw error;
   }
@@ -89,39 +111,15 @@ export const saveQuestionVersion = async (
   authorName?: string,
   changeDescription?: string
 ): Promise<void> => {
-  if (!db) throw new Error('Firebase not initialized');
-
   try {
-    const docRef = doc(db, 'QuestionOverrides', queryUid);
-    const docSnap = await getDoc(docRef);
-
-    // Create new version
-    const newVersion: QuestionVersion = {
-      versionId: `v_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
-      timestamp: Date.now(),
+    await saveQuestionOverrideVersionApi(
+      queryUid,
+      versionData as Record<string, unknown>,
       authorId,
-      authorName,
+      authorName || 'Admin',
       changeDescription,
-      ...versionData,
-    };
-
-    let updates: Partial<QuestionOverrideDocument>;
-
-    if (docSnap.exists()) {
-      const existingDoc = docSnap.data() as QuestionOverrideDocument;
-      updates = {
-        latestVersion: newVersion,
-        versions: [newVersion, ...(existingDoc.versions || [])].slice(0, 50), // Keep last 50 versions
-      };
-    } else {
-      updates = {
-        id: queryUid,
-        latestVersion: newVersion,
-        versions: [newVersion],
-      };
-    }
-
-    await setDoc(docRef, updates, { merge: true });
+      getKeycloakToken() || undefined
+    );
   } catch (error) {
     console.error('Error saving question version:', error);
     throw error;
@@ -139,36 +137,15 @@ export const restoreQuestionVersion = async (
   versionId: string,
   authorId: string,
   authorName?: string
-): Promise<void> => {
-  if (!db) throw new Error('Firebase not initialized');
-
-  const docRef = doc(db, 'QuestionOverrides', queryUid);
-  const docSnap = await getDoc(docRef);
-
-  if (!docSnap.exists()) {
-    throw new Error('Question overrides document not found');
-  }
-
-  const data = docSnap.data() as QuestionOverrideDocument;
-  const versionToRestore = data.versions.find((v) => v.versionId === versionId);
-
-  if (!versionToRestore) {
-    throw new Error('Version not found');
-  }
-
-  // Create a new version that is a copy of the old one, but with new metadata
-  // We treat restoration as a new commit so history is linear
-  await saveQuestionVersion(
+): Promise<QuestionOverrideDocument> => {
+  const result = await restoreQuestionOverrideVersionApi(
     queryUid,
-    {
-      ...versionToRestore,
-      versionId: undefined, // Let saveQuestionVersion generate a new ID
-      timestamp: undefined, // Let saveQuestionVersion generate a new timestamp
-    },
+    versionId,
     authorId,
-    authorName,
-    `Restored from version ${versionId}`
+    authorName || 'Admin',
+    getKeycloakToken() || undefined
   );
+  return result.doc as QuestionOverrideDocument;
 };
 
 const CRUDStaticQuestionOverrides = {

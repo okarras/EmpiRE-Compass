@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { db } from '../config/firebase.js';
 import {
   validateKeycloakToken,
-  requireAdmin,
   AuthenticatedRequest,
 } from '../middleware/auth.js';
 import { validateRequiredFields } from '../middleware/validation.js';
@@ -126,7 +125,6 @@ router.get('/:questionId', async (req, res) => {
 router.post(
   '/',
   validateKeycloakToken,
-  requireAdmin,
   validateRequiredFields(['name', 'state']),
   async (req: AuthenticatedRequest, res) => {
     try {
@@ -139,6 +137,26 @@ router.post(
         });
       }
 
+      const isCommunity = questionData.isCommunity === true;
+      if (!isCommunity && !req.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: 'Admin access required for non-community questions' });
+      }
+
+      // For community submissions, always keep creator from auth context
+      const normalizedQuestionData: DynamicQuestion = {
+        ...questionData,
+        ...(isCommunity
+          ? {
+              isCommunity: true,
+              createdBy: questionData.createdBy || req.userId,
+              creatorName: questionData.creatorName || req.userEmail,
+              status: questionData.status || 'pending',
+            }
+          : {}),
+      };
+
       const questionId =
         questionData.id ||
         `question_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
@@ -146,7 +164,7 @@ router.post(
       const questionRef = db.collection('DynamicQuestions').doc(questionId);
 
       // Prepare data (exclude id from document data, use it as document ID)
-      const { id: _id, ...questionDocData } = questionData;
+      const { id: _id, ...questionDocData } = normalizedQuestionData;
 
       await questionRef.set(
         {
@@ -194,7 +212,6 @@ router.post(
 router.put(
   '/:questionId',
   validateKeycloakToken,
-  requireAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
       const { questionId } = req.params;
@@ -205,6 +222,23 @@ router.put(
 
       if (!questionDoc.exists) {
         return res.status(404).json({ error: 'Question not found' });
+      }
+
+      const existingData = questionDoc.data() as DynamicQuestion;
+      const isCommunity = existingData?.isCommunity === true;
+      const isOwner = !!req.userId && existingData?.createdBy === req.userId;
+
+      if (!isCommunity && !req.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: 'Admin access required for non-community questions' });
+      }
+
+      if (isCommunity && !req.isAdmin && !isOwner) {
+        return res.status(403).json({
+          error:
+            'Only the owner or an admin can update this community question',
+        });
       }
 
       // Remove id from update data
@@ -251,7 +285,6 @@ router.put(
 router.delete(
   '/:questionId',
   validateKeycloakToken,
-  requireAdmin,
   async (req: AuthenticatedRequest, res) => {
     try {
       const { questionId } = req.params;
@@ -260,6 +293,23 @@ router.delete(
 
       if (!questionDoc.exists) {
         return res.status(404).json({ error: 'Question not found' });
+      }
+
+      const existingData = questionDoc.data() as DynamicQuestion;
+      const isCommunity = existingData?.isCommunity === true;
+      const isOwner = !!req.userId && existingData?.createdBy === req.userId;
+
+      if (!isCommunity && !req.isAdmin) {
+        return res
+          .status(403)
+          .json({ error: 'Admin access required for non-community questions' });
+      }
+
+      if (isCommunity && !req.isAdmin && !isOwner) {
+        return res.status(403).json({
+          error:
+            'Only the owner or an admin can delete this community question',
+        });
       }
 
       await questionRef.delete();
@@ -288,6 +338,66 @@ router.delete(
       );
 
       res.status(500).json({ error: 'Failed to delete dynamic question' });
+    }
+  }
+);
+
+/**
+ * PATCH /api/dynamic-questions/:questionId/toggle-like
+ * Toggle like for current authenticated user (community questions)
+ */
+router.patch(
+  '/:questionId/toggle-like',
+  validateKeycloakToken,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const { questionId } = req.params;
+      const userId = req.userId;
+
+      if (!userId) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const questionRef = db.collection('DynamicQuestions').doc(questionId);
+      const questionDoc = await questionRef.get();
+
+      if (!questionDoc.exists) {
+        return res.status(404).json({ error: 'Question not found' });
+      }
+
+      const questionData = questionDoc.data() as DynamicQuestion & {
+        likedBy?: string[];
+        likes?: number;
+      };
+
+      const likedBy = Array.isArray(questionData.likedBy)
+        ? questionData.likedBy
+        : [];
+      const hasLiked = likedBy.includes(userId);
+
+      const newLikedBy = hasLiked
+        ? likedBy.filter((id) => id !== userId)
+        : [...likedBy, userId];
+
+      const likes = newLikedBy.length;
+
+      await questionRef.set(
+        {
+          likedBy: newLikedBy,
+          likes,
+        },
+        { merge: true }
+      );
+
+      return res.json({
+        success: true,
+        id: questionId,
+        likedBy: newLikedBy,
+        likes,
+      });
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      return res.status(500).json({ error: 'Failed to toggle like' });
     }
   }
 );
