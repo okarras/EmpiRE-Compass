@@ -49,7 +49,17 @@ export const orkgAskService = {
         },
         body: JSON.stringify({
           prompt,
+          system: 'You are a helpful assistant about research and ORKG.',
+          model: null,
           stream: false,
+          temperature: 0.5,
+          top_k: 10,
+          top_n: 5,
+          top_p: 0.95,
+          truncate: 150,
+          context_size: 0,
+          context: [],
+          seed: null,
         }),
       });
 
