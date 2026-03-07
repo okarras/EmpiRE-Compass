@@ -2,8 +2,11 @@ import { Router } from 'express';
 import {
   syncUserToFirebase,
   getFirebaseUser,
+  listFirebaseUsers,
+  updateUserAdminRole,
+  deleteFirebaseUser,
 } from '../services/userService.js';
-import { validateKeycloakToken } from '../middleware/auth.js';
+import { requireAdmin, validateKeycloakToken } from '../middleware/auth.js';
 import { validateRequiredFields } from '../middleware/validation.js';
 import { logRequest } from '../services/requestLogger.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -186,6 +189,97 @@ router.get(
       );
 
       res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  }
+);
+
+router.get(
+  '/',
+  validateKeycloakToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const limitCount = parseInt(req.query.limit as string) || 50;
+      const users = await listFirebaseUsers(limitCount);
+
+      await logRequest(
+        'read',
+        'Users',
+        undefined,
+        true,
+        req.userId,
+        req.userEmail
+      );
+
+      res.json(users);
+    } catch (error) {
+      console.error('Error fetching users list:', error);
+      res.status(500).json({ error: 'Failed to fetch users' });
+    }
+  }
+);
+
+router.patch(
+  '/:userId/role',
+  validateKeycloakToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const { userId } = req.params;
+      const { is_admin } = req.body as { is_admin?: boolean };
+
+      if (typeof is_admin !== 'boolean') {
+        return res
+          .status(400)
+          .json({ error: 'is_admin boolean is required in request body' });
+      }
+
+      const updatedUser = await updateUserAdminRole(userId, is_admin);
+
+      await logRequest(
+        'update',
+        'Users',
+        userId,
+        true,
+        req.userId,
+        req.userEmail
+      );
+
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      res.status(500).json({
+        error:
+          error instanceof Error ? error.message : 'Failed to update user role',
+      });
+    }
+  }
+);
+
+router.delete(
+  '/:userId',
+  validateKeycloakToken,
+  requireAdmin,
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const { userId } = req.params;
+      await deleteFirebaseUser(userId);
+
+      await logRequest(
+        'delete',
+        'Users',
+        userId,
+        true,
+        req.userId,
+        req.userEmail
+      );
+
+      res.json({ success: true, id: userId });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to delete user',
+      });
     }
   }
 );

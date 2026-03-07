@@ -34,6 +34,11 @@ export class AIService {
   }
 
   private getApiKey(provider: AIProvider): string {
+    // NEVER use VITE_* API keys in production - they get baked into the client bundle.
+    // In production, use the backend (BackendAIService) which has server-side keys.
+    if (import.meta.env.PROD && this.config.useEnvironmentKeys) {
+      return '';
+    }
     if (this.config.useEnvironmentKeys) {
       if (provider === 'openai') {
         return import.meta.env.VITE_OPEN_AI_API_KEY || '';
