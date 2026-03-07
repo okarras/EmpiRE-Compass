@@ -1,0 +1,20 @@
+# Gitleaks configuration for EmpiRE-Compass
+# https://github.com/gitleaks/gitleaks
+
+# Allow example/template files - they contain placeholders, not real secrets
+[allowlist]
+  description = "Allow example and template files with placeholder values"
+  paths = [
+    '''\.env\.example$''',
+    '''\.env\.example\.*$''',
+    '''backend/\.env\.example$''',
+    '''.*\.template$''',
+  ]
+  # Allow "your-*-key" style placeholders
+  regexes = [
+    '''your-[a-z-]+-key''',
+    '''your-[a-z-]+-api-key''',
+    '''your-project-id''',
+    '''your-project\.firebaseapp\.com''',
+    '''G-XXXXXXXXXX''',
+  ]

@@ -36,7 +36,7 @@ const QuestionPage = () => {
   }
 
   const firebaseTargetQuery = Object.values(firebaseQuestions).find(
-    (q) => q.id === targetQuery.id
+    (q) => q.id === targetQuery.id || q.uid === targetQuery.uid
   ) as unknown as Record<string, unknown>;
 
   const finalQuery = mergeQueryWithFirebase(targetQuery, firebaseTargetQuery);

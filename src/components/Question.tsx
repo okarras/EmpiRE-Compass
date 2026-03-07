@@ -27,6 +27,7 @@ import QuestionInformation from './QuestionInformation';
 import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
+import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
 
 interface QuestionProps {
   query: Query;
@@ -40,7 +41,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     isEditMode,
     setIsEditMode,
     saveVersion,
+    saveChartSettings,
+    fetchOverrides,
     overrideData,
+    historyOpen,
+    setHistoryOpen,
+    handleRestore,
   } = useQuestionOverrides({ query: initialQuery });
 
   // Tabs state
@@ -260,15 +266,21 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                   label={`Version: ${overrideData.versions.length} (${new Date(overrideData.latestVersion.timestamp).toLocaleDateString()})`}
                   size="small"
                   variant="outlined"
-                  onClick={() => {
-                    /* TODO: Open history dialog */
-                  }}
+                  onClick={() => setHistoryOpen(true)}
+                  sx={{ cursor: 'pointer' }}
                 />
               )}
             </Stack>
           </Paper>
         </Fade>
       )}
+
+      <QuestionVersionHistoryDialog
+        open={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        overrideData={overrideData}
+        onRestore={handleRestore}
+      />
 
       {query.uid_2 && (
         <Tabs
@@ -304,8 +316,10 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
           query={query}
           isInteractive={false}
           tabIndex={tab}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore - Temporary until QuestionInformationView is updated
           isEditingInfo={isEditMode}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           onSave={saveVersion}
         />
@@ -330,6 +344,26 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                 processedChartDataset={getProcessedChartData()}
                 dataInterpretation={getDataInterpretation('dataCollection')}
                 type="dataCollection"
+                isEditMode={isEditMode}
+                chartKey="chartSettings"
+                onSaveInterpretation={
+                  isEditMode
+                    ? async (newContent) => {
+                        await saveVersion(
+                          'dataAnalysisInformation.dataInterpretation',
+                          [newContent, getDataInterpretation('dataAnalysis')]
+                        );
+                      }
+                    : undefined
+                }
+                onSaveChartSettings={
+                  isEditMode
+                    ? async (which, settings, desc) => {
+                        await saveChartSettings(which, settings, desc);
+                      }
+                    : undefined
+                }
+                onFetchOverrides={isEditMode ? fetchOverrides : undefined}
               />
               <Divider sx={{ my: 3 }} />
             </>
@@ -408,6 +442,29 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                       }
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
+                      isEditMode={isEditMode}
+                      chartKey="chartSettings2"
+                      onSaveInterpretation={
+                        isEditMode
+                          ? async (newContent) => {
+                              await saveVersion(
+                                'dataAnalysisInformation.dataInterpretation',
+                                [
+                                  getDataInterpretation('dataCollection'),
+                                  newContent,
+                                ]
+                              );
+                            }
+                          : undefined
+                      }
+                      onSaveChartSettings={
+                        isEditMode
+                          ? async (which, settings, desc) => {
+                              await saveChartSettings(which, settings, desc);
+                            }
+                          : undefined
+                      }
+                      onFetchOverrides={isEditMode ? fetchOverrides : undefined}
                     />
                     <Divider sx={{ my: 3 }} />
                   </>
