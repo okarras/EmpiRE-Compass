@@ -73,16 +73,15 @@ export const apiRequest = async <T = any>(
     ...(headers as Record<string, string>),
   };
 
-  // Add authentication headers
+  // Always send the Keycloak token when available (e.g. ORKG Ask routes require it in production)
+  const token = keycloakToken || getKeycloakToken();
+  if (token) {
+    requestHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
+  // Add auth-related headers when explicitly required
   if (requiresAuth || requiresAdmin) {
-    const token = keycloakToken || getKeycloakToken();
-
-    if (token) {
-      requestHeaders['Authorization'] = `Bearer ${token}`;
-    }
-
-    // Always add user headers when available (backend checks these first)
-    // This allows authentication to work even when token validation isn't fully implemented
+    // User headers for backend (e.g. when token validation isn't fully implemented)
     if (userId) {
       requestHeaders['x-user-id'] = userId;
     }
