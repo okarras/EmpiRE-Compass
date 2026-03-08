@@ -19,7 +19,6 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
 import type { PaperInfoItem } from '../../context/AIAssistantContext';
 import AIAssistant from './AIAssistant';
@@ -84,6 +83,16 @@ const PaperInfoView: React.FC<{
         </Link>
       </Typography>
     )}
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+      <b>ORKG Ask:</b>{' '}
+      <Link
+        href={`${ORKG_ASK_ITEM_URL}${item.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open in ORKG Ask
+      </Link>
+    </Typography>
     {item.abstract && (
       <Box sx={{ mt: 2, mb: 2 }}>
         <Typography
@@ -104,20 +113,7 @@ const PaperInfoView: React.FC<{
         </Typography>
       </Box>
     )}
-    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
-      <Button
-        variant="contained"
-        startIcon={<OpenInNewIcon />}
-        href={`${ORKG_ASK_ITEM_URL}${item.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        sx={{
-          backgroundColor: '#e86161',
-          '&:hover': { backgroundColor: '#d45151' },
-        }}
-      >
-        Open in ORKG Ask
-      </Button>
+    <Box sx={{ mt: 2 }}>
       <Button variant="outlined" onClick={onClose}>
         Close
       </Button>
