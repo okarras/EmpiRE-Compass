@@ -89,6 +89,55 @@ export const validateKeycloakToken = async (
 };
 
 /**
+ * Optional auth for ORKG Ask routes: allows requests when ORKG_ASK_API_KEY is configured,
+ * even without Keycloak login. When a token is provided, it is still validated.
+ */
+export const validateKeycloakTokenOrOrkgAskConfigured = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const hasOrkgAskKey =
+    process.env.ORKG_ASK_API_KEY &&
+    process.env.ORKG_ASK_API_KEY.trim().length > 0;
+
+  const authHeader = req.headers.authorization;
+  const hasToken = authHeader && authHeader.startsWith('Bearer ');
+
+  if (hasToken) {
+    return validateKeycloakToken(req, res, next);
+  }
+
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  if (isDevelopment) {
+    const userId =
+      (req.headers['x-user-id'] as string) ||
+      (req.headers['X-User-Id'] as string);
+    const userEmail =
+      (req.headers['x-user-email'] as string) ||
+      (req.headers['X-User-Email'] as string);
+    if (userId && userEmail) {
+      req.userId = userId;
+      req.userEmail = userEmail;
+      req.isAdmin = isAdminEmail(userEmail);
+      return next();
+    }
+  }
+
+  if (hasOrkgAskKey) {
+    return next();
+  }
+
+  return res.status(401).json({
+    error: 'Missing or invalid authorization header',
+    ...(isDevelopment && {
+      details:
+        'Provide a Bearer token, or ensure ORKG_ASK_API_KEY is set in backend .env',
+    }),
+  });
+};
+
+/**
  * Middleware to check if user is admin
  */
 export const requireAdmin = async (

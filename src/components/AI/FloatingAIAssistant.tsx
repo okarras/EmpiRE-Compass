@@ -11,15 +11,119 @@ import {
   Slide,
   Zoom,
   Tooltip,
+  Button,
+  Link,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
+import type { PaperInfoItem } from '../../context/AIAssistantContext';
 import AIAssistant from './AIAssistant';
 import { useLocation } from 'react-router-dom';
+
+const ORKG_ASK_ITEM_URL = 'https://ask.orkg.org/item/';
+
+function formatAuthors(authors: PaperInfoItem['authors']): string {
+  if (!authors || !Array.isArray(authors)) return '';
+  return authors
+    .map((a) =>
+      typeof a === 'string' ? a : ((a as { name?: string })?.name ?? '')
+    )
+    .filter(Boolean)
+    .join(', ');
+}
+
+const PaperInfoView: React.FC<{
+  item: PaperInfoItem;
+  orkgResourceUri?: string | null;
+  onClose: () => void;
+}> = ({ item, orkgResourceUri, onClose }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      p: 3,
+      background: 'rgba(255,255,255,0.95)',
+      borderRadius: 2,
+      border: '1px solid #eee',
+    }}
+  >
+    <Typography variant="h6" sx={{ color: '#e86161', fontWeight: 700, mb: 2 }}>
+      {item.title ?? 'Paper'}
+    </Typography>
+    {item.authors && (
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <b>Authors:</b> {formatAuthors(item.authors)}
+      </Typography>
+    )}
+    {(item.year ?? item.date_published) && (
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <b>Year:</b> {String(item.year ?? item.date_published ?? '')}
+      </Typography>
+    )}
+    {item.doi && (
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <b>DOI:</b>{' '}
+        <Link
+          href={`https://doi.org/${item.doi}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {item.doi}
+        </Link>
+      </Typography>
+    )}
+    {orkgResourceUri && (
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+        <b>ORKG:</b>{' '}
+        <Link href={orkgResourceUri} target="_blank" rel="noopener noreferrer">
+          View in ORKG
+        </Link>
+      </Typography>
+    )}
+    {item.abstract && (
+      <Box sx={{ mt: 2, mb: 2 }}>
+        <Typography
+          variant="subtitle2"
+          sx={{ fontWeight: 600, mb: 1, color: '#e86161' }}
+        >
+          Abstract
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: 'pre-wrap',
+            lineHeight: 1.6,
+            color: 'text.secondary',
+          }}
+        >
+          {item.abstract}
+        </Typography>
+      </Box>
+    )}
+    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 2 }}>
+      <Button
+        variant="contained"
+        startIcon={<OpenInNewIcon />}
+        href={`${ORKG_ASK_ITEM_URL}${item.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={{
+          backgroundColor: '#e86161',
+          '&:hover': { backgroundColor: '#d45151' },
+        }}
+      >
+        Open in ORKG Ask
+      </Button>
+      <Button variant="outlined" onClick={onClose}>
+        Close
+      </Button>
+    </Box>
+  </Paper>
+);
 
 const Transition = React.forwardRef(function Transition(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,6 +197,9 @@ const FloatingAIAssistant: React.FC = () => {
     currentQuery,
     currentData,
     setContext,
+    paperInfo,
+    orkgResourceUri,
+    setPaperInfo,
     isExpanded,
     setIsExpanded,
   } = useAIAssistantContext();
@@ -108,9 +215,10 @@ const FloatingAIAssistant: React.FC = () => {
   // Update context on route change
   useEffect(() => {
     if (location.pathname === '/') {
-      setContext(null, null); // overview mode
+      setContext(null, null);
+      setPaperInfo(null);
     }
-  }, [location.pathname, setContext]);
+  }, [location.pathname, setContext, setPaperInfo]);
 
   const getViewport = () => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 0,
@@ -151,6 +259,11 @@ const FloatingAIAssistant: React.FC = () => {
 
   const handleExpand = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleCloseDialog = () => {
+    setPaperInfo(null);
+    toggleAssistant();
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -223,19 +336,38 @@ const FloatingAIAssistant: React.FC = () => {
 
       <Dialog
         open={isOpen}
-        onClose={toggleAssistant}
+        onClose={() => {}}
         TransitionComponent={Transition}
         fullScreen={isMobile || isExpanded}
-        hideBackdrop
         disableEnforceFocus
         disableAutoFocus
+        disableRestoreFocus
         disablePortal
         disableScrollLock
+        slotProps={{
+          root: { sx: { pointerEvents: 'none' } },
+          backdrop: {
+            sx: {
+              backgroundColor: 'transparent',
+              pointerEvents: 'none',
+            },
+          },
+        }}
+        sx={{
+          pointerEvents: 'none',
+          '& .MuiDialog-paper': {
+            pointerEvents: 'auto',
+          },
+        }}
         PaperProps={{
           ref: dialogRef,
           sx: () => {
+            const base = {
+              pointerEvents: 'auto' as const,
+            };
             if (isMobile || isExpanded) {
               return {
+                ...base,
                 position: 'fixed',
                 left: 0,
                 top: 0,
@@ -248,6 +380,7 @@ const FloatingAIAssistant: React.FC = () => {
                 transition: 'all 0.3s ease',
                 cursor: isDragging ? 'grabbing' : 'default',
                 zIndex: 1200,
+                pointerEvents: 'auto',
               };
             }
 
@@ -264,6 +397,7 @@ const FloatingAIAssistant: React.FC = () => {
             );
 
             return {
+              ...base,
               position: 'fixed',
               left: clampedX,
               top: clampedY,
@@ -329,7 +463,7 @@ const FloatingAIAssistant: React.FC = () => {
               )}
               <Tooltip title="Close">
                 <IconButton
-                  onClick={toggleAssistant}
+                  onClick={handleCloseDialog}
                   size="small"
                   sx={{ color: 'white' }}
                 >
@@ -350,7 +484,13 @@ const FloatingAIAssistant: React.FC = () => {
               gap: 2,
             }}
           >
-            {currentQuery && currentData ? (
+            {paperInfo ? (
+              <PaperInfoView
+                item={paperInfo}
+                orkgResourceUri={orkgResourceUri}
+                onClose={() => setPaperInfo(null)}
+              />
+            ) : currentQuery && currentData ? (
               <AIAssistant query={currentQuery} questionData={currentData} />
             ) : (
               <ProjectOverview />

@@ -26,10 +26,6 @@ export interface DynamicQuestionState {
   targetClassId: string | null;
   // AI model costs for this question
   costs: CostBreakdown[];
-  // Search Provider Config
-  searchProvider: 'local' | 'orkg-ask';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  orkgAskResults: any | null;
 }
 
 export interface DynamicQuestionHistory {
@@ -57,8 +53,6 @@ const initialState: DynamicQuestionState = {
   templateMapping: null,
   targetClassId: null,
   costs: [],
-  searchProvider: 'local',
-  orkgAskResults: null,
 };
 
 interface DynamicQuestionContextType {
@@ -85,9 +79,6 @@ interface DynamicQuestionContextType {
   updateTemplateMapping: (mapping: Record<string, unknown>) => void;
   updateTargetClassId: (targetClassId: string) => void;
   updateCosts: (costs: CostBreakdown[]) => void;
-  updateSearchProvider: (provider: 'local' | 'orkg-ask') => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  updateOrkgAskResults: (results: any | null) => void;
   addToHistory: (
     entry: Omit<DynamicQuestionHistory, 'id' | 'timestamp'>
   ) => void;
@@ -123,8 +114,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
           queryResults: Array.isArray(parsed.queryResults)
             ? parsed.queryResults
             : [],
-          searchProvider: parsed.searchProvider || 'local',
-          orkgAskResults: parsed.orkgAskResults || null,
         };
       }
     } catch (err) {
@@ -314,21 +303,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
-  const updateSearchProvider = (provider: 'local' | 'orkg-ask') => {
-    setState((prev) => ({
-      ...prev,
-      searchProvider: provider,
-    }));
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const updateOrkgAskResults = (results: any | null) => {
-    setState((prev) => ({
-      ...prev,
-      orkgAskResults: results,
-    }));
-  };
-
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -386,8 +360,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         updateTemplateMapping,
         updateTargetClassId,
         updateCosts,
-        updateSearchProvider,
-        updateOrkgAskResults,
         addToHistory,
         getHistoryByType,
         clearHistory,

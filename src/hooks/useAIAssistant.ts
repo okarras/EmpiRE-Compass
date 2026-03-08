@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/backendAIService';
+import { orkgAskService } from '../services/orkgAskService';
 
 interface UseAIAssistantProps {
   query: Query;
@@ -75,7 +76,27 @@ const setChatHistory = (history: Record<string, ChatHistory>) => {
 
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const aiService = useAIService();
-  const { pendingPrompt, clearPendingPrompt } = useAIAssistantContext();
+  const { pendingPrompt, clearPendingPrompt, assistantProvider } =
+    useAIAssistantContext();
+
+  /** Generate text using the selected provider (ORKG Ask default, or OpenAI) */
+  const generateWithProvider = async (
+    fullPrompt: string,
+    systemContext?: string
+  ): Promise<{ text: string; reasoning?: string }> => {
+    if (assistantProvider === 'orkg-ask') {
+      const res = await orkgAskService.generate(fullPrompt, {
+        systemContext,
+      });
+      return { text: res.text, reasoning: res.reasoning };
+    }
+    return aiService.generateText(fullPrompt, {
+      provider: 'openai',
+      systemContext,
+      temperature: 0.3,
+      maxTokens: 2000,
+    });
+  };
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -170,7 +191,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     ]);
 
     try {
-      const response = await aiService.generateText(
+      const response = await generateWithProvider(
         `${generateSystemContext()}
         User Question: ${structuredPrompt}
 
@@ -242,7 +263,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
           return;
         }
 
-        const { reasoning, text } = await aiService.generateText(
+        const { reasoning, text } = await generateWithProvider(
           `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
           <h1>Initial Analysis</h1>
 
@@ -343,7 +364,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       prompt.toLowerCase().includes('plot');
 
     try {
-      const response = await aiService.generateText(
+      const response = await generateWithProvider(
         `${generateSystemContext()}
         User Question: ${prompt}
 
@@ -482,7 +503,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         setLastCachedAnalysis(prevCacheEntry.analysis);
         setLastCachedReasoning(prevCacheEntry.reasoning || null);
       }
-      const { reasoning, text } = await aiService.generateText(
+      const { reasoning, text } = await generateWithProvider(
         `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
         <h1>Initial Analysis</h1>
 
