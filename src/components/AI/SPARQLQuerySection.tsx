@@ -20,10 +20,6 @@ import {
   Chip,
   Stack,
   Grid,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  FormControl,
 } from '@mui/material';
 import {
   Edit,
@@ -64,9 +60,6 @@ interface SPARQLQuerySectionProps {
   templateMapping?: PredicatesMapping;
   templateId?: string | null;
   targetClassId?: string | null;
-  // Provider config
-  searchProvider?: 'local' | 'orkg-ask';
-  onProviderChange?: (provider: 'local' | 'orkg-ask') => void;
 }
 
 interface PredicateDetail {
@@ -273,8 +266,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   templateMapping: propTemplateMapping,
   templateId: propTemplateId,
   targetClassId: propTargetClassId,
-  searchProvider = 'local',
-  onProviderChange,
 }) => {
   const { renderHistoryButton } = useHistoryManager();
   const aiService = useAIService();
@@ -921,56 +912,10 @@ Modified SPARQL Query:`;
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
               alignItems: 'center',
             }}
           >
-            <FormControl component="fieldset">
-              <RadioGroup
-                row
-                aria-label="search-provider"
-                name="search-provider"
-                value={searchProvider}
-                onChange={(e) =>
-                  onProviderChange?.(e.target.value as 'local' | 'orkg-ask')
-                }
-              >
-                <FormControlLabel
-                  value="local"
-                  control={
-                    <Radio
-                      size="small"
-                      sx={{
-                        color: 'primary.main',
-                        '&.Mui-checked': { color: 'primary.main' },
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" fontWeight="500">
-                      Local Symbolic DB
-                    </Typography>
-                  }
-                />
-                <FormControlLabel
-                  value="orkg-ask"
-                  control={
-                    <Radio
-                      size="small"
-                      sx={{
-                        color: 'secondary.main',
-                        '&.Mui-checked': { color: 'secondary.main' },
-                      }}
-                    />
-                  }
-                  label={
-                    <Typography variant="body2" fontWeight="500">
-                      ORKG Ask (AI)
-                    </Typography>
-                  }
-                />
-              </RadioGroup>
-            </FormControl>
             <Button
               variant="contained"
               onClick={onGenerateAndRun}
@@ -1427,7 +1372,7 @@ Modified SPARQL Query:`;
       </Dialog>
 
       {/* SPARQL Query Section */}
-      {searchProvider === 'local' && sparqlQuery && (
+      {sparqlQuery && (
         <Paper
           elevation={0}
           sx={{

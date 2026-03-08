@@ -215,38 +215,28 @@ export const useQueryGeneration = ({
       previousFeedback: string,
       iteration: number
     ): string => {
-      const basePrompt = `You previously generated a SPARQL query that needs improvement.
+      const schemaBlock =
+        templateMapping && templateId
+          ? generateDynamicSPARQLPrompt(
+              templateMapping as PredicatesMapping,
+              templateId,
+              undefined,
+              targetClassId || undefined
+            ).split('[Research Question]')[0]
+          : '';
+      const basePrompt = `Fix this SPARQL per feedback (iteration ${iteration}). Output only the improved query in a \`\`\`sparql block.
 
-**Original Question:** ${question}
+**Question:** ${question}
 
-**Previous SPARQL Query (Iteration ${iteration - 1}):**
+**Previous query:**
 \`\`\`sparql
 ${previousQuery}
 \`\`\`
 
-**Feedback on Previous Query:**
-${previousFeedback}
+**Feedback:** ${previousFeedback}
+${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
 
-**Instructions:**
-1. Carefully analyze the feedback and identify what went wrong
-2. Generate an improved SPARQL query that addresses the issues
-3. Ensure the query follows all the schema rules and best practices
-4. Return ONLY the improved SPARQL query in a code block, no explanations
-
-${
-  templateMapping && templateId
-    ? `Use the following template schema:\n${
-        generateDynamicSPARQLPrompt(
-          templateMapping as PredicatesMapping,
-          templateId,
-          undefined,
-          targetClassId || undefined
-        ).split('[Research Question]')[0]
-      }`
-    : ''
-}
-
-**Improved SPARQL Query:**`;
+**Improved query:**`;
 
       return basePrompt;
     },
@@ -299,12 +289,15 @@ ${
           );
         }
 
-        // Generate SPARQL
+        // Generate SPARQL using local AI service
+        const SPARQL_SYSTEM_PROMPT =
+          'You are an expert SPARQL query generator for the Open Research Knowledge Graph (ORKG). Your ONLY task is to generate valid, executable SPARQL queries. Output ONLY SPARQL code in ```sparql code blocks. Do not provide explanations, R code, Python, or other content. Follow the schema and rules in the user prompt exactly.';
         const sparqlResult = await aiService.generateText(currentPrompt, {
           temperature: 0.1 + (iteration - 1) * 0.05,
           maxTokens: 2000,
           provider,
           model: currentModel,
+          systemContext: SPARQL_SYSTEM_PROMPT,
         });
 
         const { sparqlBlocks } = extractFromMarkdown(sparqlResult.text);
@@ -440,12 +433,14 @@ ${
       };
     },
     [
+      updateSparqlQuery,
       aiService,
+      provider,
+      currentModel,
+      evaluateQueryResults,
       buildSparqlPrompt,
       buildRefinementPrompt,
       executeQueriesRaw,
-      evaluateQueryResults,
-      updateSparqlQuery,
     ]
   );
 

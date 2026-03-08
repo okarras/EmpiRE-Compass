@@ -32,7 +32,6 @@ import type { CostBreakdown } from '../utils/costCalculator';
 import type { DynamicQuestion } from '../firestore/CRUDDynamicQuestions';
 import { useAuthData } from '../auth/useAuthData';
 import CRUDDynamicQuestions from '../firestore/CRUDDynamicQuestions';
-import { orkgAskService } from '../services/orkgAskService';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -51,8 +50,6 @@ const DynamicAIQuestion = () => {
     updateTemplateMapping,
     updateTargetClassId,
     updateCosts,
-    updateSearchProvider,
-    updateOrkgAskResults,
   } = useDynamicQuestion();
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -309,7 +306,7 @@ const DynamicAIQuestion = () => {
       return;
     }
 
-    if (state.searchProvider === 'local' && !aiService.isConfigured()) {
+    if (!aiService.isConfigured()) {
       setError(
         'AI service is not available. Please try again later or check your configuration.'
       );
@@ -327,7 +324,6 @@ const DynamicAIQuestion = () => {
     updateSparqlQuery('');
     updateSparqlTranslation('');
     updateQueryResults([]);
-    updateOrkgAskResults(null);
     setDynamicQuery(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
     updateCosts([]); // Reset costs for new generation
@@ -352,14 +348,12 @@ const DynamicAIQuestion = () => {
         return;
       }
 
-      // Generate data processing function
       const newProcessingFn = await generateProcessingFunction(
         rawData,
         state.question,
         false
       );
 
-      // Transform data
       let transformedData: Record<string, unknown>[] = [];
       try {
         if (newProcessingFn) {
@@ -380,41 +374,6 @@ const DynamicAIQuestion = () => {
       }
 
       updateQueryResults(transformedData);
-
-      if (state.searchProvider === 'orkg-ask') {
-        // Extract item IDs (e.g., R12345) from transformedData
-        const extractedIds = new Set<string>();
-        const idRegex = /(?:^|\/)(R\d+)(?:$|\/)/;
-
-        transformedData.forEach((row) => {
-          Object.values(row).forEach((val) => {
-            if (typeof val === 'string') {
-              const match = val.match(idRegex);
-              if (match && match[1]) {
-                extractedIds.add(match[1]);
-              }
-            }
-          });
-        });
-
-        const itemIds = Array.from(extractedIds).slice(0, 50); // Limit to 50 items for synthesis
-
-        if (itemIds.length > 0) {
-          const response = await orkgAskService.askQuestion(
-            state.question,
-            itemIds
-          );
-          updateOrkgAskResults(response.payload);
-        } else {
-          setError(
-            'No ORKG items found in the symbolic results to synthesize an answer from.'
-          );
-        }
-
-        // Return early since we don't need to build dynamic query for ORKG Ask view
-        setLoading(false);
-        return;
-      }
 
       const newDynamicQuery = buildDynamicQuery({
         question: state.question,
@@ -460,41 +419,6 @@ const DynamicAIQuestion = () => {
         const blocks = parseSparqlBlocks(query);
         const rawData = await executeQueriesRaw(blocks);
         if (rawData && rawData.length > 0) {
-          // If ORKG Ask, extract IDs and run synthesis
-          if (state.searchProvider === 'orkg-ask') {
-            const extractedIds = new Set<string>();
-            const idRegex = /(?:^|\/)(R\d+)(?:$|\/)/;
-
-            rawData.forEach((row) => {
-              Object.values(row).forEach((val) => {
-                const strVal =
-                  typeof val === 'object' && val !== null
-                    ? (val as any).value
-                    : String(val);
-                if (typeof strVal === 'string') {
-                  const match = strVal.match(idRegex);
-                  if (match && match[1]) {
-                    extractedIds.add(match[1]);
-                  }
-                }
-              });
-            });
-
-            const itemIds = Array.from(extractedIds).slice(0, 50);
-
-            if (itemIds.length > 0) {
-              const response = await orkgAskService.askQuestion(
-                state.question,
-                itemIds
-              );
-              updateOrkgAskResults(response.payload);
-            } else {
-              setError(
-                'No ORKG items found in the edited query results to synthesize an answer from.'
-              );
-            }
-          }
-
           await generateProcessingFunction(
             rawData,
             state.question,
@@ -839,7 +763,6 @@ const DynamicAIQuestion = () => {
     updateDataAnalysisInterpretation('');
     updateProcessingFunctionCode('', 'Cleared all fields');
     updateCosts([]);
-    updateOrkgAskResults(null);
     setDynamicQuery(null);
     setDynamicQuery(null);
     setError(null);
@@ -1066,8 +989,6 @@ const DynamicAIQuestion = () => {
         }}
         isAdmin={isAdmin}
         isEditingCommunityQuestion={isEditingCommunityQuestion}
-        searchProvider={state.searchProvider}
-        onProviderChange={updateSearchProvider}
       />
 
       <DataProcessingCodeSection
@@ -1092,8 +1013,6 @@ const DynamicAIQuestion = () => {
         onError={setError}
         onChartHtmlChange={updateChartHtml}
         costs={state.costs}
-        searchProvider={state.searchProvider}
-        orkgAskResults={state.orkgAskResults}
       />
 
       <HistoryManager

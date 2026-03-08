@@ -13,6 +13,9 @@ import {
   ListItemIcon,
   ListItemText,
   Alert,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SendIcon from '@mui/icons-material/Send';
@@ -28,6 +31,7 @@ import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import AIConfigurationButton from './AIConfigurationButton';
 import useAIAssistant from '../../hooks/useAIAssistant';
 import { useAuthData } from '../../auth/useAuthData';
+import { useAIAssistantContext } from '../../context/AIAssistantContext';
 
 // Lazy load components to reduce initial bundle size
 const InitialAnalysis = lazy(() => import('./InitialAnalysis'));
@@ -41,6 +45,7 @@ interface AIAssistantProps {
 
 const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
   const { isAuthenticated, isLoading: authLoading, login } = useAuthData();
+  const { assistantProvider, setAssistantProvider } = useAIAssistantContext();
   const {
     prompt,
     setPrompt,
@@ -237,11 +242,30 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 1,
           }}
         >
-          <Typography variant="h6" sx={{ color: 'text.primary' }}>
-            AI Assistant
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>
+              AI Assistant
+            </Typography>
+            <FormControl size="small" sx={{ minWidth: 140 }}>
+              <InputLabel id="assistant-provider-label">LLM</InputLabel>
+              <Select
+                labelId="assistant-provider-label"
+                value={assistantProvider}
+                label="LLM"
+                onChange={(e) =>
+                  setAssistantProvider(e.target.value as 'orkg-ask' | 'openai')
+                }
+                sx={{ height: 36, fontSize: '0.875rem' }}
+              >
+                <MenuItem value="orkg-ask">ORKG Ask (default)</MenuItem>
+                <MenuItem value="openai">OpenAI</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <AIConfigurationButton />
             <Tooltip
