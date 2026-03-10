@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Query } from '../constants/queries_chart_info';
 
+export interface RelatedPaperInAsk {
+  id: string;
+  title?: string;
+  abstract?: string;
+  year?: number;
+}
+
 export interface PaperInfoItem {
   id: string;
   title?: string;
@@ -9,6 +16,8 @@ export interface PaperInfoItem {
   date_published?: string;
   doi?: string;
   authors?: string[] | { name?: string }[];
+  /** Related papers from ORKG Ask semantic search – each can be opened in ORKG Ask */
+  relatedPapersInAsk?: RelatedPaperInAsk[];
   [key: string]: unknown;
 }
 

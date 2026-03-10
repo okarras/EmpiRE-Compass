@@ -13,14 +13,21 @@ import {
   Tooltip,
   Button,
   Link,
+  Card,
+  CardContent,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen';
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
-import type { PaperInfoItem } from '../../context/AIAssistantContext';
+import type {
+  PaperInfoItem,
+  RelatedPaperInAsk,
+} from '../../context/AIAssistantContext';
 import AIAssistant from './AIAssistant';
 import { useLocation } from 'react-router-dom';
 
@@ -35,6 +42,93 @@ function formatAuthors(authors: PaperInfoItem['authors']): string {
     .filter(Boolean)
     .join(', ');
 }
+
+const RelatedPapersSlider: React.FC<{
+  papers: RelatedPaperInAsk[];
+}> = ({ papers }) => {
+  const [index, setIndex] = useState(0);
+  const canPrev = index > 0;
+  const canNext = index < papers.length - 1;
+  const rp = papers[index];
+  return (
+    <Box sx={{ mt: 2, mb: 2 }}>
+      <Typography
+        variant="subtitle2"
+        sx={{ fontWeight: 600, mb: 1.5, color: '#e86161' }}
+      >
+        Related papers in ORKG Ask ({index + 1} / {papers.length})
+      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <IconButton
+          size="small"
+          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          disabled={!canPrev}
+          aria-label="Previous paper"
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+        <Card
+          component={Link}
+          href={`${ORKG_ASK_ITEM_URL}${rp.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            textDecoration: 'none',
+            color: 'inherit',
+            transition: 'box-shadow 0.2s',
+            '&:hover': { boxShadow: 4 },
+          }}
+        >
+          <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+            <Typography
+              variant="subtitle2"
+              sx={{ fontWeight: 600, mb: 0.5, lineHeight: 1.3 }}
+            >
+              {rp.title || `Paper ${rp.id}`}
+            </Typography>
+            {rp.year && (
+              <Typography variant="caption" color="text.secondary">
+                {rp.year}
+              </Typography>
+            )}
+            {rp.abstract && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  mt: 1,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  fontSize: '0.8rem',
+                }}
+              >
+                {rp.abstract}
+              </Typography>
+            )}
+            <Typography
+              variant="caption"
+              sx={{ mt: 1, display: 'block', color: '#e86161' }}
+            >
+              Open in ORKG Ask →
+            </Typography>
+          </CardContent>
+        </Card>
+        <IconButton
+          size="small"
+          onClick={() => setIndex((i) => Math.min(papers.length - 1, i + 1))}
+          disabled={!canNext}
+          aria-label="Next paper"
+        >
+          <ChevronRightIcon />
+        </IconButton>
+      </Box>
+    </Box>
+  );
+};
 
 const PaperInfoView: React.FC<{
   item: PaperInfoItem;
@@ -83,16 +177,6 @@ const PaperInfoView: React.FC<{
         </Link>
       </Typography>
     )}
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-      <b>ORKG Ask:</b>{' '}
-      <Link
-        href={`${ORKG_ASK_ITEM_URL}${item.id}`}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Open in ORKG Ask
-      </Link>
-    </Typography>
     {item.abstract && (
       <Box sx={{ mt: 2, mb: 2 }}>
         <Typography
@@ -112,6 +196,9 @@ const PaperInfoView: React.FC<{
           {item.abstract}
         </Typography>
       </Box>
+    )}
+    {item.relatedPapersInAsk && item.relatedPapersInAsk.length > 0 && (
+      <RelatedPapersSlider papers={item.relatedPapersInAsk} />
     )}
     <Box sx={{ mt: 2 }}>
       <Button variant="outlined" onClick={onClose}>

@@ -26,6 +26,51 @@ export interface SemanticSearchResponse {
   };
 }
 
+/** ORKG paper for display (matches grid) */
+export interface OrkgPaperForDisplay {
+  id: string;
+  title?: string;
+  doi?: string;
+  year?: number;
+  authors?: Array<{ name?: string }>;
+  abstract?: string;
+}
+
+/** Raw ORKG paper from GET /papers/{id} */
+interface OrkgPaperRaw {
+  id?: string;
+  title?: string;
+  identifiers?: { doi?: string | string[] };
+  publication_info?: { published_year?: number };
+  authors?: Array<{ name?: string }>;
+  [key: string]: unknown;
+}
+
+function normalizeOrkgPaper(
+  raw: OrkgPaperRaw,
+  resourceId: string
+): OrkgPaperForDisplay {
+  const doiVal = raw.identifiers?.doi;
+  const doi = Array.isArray(doiVal)
+    ? doiVal[0]
+    : typeof doiVal === 'string'
+      ? doiVal
+      : undefined;
+  const year = raw.publication_info?.published_year;
+  return {
+    id: String(raw.id ?? resourceId),
+    title: raw.title?.trim(),
+    doi,
+    year,
+    authors: raw.authors,
+    abstract: (raw as { abstract?: string }).abstract,
+  };
+}
+
+export interface SearchByPaperResponse extends SemanticSearchResponse {
+  orkgPaper?: OrkgPaperForDisplay;
+}
+
 export const orkgAskService = {
   /**
    * Semantic search: searches for similar documents using vector search.
@@ -74,10 +119,10 @@ export const orkgAskService = {
   },
 
   /**
-   * Fetches paper title from ORKG, then runs semantic search with it.
-   * Returns the search response. Use payload.items[0].id to open in ORKG Ask.
+   * Fetches paper from ORKG, runs semantic search by title, returns both.
+   * Use orkgPaper for display (title, authors, abstract match the grid). Use payload.items[0].id for ORKG Ask link.
    */
-  async searchByPaper(resourceId: string): Promise<SemanticSearchResponse> {
+  async searchByPaper(resourceId: string): Promise<SearchByPaperResponse> {
     const paperRes = await fetch(
       `${process.env.ORKG_API_BASE}/papers/${resourceId}`
     );
@@ -86,12 +131,17 @@ export const orkgAskService = {
         `Failed to fetch paper from ORKG: HTTP ${paperRes.status}`
       );
     }
-    const paper = (await paperRes.json()) as { title?: string };
+    const paper = (await paperRes.json()) as OrkgPaperRaw;
     const title = paper?.title?.trim();
     if (!title) {
       throw new Error('Paper has no title in ORKG.');
     }
-    return this.semanticSearch(title, { limit: 1 });
+    const orkgPaper = normalizeOrkgPaper(paper, resourceId);
+    const searchResponse = await this.semanticSearch(title, { limit: 10 });
+    return {
+      ...searchResponse,
+      orkgPaper,
+    };
   },
 
   /**
