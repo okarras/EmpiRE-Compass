@@ -42,13 +42,39 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
       setSnackbar((s) => ({ ...s, open: false }));
       try {
         const result = await orkgAskService.searchByPaper(paperId);
-        const firstItem = result?.payload?.items?.[0];
-        if (firstItem?.id) {
-          setPaperInfo(firstItem as PaperInfoItem, paperUri);
+        const orkgPaper = result?.orkgPaper;
+        const items = result?.payload?.items ?? [];
+        const relatedPapersInAsk = items
+          .filter((it) => it?.id)
+          .map((it) => ({
+            id: String(it.id),
+            title: it.title as string,
+            abstract: it.abstract as string,
+            year: it.year,
+          }));
+        const firstItem = items[0];
+        const paperForDisplay: PaperInfoItem | null = orkgPaper
+          ? {
+              ...orkgPaper,
+              id: orkgPaper.id,
+              abstract: orkgPaper.abstract ?? firstItem?.abstract,
+              relatedPapersInAsk,
+            }
+          : items.length > 0
+            ? {
+                id: items[0].id,
+                title: items[0].title as string,
+                abstract: items[0].abstract as string,
+                year: items[0].year,
+                relatedPapersInAsk,
+              }
+            : null;
+        if (paperForDisplay) {
+          setPaperInfo(paperForDisplay, paperUri);
         } else {
           setSnackbar({
             open: true,
-            message: 'No matching paper found in ORKG Ask.',
+            message: 'No related papers found in ORKG Ask.',
             severity: 'info',
           });
         }
