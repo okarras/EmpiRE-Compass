@@ -83,13 +83,15 @@ export const syncUserToFirebase = async (
 
     if (existingUserDoc.exists) {
       // Update existing user (update last_login, preserve other fields)
+      // IMPORTANT: Preserve is_admin from DB - it may have been set by an admin via the dashboard.
+      // Only fall back to email-based check for users created before this field was set.
       const userData = existingUserDoc.data() as FirebaseUser;
       const updatedUser: FirebaseUser = {
         ...userData,
         email: orkgUser.email,
         display_name: orkgUser.display_name,
         last_login: new Date().toISOString(),
-        is_admin: isAdmin, // Update admin status
+        is_admin: userData.is_admin ?? isAdmin,
       };
 
       await userRef.set(updatedUser, { merge: true });
