@@ -44,6 +44,7 @@ import { PREFIXES } from '../../api/SPARQL_QUERIES';
 import { CodeEditor } from '../CodeEditor';
 import { PredicatesMapping, PropertyMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
+import AiEvaluationWidget from './AiEvaluationWidget';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -1586,7 +1587,20 @@ LIMIT 10`}
             </Alert>
           )}
 
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box
+            sx={{
+              mt: 2,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+            }}
+          >
+            <Box sx={{ flex: 1, maxWidth: '500px', mr: 2 }}>
+              <AiEvaluationWidget
+                targetType="sparql"
+                targetId={question || 'unknown-question'}
+              />
+            </Box>
             <Button
               variant="contained"
               onClick={() =>

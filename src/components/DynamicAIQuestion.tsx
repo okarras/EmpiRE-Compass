@@ -32,6 +32,7 @@ import type { CostBreakdown } from '../utils/costCalculator';
 import type { DynamicQuestion } from '../firestore/CRUDDynamicQuestions';
 import { useAuthData } from '../auth/useAuthData';
 import CRUDDynamicQuestions from '../firestore/CRUDDynamicQuestions';
+import AiEvaluationWidget from './AI/AiEvaluationWidget';
 
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
@@ -1014,6 +1015,19 @@ const DynamicAIQuestion = () => {
         onChartHtmlChange={updateChartHtml}
         costs={state.costs}
       />
+
+      {!loading &&
+        !error &&
+        state.queryResults &&
+        state.queryResults.length > 0 &&
+        state.question && (
+          <Box sx={{ mt: 4 }}>
+            <AiEvaluationWidget
+              targetType="question"
+              targetId={state.question}
+            />
+          </Box>
+        )}
 
       <HistoryManager
         onApplyHistoryItem={handleApplyHistoryItem}
