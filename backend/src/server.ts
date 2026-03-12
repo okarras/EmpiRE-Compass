@@ -24,6 +24,7 @@ import orkgAskRouter from './routes/orkgAsk.js';
 import restoreRouter from './routes/restore.js';
 import questionOverridesRouter from './routes/questionOverrides.js';
 import backupRouter from './routes/backup.js';
+import aiEvaluationsRouter from './routes/aiEvaluations.js';
 
 dotenv.config();
 
@@ -178,6 +179,7 @@ app.use('/api/orkg-ask', orkgAskRouter);
 app.use('/api/restore', restoreRouter);
 app.use('/api/question-overrides', questionOverridesRouter);
 app.use('/api/backup', backupRouter);
+app.use('/api/ai-evaluations', aiEvaluationsRouter);
 
 const swaggerUiOptions = {
   customCssUrl:
