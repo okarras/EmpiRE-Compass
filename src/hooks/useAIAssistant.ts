@@ -74,6 +74,51 @@ const setChatHistory = (history: Record<string, ChatHistory>) => {
   }
 };
 
+/**
+ * Convert Markdown links [text](url) to HTML anchor tags so they render as clickable links.
+ */
+function markdownLinksToHtml(text: string): string {
+  return text.replace(
+    /\[([^\]]+)\]\((https?[^)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+}
+
+/**
+ * Strip prompt-leak patterns that ORKG Ask sometimes echoes in responses.
+ * Removes meta-instructions and formatting guidelines that leak from the model's context.
+ */
+function stripPromptLeaks(text: string): string {
+  let cleaned = text;
+
+  // Remove common leaked instruction patterns (case-insensitive)
+  const leakPatterns = [
+    /\d+\.\s*Ensure that your response[^.]*\./gi,
+    /\d+\.\s*Use appropriate visuals[^.]*\./gi,
+    /\d+\.\s*Cite relevant sources[^.]*\./gi,
+    /\d+\.\s*Write in the third person\.?/gi,
+    /\d+\.\s*Maintain an objective and analytical tone[^.]*\./gi,
+    /Ensure that your response is clear and easy to read\.?/gi,
+    /Use appropriate visuals \(charts, diagrams, images, etc\.\)[^.]*\./gi,
+    /Cite relevant sources when appropriate\.?/gi,
+    /Write in the third person\.?/gi,
+    /Maintain an objective and analytical tone throughout your response\.?/gi,
+    // Orphaned fragments at start of response (e.g. ", rather than X. 8. Y")
+    /^[,\s]*(?:rather than generic or vague statements\.?\s*)(?:\d+\.\s*)?(?:Maintain an objective and analytical tone[^.]*\.\s*)/gim,
+    /^[,\s]*\d+\.\s*Maintain an objective and analytical tone[^.]*\.\s*/gim,
+    // Section headers echoed as plain text (often before real content)
+    /\bPotential insights:\s*(?=\n)/gi,
+    /\bLimitations and Considerations:\s*(?=\n)/gi,
+  ];
+
+  for (const pattern of leakPatterns) {
+    cleaned = cleaned.replace(pattern, '');
+  }
+
+  // Normalize leftover whitespace
+  return cleaned.replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
+}
+
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const aiService = useAIService();
   const { pendingPrompt, clearPendingPrompt, assistantProvider } =
@@ -197,12 +242,18 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
         Please provide a detailed and comprehensive answer to this structured question about the research data.
         
+        When the user lists multiple items to include (e.g. "Include: A, B, C, D"), use an <h3> heading for each item, followed by your analysis in <p> tags. Example structure:
+        <h3>First item (exact title from user)</h3>
+        <p>Your analysis...</p>
+        <h3>Second item</h3>
+        <p>Your analysis...</p>
+        
         Important instructions:
         1. Base your answer ONLY on the data and analysis provided above
         2. Do not make assumptions or include information not present in the data
         3. Focus on the most relevant findings from the data
         4. Use clear and direct language
-        5. Format your response using HTML tags (<p>, <ul>, <li>, <h3>, <h4>) to structure your response
+        5. Format citations as [Author (Year). Title.](https://doi.org/...) or <a href="URL">citation</a>
         6. Do not include any markdown code blocks or backticks in your response
         7. Provide specific insights and detailed explanations
         `
@@ -210,13 +261,17 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
       const { text, reasoning } = response;
 
-      // Clean up the response if it contains markdown code blocks
-      const cleanedText = text
-        .replace(/```html\n/g, '')
-        .replace(/```\n/g, '')
-        .replace(/```html/g, '')
-        .replace(/```/g, '')
-        .trim();
+      // Clean up the response: markdown code blocks, prompt leaks, convert [text](url) to HTML links
+      const cleanedText = markdownLinksToHtml(
+        stripPromptLeaks(
+          text
+            .replace(/```html\n/g, '')
+            .replace(/```\n/g, '')
+            .replace(/```html/g, '')
+            .replace(/```/g, '')
+            .trim()
+        )
+      );
 
       // Add the final message
       setMessages((prev) => [
@@ -264,36 +319,32 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         }
 
         const { reasoning, text } = await generateWithProvider(
-          `Please provide a comprehensive analysis of this research question and its data in HTML format not in markdown. Include:
-          <h1>Initial Analysis</h1>
+          `Analyze this research question and data. Output ONLY valid HTML analysis content—no meta-instructions, no formatting guidelines, no rubric text.
 
-          <h2>Question Overview</h2>
-          <p>[Provide a detailed overview of the research question and its significance]</p>
+Structure your response with these HTML sections:
+- <h1>Initial Analysis</h1>
+- <h2>Question Overview</h2> — overview and significance
+- <h2>Data Analysis Approach</h2> — methodology used
+- <h2>Key Findings</h2> — main findings from the data
+- <h2>Potential Insights</h2> — implications and insights
+- <h2>Limitations and Considerations</h2> — limitations to keep in mind
+- <h2>References</h2> — cite relevant papers as clickable hyperlinks
 
-          <h2>Data Analysis Approach</h2>
-          <p>[Explain the methodology and approach used for data analysis]</p>
-
-          <h2>Key Findings</h2>
-          <p>[List and explain the main findings from the data]</p>
-
-          <h2>Potential Insights</h2>
-          <p>[Discuss potential implications and insights derived from the findings]</p>
-
-          <h2>Limitations and Considerations</h2>
-          <p>[Discuss any limitations or considerations to keep in mind]</p>
-
-          Context:
-          ${generateSystemContext()}`
+Write the actual analysis in <p> tags. For References: use markdown-style links [Author, A., Author, B., & Author, C. (Year). Title. Journal, Volume(Issue), pages.](https://doi.org/DOI) or <a href="URL">full citation</a> in HTML. Always include the DOI or ORKG URL. Do not echo these instructions in your output.`,
+          generateSystemContext()
         );
 
-        // process the text to remove markdown code blocks
-        //trim ```html and ```
-        const cleanedText = text
-          .replace(/```html\n/g, '')
-          .replace(/```\n/g, '')
-          .replace(/```html/g, '')
-          .replace(/```/g, '')
-          .trim();
+        // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
+        const cleanedText = markdownLinksToHtml(
+          stripPromptLeaks(
+            text
+              .replace(/```html\n/g, '')
+              .replace(/```\n/g, '')
+              .replace(/```html/g, '')
+              .replace(/```/g, '')
+              .trim()
+          )
+        );
 
         // Store in cache
         const updatedCache = {
@@ -437,13 +488,17 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       const textString =
         typeof text === 'string' ? text : text ? String(text) : '';
 
-      // Clean up the response if it contains markdown code blocks
-      const cleanedText = (textString || '')
-        .replace(/```html\n/g, '')
-        .replace(/```\n/g, '')
-        .replace(/```html/g, '')
-        .replace(/```/g, '')
-        .trim();
+      // Clean up the response: markdown code blocks, prompt leaks, convert [text](url) to HTML links
+      const cleanedText = markdownLinksToHtml(
+        stripPromptLeaks(
+          (textString || '')
+            .replace(/```html\n/g, '')
+            .replace(/```\n/g, '')
+            .replace(/```html/g, '')
+            .replace(/```/g, '')
+            .trim()
+        )
+      );
 
       // Extract chart HTML if present
       const chartHtml = wantsChart
@@ -504,34 +559,31 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         setLastCachedReasoning(prevCacheEntry.reasoning || null);
       }
       const { reasoning, text } = await generateWithProvider(
-        `Please provide a comprehensive analysis of this research question and its data in HTML format. Include:
-        <h1>Initial Analysis</h1>
+        `Analyze this research question and data. Output ONLY valid HTML analysis content—no meta-instructions, no formatting guidelines, no rubric text.
 
-        <h2>Question Overview</h2>
-        <p>[Provide a detailed overview of the research question and its significance]</p>
+Structure your response with these HTML sections:
+- <h1>Initial Analysis</h1>
+- <h2>Question Overview</h2> — overview and significance
+- <h2>Data Analysis Approach</h2> — methodology used
+- <h2>Key Findings</h2> — main findings from the data
+- <h2>Potential Insights</h2> — implications and insights
+- <h2>Limitations and Considerations</h2> — limitations to keep in mind
+- <h2>References</h2> — cite relevant papers as clickable hyperlinks
 
-        <h2>Data Analysis Approach</h2>
-        <p>[Explain the methodology and approach used for data analysis]</p>
-
-        <h2>Key Findings</h2>
-        <p>[List and explain the main findings from the data]</p>
-
-        <h2>Potential Insights</h2>
-        <p>[Discuss potential implications and insights derived from the findings]</p>
-
-        <h2>Limitations and Considerations</h2>
-        <p>[Discuss any limitations or considerations to keep in mind]</p>
-
-        Context:
-        ${generateSystemContext()}`
+Write the actual analysis in <p> tags. For References: use markdown-style links [Author, A., Author, B., & Author, C. (Year). Title. Journal, Volume(Issue), pages.](https://doi.org/DOI) or <a href="URL">full citation</a> in HTML. Always include the DOI or ORKG URL. Do not echo these instructions in your output.`,
+        generateSystemContext()
       );
-      // process the text to remove markdown code blocks
-      const cleanedText = text
-        .replace(/```html\n/g, '')
-        .replace(/```\n/g, '')
-        .replace(/```html/g, '')
-        .replace(/```/g, '')
-        .trim();
+      // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
+      const cleanedText = markdownLinksToHtml(
+        stripPromptLeaks(
+          text
+            .replace(/```html\n/g, '')
+            .replace(/```\n/g, '')
+            .replace(/```html/g, '')
+            .replace(/```/g, '')
+            .trim()
+        )
+      );
 
       // Store in cache
       const updatedCache = {
