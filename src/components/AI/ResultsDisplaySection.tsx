@@ -8,6 +8,7 @@ import QuestionInformationView from '../QuestionInformationView';
 import QuestionDataGridView from '../QuestionDataGridView';
 import CostDisplay from './CostDisplay';
 import { CostBreakdown } from '../../utils/costCalculator';
+import AiEvaluationWidget from './AiEvaluationWidget';
 
 // Dynamic query interface to match the structure of Query
 interface DynamicQuery {
@@ -152,6 +153,12 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
                   type="chart"
                   useIframe={true}
                   onContentChange={onChartHtmlChange}
+                />
+                <AiEvaluationWidget
+                  targetType="chart"
+                  targetId={
+                    dynamicQuery.uid || dynamicQuery.id?.toString() || 'chart'
+                  }
                 />
               </>
             )}
