@@ -52,6 +52,10 @@ export interface TeamMember {
   priority?: number;
 }
 
+let teamCache: TeamMember[] | null = null;
+let teamCacheTime = 0;
+const TEAM_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
 /**
  * @swagger
  * /api/team:
@@ -73,6 +77,23 @@ export interface TeamMember {
  */
 router.get('/', async (req, res) => {
   try {
+    const now = Date.now();
+    if (teamCache && now - teamCacheTime < TEAM_CACHE_TTL_MS) {
+      await logRequest(
+        'read',
+        'Team',
+        undefined,
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { resultCount: teamCache.length, cached: true },
+        undefined,
+        teamCache
+      );
+      return res.json(teamCache);
+    }
+
     const teamSnapshot = await db.collection('Team').get();
     const teamMembers: TeamMember[] = [];
 
@@ -97,6 +118,9 @@ router.get('/', async (req, res) => {
       return priorityA - priorityB;
     });
 
+    teamCache = teamMembers;
+    teamCacheTime = now;
+
     await logRequest(
       'read',
       'Team',
@@ -105,7 +129,7 @@ router.get('/', async (req, res) => {
       undefined,
       undefined,
       undefined,
-      { resultCount: teamMembers.length },
+      { resultCount: teamMembers.length, cached: false },
       undefined,
       teamMembers
     );
@@ -178,6 +202,8 @@ router.post(
       };
 
       const docRef = await db.collection('Team').add(teamMember);
+
+      teamCache = null; // Invalidate cache
 
       await logRequest(
         'write',
@@ -275,6 +301,8 @@ router.put(
 
       await teamRef.update(updates);
 
+      teamCache = null; // Invalidate cache
+
       await logRequest(
         'update',
         'Team',
@@ -356,6 +384,8 @@ router.delete(
       }
 
       await teamRef.delete();
+
+      teamCache = null; // Invalidate cache
 
       await logRequest('delete', 'Team', id, true, req.userId, req.userEmail);
 
