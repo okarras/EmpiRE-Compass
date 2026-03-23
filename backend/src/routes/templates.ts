@@ -168,6 +168,18 @@ export interface StatisticData {
   description?: string;
 }
 
+// Add map cache logic globally for the routes
+let templatesCache: Record<string, TemplateData> | null = null;
+let templatesCacheTime = 0;
+const TEMPLATES_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
+const questionsCache: Record<string, { data: QuestionData[]; time: number }> =
+  {};
+const QUE_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
+const statsCache: Record<string, { data: StatisticData[]; time: number }> = {};
+const STATS_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
 // ========== Templates Routes ==========
 
 /**
@@ -191,12 +203,20 @@ export interface StatisticData {
  */
 router.get('/', async (req, res) => {
   try {
+    const now = Date.now();
+    if (templatesCache && now - templatesCacheTime < TEMPLATES_CACHE_TTL_MS) {
+      return res.json(templatesCache);
+    }
+
     const templatesSnapshot = await db.collection('Templates').get();
     const templates: Record<string, TemplateData> = {};
 
     templatesSnapshot.forEach((doc) => {
       templates[doc.id] = { id: doc.id, ...doc.data() } as TemplateData;
     });
+
+    templatesCache = templates;
+    templatesCacheTime = now;
 
     res.json(templates);
   } catch (error) {
@@ -290,6 +310,9 @@ router.post(
 
       await templateRef.set(templateData);
 
+      // Invalidate cache
+      templatesCache = null;
+
       await logRequest(
         'write',
         'Templates',
@@ -376,6 +399,9 @@ router.put(
 
       await templateRef.update(req.body);
 
+      // Invalidate cache
+      templatesCache = null;
+
       await logRequest(
         'update',
         'Templates',
@@ -455,6 +481,11 @@ router.delete(
 
       await templateRef.delete();
 
+      // Invalidate caches
+      templatesCache = null;
+      delete questionsCache[templateId];
+      delete statsCache[templateId];
+
       await logRequest(
         'delete',
         'Templates',
@@ -514,6 +545,13 @@ router.delete(
 router.get('/:templateId/questions', async (req, res) => {
   try {
     const { templateId } = req.params;
+    const now = Date.now();
+    const cached = questionsCache[templateId];
+
+    if (cached && now - cached.time < QUE_CACHE_TTL_MS) {
+      return res.json(cached.data);
+    }
+
     const questionsSnapshot = await db
       .collection('Templates')
       .doc(templateId)
@@ -526,6 +564,9 @@ router.get('/:templateId/questions', async (req, res) => {
     });
 
     questions.sort((a, b) => a.id - b.id);
+
+    questionsCache[templateId] = { data: questions, time: now };
+
     res.json(questions);
   } catch (error) {
     console.error('Error fetching questions:', error);
@@ -648,6 +689,9 @@ router.post(
 
       await questionRef.set(questionData);
 
+      // Invalidate cache
+      delete questionsCache[templateId];
+
       await logRequest(
         'write',
         `Templates/${templateId}/Questions`,
@@ -757,6 +801,9 @@ router.put(
           const legacyDocRef = legacyDoc.docs[0].ref;
           await legacyDocRef.update(req.body);
 
+          // Invalidate cache
+          delete questionsCache[templateId];
+
           await logRequest(
             'update',
             `Templates/${templateId}/Questions`,
@@ -776,6 +823,9 @@ router.put(
       }
 
       await questionRef.update(req.body);
+
+      // Invalidate cache
+      delete questionsCache[templateId];
 
       await logRequest(
         'update',
@@ -875,6 +925,9 @@ router.delete(
           const legacyDocRef = legacyDoc.docs[0].ref;
           await legacyDocRef.delete();
 
+          // Invalidate cache
+          delete questionsCache[templateId];
+
           await logRequest(
             'delete',
             `Templates/${templateId}/Questions`,
@@ -891,6 +944,9 @@ router.delete(
       }
 
       await questionRef.delete();
+
+      // Invalidate cache
+      delete questionsCache[templateId];
 
       await logRequest(
         'delete',
@@ -951,6 +1007,13 @@ router.delete(
 router.get('/:templateId/statistics', async (req, res) => {
   try {
     const { templateId } = req.params;
+    const now = Date.now();
+    const cached = statsCache[templateId];
+
+    if (cached && now - cached.time < STATS_CACHE_TTL_MS) {
+      return res.json(cached.data);
+    }
+
     const statisticsSnapshot = await db
       .collection('Templates')
       .doc(templateId)
@@ -961,6 +1024,8 @@ router.get('/:templateId/statistics', async (req, res) => {
     statisticsSnapshot.forEach((doc) => {
       statistics.push({ id: doc.id, ...doc.data() } as StatisticData);
     });
+
+    statsCache[templateId] = { data: statistics, time: now };
 
     res.json(statistics);
   } catch (error) {
@@ -1024,6 +1089,9 @@ router.post(
         .doc(statisticData.id);
 
       await statisticRef.set(statisticData);
+
+      // Invalidate cache
+      delete statsCache[templateId];
 
       await logRequest(
         'write',
@@ -1125,6 +1193,9 @@ router.put(
 
       await statisticRef.update(req.body);
 
+      // Invalidate cache
+      delete statsCache[templateId];
+
       await logRequest(
         'update',
         `Templates/${templateId}/Statistics`,
@@ -1213,6 +1284,9 @@ router.delete(
       }
 
       await statisticRef.delete();
+
+      // Invalidate cache
+      delete statsCache[templateId];
 
       await logRequest(
         'delete',

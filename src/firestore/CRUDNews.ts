@@ -48,14 +48,42 @@ const getAuthInfo = () => {
   }
 };
 
+let cachedPublishedNews: NewsItem[] | null = null;
+let cachedAllNews: NewsItem[] | null = null;
+let publishedFetchTime = 0;
+let allFetchTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 /**
  * Get all news items from backend API
  * @param publishedOnly - If true, only return published news items
+ * @param forceRefresh - If true, bypass cache and fetch directly
  */
 export const getAllNews = async (
-  publishedOnly = false
+  publishedOnly = false,
+  forceRefresh = false
 ): Promise<NewsItem[]> => {
   try {
+    const now = Date.now();
+
+    // Serve from cache if available and not expired
+    if (!forceRefresh) {
+      if (
+        publishedOnly &&
+        cachedPublishedNews &&
+        now - publishedFetchTime < CACHE_TTL_MS
+      ) {
+        return cachedPublishedNews;
+      }
+      if (
+        !publishedOnly &&
+        cachedAllNews &&
+        now - allFetchTime < CACHE_TTL_MS
+      ) {
+        return cachedAllNews;
+      }
+    }
+
     const { token, userId, userEmail } = getAuthInfo();
     const apiItems = await getAllNewsApi(
       publishedOnly,
@@ -63,7 +91,21 @@ export const getAllNews = async (
       userEmail,
       token || undefined
     );
-    return apiItems.map(convertApiNewsItem);
+    const result = apiItems.map(convertApiNewsItem);
+
+    // Update cache
+    if (publishedOnly) {
+      cachedPublishedNews = result;
+      publishedFetchTime = now;
+    } else {
+      cachedAllNews = result;
+      allFetchTime = now;
+      // Also update published cache as a subset
+      cachedPublishedNews = result.filter((n) => n.published);
+      publishedFetchTime = now;
+    }
+
+    return result;
   } catch (error) {
     console.error('Error fetching news:', error);
     throw error;
@@ -149,6 +191,11 @@ export const createNewsItem = async (
       userEmail,
       keycloakToken || token || undefined
     );
+
+    // Invalidate cache
+    cachedPublishedNews = null;
+    cachedAllNews = null;
+
     return result.id || '';
   } catch (error) {
     console.error('Error creating news item:', error);
@@ -202,6 +249,10 @@ export const updateNewsItem = async (
       userEmail,
       keycloakToken || token || undefined
     );
+
+    // Invalidate cache
+    cachedPublishedNews = null;
+    cachedAllNews = null;
   } catch (error) {
     console.error('Error updating news item:', error);
     throw error;
@@ -233,6 +284,10 @@ export const deleteNewsItem = async (
       userEmail,
       keycloakToken || token || undefined
     );
+
+    // Invalidate cache
+    cachedPublishedNews = null;
+    cachedAllNews = null;
   } catch (error) {
     console.error('Error deleting news item:', error);
     throw error;

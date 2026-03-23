@@ -58,6 +58,10 @@ export interface Paper {
   updatedAt?: string | Date;
 }
 
+let papersCache: Paper[] | null = null;
+let papersCacheTime = 0;
+const PAPERS_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
 /**
  * @swagger
  * /api/papers:
@@ -87,6 +91,27 @@ export interface Paper {
 router.get('/', async (req, res) => {
   try {
     const showOnTeamOnly = req.query.showOnTeamOnly === 'true';
+    const now = Date.now();
+
+    if (papersCache && now - papersCacheTime < PAPERS_CACHE_TTL_MS) {
+      const cachedResult = showOnTeamOnly
+        ? papersCache.filter((p) => p.showOnTeam === true)
+        : papersCache;
+
+      await logRequest(
+        'read',
+        'Papers',
+        'all',
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { queryType: showOnTeamOnly ? 'showOnTeamOnly' : 'all', cached: true }
+      );
+
+      return res.json(cachedResult);
+    }
+
     const papersRef = db.collection('Papers');
     const papersSnapshot = await papersRef.get();
     const papers: Paper[] = [];
@@ -109,6 +134,9 @@ router.get('/', async (req, res) => {
       return (b.year ?? 0) - (a.year ?? 0);
     });
 
+    papersCache = papers;
+    papersCacheTime = now;
+
     await logRequest(
       'read',
       'Papers',
@@ -117,7 +145,7 @@ router.get('/', async (req, res) => {
       undefined,
       undefined,
       undefined,
-      { queryType: showOnTeamOnly ? 'showOnTeamOnly' : 'all' }
+      { queryType: showOnTeamOnly ? 'showOnTeamOnly' : 'all', cached: false }
     );
 
     res.json(papers);
@@ -194,6 +222,8 @@ router.post(
       const { id: _id, ...docData } = paperItemData;
       await paperRef.set(docData);
 
+      papersCache = null; // Invalidate cache
+
       await logRequest(
         'write',
         'Papers',
@@ -248,6 +278,8 @@ router.put(
       const { id: _id, ...docData } = updateData;
       await paperRef.set(docData, { merge: true });
 
+      papersCache = null; // Invalidate cache
+
       await logRequest(
         'update',
         'Papers',
@@ -295,6 +327,8 @@ router.delete(
       }
 
       await paperRef.delete();
+
+      papersCache = null; // Invalidate cache
 
       await logRequest(
         'delete',
