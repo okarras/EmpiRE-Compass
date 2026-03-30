@@ -236,12 +236,10 @@ function QuestionNavItem({
   isCurrentPath,
   onQuestionClick,
 }: QuestionNavItemProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const questionDocId = (question as any).uid || String(question.id);
   const path =
     question.fromCommunity && question.communityQuestionId
       ? `/community-questions/${question.communityQuestionId}`
-      : `/questions/${questionDocId}`;
+      : `/questions/${question.id}`;
   const isActive = isCurrentPath(path);
 
   return (
@@ -365,9 +363,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
         `/${selectedTemplate}/community-questions/${question.communityQuestionId}`
       );
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const questionDocId = (question as any).uid || String(question.id);
-      navigate(`/${selectedTemplate}/questions/${questionDocId}`);
+      navigate(`/${selectedTemplate}/questions/${question.id}`);
     }
     handleDrawerClose();
   };
