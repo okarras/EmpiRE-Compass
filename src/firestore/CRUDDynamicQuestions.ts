@@ -30,6 +30,7 @@ export interface DynamicQuestion {
     sparqlQuery: string;
     sparqlTranslation?: string | null;
     queryResults?: any[] | null;
+    rawSparqlQueryResults?: any[] | null;
     chartHtml?: string | null;
     questionInterpretation?: string | null;
     dataCollectionInterpretation?: string | null;

@@ -61,6 +61,7 @@ interface ResultsDisplaySectionProps {
   onError: (error: string) => void;
   onChartHtmlChange: (html: string) => void;
   costs: CostBreakdown[];
+  rawSparqlQueryResults: Record<string, unknown>[];
 }
 
 const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
@@ -69,6 +70,7 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
   question,
   sparqlQuery,
   queryResults,
+  rawSparqlQueryResults,
   chartHtml,
   questionInterpretation,
   dataCollectionInterpretation,
@@ -162,12 +164,12 @@ const ResultsDisplaySection: React.FC<ResultsDisplaySectionProps> = ({
         <CostDisplay costs={costs} />
       )}
 
-      {queryResults &&
-        Array.isArray(queryResults) &&
-        queryResults.length > 0 && (
+      {rawSparqlQueryResults &&
+        Array.isArray(rawSparqlQueryResults) &&
+        rawSparqlQueryResults.length > 0 && (
           <QuestionDataGridView
-            key={`grid-${sparqlQuery.length}-${queryResults.length}-${Object.keys(queryResults[0] || {}).join(',')}`}
-            questionData={queryResults}
+            key={`grid-${sparqlQuery?.length || 0}-${rawSparqlQueryResults.length}-${Object.keys(rawSparqlQueryResults[0] || {}).join(',')}`}
+            questionData={rawSparqlQueryResults}
             gridOptions={dynamicQuery?.gridOptions}
           />
         )}
