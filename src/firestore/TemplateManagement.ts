@@ -53,6 +53,8 @@ export interface QuestionData {
   uid: string;
   uid_2?: string;
   uid_2_merge?: string;
+  fromCommunity?: boolean;
+  communityQuestionId?: string;
   title: string;
   chartType?: 'bar' | 'pie';
   dataAnalysisInformation: {

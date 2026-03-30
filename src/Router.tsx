@@ -18,6 +18,7 @@ const Team = lazy(() => import('./pages/Team'));
 const News = lazy(() => import('./pages/News'));
 const NewsDetail = lazy(() => import('./pages/NewsDetail'));
 const AdminBackup = lazy(() => import('./pages/AdminBackup'));
+const AdminBackupMetadata = lazy(() => import('./pages/AdminBackupMetadata'));
 const AdminDataManagement = lazy(() => import('./pages/AdminDataManagement'));
 const AdminHomeContent = lazy(() => import('./pages/AdminHomeContent'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -104,6 +105,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminBackup />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/backup-metadata"
+              element={
+                <AdminGuard>
+                  <AdminBackupMetadata />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}
