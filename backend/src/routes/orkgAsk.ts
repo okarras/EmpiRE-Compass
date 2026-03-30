@@ -1,5 +1,8 @@
 import { Router, Response } from 'express';
-import { orkgAskService } from '../services/orkgAskService.js';
+import {
+  orkgAskService,
+  OrkgUpstreamHttpError,
+} from '../services/orkgAskService.js';
 import {
   validateKeycloakTokenOrOrkgAskConfigured,
   type AuthenticatedRequest,
@@ -93,6 +96,9 @@ router.post(
       console.error('ORKG ASK search-by-paper error:', error);
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
+      if (error instanceof OrkgUpstreamHttpError) {
+        return res.status(error.upstreamStatus).json({ error: errorMessage });
+      }
       res.status(500).json({ error: errorMessage });
     }
   }

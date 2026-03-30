@@ -225,16 +225,23 @@ function NavItem({
 
 interface QuestionNavItemProps {
   question: QuestionData;
+  index: number;
   isCurrentPath: (path: string) => boolean;
-  onQuestionClick: (id: number) => void;
+  onQuestionClick: (question: QuestionData) => void;
 }
 
 function QuestionNavItem({
   question,
+  index,
   isCurrentPath,
   onQuestionClick,
 }: QuestionNavItemProps) {
-  const path = `/questions/${question.id}`;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const questionDocId = (question as any).uid || String(question.id);
+  const path =
+    question.fromCommunity && question.communityQuestionId
+      ? `/community-questions/${question.communityQuestionId}`
+      : `/questions/${questionDocId}`;
   const isActive = isCurrentPath(path);
 
   return (
@@ -244,7 +251,7 @@ function QuestionNavItem({
       arrow
     >
       <ListItem
-        onClick={() => onQuestionClick(question.id)}
+        onClick={() => onQuestionClick(question)}
         sx={{
           mb: 0.5,
           borderRadius: 2,
@@ -271,10 +278,18 @@ function QuestionNavItem({
                 WebkitBoxOrient: 'vertical',
               }}
             >
-              {`${question.id}. ${question.dataAnalysisInformation.question}`}
+              {`${index + 1}. ${question.dataAnalysisInformation.question}`}
             </Typography>
           }
         />
+        {question.fromCommunity && (
+          <Typography
+            variant="caption"
+            sx={{ color: 'text.secondary', mt: 0.25 }}
+          >
+            From community
+          </Typography>
+        )}
       </ListItem>
     </Tooltip>
   );
@@ -343,8 +358,17 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
     handleDrawerClose();
   };
 
-  const handleQuestionClick = (id: number) => {
-    navigate(`/${selectedTemplate}/questions/${id}`);
+  const handleQuestionClick = (question: QuestionData) => {
+    // For questions curated from community, navigate to the community details page
+    if (question.fromCommunity && question.communityQuestionId) {
+      navigate(
+        `/${selectedTemplate}/community-questions/${question.communityQuestionId}`
+      );
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const questionDocId = (question as any).uid || String(question.id);
+      navigate(`/${selectedTemplate}/questions/${questionDocId}`);
+    }
     handleDrawerClose();
   };
 
@@ -451,10 +475,11 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
           </ListItem>
         </Tooltip>
 
-        {questions.map((question) => (
+        {questions.map((question, index) => (
           <QuestionNavItem
             key={question.id}
             question={question}
+            index={index}
             isCurrentPath={isCurrentPath}
             onQuestionClick={handleQuestionClick}
           />

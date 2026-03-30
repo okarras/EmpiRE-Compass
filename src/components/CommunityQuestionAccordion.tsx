@@ -26,6 +26,10 @@ import CRUDDynamicQuestions, {
 } from '../firestore/CRUDDynamicQuestions';
 import { useAuthData } from '../auth/useAuthData';
 import { useNavigate, useParams } from 'react-router';
+import TemplateManagement, {
+  QuestionData,
+} from '../firestore/TemplateManagement';
+import { useKeycloak } from '@react-keycloak/web';
 
 // Convert DynamicQuestion state to a Query-like object for SectionSelector
 const dynamicQuestionToQuery = (dq: DynamicQuestion) => {
@@ -64,6 +68,7 @@ const CommunityQuestionAccordion = ({
   const [tab, setTab] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuthData();
+  const { keycloak } = useKeycloak();
 
   // Local state for optimistic updates
   const [likes, setLikes] = useState(question.likes || 0);
@@ -71,6 +76,92 @@ const CommunityQuestionAccordion = ({
   const hasLiked = user ? likedBy.includes(user.id) : false;
 
   const { templateId } = useParams();
+
+  const handleAddToCurated = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user?.is_admin || !templateId || !user.email) {
+      return;
+    }
+
+    try {
+      const existingQuestions: QuestionData[] =
+        await TemplateManagement.getAllQuestions(templateId);
+
+      const linked = existingQuestions.find(
+        (q: QuestionData) =>
+          q.fromCommunity === true && q.communityQuestionId === question.id
+      );
+
+      // If already present in curated list, offer to remove it (toggle behavior)
+      if (linked) {
+        if (
+          !window.confirm(
+            'This question is already in the curated questions sidebar. Remove it?'
+          )
+        ) {
+          return;
+        }
+
+        const docId = (linked as any).uid || String(linked.id);
+        await TemplateManagement.deleteQuestion(
+          templateId,
+          docId,
+          user.id,
+          user.email,
+          keycloak?.token
+        );
+        window.alert('Question removed from curated questions.');
+        return;
+      }
+
+      if (
+        !window.confirm(
+          'Add this community question to the curated questions sidebar?'
+        )
+      ) {
+        return;
+      }
+
+      const curatedQuestion: QuestionData = {
+        // Use a large unique id that won’t collide with existing curated questions
+        id: Date.now(),
+        // Use a stable uid namespace for community-derived curated items
+        uid: `community-${question.id}`,
+        title: question.name,
+        fromCommunity: true,
+        communityQuestionId: question.id,
+        dataAnalysisInformation: {
+          question: question.state.question,
+          questionExplanation:
+            question.state.questionInterpretation || undefined,
+          requiredDataForAnalysis:
+            question.state.dataCollectionInterpretation || undefined,
+          dataAnalysis: question.state.dataAnalysisInterpretation || undefined,
+          dataInterpretation: [
+            question.state.dataCollectionInterpretation || '',
+            question.state.dataAnalysisInterpretation || '',
+          ],
+        },
+        sparqlQuery: question.state.sparqlQuery,
+      };
+
+      await TemplateManagement.createQuestion(
+        templateId,
+        curatedQuestion.uid,
+        curatedQuestion,
+        user.id,
+        user.email,
+        keycloak?.token
+      );
+      window.alert('Question added to curated questions.');
+    } catch (error) {
+      console.error(
+        'Failed to add/remove curated question from community',
+        error
+      );
+      window.alert('Failed to update curated questions.');
+    }
+  };
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
@@ -257,6 +348,27 @@ const CommunityQuestionAccordion = ({
             {likes > 0 ? likes : '0'}
           </Button>
 
+          {user?.is_admin && (
+            <Tooltip title="Add to curated questions (sidebar)">
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={handleAddToCurated}
+                sx={{
+                  borderColor: 'success.main',
+                  color: 'success.main',
+                  '&:hover': {
+                    backgroundColor: 'success.main',
+                    color: 'white',
+                    borderColor: 'success.main',
+                  },
+                }}
+              >
+                Add to curated
+              </Button>
+            </Tooltip>
+          )}
+
           {onDelete && (
             <Tooltip title="Delete Question (Admin)">
               <IconButton
@@ -332,7 +444,8 @@ const CommunityQuestionAccordion = ({
         <SectionSelector
           sectionType="information"
           sectionTitle="Interpretation"
-          // @ts-ignore
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
           query={mockQuery} // Passing mock just to satisfy type if needed, or we just render text directly
         />
 
