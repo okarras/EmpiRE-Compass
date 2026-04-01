@@ -509,24 +509,58 @@ Please evaluate this answer and provide your assessment in JSON format with supp
         throw new Error('questionType is required and must be a string');
       }
 
+      // Debug logging for parent context
+      if (request.parentContext) {
+        console.log('[BackendAIService] Parent context received:', {
+          questionText: request.parentContext.questionText,
+          questionId: request.parentContext.questionId,
+          questionType: request.parentContext.questionType,
+          hasAnswer: !!request.parentContext.answer,
+          answerType: typeof request.parentContext.answer,
+          parentChainLength: request.parentContext.parentChain?.length || 0,
+        });
+      } else {
+        console.log('[BackendAIService] No parent context provided');
+      }
+
       // Format parent context
       const parentContextSection = request.parentContext
         ? `
 
-PARENT QUESTION CONTEXT:
-Question: ${request.parentContext.questionText}
-Answer: ${
-            typeof request.parentContext.answer === 'string'
-              ? request.parentContext.answer
-              : JSON.stringify(request.parentContext.answer)
-          }
+PARENT QUESTION CONTEXT (Full Hierarchy):
+${
+  request.parentContext.parentChain &&
+  request.parentContext.parentChain.length > 0
+    ? request.parentContext.parentChain
+        .map(
+          (parent, idx) => `
+Level ${idx + 1} (Ancestor):
+  Question: ${parent.questionText}
+  Answer: ${
+    typeof parent.answer === 'string'
+      ? parent.answer
+      : JSON.stringify(parent.answer)
+  }
+  Type: ${parent.questionType || 'unknown'}`
+        )
+        .join('\n') + '\n'
+    : ''
+}Immediate Parent:
+  Question: ${request.parentContext.questionText}
+  Answer: ${
+    typeof request.parentContext.answer === 'string'
+      ? request.parentContext.answer
+      : JSON.stringify(request.parentContext.answer)
+  }
+  Type: ${request.parentContext.questionType || 'unknown'}
 
-IMPORTANT: The current question is a sub-question of the parent above.
+IMPORTANT: The current question is a sub-question within this hierarchy.
 Your suggestions should:
-- Be consistent with the parent answer
-- Build upon the parent context
-- Provide specific details related to the parent question
-- Avoid contradicting or repeating the parent answer
+- Be consistent with ALL parent answers in the hierarchy
+- Build upon the full context from root to immediate parent
+- Provide specific details that relate to the entire parent chain
+- Avoid contradicting any information in the parent hierarchy
+- Consider how this answer fits within the broader context
 `
         : '';
 
@@ -658,8 +692,12 @@ ${parentContextSection}
 ${siblingContextSection}
 ${previousEntryContextSection}
 
+=== QUESTION YOU MUST ANSWER ===
 Question: ${request.questionText}
-Question Type: ${request.questionType}${optionsText}${contextHistorySection}
+Question Type: ${request.questionType}${optionsText}
+
+NOTE: The above is the SPECIFIC question you need to generate suggestions for. The parent and sibling context sections above are provided only as background — do NOT answer those questions. Focus your suggestions ONLY on the question above.
+${contextHistorySection}
 
 PDF Content:
 ${request.pdfContent}

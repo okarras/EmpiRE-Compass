@@ -58,10 +58,7 @@ const loadAIConfig = (): Partial<InitialState> => {
         groqApiKey: parsed.groqApiKey || '',
         mistralApiKey: parsed.mistralApiKey || '',
         isConfigured: parsed.isConfigured || false,
-        useEnvironmentKeys:
-          parsed.useEnvironmentKeys !== undefined
-            ? parsed.useEnvironmentKeys
-            : false,
+        useEnvironmentKeys: true,
       };
     }
   } catch (error) {
@@ -88,7 +85,7 @@ const defaultConfig: InitialState = {
   groqApiKey: '',
   mistralApiKey: '',
   isConfigured: false,
-  useEnvironmentKeys: false,
+  useEnvironmentKeys: true,
 };
 
 const initialState: InitialState = {

@@ -185,6 +185,7 @@ const QuestionRenderer: React.FC<{
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
       />
     );
   }
@@ -203,6 +204,7 @@ const QuestionRenderer: React.FC<{
         pdfUrl={pdfUrl}
         pageWidth={pageWidth}
         onAIVerificationComplete={onAIVerificationComplete}
+        parentContext={parentContext}
       />
     );
   }

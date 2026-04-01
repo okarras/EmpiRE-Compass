@@ -35,6 +35,7 @@ const RepeatGroupQuestion: React.FC<{
   pdfUrl?: string | null;
   pageWidth?: number | null;
   onAIVerificationComplete?: (result: AIVerificationResult) => void;
+  parentContext?: ParentContext;
 }> = ({
   q,
   value,
@@ -48,6 +49,7 @@ const RepeatGroupQuestion: React.FC<{
   pdfUrl,
   pageWidth,
   onAIVerificationComplete,
+  parentContext,
 }) => {
   const arr = Array.isArray(value) ? value : [];
   const desc = q.desc ?? q.description ?? '';
@@ -135,11 +137,48 @@ const RepeatGroupQuestion: React.FC<{
                 <AccordionDetails>
                   <Box sx={{ display: 'grid', gap: 1 }}>
                     {(q.item_fields || []).map((f: any) => {
-                      const parentContext: ParentContext = {
+                      const fields = q.item_fields || [];
+                      const labeledAnswer: Record<string, any> = {};
+                      for (const field of fields) {
+                        const val = item[field.id];
+                        if (
+                          val !== undefined &&
+                          val !== '' &&
+                          !(Array.isArray(val) && val.length === 0)
+                        ) {
+                          labeledAnswer[field.label || field.id] = val;
+                        }
+                      }
+
+                      // Builds the full parent chain by adding current parent to the chain
+                      const currentParent: ParentContext = {
                         questionText: q.label,
-                        answer: JSON.stringify(item),
+                        answer: JSON.stringify(labeledAnswer),
                         questionId: q.id,
                         questionType: 'repeat_group',
+                      };
+
+                      // Builds full parent chain: include all ancestors + current parent
+                      const fullParentChain: ParentContext[] = [
+                        ...(parentContext?.parentChain || []),
+                        ...(parentContext
+                          ? [
+                              {
+                                questionText: parentContext.questionText,
+                                answer:
+                                  typeof parentContext.answer === 'string'
+                                    ? parentContext.answer
+                                    : JSON.stringify(parentContext.answer),
+                                questionId: parentContext.questionId,
+                                questionType: parentContext.questionType,
+                              },
+                            ]
+                          : []),
+                      ];
+
+                      const childParentContext: ParentContext = {
+                        ...currentParent,
+                        parentChain: fullParentChain,
                       };
 
                       const siblingQuestionIds = (q.item_fields || []).map(
@@ -173,7 +212,7 @@ const RepeatGroupQuestion: React.FC<{
                           pdfUrl={pdfUrl}
                           pageWidth={pageWidth}
                           onAIVerificationComplete={onAIVerificationComplete}
-                          parentContext={parentContext}
+                          parentContext={childParentContext}
                           allAnswers={item}
                           siblingQuestionIds={siblingQuestionIds}
                           questionDefinitions={questionDefinitions}

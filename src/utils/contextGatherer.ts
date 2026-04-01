@@ -196,7 +196,13 @@ export class ContextGatherer {
       if (typeof answer === 'string') {
         formatted = answer;
       } else if (Array.isArray(answer)) {
-        formatted = answer.join(', ');
+        formatted = answer
+          .map((item) =>
+            typeof item === 'object' && item !== null
+              ? JSON.stringify(item)
+              : String(item)
+          )
+          .join(', ');
       } else if (typeof answer === 'object' && answer !== null) {
         if ('value' in answer) {
           return this.formatAnswer(answer.value);

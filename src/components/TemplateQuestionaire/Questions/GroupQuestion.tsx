@@ -30,6 +30,7 @@ const GroupQuestion: React.FC<{
   pdfUrl?: string | null;
   pageWidth?: number | null;
   onAIVerificationComplete?: (result: AIVerificationResult) => void;
+  parentContext?: ParentContext;
 }> = ({
   q,
   value,
@@ -43,6 +44,7 @@ const GroupQuestion: React.FC<{
   pdfUrl,
   pageWidth,
   onAIVerificationComplete,
+  parentContext,
 }) => {
   const obj = value ?? {};
   const [expanded, setExpanded] = useState(false);
@@ -70,11 +72,50 @@ const GroupQuestion: React.FC<{
         <AccordionDetails>
           <Box sx={{ display: 'grid', gap: 1, pl: 1 }}>
             {(q.item_fields || q.subquestions || []).map((f: any) => {
-              const parentContext: ParentContext = {
+              const fields = q.item_fields || q.subquestions || [];
+              const labeledAnswer: Record<string, any> = {};
+              for (const field of fields) {
+                const val = obj[field.id];
+                if (
+                  val !== undefined &&
+                  val !== '' &&
+                  !(Array.isArray(val) && val.length === 0)
+                ) {
+                  labeledAnswer[field.label || field.id] = val;
+                }
+              }
+
+              // Builds the full parent chain by adding current group to the existing chain
+              const currentParent: ParentContext = {
                 questionText: q.label ?? q.title,
-                answer: JSON.stringify(obj),
+                answer: JSON.stringify(labeledAnswer),
                 questionId: q.id,
                 questionType: 'group',
+              };
+
+              // Builds full parent chain: all ancestors + current parent
+              const fullParentChain: ParentContext[] = [
+                ...(parentContext?.parentChain || []),
+                ...(parentContext
+                  ? [
+                      {
+                        questionText: parentContext.questionText,
+                        answer:
+                          typeof parentContext.answer === 'string'
+                            ? parentContext.answer
+                            : JSON.stringify(parentContext.answer),
+                        questionId: parentContext.questionId,
+                        questionType: parentContext.questionType,
+                      },
+                    ]
+                  : []),
+              ];
+
+              // Create child parent context with the current parent as immediate parent
+              // and the full chain as ancestors
+              const childParentContext: ParentContext = {
+                ...currentParent,
+                parentChain: fullParentChain,
               };
 
               const siblingQuestionIds = (
@@ -107,7 +148,7 @@ const GroupQuestion: React.FC<{
                   pdfUrl={pdfUrl}
                   pageWidth={pageWidth}
                   onAIVerificationComplete={onAIVerificationComplete}
-                  parentContext={parentContext}
+                  parentContext={childParentContext}
                   allAnswers={obj}
                   siblingQuestionIds={siblingQuestionIds}
                   questionDefinitions={questionDefinitions}

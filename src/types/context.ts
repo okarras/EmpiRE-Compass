@@ -3,6 +3,7 @@ export interface ParentContext {
   answer: string | object;
   questionId: string;
   questionType?: string;
+  parentChain?: ParentContext[];
 }
 
 export interface SiblingContext {
