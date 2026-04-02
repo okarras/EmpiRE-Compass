@@ -27,7 +27,6 @@ import SuggestionBox from '../SuggestionBox';
 import type { Suggestion } from '../../../utils/suggestions';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
-import type { SemanticDocument } from '../../../utils/semanticChunker';
 import type { ParentContext } from '../../../types/context';
 
 const MultiSelectQuestion: React.FC<{
@@ -38,7 +37,6 @@ const MultiSelectQuestion: React.FC<{
   level?: number;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
-  semanticDocument?: SemanticDocument | null;
   isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (

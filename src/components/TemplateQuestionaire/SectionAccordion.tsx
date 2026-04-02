@@ -16,7 +16,6 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import QuestionRenderer from './Questions/QuestionRenderer';
 import type { StructuredDocument } from '../../utils/structuredPdfExtractor';
-import type { SemanticDocument } from '../../utils/semanticChunker';
 import type { ParentContext } from '../../types/context';
 
 type Props = {
@@ -40,7 +39,6 @@ type Props = {
   isExpandedKey: (k: string) => boolean;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
-  semanticDocument?: SemanticDocument | null;
   isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
@@ -83,7 +81,6 @@ const SectionAccordion: React.FC<Props> = ({
   isExpandedKey,
   pdfContent,
   structuredDocument,
-  semanticDocument,
   isProcessingPdf,
   onNavigateToPage,
   onHighlightsChange,
@@ -206,7 +203,6 @@ const SectionAccordion: React.FC<Props> = ({
                   level={1}
                   pdfContent={pdfContent}
                   structuredDocument={structuredDocument}
-                  semanticDocument={semanticDocument}
                   isProcessingPdf={isProcessingPdf}
                   onNavigateToPage={onNavigateToPage}
                   onHighlightsChange={onHighlightsChange}
@@ -295,7 +291,6 @@ const SectionAccordion: React.FC<Props> = ({
                               level={1}
                               pdfContent={pdfContent}
                               structuredDocument={structuredDocument}
-                              semanticDocument={semanticDocument}
                               isProcessingPdf={isProcessingPdf}
                               onNavigateToPage={onNavigateToPage}
                               onHighlightsChange={onHighlightsChange}

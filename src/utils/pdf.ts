@@ -2,7 +2,7 @@ import * as pdfjs from 'pdfjs-dist';
 import type { PDFDocumentProxy } from 'pdfjs-dist/types/src/display/api';
 import { findMatchesOnPage } from '../pages/PdfHighlights';
 import type { Evidence, EvidenceHighlight, HighlightRect } from './suggestions';
-import { preprocessSearchText } from './robustPdfMatcher';
+import { preprocessSearchText } from './simplePdfMatcher';
 
 if (!pdfjs.GlobalWorkerOptions.workerSrc) {
   pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;

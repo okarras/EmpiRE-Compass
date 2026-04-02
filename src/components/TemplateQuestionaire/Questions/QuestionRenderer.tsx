@@ -7,7 +7,6 @@ import RepeatGroupQuestion from './RepeatGroupQuestion';
 import GroupQuestion from './GroupQuestion';
 import type { AIVerificationResult } from '../../../services/backendAIService';
 import type { StructuredDocument } from '../../../utils/structuredPdfExtractor';
-import type { SemanticDocument } from '../../../utils/semanticChunker';
 import type { ParentContext } from '../../../types/context';
 
 const QuestionRenderer: React.FC<{
@@ -18,7 +17,6 @@ const QuestionRenderer: React.FC<{
   level?: number;
   pdfContent?: string;
   structuredDocument?: StructuredDocument | null;
-  semanticDocument?: SemanticDocument | null;
   isProcessingPdf?: boolean;
   onNavigateToPage?: (pageNumber: number) => void;
   onHighlightsChange?: (
