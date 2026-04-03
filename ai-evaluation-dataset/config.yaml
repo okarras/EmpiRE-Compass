@@ -1,0 +1,32 @@
+# This file contains all configuration parameters for the dataset generation script
+
+# ORKG SPARQL Endpoint Configuration
+orkg:
+  endpoint: "https://orkg.org/triplestore"
+  timeout: 30
+
+# PDF Download Configuration
+pdf_download:
+  # Rate limit: minimum seconds between requests to respect publisher limits
+  rate_limit: 1.0
+  max_retries: 3
+  timeout: 30
+  unpaywall_email: null
+
+# Dataset Organization Configuration
+dataset:
+  base_path: "dataset"
+  resume_on_failure: true
+  skip_existing: true
+  limit_papers: null
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  error_log: "logs/dataset_errors.log"
+  progress_log: "logs/dataset_progress.log"
+
+# Processing Configuration
+processing:
+  max_workers: 5
+  batch_size: 10
