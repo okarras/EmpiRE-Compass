@@ -40,6 +40,7 @@ const mockQuery: Query = {
         dataKey: 'normalizedRatio',
       },
     ],
+    height: 400,
   },
   dataProcessingFunction: (data) => data,
   dataAnalysisInformation: {
@@ -54,11 +55,16 @@ const mockQuery: Query = {
 export const WithNormalizationToggle: Story = {
   render: () => {
     const [normalized, setNormalized] = useState(true);
+    const [categorizeByVenue, setCategorizeByVenue] = useState(false);
     return (
       <ChartParamsSelector
         query={mockQuery}
         normalized={normalized}
         setNormalized={setNormalized}
+        categorizeByVenue={categorizeByVenue}
+        setCategorizeByVenue={setCategorizeByVenue}
+        showVenueCategorization={false}
+        hideNormalization={false}
       />
     );
   },
@@ -84,11 +90,16 @@ const queryWithoutNormalization = {
 export const WithoutNormalizationToggle: Story = {
   render: () => {
     const [normalized, setNormalized] = useState(false);
+    const [categorizeByVenue, setCategorizeByVenue] = useState(false);
     return (
       <ChartParamsSelector
         query={queryWithoutNormalization}
         normalized={normalized}
         setNormalized={setNormalized}
+        categorizeByVenue={categorizeByVenue}
+        setCategorizeByVenue={setCategorizeByVenue}
+        showVenueCategorization={false}
+        hideNormalization={true}
       />
     );
   },
