@@ -653,7 +653,10 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
             sx={{
               '& p': { margin: 0, mb: 0.5, '&:last-child': { mb: 0 } },
               '& strong': { fontWeight: 600 },
-              '& a': { color: 'inherit', pointerEvents: 'none' },
+              '& a': {
+                color: 'inherit',
+                pointerEvents: isAdmin ? 'none' : 'auto',
+              },
             }}
           />
           {isAdmin && (
