@@ -82,8 +82,6 @@ const HighPriorityNews = () => {
     );
   };
 
-  console.log('templateId', templateId, highPriorityNews.length, dismissed);
-
   // Don't render if no news, templateId missing, or dismissed
   // When loading with no data yet, return null to avoid showing a spinner for nothing
   if (highPriorityNews.length === 0 || !templateId || dismissed) {

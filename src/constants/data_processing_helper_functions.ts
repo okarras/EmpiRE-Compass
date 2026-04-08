@@ -27,6 +27,7 @@ export const Query1DataProcessingFunction = (
       rawCount,
       year,
       ...rawData.find((item) => item.year === year), // Other properties
+      itemsInGroup: rawData.filter((item) => item.year === year),
     };
   });
 
@@ -96,6 +97,7 @@ export const Query2DataProcessingFunctionForDataCollection = (
         year,
         ...methods,
         ...normalizedFields,
+        itemsInGroup: rawData.filter((item) => item.year === year),
       };
     });
   return result;
@@ -116,6 +118,7 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
 ) => {
   const processedData: {
     year: number;
+    itemsInGroup: StatisticItem[];
     descriptive: number;
     normalized_descriptive: number;
     inferential: number;
@@ -171,6 +174,7 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
 
     processedData.push({
       year: Number(year),
+      itemsInGroup: rawData.filter((item) => item.year === year),
       descriptive,
       normalized_descriptive: +((descriptive * 100) / total).toFixed(2),
       inferential,
@@ -213,6 +217,7 @@ export const Query3DataProcessingFunction = (
       rawCount,
       year,
       ...rawData.find((item) => item.year === year), // Other properties
+      itemsInGroup: rawData.filter((item) => item.year === year),
     };
   });
 
@@ -442,6 +447,7 @@ export const Query7DataProcessingFunctionForInferentialStatistics = (
       year: Number(item.year),
       normalizedRatio,
       count: item.rowSum,
+      itemsInGroup: rawData.filter((row) => Number(row.year) === item.year),
     };
   });
   return finalData;
@@ -464,8 +470,15 @@ export const Query7DataProcessingFunctionForDescriptiveStatistics = (
     const totalPapersWithDaLabel = filteredData.filter(
       (item) => item.da_label
     ).length;
-    const result: { year: number; [key: string]: number } = {
+    const result: {
+      year: number;
+      itemsInGroup: StatisticalData[];
+      [key: string]: number | StatisticalData[];
+    } = {
       year: Number(year),
+      itemsInGroup: rawData.filter(
+        (item) => Number(item.year) === Number(year)
+      ),
     };
 
     methodKeys.forEach((method) => {
@@ -553,6 +566,9 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[]) => {
       normalizedRatio: total
         ? Number(((withThreats * 100) / total).toFixed(2))
         : 0,
+      itemsInGroup: uniquePapers.filter(
+        (item) => (item.year as number) === year
+      ),
     };
   });
 
@@ -661,6 +677,7 @@ export const Query11DataProcessingFunction = (rawData: RawDataItem[]) => {
         count: withData, // number of papers with a URL
         normalizedRatio:
           total > 0 ? Number(((withData * 100) / total).toFixed(2)) : 0,
+        itemsInGroup: uniquePapers.filter((p) => String(p.year) === yearStr),
       };
     });
 
@@ -743,6 +760,7 @@ export const Query12DataProcessingFunction = (rawData: RawDataItem[]) => {
         normalized_hidqha: total ? +((c5 * 100) / total).toFixed(2) : 0,
         hidqhid: c6,
         normalized_hidqhid: total ? +((c6 * 100) / total).toFixed(2) : 0,
+        itemsInGroup: uniquePapers.filter((p) => p.year === year),
       };
     });
   return result;
@@ -781,7 +799,8 @@ interface RawDataEntry {
 
 interface Query14DataProcessingFunctionReturnInterface {
   year: number;
-  [method: string]: number | string;
+  itemsInGroup?: RawDataEntry[];
+  [method: string]: number | string | RawDataEntry[] | undefined;
 }
 
 export const Query14DataProcessingFunction = (
@@ -826,7 +845,11 @@ export const Query14DataProcessingFunction = (
         );
       });
 
-      return { year: Number(year), ...normalizedRatio };
+      return {
+        year: Number(year),
+        itemsInGroup: rawData.filter((row) => row.year === Number(year)),
+        ...normalizedRatio,
+      };
     })
     .sort((a, b) => a.year - b.year); // Sort by year ascending
 
@@ -951,7 +974,12 @@ export const Query16DataProcessingFunction = (
   return Object.entries(dataByYear)
     .map(([yearStr, counts]) => {
       const year = parseInt(yearStr);
-      const result: any = { year };
+      const result: any = {
+        year,
+        itemsInGroup: deduplicatedData.filter(
+          (row) => Number(row.year) === year
+        ),
+      };
 
       Object.entries(counts).forEach(([methodKey, count]) => {
         result[methodKey] = count;

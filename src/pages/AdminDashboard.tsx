@@ -59,6 +59,11 @@ import {
   updateUserRole as updateUserRoleApi,
 } from '../services/backendApi';
 import { getKeycloakToken } from '../auth/keycloakStore';
+import {
+  QuestionData,
+  StatisticData,
+  TemplateData,
+} from '../firestore/TemplateManagement';
 
 interface FirebaseUser {
   id: string;
@@ -137,18 +142,22 @@ const AdminDashboard = () => {
       setTotalRegularUsers(usersData.length - adminCount);
 
       // Fetch templates and nested counts via backend APIs
-      const templatesList = (await getTemplatesApi()) as Array<{
-        id: string;
-        title?: string;
-        description?: string;
-      }>;
+      const templatesList = (await getTemplatesApi()) as Record<
+        string,
+        TemplateData
+      >;
+      console.log(templatesList);
       const templatesData: TemplateStats[] = [];
       let questionsTotal = 0;
       let statisticsTotal = 0;
 
-      for (const template of templatesList) {
-        const questions = (await getQuestionsApi(template.id)) as any[];
-        const statistics = (await getStatisticsApi(template.id)) as any[];
+      for (const template of Object.values(templatesList)) {
+        const questions = (await getQuestionsApi(
+          template.id
+        )) as QuestionData[];
+        const statistics = (await getStatisticsApi(
+          template.id
+        )) as StatisticData[];
         const questionsCount = Array.isArray(questions) ? questions.length : 0;
         questionsTotal += questionsCount;
         const statisticsCount = Array.isArray(statistics)
@@ -265,6 +274,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     try {
