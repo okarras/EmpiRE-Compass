@@ -42,7 +42,7 @@ const isVercelPreviewUrl = (origin: string): boolean => {
 // rate limit
 export const createRateLimiter = (
   windowMs: number = 5 * 60 * 1000, // 5 minutes
-  max: number = 100
+  max: number = 2000
 ) => {
   return rateLimit({
     windowMs,
@@ -107,10 +107,10 @@ export const validateGenerateTextRequest = (
       .json({ error: 'Prompt is required and must be a string' });
   }
 
-  if (prompt.length > 100000) {
+  if (prompt.length > 300000) {
     return res
       .status(400)
-      .json({ error: 'Prompt too long (max 100000 characters)' });
+      .json({ error: 'Prompt too long (max 300000 characters)' });
   }
 
   if (provider && !['openai', 'groq', 'mistral'].includes(provider)) {
