@@ -319,13 +319,13 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   React.useEffect(() => {
     const loadIntroText = async () => {
       const activeTemplateId = (templateId || 'R186491').toUpperCase();
+      setIntroCustomText(null);
       if (activeTemplateId === 'R1544125') return;
       try {
         const data = await apiRequest(`/api/templates/${activeTemplateId}`);
-        if (data?.introText) {
-          setIntroCustomText(data.introText);
-        }
+        setIntroCustomText(data?.introText ?? null);
       } catch {
+        setIntroCustomText(null);
         // silently fall back to default text
       }
     };
