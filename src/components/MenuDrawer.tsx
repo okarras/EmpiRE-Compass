@@ -130,6 +130,12 @@ const ADMIN_NAV_ITEMS: NavItemConfig[] = [
     Icon: Edit,
   },
   {
+    path: '/admin/team',
+    label: 'Team Management',
+    tooltip: 'Manage team members',
+    Icon: Groups3,
+  },
+  {
     path: '/admin/news',
     label: 'News Management',
     tooltip: 'Create and manage news announcements',
