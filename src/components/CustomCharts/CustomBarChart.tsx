@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useCallback } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
+import type { BarItemIdentifier } from '@mui/x-charts/models';
 import { createLabelFormatter } from '../../utils/chartUtils';
+import BarChartPapersDialog from './BarChartPapersDialog';
 
 interface CustomBarChartInterface {
   dataset: any[];
@@ -21,6 +24,39 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     isSubChart = false,
   } = props;
   const hasMultipleSubCharts = chartSetting.series.length > 1;
+
+  const [papersDialog, setPapersDialog] = useState<{
+    open: boolean;
+    itemsInGroup: Record<string, unknown>[];
+    barTitle: string;
+  }>({ open: false, itemsInGroup: [], barTitle: '' });
+
+  const handleBarItemClick = useCallback(
+    (
+      _event: React.MouseEvent<SVGElement, MouseEvent>,
+      item: BarItemIdentifier
+    ) => {
+      const row = dataset?.[item.dataIndex];
+      if (!row || typeof row !== 'object') return;
+      const itemsInGroup = (row as Record<string, unknown>).itemsInGroup;
+      if (!Array.isArray(itemsInGroup) || itemsInGroup.length === 0) return;
+      const xKey = chartSetting.xAxis?.[0]?.dataKey ?? 'year';
+      const barTitle =
+        (row as Record<string, unknown>)[xKey] != null
+          ? String((row as Record<string, unknown>)[xKey])
+          : `Item ${item.dataIndex}`;
+      setPapersDialog({
+        open: true,
+        itemsInGroup: itemsInGroup as Record<string, unknown>[],
+        barTitle,
+      });
+    },
+    [dataset, chartSetting.xAxis]
+  );
+
+  const closePapersDialog = useCallback(() => {
+    setPapersDialog((d) => ({ ...d, open: false }));
+  }, []);
 
   const labelFormatter = createLabelFormatter(chartSetting, dataset.length);
 
@@ -104,6 +140,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         }))}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
+        onItemClick={handleBarItemClick}
         slotProps={{
           legend: {
             hidden: isSubChart && chartSetting.hideDetailedChartLegend,
@@ -114,6 +151,12 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
             itemMarkWidth: 15,
           },
         }}
+      />
+      <BarChartPapersDialog
+        open={papersDialog.open}
+        onClose={closePapersDialog}
+        barTitle={papersDialog.barTitle}
+        itemsInGroup={papersDialog.itemsInGroup}
       />
     </div>
   );
