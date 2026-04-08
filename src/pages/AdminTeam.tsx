@@ -475,12 +475,13 @@ const AdminTeam = () => {
                   label="Priority"
                   type="number"
                   value={editingMember.priority}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const priority = Number.parseInt(e.target.value, 10);
                     updateEditingMember(
                       'priority',
-                      parseInt(e.target.value) || 999
-                    )
-                  }
+                      Number.isNaN(priority) ? 999 : priority
+                    );
+                  }}
                   helperText="Lower numbers appear first (default: 999)"
                 />
               </Box>
