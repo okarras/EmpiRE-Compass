@@ -10,6 +10,39 @@ import BackupService from '../services/BackupService';
 import { saveChartSettings as saveChartSettingsApi } from '../services/backendApi';
 import { getKeycloakToken } from '../auth/keycloakStore';
 
+function isPlainObject(x: unknown): x is Record<string, unknown> {
+  return x !== null && typeof x === 'object' && !Array.isArray(x);
+}
+
+/**
+ * Merge partial override into base. Skips `undefined` in patch so Firestore/API
+ * partials never wipe static `queries_chart_info` fields. Plain objects merge
+ * recursively; arrays and primitives replace.
+ */
+function deepMergeDefined<T extends Record<string, unknown>>(
+  base: T,
+  patch: Partial<T> | undefined
+): T {
+  if (!patch) return { ...base };
+  const result = { ...base };
+  for (const key of Object.keys(patch) as (keyof T)[]) {
+    const pv = patch[key];
+    if (pv === undefined) continue;
+    const bv = result[key];
+    if (Array.isArray(pv)) {
+      (result as Record<string, unknown>)[key as string] = pv;
+    } else if (isPlainObject(pv) && isPlainObject(bv)) {
+      (result as Record<string, unknown>)[key as string] = deepMergeDefined(
+        bv as Record<string, unknown>,
+        pv as Record<string, unknown>
+      );
+    } else {
+      (result as Record<string, unknown>)[key as string] = pv;
+    }
+  }
+  return result as T;
+}
+
 interface UseQuestionOverridesProps {
   query: Query;
 }
@@ -35,22 +68,22 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
         newQuery.title = latest.title;
       }
       if (latest.dataAnalysisInformation) {
-        newQuery.dataAnalysisInformation = {
-          ...(query.dataAnalysisInformation || {}),
-          ...latest.dataAnalysisInformation,
-        };
+        newQuery.dataAnalysisInformation = deepMergeDefined(
+          (query.dataAnalysisInformation || {}) as Record<string, unknown>,
+          latest.dataAnalysisInformation as Record<string, unknown>
+        ) as Query['dataAnalysisInformation'];
       }
       if (latest.chartSettings && query.chartSettings) {
-        newQuery.chartSettings = {
-          ...query.chartSettings,
-          ...latest.chartSettings,
-        };
+        newQuery.chartSettings = deepMergeDefined(
+          query.chartSettings as unknown as Record<string, unknown>,
+          latest.chartSettings as Record<string, unknown>
+        ) as unknown as Query['chartSettings'];
       }
       if (latest.chartSettings2 && query.chartSettings2) {
-        newQuery.chartSettings2 = {
-          ...query.chartSettings2,
-          ...latest.chartSettings2,
-        };
+        newQuery.chartSettings2 = deepMergeDefined(
+          query.chartSettings2 as unknown as Record<string, unknown>,
+          latest.chartSettings2 as Record<string, unknown>
+        ) as unknown as Query['chartSettings2'];
       }
       return newQuery;
     },

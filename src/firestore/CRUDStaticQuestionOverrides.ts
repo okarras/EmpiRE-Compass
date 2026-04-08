@@ -61,6 +61,8 @@ export interface ChartSettingsOverride {
   };
   grid?: { horizontal?: boolean; vertical?: boolean };
   margin?: { top?: number; right?: number; bottom?: number; left?: number };
+  categoryByVenue?: boolean;
+  venueFieldKey?: string;
 }
 
 export interface QuestionOverrideDocument {
