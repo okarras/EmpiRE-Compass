@@ -20,6 +20,19 @@ export interface SemanticSearchResponse {
   };
 }
 
+export interface OrkgPaperForDisplay {
+  id: string;
+  title?: string;
+  doi?: string;
+  year?: number;
+  authors?: Array<{ name?: string }>;
+  abstract?: string;
+}
+
+export interface SearchByPaperResponse extends SemanticSearchResponse {
+  orkgPaper?: OrkgPaperForDisplay;
+}
+
 export interface OrkgGenerateResponse {
   text: string;
   reasoning?: string;
@@ -32,10 +45,10 @@ export interface GenerateResponse {
 
 export const orkgAskService = {
   /**
-   * Search ORKG Ask by paper: fetches paper title from ORKG, runs semantic search,
-   * returns results. Use payload.items[0].id to open in ORKG Ask.
+   * Search ORKG Ask by paper: fetches paper from ORKG, runs semantic search.
+   * Returns orkgPaper (for display) and payload.items (use items[0].id for ORKG Ask link).
    */
-  async searchByPaper(resourceId: string): Promise<SemanticSearchResponse> {
+  async searchByPaper(resourceId: string): Promise<SearchByPaperResponse> {
     return apiRequest('/api/orkg-ask/search-by-paper', {
       method: 'POST',
       body: JSON.stringify({ resourceId }),

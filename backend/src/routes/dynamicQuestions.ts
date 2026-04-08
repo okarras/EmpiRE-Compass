@@ -10,6 +10,9 @@ import { logRequest } from '../services/requestLogger.js';
 const router = Router();
 
 export interface DynamicQuestion {
+  createdBy: string | undefined;
+  creatorName: string | undefined;
+  status: string;
   id: string;
   name: string;
   timestamp: number;

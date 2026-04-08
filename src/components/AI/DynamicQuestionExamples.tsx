@@ -68,7 +68,8 @@ const DynamicQuestionExamples = ({
             20
           )
         : await CRUDDynamicQuestions.getDynamicQuestions(20);
-      setExamples(questions);
+      // Only treat non-community questions as "example" questions in this list
+      setExamples(questions.filter((q) => !q.isCommunity));
     } catch (err) {
       console.error('Error loading dynamic question examples:', err);
       setError('Failed to load example questions');
