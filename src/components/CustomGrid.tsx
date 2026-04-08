@@ -1,22 +1,36 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Box, IconButton, Tooltip, Snackbar, Alert } from '@mui/material';
-import { AutoAwesome } from '@mui/icons-material';
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
+import {
+  AutoAwesome,
+  AccountTree,
+  Fullscreen,
+  FullscreenExit,
+} from '@mui/icons-material';
 import GridStats from './GridStats';
 import { orkgAskService } from '../services/orkgAskService';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import type { PaperInfoItem } from '../context/AIAssistantContext';
+import {
+  extractOrkgResourceId,
+  isOrkgResourceUri,
+  isValidUrl,
+} from '../utils/orkgResource';
 
-const ORKG_RESOURCE_REGEX = /orkg\.org\/orkg\/resource\/([A-Za-z0-9]+)/i;
-
-function isOrkgResourceUri(value: string): boolean {
-  return typeof value === 'string' && ORKG_RESOURCE_REGEX.test(value);
-}
-
-function extractOrkgResourceId(uri: string): string | null {
-  const match = uri.match(ORKG_RESOURCE_REGEX);
-  return match ? match[1] : null;
-}
+const PaperStatementsGraph = lazy(() => import('./ORKG/PaperStatementsGraph'));
 
 interface Props {
   questionData: Record<string, unknown>[];
@@ -35,6 +49,22 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
     message: string;
     severity: 'success' | 'error' | 'info';
   }>({ open: false, message: '', severity: 'info' });
+  const [graphResourceId, setGraphResourceId] = useState<string | null>(null);
+  const [graphDialogFullPage, setGraphDialogFullPage] = useState(false);
+  const [viewportH, setViewportH] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : 800
+  );
+
+  useEffect(() => {
+    const onResize = () => setViewportH(window.innerHeight);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const graphDialogReservedPx = 132;
+  const graphHeightPx = graphDialogFullPage
+    ? Math.max(320, viewportH - graphDialogReservedPx)
+    : 480;
 
   const handlePaperClick = useCallback(
     async (paperId: string, paperUri: string) => {
@@ -91,15 +121,6 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
     },
     [setPaperInfo]
   );
-
-  const isValidUrl = (str: string) => {
-    try {
-      new URL(str);
-      return true;
-    } catch {
-      return false;
-    }
-  };
 
   // Generate columns based on keys from the first data object
   const columns: GridColDef[] = React.useMemo(() => {
@@ -176,6 +197,21 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
                     aria-label="View paper in AI Assistant"
                   >
                     <AutoAwesome fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Subject–predicate–object graph (ORKG)">
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setGraphResourceId(paperId);
+                    }}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    sx={{ color: '#5c6bc0', flexShrink: 0 }}
+                    aria-label="Open ORKG statement graph"
+                  >
+                    <AccountTree fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -258,6 +294,93 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
       >
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
+
+      <Dialog
+        open={Boolean(graphResourceId)}
+        onClose={() => {
+          setGraphResourceId(null);
+          setGraphDialogFullPage(false);
+        }}
+        maxWidth="lg"
+        fullWidth
+        fullScreen={graphDialogFullPage}
+        PaperProps={{
+          sx: graphDialogFullPage
+            ? { display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+            : undefined,
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            justifyContent: 'space-between',
+            gap: 1,
+            pr: 1,
+          }}
+        >
+          <Box>
+            ORKG statement graph
+            {graphResourceId && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+              >
+                Resource {graphResourceId} ·{' '}
+                <a
+                  href={`https://orkg.org/papers/${graphResourceId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open on ORKG
+                </a>
+              </Typography>
+            )}
+          </Box>
+          <Tooltip
+            title={graphDialogFullPage ? 'Exit full screen' : 'Full screen'}
+          >
+            <IconButton
+              edge="end"
+              onClick={() => setGraphDialogFullPage((v) => !v)}
+              aria-label={
+                graphDialogFullPage ? 'Exit full screen' : 'Full screen'
+              }
+              size="small"
+            >
+              {graphDialogFullPage ? <FullscreenExit /> : <Fullscreen />}
+            </IconButton>
+          </Tooltip>
+        </DialogTitle>
+        <DialogContent
+          dividers
+          sx={{
+            flex: graphDialogFullPage ? 1 : undefined,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: graphDialogFullPage ? 0 : undefined,
+          }}
+        >
+          {graphResourceId && (
+            <Suspense
+              fallback={
+                <Box sx={{ py: 6, display: 'flex', justifyContent: 'center' }}>
+                  <CircularProgress sx={{ color: '#e86161' }} />
+                </Box>
+              }
+            >
+              <PaperStatementsGraph
+                resourceId={graphResourceId}
+                height={graphHeightPx}
+              />
+            </Suspense>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setGraphResourceId(null)}>Close</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
