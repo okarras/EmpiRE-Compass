@@ -777,7 +777,19 @@ const AdminDashboard = () => {
                       <TableCell>
                         <Typography
                           variant="body2"
-                          sx={{ fontFamily: 'monospace', fontSize: '0.8rem' }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.open(`mailto:${user.email}`, '_blank');
+                            e.stopPropagation();
+                          }}
+                          sx={{
+                            cursor: 'pointer',
+                            color: 'inherit',
+                            textDecoration: 'none',
+                            '&:hover': { textDecoration: 'underline' },
+                            fontFamily: 'monospace',
+                            fontSize: '0.8rem',
+                          }}
                         >
                           {user.email || 'N/A'}
                         </Typography>
