@@ -1538,7 +1538,6 @@ const PaperStatementsGraphInner: React.FC<PaperStatementsGraphProps> = ({
               proOptions={{ hideAttribution: true }}
               defaultEdgeOptions={{
                 type: 'smoothstep',
-                pathOptions: { borderRadius: 28 },
               }}
             >
               <Background
@@ -1546,7 +1545,6 @@ const PaperStatementsGraphInner: React.FC<PaperStatementsGraphProps> = ({
                 gap={20}
                 size={1}
                 color="#cfd8dc"
-                variant="dots"
               />
               <Controls
                 showInteractive={false}

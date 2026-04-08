@@ -238,7 +238,7 @@ const PaperInfoView: React.FC<{
             '&:before': { display: 'none' },
           }}
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />} type="button">
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Typography variant="subtitle2" fontWeight={600}>
               ORKG statement graph (subject → predicate → object)
             </Typography>
