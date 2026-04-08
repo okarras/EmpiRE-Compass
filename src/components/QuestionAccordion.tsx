@@ -9,7 +9,7 @@ import {
   CircularProgress,
   Divider,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Query } from '../constants/queries_chart_info';
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformation from './QuestionInformation';
@@ -35,6 +35,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
   const [error1, setError1] = useState<string | null>(null);
   const [error2, setError2] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [categorizeByVenue, setCategorizeByVenue] = useState(false);
   const navigate = useNavigate();
   const { templateId } = useParams();
   const backupVersion = useBackupChange(); // Listen for backup changes
@@ -120,6 +121,42 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
     templateId,
     backupVersion,
   ]); // Re-fetch when backup changes
+
+  useEffect(() => {
+    setCategorizeByVenue(
+      !!(
+        query.chartSettings?.categoryByVenue ||
+        query.chartSettings2?.categoryByVenue
+      )
+    );
+  }, [
+    query.uid,
+    query.chartSettings?.categoryByVenue,
+    query.chartSettings2?.categoryByVenue,
+  ]);
+
+  const mergedRawForVenue = useMemo(() => {
+    if (!query.uid_2_merge || !dataCollection.length || !dataAnalysis.length) {
+      return undefined;
+    }
+    return dataCollection.map((item) => {
+      const item2 = dataAnalysis.find(
+        (i2) => i2.paper === item.paper && i2.year === item.year
+      );
+      return { ...item, ...item2 };
+    });
+  }, [query.uid_2_merge, dataCollection, dataAnalysis]);
+
+  const rawChartDataCollection = query.uid_2_merge
+    ? mergedRawForVenue
+    : dataCollection;
+
+  const hasVenueInCollectionData = !!rawChartDataCollection?.some(
+    (r) => r.venue_name != null && String(r.venue_name).trim() !== ''
+  );
+  const hasVenueInAnalysisData = !!dataAnalysis?.some(
+    (r) => r.venue_name != null && String(r.venue_name).trim() !== ''
+  );
 
   const handleAccordionChange = (
     _event: React.SyntheticEvent,
@@ -360,9 +397,15 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                     query={query}
                     normalized={normalized}
                     setNormalized={setNormalized}
+                    categorizeByVenue={categorizeByVenue}
+                    setCategorizeByVenue={setCategorizeByVenue}
+                    showVenueCategorization={
+                      hasVenueInCollectionData && query.venue !== false
+                    }
                     queryId={query.uid}
                     chartSettings={query.chartSettings}
                     processedChartDataset={getProcessedChartData()}
+                    rawChartData={rawChartDataCollection}
                     dataInterpretation={getDataInterpretation('dataCollection')}
                     type="dataCollection"
                   />
@@ -402,6 +445,11 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                       query={query}
                       normalized={normalized}
                       setNormalized={setNormalized}
+                      categorizeByVenue={categorizeByVenue}
+                      setCategorizeByVenue={setCategorizeByVenue}
+                      showVenueCategorization={
+                        hasVenueInAnalysisData && query.venue !== false
+                      }
                       queryId={query.uid_2}
                       chartSettings={query.chartSettings2}
                       processedChartDataset={
@@ -411,6 +459,7 @@ const QuestionAccordion = ({ query }: { query: Query }) => {
                             ) ?? [])
                           : []
                       }
+                      rawChartData={dataAnalysis}
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
                     />

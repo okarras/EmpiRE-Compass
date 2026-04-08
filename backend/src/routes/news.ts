@@ -74,6 +74,10 @@ export interface NewsItem {
   priority?: 'low' | 'normal' | 'high';
 }
 
+let newsCache: NewsItem[] | null = null;
+let newsCacheTime = 0;
+const NEWS_CACHE_TTL_MS = 60 * 1000; // 1 minute
+
 /**
  * @swagger
  * /api/news:
@@ -103,19 +107,46 @@ export interface NewsItem {
 router.get('/', async (req, res) => {
   try {
     const publishedOnly = req.query.publishedOnly === 'true';
+    const now = Date.now();
+
+    // Serve from cache if valid
+    if (newsCache && now - newsCacheTime < NEWS_CACHE_TTL_MS) {
+      const cachedResult = publishedOnly
+        ? newsCache.filter((n) => n.published === true)
+        : newsCache;
+
+      await logRequest(
+        'read',
+        'News',
+        'all',
+        true,
+        undefined,
+        undefined,
+        undefined,
+        { queryType: publishedOnly ? 'publishedOnly' : 'all', cached: true }
+      );
+
+      return res.json(cachedResult);
+    }
+
     const newsRef = db.collection('News');
     const newsSnapshot = await newsRef.orderBy('createdAt', 'desc').get();
-    const newsItems: NewsItem[] = [];
+    const allNewsItems: NewsItem[] = [];
 
     newsSnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (!publishedOnly || data.published === true) {
-        newsItems.push({
-          id: doc.id,
-          ...data,
-        } as NewsItem);
-      }
+      allNewsItems.push({
+        id: doc.id,
+        ...doc.data(),
+      } as NewsItem);
     });
+
+    // Update Cache
+    newsCache = allNewsItems;
+    newsCacheTime = now;
+
+    const result = publishedOnly
+      ? allNewsItems.filter((n) => n.published === true)
+      : allNewsItems;
 
     await logRequest(
       'read',
@@ -125,10 +156,10 @@ router.get('/', async (req, res) => {
       undefined,
       undefined,
       undefined,
-      { queryType: publishedOnly ? 'publishedOnly' : 'all' }
+      { queryType: publishedOnly ? 'publishedOnly' : 'all', cached: false }
     );
 
-    res.json(newsItems);
+    res.json(result);
   } catch (error) {
     console.error('Error fetching news:', error);
 
@@ -269,6 +300,9 @@ router.post(
       const docData = stripUndefined(rest as Record<string, unknown>);
       await newsRef.set(docData);
 
+      // Invalidate Cache
+      newsCache = null;
+
       await logRequest(
         'write',
         'News',
@@ -370,6 +404,9 @@ router.put(
       const docData = stripUndefined(rest as Record<string, unknown>);
       await newsRef.set(docData, { merge: true });
 
+      // Invalidate Cache
+      newsCache = null;
+
       await logRequest(
         'update',
         'News',
@@ -452,6 +489,9 @@ router.delete(
       }
 
       await newsRef.delete();
+
+      // Invalidate Cache
+      newsCache = null;
 
       await logRequest(
         'delete',

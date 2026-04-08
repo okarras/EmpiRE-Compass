@@ -67,6 +67,30 @@ const backupCollection = async (collectionName: string) => {
   return docs;
 };
 
+type BackupMetadata = {
+  id: string;
+  fileName: string;
+  displayName?: string;
+  description?: string;
+  includesQuestions?: boolean;
+  includesStatistics?: boolean;
+  includesHomeContent?: boolean;
+  includesUsers?: boolean;
+  includesNews?: boolean;
+  includesPapers?: boolean;
+};
+
+type BackupMetadataUpdate = {
+  displayName?: string;
+  description?: string;
+  includesQuestions?: boolean;
+  includesStatistics?: boolean;
+  includesHomeContent?: boolean;
+  includesUsers?: boolean;
+  includesNews?: boolean;
+  includesPapers?: boolean;
+};
+
 router.get('/', validateKeycloakToken, requireAdmin, async (_req, res) => {
   try {
     const backup: Record<string, Record<string, unknown>[]> = {};
@@ -101,6 +125,99 @@ router.get('/', validateKeycloakToken, requireAdmin, async (_req, res) => {
   }
 });
 
+router.get('/metadata', async (req, res) => {
+  try {
+    const filesQuery = req.query.files;
+    const requestedFiles: string[] =
+      typeof filesQuery === 'string'
+        ? filesQuery
+            .split(',')
+            .map((f) => f.trim())
+            .filter(Boolean)
+        : Array.isArray(filesQuery)
+          ? (filesQuery as string[])
+              .flatMap((f) => f.split(','))
+              .map((f) => f.trim())
+              .filter(Boolean)
+          : [];
+
+    const collectionRef = db.collection('BackupFiles');
+    const snapshot = await collectionRef.get();
+
+    // Build a set of existing identifiers (by doc ID and fileName field)
+    const existingIds = new Set<string>();
+    snapshot.docs.forEach((doc) => {
+      existingIds.add(doc.id);
+      const data = doc.data() as Record<string, unknown>;
+      if (typeof data.fileName === 'string') {
+        existingIds.add(data.fileName);
+      }
+    });
+
+    // Automatically create minimal metadata docs for any known backup filenames
+    if (requestedFiles.length > 0) {
+      const batch = db.batch();
+      let hasWrites = false;
+
+      requestedFiles.forEach((fileName) => {
+        if (!existingIds.has(fileName)) {
+          const docRef = collectionRef.doc(fileName);
+          batch.set(
+            docRef,
+            {
+              fileName,
+            },
+            { merge: true }
+          );
+          hasWrites = true;
+        }
+      });
+
+      if (hasWrites) {
+        await batch.commit();
+      }
+    }
+
+    const finalSnapshot = await collectionRef.get();
+
+    const items: BackupMetadata[] = finalSnapshot.docs.map((doc) => {
+      const data = doc.data() as Record<string, unknown>;
+      const fileName =
+        (data.fileName as string | undefined) || (doc.id as string);
+      return {
+        id: doc.id,
+        fileName,
+        displayName:
+          (data.displayName as string | undefined) ||
+          (data.name as string | undefined) ||
+          fileName,
+        description: data.description as string | undefined,
+        includesQuestions: Boolean(data.includesQuestions),
+        includesStatistics: Boolean(data.includesStatistics),
+        includesHomeContent: Boolean(data.includesHomeContent),
+        includesUsers: Boolean(data.includesUsers),
+        includesNews: Boolean(data.includesNews),
+        includesPapers: Boolean(data.includesPapers),
+      };
+    });
+
+    return res.json({
+      success: true,
+      items,
+      count: items.length,
+    });
+  } catch (error) {
+    console.error('Error fetching backup metadata:', error);
+    return res.status(500).json({
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Failed to load backup metadata',
+    });
+  }
+});
+
 router.get(
   '/:collectionName',
   validateKeycloakToken,
@@ -125,6 +242,68 @@ router.get(
       return res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Backup failed',
+      });
+    }
+  }
+);
+
+router.put(
+  '/metadata/:fileName',
+  validateKeycloakToken,
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const { fileName } = req.params;
+      const updates = req.body as BackupMetadataUpdate;
+
+      if (!fileName) {
+        return res
+          .status(400)
+          .json({ success: false, error: 'fileName is required' });
+      }
+
+      const docRef = db.collection('BackupFiles').doc(fileName);
+      await docRef.set(
+        {
+          fileName,
+          ...updates,
+        },
+        { merge: true }
+      );
+
+      const snapshot = await docRef.get();
+      const data = snapshot.data() as Record<string, unknown> | undefined;
+      if (!data) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to load updated metadata',
+        });
+      }
+
+      const result: BackupMetadata = {
+        id: snapshot.id,
+        fileName:
+          (data.fileName as string | undefined) || (snapshot.id as string),
+        displayName:
+          (data.displayName as string | undefined) ||
+          (data.name as string | undefined) ||
+          (fileName as string),
+        description: data.description as string | undefined,
+        includesQuestions: Boolean(data.includesQuestions),
+        includesStatistics: Boolean(data.includesStatistics),
+        includesHomeContent: Boolean(data.includesHomeContent),
+        includesUsers: Boolean(data.includesUsers),
+        includesNews: Boolean(data.includesNews),
+        includesPapers: Boolean(data.includesPapers),
+      };
+
+      return res.json({ success: true, item: result });
+    } catch (error) {
+      console.error('Error updating backup metadata:', error);
+      return res.status(500).json({
+        success: false,
+        error:
+          error instanceof Error ? error.message : 'Failed to update metadata',
       });
     }
   }

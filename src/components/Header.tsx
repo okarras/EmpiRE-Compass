@@ -99,7 +99,7 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
       }
     };
     fetchHighPriorityNewsCount();
-  }, [location.pathname]); // Refetch when route changes
+  }, []); // Run only on mount
 
   // Read template from URL on mount
   useEffect(() => {

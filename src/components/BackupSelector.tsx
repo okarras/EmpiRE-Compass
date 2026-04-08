@@ -14,6 +14,9 @@ import {
   Box,
   Divider,
   Paper,
+  TextField,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -25,11 +28,27 @@ import { useDispatch } from 'react-redux';
 import { fetchQuestionsFromFirebase } from '../store/slices/questionSlice';
 import { AppDispatch } from '../store';
 import { Alert, AlertTitle } from '@mui/material';
+import { apiRequest } from '../services/backendApi';
+import { useAuth } from '../auth/useAuth';
+import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
 
 interface BackupSelectorProps {
   open: boolean;
   onClose: () => void;
   templateId: string;
+}
+
+interface BackupMetadata {
+  fileName: string;
+  displayName: string;
+  description?: string;
+  includesQuestions?: boolean;
+  includesStatistics?: boolean;
+  includesHomeContent?: boolean;
+  includesUsers?: boolean;
+  includesNews?: boolean;
+  includesPapers?: boolean;
 }
 
 const BackupSelector: React.FC<BackupSelectorProps> = ({
@@ -40,12 +59,58 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
   const [availableBackups, setAvailableBackups] = useState<string[]>([]);
   const [currentBackup, setCurrentBackup] = useState<string>('');
   const [isDragging, setIsDragging] = useState(false);
+  const [metadataByFile, setMetadataByFile] = useState<
+    Record<string, BackupMetadata>
+  >({});
+  const [isLoadingMetadata, setIsLoadingMetadata] = useState(false);
+  const [savingForFile, setSavingForFile] = useState<string | null>(null);
+  const [editingFile, setEditingFile] = useState<string | null>(null);
   const dispatch = useDispatch<AppDispatch>();
+  const { user } = useAuth();
+  const isAdmin = user?.is_admin === true;
 
   useEffect(() => {
     if (open) {
-      setAvailableBackups(BackupService.getAvailableBackups());
+      const backups = BackupService.getAvailableBackups();
+      setAvailableBackups(backups);
       setCurrentBackup(BackupService.getCurrentBackupName());
+      const loadMetadata = async () => {
+        try {
+          setIsLoadingMetadata(true);
+          const params =
+            backups.length > 0
+              ? `?files=${encodeURIComponent(backups.join(','))}`
+              : '';
+          const json = await apiRequest<{
+            success: boolean;
+            items?: BackupMetadata[];
+            error?: string;
+          }>(`/api/backup/metadata${params}`);
+          if (!json.success || !json.items) {
+            return;
+          }
+          const map: Record<string, BackupMetadata> = {};
+          json.items.forEach((item) => {
+            map[item.fileName] = {
+              fileName: item.fileName,
+              displayName: item.displayName || item.fileName,
+              description: item.description,
+              includesQuestions: item.includesQuestions,
+              includesStatistics: item.includesStatistics,
+              includesHomeContent: item.includesHomeContent,
+              includesUsers: item.includesUsers,
+              includesNews: item.includesNews,
+              includesPapers: item.includesPapers,
+            };
+          });
+          setMetadataByFile(map);
+        } catch (error) {
+          console.error('Failed to load backup metadata:', error);
+        } finally {
+          setIsLoadingMetadata(false);
+        }
+      };
+      loadMetadata();
     }
   }, [open]);
 
@@ -156,6 +221,64 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
     BackupService.isExplicitlyUsingBackup() || !!currentBackup;
   const isLiveModeEnabled = BackupService.isLiveModeEnabled();
 
+  const getDisplayNameForBackup = (filename: string) => {
+    const meta = metadataByFile[filename];
+    return meta?.displayName || filename;
+  };
+
+  const currentEditingMeta =
+    editingFile && metadataByFile[editingFile]
+      ? metadataByFile[editingFile]
+      : editingFile
+        ? { fileName: editingFile, displayName: editingFile, description: '' }
+        : null;
+
+  const handleAdminFieldChange = (
+    filename: string,
+    changes: Partial<BackupMetadata>
+  ) => {
+    setMetadataByFile((prev) => ({
+      ...prev,
+      [filename]: {
+        ...(prev[filename] || {
+          fileName: filename,
+          displayName: filename,
+        }),
+        ...changes,
+      },
+    }));
+  };
+
+  const handleSaveMetadata = async (filename: string) => {
+    const meta = metadataByFile[filename];
+    if (!meta) return;
+    try {
+      setSavingForFile(filename);
+      await apiRequest(`/api/backup/metadata/${encodeURIComponent(filename)}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          displayName: meta.displayName,
+          description: meta.description,
+          includesQuestions: meta.includesQuestions,
+          includesStatistics: meta.includesStatistics,
+          includesHomeContent: meta.includesHomeContent,
+          includesUsers: meta.includesUsers,
+          includesNews: meta.includesNews,
+          includesPapers: meta.includesPapers,
+        }),
+        requiresAdmin: true,
+      });
+      toast.success('Backup metadata saved');
+    } catch (error) {
+      console.error('Failed to save backup metadata:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to save metadata'
+      );
+    } finally {
+      setSavingForFile((current) => (current === filename ? null : current));
+    }
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Select Data Source</DialogTitle>
@@ -202,10 +325,11 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
 
         <Typography variant="subtitle2" color="text.secondary" gutterBottom>
           Available Backups
+          {isLoadingMetadata && ' (loading metadata...)'}
         </Typography>
         <Paper
           variant="outlined"
-          sx={{ maxHeight: 200, overflow: 'auto', mb: 3 }}
+          sx={{ maxHeight: 240, overflow: 'auto', mb: 2 }}
         >
           <List dense>
             {availableBackups.map((filename) => (
@@ -213,21 +337,67 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
                 <ListItemButton
                   onClick={() => handleSelectBackup(filename)}
                   selected={filename === currentBackup}
+                  sx={{
+                    alignItems: 'flex-start',
+                    py: 1.5,
+                  }}
                 >
-                  <ListItemIcon>
+                  <ListItemIcon sx={{ mt: 0.5 }}>
                     {filename === currentBackup ? (
                       <CheckCircleIcon color="primary" />
                     ) : (
                       <InsertDriveFileIcon />
                     )}
                   </ListItemIcon>
-                  <ListItemText
-                    primary={filename}
-                    primaryTypographyProps={{
-                      noWrap: true,
-                      variant: 'body2',
-                    }}
-                  />
+                  <Box sx={{ flex: 1, minWidth: 0, pr: isAdmin ? 1 : 0 }}>
+                    <ListItemText
+                      primary={getDisplayNameForBackup(filename)}
+                      secondaryTypographyProps={{ variant: 'caption' }}
+                      secondary={
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            noWrap
+                          >
+                            {filename}
+                          </Typography>
+                          {metadataByFile[filename]?.description && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ mt: 0.5 }}
+                            >
+                              {metadataByFile[filename]?.description}
+                            </Typography>
+                          )}
+                        </Box>
+                      }
+                      primaryTypographyProps={{
+                        noWrap: true,
+                        variant: 'body2',
+                      }}
+                    />
+
+                    {isAdmin && (
+                      <Box
+                        sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}
+                      >
+                        <Tooltip title="Edit metadata">
+                          <IconButton
+                            size="small"
+                            edge="end"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingFile(filename);
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    )}
+                  </Box>
                 </ListItemButton>
               </ListItem>
             ))}
@@ -238,6 +408,83 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
             )}
           </List>
         </Paper>
+
+        {isAdmin && currentEditingMeta && (
+          <Box
+            sx={{
+              mb: 3,
+              mt: 1,
+              p: 2,
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.default',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Edit backup metadata
+            </Typography>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontFamily: 'monospace', display: 'block', mb: 1 }}
+            >
+              {currentEditingMeta.fileName}
+            </Typography>
+            <TextField
+              label="Display name"
+              fullWidth
+              size="small"
+              margin="dense"
+              value={currentEditingMeta.displayName}
+              onChange={(e) =>
+                handleAdminFieldChange(currentEditingMeta.fileName, {
+                  displayName: e.target.value || currentEditingMeta.fileName,
+                })
+              }
+            />
+            <TextField
+              label="Description (what is included / not included)"
+              fullWidth
+              size="small"
+              margin="dense"
+              multiline
+              minRows={2}
+              value={currentEditingMeta.description || ''}
+              onChange={(e) =>
+                handleAdminFieldChange(currentEditingMeta.fileName, {
+                  description: e.target.value,
+                })
+              }
+            />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 1,
+                mt: 1,
+              }}
+            >
+              <Button
+                size="small"
+                onClick={() => setEditingFile(null)}
+                sx={{ textTransform: 'none' }}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                startIcon={<SaveIcon />}
+                disabled={savingForFile === currentEditingMeta.fileName}
+                onClick={() => handleSaveMetadata(currentEditingMeta.fileName)}
+                sx={{ textTransform: 'none' }}
+              >
+                Save
+              </Button>
+            </Box>
+          </Box>
+        )}
 
         <Divider sx={{ mb: 2 }}>OR</Divider>
 

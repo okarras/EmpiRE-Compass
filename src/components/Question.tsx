@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Query } from '../constants/queries_chart_info';
 import {
   Box,
@@ -21,7 +21,6 @@ import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
 import SectionSelector from './SectionSelector';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
-import { getTemplateConfig } from '../constants/template_config';
 import { useParams } from 'react-router-dom';
 import QuestionInformation from './QuestionInformation';
 import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
@@ -62,6 +61,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
   const [loading1, setLoading1] = useState(true);
   const [error1, setError1] = useState<string | null>(null);
   const [normalized, setNormalized] = useState(true);
+  const [categorizeByVenue, setCategorizeByVenue] = useState(false);
 
   // State for secondary data (uid_2 if exists)
   const [dataAnalysis, setDataAnalysis] = useState<Record<string, unknown>[]>(
@@ -78,6 +78,42 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     }
   }, [query, dataCollection, loading1, error1, setContext]);
 
+  useEffect(() => {
+    setCategorizeByVenue(
+      !!(
+        query.chartSettings?.categoryByVenue ||
+        query.chartSettings2?.categoryByVenue
+      )
+    );
+  }, [
+    query.uid,
+    query.chartSettings?.categoryByVenue,
+    query.chartSettings2?.categoryByVenue,
+  ]);
+
+  const mergedRawForVenue = useMemo(() => {
+    if (!query.uid_2_merge || !dataCollection.length || !dataAnalysis.length) {
+      return undefined;
+    }
+    return dataCollection.map((item) => {
+      const item2 = dataAnalysis.find(
+        (i2) => i2.paper === item.paper && i2.year === item.year
+      );
+      return { ...item, ...item2 };
+    });
+  }, [query.uid_2_merge, dataCollection, dataAnalysis]);
+
+  const rawChartDataCollection = query.uid_2_merge
+    ? mergedRawForVenue
+    : dataCollection;
+
+  const hasVenueInCollectionData = !!rawChartDataCollection?.some(
+    (r) => r.venue_name != null && String(r.venue_name).trim() !== ''
+  );
+  const hasVenueInAnalysisData = !!dataAnalysis?.some(
+    (r) => r.venue_name != null && String(r.venue_name).trim() !== ''
+  );
+
   // Fetch primary data (uid)
   useEffect(() => {
     // Reset state when query changes
@@ -92,10 +128,13 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       try {
         setLoading1(true);
         setError1(null);
-        const sparqlMap = getTemplateConfig(templateId as string).sparql;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
-        const data = await fetchSPARQLData(sparqlMap[query.uid]);
+        const sparql = query.sparqlQuery;
+        if (!sparql) {
+          setDataCollection([]);
+          return;
+        }
+
+        const data = await fetchSPARQLData(sparql);
         setDataCollection(data);
       } catch (err) {
         setError1('Failed to load question data');
@@ -105,7 +144,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       }
     };
     fetchData();
-  }, [query.uid, templateId, backupVersion]); // Re-fetch when backup changes
+  }, [query.uid, templateId, backupVersion, query.sparqlQuery]); // Re-fetch when backup changes
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -114,15 +153,13 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     setError2(null);
     setLoading2(false);
 
-    if (query?.uid_2) {
+    if (query?.uid_2 && query.sparqlQuery2) {
       const fetchData = async () => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getTemplateConfig(templateId as string).sparql;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          const data = await fetchSPARQLData(sparqlMap[query.uid_2]);
+
+          const data = await fetchSPARQLData(query.sparqlQuery2!);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -132,15 +169,13 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
         }
       };
       fetchData();
-    } else if (query?.uid_2_merge) {
+    } else if (query?.uid_2_merge && query.sparqlQuery2) {
       const fetchData = async () => {
         try {
           setLoading2(true);
           setError2(null);
-          const sparqlMap = getTemplateConfig(templateId as string).sparql;
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          //@ts-ignore
-          const data = await fetchSPARQLData(sparqlMap[query.uid_2_merge]);
+
+          const data = await fetchSPARQLData(query.sparqlQuery2!);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
@@ -151,7 +186,14 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       };
       fetchData();
     }
-  }, [query.uid, query?.uid_2, query?.uid_2_merge, templateId, backupVersion]); // Re-fetch when backup changes
+  }, [
+    query.uid,
+    query?.uid_2,
+    query?.uid_2_merge,
+    templateId,
+    backupVersion,
+    query.sparqlQuery2,
+  ]); // Re-fetch when backup changes
 
   const getProcessedChartData = () => {
     if (query.uid_2_merge) {
@@ -339,9 +381,15 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                 query={query}
                 normalized={normalized}
                 setNormalized={setNormalized}
+                categorizeByVenue={categorizeByVenue}
+                setCategorizeByVenue={setCategorizeByVenue}
+                showVenueCategorization={
+                  hasVenueInCollectionData && query.venue !== false
+                }
                 queryId={query.uid}
                 chartSettings={query.chartSettings}
                 processedChartDataset={getProcessedChartData()}
+                rawChartData={rawChartDataCollection}
                 dataInterpretation={getDataInterpretation('dataCollection')}
                 type="dataCollection"
                 isEditMode={isEditMode}
@@ -431,6 +479,11 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                       query={query}
                       normalized={normalized}
                       setNormalized={setNormalized}
+                      categorizeByVenue={categorizeByVenue}
+                      setCategorizeByVenue={setCategorizeByVenue}
+                      showVenueCategorization={
+                        hasVenueInAnalysisData && query.venue !== false
+                      }
                       queryId={query.uid_2}
                       chartSettings={query.chartSettings2}
                       processedChartDataset={
@@ -440,6 +493,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                             ) ?? [])
                           : []
                       }
+                      rawChartData={dataAnalysis}
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
                       isEditMode={isEditMode}
