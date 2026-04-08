@@ -777,16 +777,22 @@ const AdminDashboard = () => {
                       <TableCell>
                         <Typography
                           variant="body2"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            window.open(`mailto:${user.email}`, '_blank');
-                            e.stopPropagation();
-                          }}
+                          onClick={
+                            user.email
+                              ? (e) => {
+                                  e.preventDefault();
+                                  window.open(`mailto:${user.email}`, '_blank');
+                                  e.stopPropagation();
+                                }
+                              : undefined
+                          }
                           sx={{
-                            cursor: 'pointer',
+                            cursor: user.email ? 'pointer' : 'default',
                             color: 'inherit',
                             textDecoration: 'none',
-                            '&:hover': { textDecoration: 'underline' },
+                            '&:hover': user.email
+                              ? { textDecoration: 'underline' }
+                              : undefined,
                             fontFamily: 'monospace',
                             fontSize: '0.8rem',
                           }}
