@@ -24,6 +24,7 @@ import {
 import {
   Edit,
   SmartToy,
+  AutoFixHigh,
   Save,
   Cancel,
   History,
@@ -46,6 +47,10 @@ import { PredicatesMapping, PropertyMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
 import { updateTemplate, apiRequest } from '../../services/backendApi';
 import { useAuthData } from '../../auth/useAuthData';
+import { useAppSelector } from '../../store/hooks';
+import { generateQuestionAlignmentPrompt } from '../../utils/promptGenerator';
+import TemplateHierarchyPanel from './TemplateHierarchyPanel';
+import { extractOrkgPredicateIds } from '../../utils/sparqlPredicateIds';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -108,21 +113,6 @@ interface ClassMetadata {
 const KG_EMPIRE_DEFAULT_HTML = `<p>You can ask factual, comparative, and exploratory questions about empirical research practice in <strong>Requirements Engineering (RE)</strong>, grounded in the underlying <a href="{schemaUrl}" target="_blank" rel="noopener noreferrer">schema</a>.</p>
 
 <p>Main topics you can query include: <strong>research questions and answers</strong> (primary questions, subquestions, how answers are reported), <strong>research paradigm</strong>, <strong>data collection</strong> (what data were collected, data types, methods, URLs), <strong>data analysis</strong> (analysis methods, inferential and descriptive statistics, machine learning algorithms and metrics), <strong>hypotheses</strong> (null vs. alternative), <strong>measures and metrics</strong> (counts, percentages, central tendency and dispersion), and <strong>threats to validity</strong> (construct, internal, external, conclusion validity, reliability, generalizability, repeatability, and other validity types).</p>`;
-
-const extractPredicateIds = (query: string): string[] => {
-  const regex = /orkgp:(P\d+)/gi;
-  const seen = new Set<string>();
-  const result: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(query)) !== null) {
-    const id = match[1].toUpperCase();
-    if (!seen.has(id)) {
-      seen.add(id);
-      result.push(id);
-    }
-  }
-  return result;
-};
 
 const extractClassIds = (query: string): string[] => {
   const regex = /orkgc:(C\d+)/gi;
@@ -309,6 +299,28 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
 
   const { user } = useAuthData();
 
+  const {
+    provider,
+    openaiModel,
+    groqModel,
+    mistralModel,
+    googleModel,
+    openrouterModel,
+  } = useAppSelector((s) => s.ai);
+
+  const currentModel =
+    provider === 'openai'
+      ? openaiModel
+      : provider === 'groq'
+        ? groqModel
+        : provider === 'mistral'
+          ? mistralModel
+          : provider === 'google'
+            ? googleModel
+            : openrouterModel;
+
+  const [aligningQuestion, setAligningQuestion] = useState(false);
+
   const templateMapping = (propTemplateMapping ??
     state.templateMapping ??
     undefined) as PredicatesMapping | undefined;
@@ -346,7 +358,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
       };
     }
 
-    const predicateIds = extractPredicateIds(sparqlQuery);
+    const predicateIds = Array.from(extractOrkgPredicateIds(sparqlQuery));
     const predicateDetails: PredicateDetail[] = predicateIds.map(
       (predicateId) => {
         // Normalize predicate ID
@@ -994,6 +1006,60 @@ Modified SPARQL Query:`;
     }
   };
 
+  const handleAlignQuestionWithSchema = async () => {
+    if (!question.trim()) {
+      setError('Enter a draft question first.');
+      return;
+    }
+    if (!templateMapping || Object.keys(templateMapping).length === 0) {
+      setError('Template schema is not loaded yet.');
+      return;
+    }
+    if (!aiService.isConfigured()) {
+      setError('Please configure your AI settings first.');
+      return;
+    }
+
+    setAligningQuestion(true);
+    setError(null);
+
+    try {
+      const prompt = generateQuestionAlignmentPrompt(
+        templateMapping,
+        (templateId || 'R186491').toUpperCase(),
+        question,
+        targetClassId ?? undefined
+      );
+      const result = await aiService.generateText(prompt, {
+        temperature: 0.3,
+        maxTokens: 500,
+        provider,
+        model: currentModel,
+        systemContext:
+          'You rewrite research questions to align with a given knowledge graph template. Output only the single rewritten question.',
+      });
+      const text = result.text.trim().replace(/^["']|["']$/g, '');
+      if (text) onQuestionChange(text);
+      if (result.cost) {
+        updateCosts([
+          ...state.costs,
+          {
+            ...result.cost,
+            section: 'Align question with schema',
+          },
+        ]);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to align question with schema'
+      );
+    } finally {
+      setAligningQuestion(false);
+    }
+  };
+
   return (
     <>
       {/* Question Input Section */}
@@ -1043,13 +1109,44 @@ Modified SPARQL Query:`;
               },
             }}
           />
+          <TemplateHierarchyPanel
+            templateMapping={templateMapping}
+            sparqlQuery={sparqlQuery}
+          />
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1,
             }}
           >
+            <Tooltip title="Rewrite your question using the template vocabulary and nested paths shown above.">
+              <span>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleAlignQuestionWithSchema}
+                  disabled={
+                    loading ||
+                    aligningQuestion ||
+                    !templateMapping ||
+                    Object.keys(templateMapping).length === 0
+                  }
+                  startIcon={
+                    aligningQuestion ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <AutoFixHigh />
+                    )
+                  }
+                  sx={{ textTransform: 'none' }}
+                >
+                  Align question with schema
+                </Button>
+              </span>
+            </Tooltip>
             <Button
               variant="contained"
               onClick={onGenerateAndRun}

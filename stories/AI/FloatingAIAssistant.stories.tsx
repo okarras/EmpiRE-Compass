@@ -31,15 +31,20 @@ const createMockStore = () =>
     },
     preloadedState: {
       ai: {
-        provider: 'mistral' as const,
+        provider: 'openrouter' as const,
         openaiModel: 'gpt-4o-mini' as const,
         groqModel: 'llama-3.1-8b-instant' as const,
         mistralModel: 'mistral-large-latest' as const,
+        googleModel: 'gemini-2.5-flash' as const,
+        openrouterModel: 'openai/gpt-4o-mini' as const,
         openaiApiKey: '',
         groqApiKey: '',
         mistralApiKey: '',
+        googleApiKey: '',
+        openrouterApiKey: 'sk-or-v1-mock',
+        openRouterTermsAccepted: true,
         isConfigured: true,
-        useEnvironmentKeys: true,
+        useEnvironmentKeys: false,
       },
     },
   });

@@ -157,6 +157,10 @@ const aiConfig: AIConfig = {
       | 'gemini-1.5-flash-8b'
       | 'gemma-3-27b-it') || 'gemini-1.5-flash',
   googleApiKey: sanitizeEnvVar(process.env.GOOGLE_API_KEY, ''),
+  openrouterModel: sanitizeEnvVar(
+    process.env.OPENROUTER_MODEL,
+    'openai/gpt-4o-mini'
+  ),
 };
 
 const aiService = new AIService(aiConfig);

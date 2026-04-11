@@ -11,6 +11,7 @@ import type {
   GroqModel,
   MistralModel,
   GoogleModel,
+  OpenRouterModel,
 } from '../store/slices/aiSlice';
 
 export interface AIConfig {
@@ -19,10 +20,14 @@ export interface AIConfig {
   groqModel: GroqModel;
   mistralModel: MistralModel;
   googleModel: GoogleModel;
+  openrouterModel: OpenRouterModel;
   openaiApiKey: string;
   groqApiKey: string;
   mistralApiKey: string;
   googleApiKey: string;
+  openrouterApiKey: string;
+  /** Used when mirroring Redux; OpenRouter path uses backend only */
+  openRouterTermsAccepted?: boolean;
   useEnvironmentKeys: boolean;
 }
 
@@ -34,6 +39,9 @@ export class AIService {
   }
 
   private getApiKey(provider: AIProvider): string {
+    if (provider === 'openrouter') {
+      return '';
+    }
     // NEVER use VITE_* API keys in production - they get baked into the client bundle.
     // In production, use the backend (BackendAIService) which has server-side keys.
     if (import.meta.env.PROD && this.config.useEnvironmentKeys) {
@@ -69,6 +77,11 @@ export class AIService {
       throw new Error(`${provider.toUpperCase()} API key is not configured`);
     }
 
+    if (provider === 'openrouter') {
+      throw new Error(
+        'OpenRouter is only available through the backend proxy; use the unified AI service'
+      );
+    }
     if (provider === 'openai') {
       return createOpenAI({ apiKey });
     } else if (provider === 'groq') {
@@ -192,6 +205,10 @@ export class AIService {
         actualModel = this.config.groqModel;
       } else if (actualProvider === 'mistral') {
         actualModel = this.config.mistralModel;
+      } else if (actualProvider === 'google') {
+        actualModel = this.config.googleModel;
+      } else if (actualProvider === 'openrouter') {
+        actualModel = this.config.openrouterModel;
       } else {
         actualModel = '';
       }
@@ -226,6 +243,8 @@ export class AIService {
       model = this.config.mistralModel;
     } else if (this.config.provider === 'google') {
       model = this.config.googleModel;
+    } else if (this.config.provider === 'openrouter') {
+      model = this.config.openrouterModel;
     } else {
       model = '';
     }
@@ -244,19 +263,22 @@ export const useAIService = () => {
 
   // Ensure we have valid configuration
   const config: AIConfig = {
-    provider: aiConfig.provider || 'mistral',
+    provider: aiConfig.provider || 'openrouter',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
+    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-4o-mini',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
     mistralApiKey: aiConfig.mistralApiKey || '',
     googleApiKey: aiConfig.googleApiKey || '',
+    openrouterApiKey: aiConfig.openrouterApiKey || '',
+    openRouterTermsAccepted: aiConfig.openRouterTermsAccepted ?? false,
     useEnvironmentKeys:
       aiConfig.useEnvironmentKeys !== undefined
         ? aiConfig.useEnvironmentKeys
-        : true,
+        : false,
   };
 
   return new AIService(config);
@@ -265,15 +287,18 @@ export const useAIService = () => {
 // Default AI service for components that don't use hooks
 export const createDefaultAIService = () => {
   return new AIService({
-    provider: 'mistral',
+    provider: 'openrouter',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
+    openrouterModel: 'openai/gpt-4o-mini',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',
     googleApiKey: '',
-    useEnvironmentKeys: true,
+    openrouterApiKey: '',
+    openRouterTermsAccepted: false,
+    useEnvironmentKeys: false,
   });
 };

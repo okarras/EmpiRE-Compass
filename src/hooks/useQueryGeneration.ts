@@ -44,8 +44,14 @@ export const useQueryGeneration = ({
   updateSparqlQuery,
 }: UseQueryGenerationProps) => {
   const aiService = useAIService();
-  const { provider, openaiModel, groqModel, mistralModel, googleModel } =
-    useAppSelector((state) => state.ai);
+  const {
+    provider,
+    openaiModel,
+    groqModel,
+    mistralModel,
+    googleModel,
+    openrouterModel,
+  } = useAppSelector((state) => state.ai);
 
   // Determine current model based on provider
   const currentModel =
@@ -55,7 +61,9 @@ export const useQueryGeneration = ({
         ? groqModel
         : provider === 'mistral'
           ? mistralModel
-          : googleModel;
+          : provider === 'google'
+            ? googleModel
+            : openrouterModel;
 
   const [currentIteration, setCurrentIteration] = useState(0);
   const [iterationFeedback, setIterationFeedback] = useState('');
