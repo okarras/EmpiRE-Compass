@@ -3,6 +3,7 @@ import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/backendAIService';
 import { orkgAskService } from '../services/orkgAskService';
+import { useAppSelector } from '../store/hooks';
 
 interface UseAIAssistantProps {
   query: Query;
@@ -123,8 +124,27 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const aiService = useAIService();
   const { pendingPrompt, clearPendingPrompt, assistantProvider } =
     useAIAssistantContext();
+  const {
+    provider,
+    openaiModel,
+    groqModel,
+    mistralModel,
+    googleModel,
+    openrouterModel,
+  } = useAppSelector((state) => state.ai);
 
-  /** Generate text using the selected provider (ORKG Ask default, or OpenAI) */
+  const currentModel =
+    provider === 'openai'
+      ? openaiModel
+      : provider === 'groq'
+        ? groqModel
+        : provider === 'mistral'
+          ? mistralModel
+          : provider === 'google'
+            ? googleModel
+            : openrouterModel;
+
+  /** Generate text using the selected provider (ORKG Ask default, or store AI) */
   const generateWithProvider = async (
     fullPrompt: string,
     systemContext?: string
@@ -136,7 +156,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       return { text: res.text, reasoning: res.reasoning };
     }
     return aiService.generateText(fullPrompt, {
-      provider: 'openai',
+      provider,
+      model: currentModel,
       systemContext,
       temperature: 0.3,
       maxTokens: 2000,

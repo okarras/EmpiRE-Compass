@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { AIService, type AIConfig } from '../aiService.js';
 import { validateGenerateTextRequest } from '../middleware.js';
 import {
@@ -17,6 +17,13 @@ interface UserRateLimit {
 }
 
 const router = Router();
+
+const readOpenRouterApiKey = (req: AuthenticatedRequest): string => {
+  const h = req.headers['x-openrouter-api-key'];
+  if (typeof h === 'string') return h.trim();
+  if (Array.isArray(h) && h[0]) return String(h[0]).trim();
+  return '';
+};
 
 /**
  * @swagger
@@ -179,11 +186,41 @@ const getAIService = (): AIService => {
         process.env.GOOGLE_GENERATIVE_AI_API_KEY,
         ''
       ),
+      openrouterModel: sanitizeEnvVar(
+        process.env.OPENROUTER_MODEL,
+        'openai/gpt-4o-mini'
+      ),
     };
     aiService = new AIService(fallbackConfig);
   }
   return aiService;
 };
+
+/**
+ * Public proxy: OpenRouter model catalog (no API key required).
+ * Avoids browser CORS when the dashboard loads the model list.
+ */
+router.get('/openrouter-models', async (_req: Request, res: Response) => {
+  try {
+    const upstream = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: { Accept: 'application/json' },
+    });
+    if (!upstream.ok) {
+      return res.status(502).json({
+        error: 'OpenRouter models API returned an error',
+        status: upstream.status,
+      });
+    }
+    const json = await upstream.json();
+    res.json(json);
+  } catch (error) {
+    console.error('openrouter-models proxy:', error);
+    res.status(500).json({
+      error: 'Failed to fetch OpenRouter models',
+      details: error instanceof Error ? error.message : String(error),
+    });
+  }
+});
 
 /**
  * @swagger
@@ -384,26 +421,25 @@ router.post(
   validateGenerateTextRequest,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const {
-        prompt,
-        provider,
-        model,
-        temperature,
-        maxTokens,
-        systemContext,
-        // NOTE: API keys from request body are IGNORED for security
-        // Backend always uses its own environment keys
-      } = req.body;
+      const { prompt, provider, model, temperature, maxTokens, systemContext } =
+        req.body;
 
-      const result = await getAIService().generateText({
-        prompt,
-        provider,
-        model,
-        temperature,
-        maxTokens,
-        systemContext,
-        // Backend uses environment keys only - never accepts user keys
-      });
+      const openRouterKey =
+        provider === 'openrouter' ? readOpenRouterApiKey(req) : '';
+
+      const result = await getAIService().generateText(
+        {
+          prompt,
+          provider,
+          model,
+          temperature,
+          maxTokens,
+          systemContext,
+        },
+        provider === 'openrouter'
+          ? { openRouterApiKey: openRouterKey }
+          : undefined
+      );
 
       // Calculate cost if usage information is available
       let costInfo = undefined;
@@ -434,7 +470,8 @@ router.post(
         error,
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        body: req.body,
+        provider: req.body?.provider,
+        hasOpenRouterKeyHeader: !!req.headers['x-openrouter-api-key'],
       });
 
       if (error instanceof Error) {
