@@ -24,7 +24,7 @@ authors:
 affiliations:
   - index: 1
     name: TIB – Leibniz Information Centre for Science and Technology, Germany
-    ror: 04aj4at65
+    ror: 04aj4c181
   - index: 2
     name: Leibniz University Hannover, Germany
     ror: 0304hq317
@@ -93,6 +93,6 @@ By making these datasets interactive, the dashboard supports “living” litera
 
 # Acknowledgements
 
-We thank the Open Research Knowledge Graph (ORKG) team for their infrastructure support. Development has received institutional support from **TIB – Leibniz Information Centre for Science and Technology** and collaboration with **Leibniz University Hannover**. The sponsors had no editorial control over this manuscript.
+We thank the Open Research Knowledge Graph (ORKG) team for their infrastructure support.
 
 # References
