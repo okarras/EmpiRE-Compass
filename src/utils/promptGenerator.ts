@@ -675,6 +675,7 @@ BIND(IF(LCASE(STR(?resource_label)) = LCASE("Expected Value"), 1, 0) AS ?flag)
 
 ### Critical: Think Before You Query
 Before writing any SPARQL:
+0. **Map the question to the template hierarchy** — Using the **Template Hierarchy Structure** and **Template Properties** sections above, identify which top-level branches and which nested (\`└─\`) paths the question requires. Only use predicates listed there; plan the full traversal (contribution → parent property → subtemplate → nested property) before writing triple patterns.
 1. **Read the question carefully** - What exactly is being asked?
 2. **Identify the key concepts** - What data elements are needed?
 3. **Determine the analysis type** - Counting? Proportions? Trends? Comparisons?
@@ -884,4 +885,38 @@ const generateHierarchySection = (
     '- Always follow the hierarchy: contribution → parent → child → grandchild\n\n';
 
   return hierarchySection;
+};
+
+/**
+ * Prompt for rewriting the user's research question in terms that align with
+ * the loaded template schema (hierarchy + properties).
+ */
+export const generateQuestionAlignmentPrompt = (
+  templateMapping: PredicatesMapping,
+  templateId: string,
+  question: string,
+  targetClassId?: string
+): string => {
+  const schemaSection = generateSchemaSection(templateMapping);
+  const hierarchySection = generateHierarchySection(templateMapping);
+  const safe = question.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+  return `You help researchers phrase research questions so they align with the ORKG template schema.
+
+**Template ID:** ${templateId}
+**Contribution class (when applicable):** ${targetClassId ?? 'use template default'}
+
+${schemaSection}
+
+${hierarchySection}
+
+**User's draft question:**
+"${safe}"
+
+Rewrite this into ONE clear, concise research question that:
+1. Uses wording that reflects concepts available in the schema (use natural language, not SPARQL)
+2. When the question needs nested data, makes the nesting intent explicit (e.g. which area of the template: data collection vs analysis, etc.)
+3. Preserves the user's intent
+
+Output only the rewritten question. No surrounding quotes, no preamble, no bullet points.`;
 };
