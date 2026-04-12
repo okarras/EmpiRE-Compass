@@ -1,20 +1,15 @@
 ---
-title: 'EmpiRE-Compass: A neuro-symbolic dashboard for empirical requirements-engineering research practice'
+title: 'EmpiRE-Compass: A Neuro-Symbolic Dashboard for Sustainable and Dynamic Knowledge Exploration, Synthesis, and Reuse'
 tags:
-  - TypeScript
-  - React
-  - requirements engineering
-  - knowledge graph
+  - Neuro-symbolic dashboard
+  - research knowledge graph
+  - large language model
+  - sustainable literature review
   - empirical software engineering
-  - Open Research Knowledge Graph
-  - large language models
 authors:
-  - name: Oliver Karras
-    orcid: 0000-0001-5336-6899
-    corresponding: true
-    affiliation: 1
   - name: Amirreza Alasti
     orcid: 0009-0002-1165-773X
+    corresponding: true
     affiliation: 2
   - name: Lena John
     orcid: 0009-0007-2097-9761
@@ -23,53 +18,81 @@ authors:
     affiliation: 2
   - name: Yücel Celik
     affiliation: 2
+  - name: Oliver Karras
+    orcid: 0000-0001-5336-6899
+    affiliation: 1
 affiliations:
   - index: 1
-    name: TIB – Leibniz Information Centre for Science and Technology, Hannover, Germany
+    name: TIB – Leibniz Information Centre for Science and Technology, Germany
     ror: 04aj4at65
   - index: 2
-    name: Leibniz University Hannover, Hannover, Germany
+    name: Leibniz University Hannover, Germany
     ror: 0304hq317
-date: 12 April 2026
+date: 31 January 2026
 bibliography: paper.bib
 ---
 
 # Summary
 
-Empirical research in requirements engineering (RE) is distributed across hundreds of publications, taxonomies, and reporting styles. **EmpiRE-Compass** is an open-source web application that helps researchers **explore**, **compare**, and **reuse** knowledge about empirical research practice in RE. It connects curated, structured evidence in the **Open Research Knowledge Graph (ORKG)** [@Jaradeh2021ORKG]—including the **KG-EmpiRE** knowledge graph [@Karras2023DivideConquer; @Karras2024KGEmpiRE]—with an optional **large language model (LLM)** layer for competency questions and synthesis. The tool is aimed at researchers, reviewers, and educators who work with empirical RE literature and need both machine-actionable structure and flexible natural-language access. A public deployment is available (see repository README), and the software is archived with a DOI [@EmpiRECompassZenodo].
+**EmpiRE-Compass** is an open web application for exploring curated scholarly knowledge about empirical research in software and requirements engineering. It combines structured data in a **research knowledge graph** with optional **large language model** assistance so that users can ask questions, inspect the underlying queries, and view reproducible charts—without treating the model as a source of facts. The software is openly licensed, publicly deployed, and archived with a persistent identifier [@EmpiRECompassZenodo].
 
-![EmpiRE-Compass banner](../logo.png)
+Software engineering (SE) and requirements engineering (RE) face a significant increase in secondary studies, particularly literature reviews (LRs), due to the ever-growing number of scientific publications [@Napoleao.2022; @Auer.2023; @Karras.2025; @Mendes.2020]. The rise of generative artificial intelligence (GenAI) has made ensuring the quality and transparency of LRs increasingly challenging. In general, data analyzed by GenAI systems are often not fully trustworthy or reliable due to issues such as hallucinations [@Schryen.2025].
 
-# Statement of need
+[EmpiRE-Compass](https://empire-compass.tib.eu/) is a neuro-symbolic dashboard designed to lower barriers for accessing, replicating, and reusing LR data. By semantically structuring underlying data in research knowledge graphs (RKGs) and leveraging large language models (LLMs) for dynamic access, it enables sustainable knowledge exploration, synthesis, and reuse [@Karras.2025]. The tool builds upon FAIR data principles [@Wilkinson.2016; @Stocker.2022] and open scholarly knowledge graph practice [@Auer.2023] to make research data Findable, Accessible, Interoperable, and Reusable.
 
-Sustainable literature reviews and field-level analyses need more than PDFs and spreadsheets: they need **interoperable representations** of claims, methods, and evidence, aligned with **FAIR** principles [@Wilkinson2016FAIR]. KG-EmpiRE addresses this for empirical RE by encoding literature in a community-maintainable graph. However, graph-native exploration alone can be demanding for occasional users, and natural-language questions (for example about methods or metrics across papers) are not always easy to express in SPARQL alone.
+# Statement of Need
 
-EmpiRE-Compass targets this gap by providing a **dashboard** that (i) exposes KG-EmpiRE-related content through interactive visual analytics, (ii) supports structured querying and exploration aligned with ORKG, and (iii) optionally augments symbolic access with **LLM-assisted** answers grounded in the application context (user-configurable providers and keys). A second thematic focus is empirical practice in **NLP for RE**, supported via associated materials such as the NLP4RE ID Card dataset [@NLP4RE2024IDCard]. Together, these capabilities support reproducible overview, teaching, and cross-paper synthesis without replacing the underlying curated knowledge sources.
+The core problem in modern LRs is the lack of availability of underlying data and artifacts [@Karras.2023]. This prevents collaboration and updating of LRs, as analyses and results cannot be replicated [@Karras.2025; @DosSantos.2024]. While open science practices are growing, only a minority of studies verifiably share their data and artifacts in persistent repositories [@Huotala.2025; @Wernlein.2022], often limited to static files rather than machine-actionable data [@Spadaro.2022; @Kaplan.2025]. Furthermore, effectively using Research Knowledge Graphs (RKGs) like the **[Open Research Knowledge Graph (ORKG)](https://orkg.org/)** requires advanced technical skills to query and interpret structured data.
 
-# State of the field
+**Target audience.** EmpiRE-Compass is intended for **researchers, educators, and reviewers** who run or rely on secondary studies (including systematic or living literature reviews) in empirical software engineering and requirements engineering, and who need **traceable** access to community-curated evidence without becoming SPARQL experts.
 
-General tools for tabular literature reviews, reference managers, and ad hoc spreadsheets are widely used but typically lack **graph-level, community-curated semantics** tied to ORKG. ORKG-oriented interfaces and notebooks serve power users well, yet domain-specific **aggregated views** (distributions, comparisons, guided questions) for empirical RE practice remain scarce. EmpiRE-Compass is not a replacement for full ORKG authoring workflows or for standalone LLM chat interfaces; instead, it **specializes** the empirical-RE use case by coupling KG-EmpiRE (and related templates) with dashboard visualizations and optional LLM assistance. Building a separate application was justified by the need for a cohesive **requirements-engineering-specific** user experience, **operational deployment** constraints (authentication, content administration, statistics refresh), and **testable** backend–frontend boundaries suitable for review and maintenance.
+# State of the Field
 
-# Software design
+Existing tools for scientific knowledge exploration and evidence synthesis generally fall into three categories, each with limitations that EmpiRE‑Compass addresses.
 
-The system follows a **modular web architecture**: a **React** (TypeScript) front end and a **Node.js** backend with documented HTTP APIs (OpenAPI/Swagger in deployment). Structured access to the knowledge graph uses **SPARQL** and ORKG-aligned constants in the codebase; auxiliary services (for example **Firebase** for configuration and automated statistics, optional **Keycloak** for authentication) isolate operational concerns from core graph logic. **Continuous integration** includes workflows for statistics refresh and repository hygiene (for example secret scanning), and the repository ships **ESLint**, **Storybook** for documented UI components, and **Vitest** as a development dependency to grow automated tests—supporting reproducible review and maintenance. The LLM layer is **optional** and **provider-agnostic** at integration points so that deployments can restrict or omit generative features. **Storybook** documents UI components, supporting consistent visualization patterns across charts and admin views. This separation (symbolic data access vs. presentation vs. optional neural components) is intentional: it keeps the **research artifact** (graph-backed evidence) inspectable while still lowering the barrier to exploratory use.
+1. **Static and domain‑specific dashboards**. Scholarly knowledge‑graph dashboards, such as those built on ORKG for specific domains, demonstrate that KG‑powered visualizations can improve usability and engagement for targeted topics, but they typically expose a fixed set of charts and filters for a single template or dataset, rather than enabling users to formulate new questions or compose multi‑template syntheses across studies [@Auer.2023]. Similarly, “living” SLR dashboards in domains like biomedicine show the value of continuously updated, interactive evidence summaries, yet they are usually tightly coupled to bespoke pipelines and do not expose a reusable KG‑centric representation or user‑editable query logic [@Elbers.2021; @Manion.2024].
+2. **Neuro‑symbolic scholarly assistants**. Recent neuro‑symbolic systems for scholarly search, including those that combine ORKG with large language models, focus primarily on answering natural language questions or ranking relevant contributions at the document level [@Oelen.2024]. While these approaches reduce hallucinations by grounding in a KG, they rarely provide transparent, user‑steerable analytics workflows: users cannot readily inspect or modify the underlying queries and data‑processing steps, and the outputs are typically textual answers rather than reproducible, shareable statistical visualizations over curated LR datasets [@Oelen.2024; @Brandon.2025].
+3. **Generic LLM assistants and graph frontends**. General‑purpose LLM tools (e.g., conversational assistants) can summarize and compare individual papers but lack a symbolic ground truth and frequently hallucinate, making them unsuitable as a basis for rigorous secondary studies, especially when traceability and reproducibility are required [@Li.2025]. Conversely, generic KG frontends such as the ORKG comparison UI enable users to manually assemble comparisons and tables across papers, but constructing complex, multi‑paper syntheses demands substantial expertise in the underlying data model and query concepts and does not scale well as datasets and research questions grow [@Auer.2023].
 
-# Research impact statement
+**[EmpiRE-Compass](https://empire-compass.tib.eu/)** positions itself as a neuro‑symbolic orchestration layer on top of ORKG that bridges these gaps: it retains the KG as the single source of truth, like existing dashboards and neuro‑symbolic systems, but exposes the full pipeline from natural language question to SPARQL query to JavaScript data processing and visualization. This design enables non‑technical users to perform complex, multi‑paper analytics through natural language, while still allowing experts to inspect, edit, rerun, and share the exact queries and computations that underpin each “living” literature review.
 
-EmpiRE-Compass builds directly on peer-reviewed work that introduced and extended **KG-EmpiRE** [@Karras2023DivideConquer; @Karras2024KGEmpiRE] and on the **ORKG** ecosystem [@Jaradeh2021ORKG]. The project is **publicly developed** on GitHub, ships with **automated statistics** updates and **continuous integration** workflows, and is **archived on Zenodo** with a DOI [@EmpiRECompassZenodo]. A **hosted instance** and **design-system documentation** (Storybook) are maintained to support external use and teaching; demonstration materials (including video DOI linked from the repository) further document real-world usage. These signals reflect adoption-oriented engineering rather than a one-off analysis script.
+# Software Design
 
-# AI usage disclosure
+**[EmpiRE-Compass](https://empire-compass.tib.eu/)** is a Progressive Web Application (PWA) built with a modular architecture. It separates the **Symbolic Layer** (the truth source) from the **Neural Layer** (the interface). The system is available online at [https://empire-compass.tib.eu](https://empire-compass.tib.eu/) and the source code is hosted on [GitHub](https://github.com/okarras/EmpiRE-Compass).
 
-**Software:** EmpiRE-Compass optionally calls **third-party large language model APIs** configured by the deployer or end user (see application settings and environment configuration). Generative models are used for **interactive assistance** (for example competency-style questions); they do not replace the curated ORKG/KG-EmpiRE content, which remains the authoritative structured source.
+## Architecture & Design Trade-offs
 
-**Manuscript:** The authors drafted and revised this paper. **Authors should update this sentence to match their actual practice**, for example: (a) _No generative AI was used to draft this manuscript_; or (b) _Generative AI tools [name/version] assisted with phrasing or structure; all authors reviewed, edited, and verified technical accuracy and citations._
+We explain the main trade-offs, the design we chose, and why it matters for a research application that combines knowledge graphs with LLMs—balancing automation with correctness, privacy with convenience, and generality with domain fidelity.
+
+**Symbolic vs. neural.** We treat the **symbolic layer** (ORKG, SPARQL, triplestore) as the **only source of factual data**. The LLM generates SPARQL and interprets only the _returned_ bindings; it never invents answers. That choice demands iterative refinement and editable code rather than a hidden pipeline. For literature review and empirical research practice, **grounding in the KG** is essential: conclusions must be traceable to the graph, and our design ensures every finding can be traced back to a SPARQL query and ORKG data.
+
+**Human-in-the-loop.** We prioritize **accuracy and user control** over full automation. The system generates SPARQL, executes it against the live ORKG endpoint, and evaluates the outcome (syntax errors, empty results, all-null columns). On failure, it feeds structured feedback (including domain-specific hints) back into the LLM and retries up to **three times**, using the **database as the oracle**. Users can **edit the generated SPARQL** and the **data-processing code** (JavaScript) directly in the UI. Making the pipeline visible and editable supports **trust and reproducibility**: the same question can be re-run, shared, or adapted.
+
+**Template-driven domain fidelity.** We use a **template registry** and **template-specific guidance** per ORKG template (e.g. R186491): domain knowledge, query patterns, and common mistakes are injected into prompts. This adds maintenance when adding templates but improves correctness and keeps the system **extensible**—new themes (e.g. NLP4RE) can be added without changing core logic—and aligns generated queries with how the community models each domain in the KG.
+
+**Privacy and key management.** A **unified AI service** chooses at runtime: if the user supplies their own API keys, calls go **directly from the frontend** to the provider (OpenAI, Groq, Mistral, Google); if they use environment keys, calls go through our **Node.js backend**. We thus support both **privacy-first** use (sensitive questions never touch our servers) and **shared/demo** use without per-user key setup.
+
+**Technology.** The frontend uses **React** and **Material-UI**; the backend uses **Node.js** and the **Vercel AI SDK** for model-agnostic LLM calls across providers. **Firestore** holds template metadata and community questions with real-time sync and Keycloak integration. These choices keep the symbolic layer (KG + SPARQL) as the definitive source of truth while supporting maintainability and community-driven use.
+
+# Research Impact Statement
+
+**[EmpiRE-Compass](https://empire-compass.tib.eu/)** is developed in direct connection to peer-reviewed work on **KG-EmpiRE** [@Karras.2023] and public ORKG infrastructure [@Auer.2023]. It has been applied to two curated research datasets that illustrate end-to-end use for the software engineering community:
+
+1. **KG-EmpiRE**: interactive visualization and analytics over empirical RE literature encoded in the graph (776 papers in the deployment described in the repository documentation).
+2. **NLP4RE ID Card**: dynamic access to 49 detailed “ID cards” for NLP-for-RE tools, aligned with replication-oriented discussion in the field [@Abualhaija.2024].
+
+The software is **publicly hosted**, versioned, and **archived on Zenodo** with a DOI for citation and reproducibility [@EmpiRECompassZenodo], alongside a machine-readable **CITATION.cff** file in the repository. Together with Storybook-hosted UI documentation and open issue tracking, these artifacts provide concrete, checkable signals of community-oriented release practice beyond a one-off prototype.
+
+By making these datasets interactive, the dashboard supports “living” literature reviews that can be updated as new contributions appear in the underlying knowledge graph, in line with calls for sustainable, evidence-based secondary research [@Mendes.2020; @Mendez.2020].
+
+# AI Usage Disclosure
+
+**Manuscript.** The authors used **Microsoft Copilot** and **Grammarly** for initial drafting, grammar refinement, and spelling checks of this manuscript. The core software design, architectural decisions, and the neuro-symbolic integration logic were conceived and implemented by the human authors. All AI-generated text was reviewed, edited, and validated by the authors to ensure accuracy and compliance with JOSS standards.
+
+**Software.** EmpiRE-Compass integrates **third-party large language model APIs** as an optional runtime feature (user-configured providers and keys). During development, team members may have used **AI-assisted coding or refactoring tools**; all changes were reviewed, tested, and validated by the human authors, and the symbolic layer (ORKG/SPARQL) remains the source of factual answers.
 
 # Acknowledgements
 
-We thank colleagues and contributors who reported issues, suggested features, and helped maintain KG-EmpiRE and related ORKG content. Development has been supported through **TIB – Leibniz Information Centre for Science and Technology** and collaboration with **Leibniz University Hannover**. The sponsors had no editorial control over this submission.
-
-**Conflicts of interest:** The authors declare no conflicts of interest relevant to this manuscript.
-
-**Funding:** Institutional support as above; **authors should add grant numbers or formal funding statements if applicable.**
+We thank the Open Research Knowledge Graph (ORKG) team for their infrastructure support. Development has received institutional support from **TIB – Leibniz Information Centre for Science and Technology** and collaboration with **Leibniz University Hannover**. The sponsors had no editorial control over this manuscript.
 
 # References
