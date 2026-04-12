@@ -184,7 +184,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
 
   const selectedOption = useMemo((): OpenRouterApiModel | null => {
     if (!localModel.trim()) return null;
-    return optionsWithSavedFallback.find((m) => m.id === localModel.trim()) ?? null;
+    return (
+      optionsWithSavedFallback.find((m) => m.id === localModel.trim()) ?? null
+    );
   }, [optionsWithSavedFallback, localModel]);
 
   const handleSave = async () => {
@@ -449,7 +451,7 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 <Autocomplete<OpenRouterApiModel, false, true, false>
                   loading={modelsLoading}
                   options={optionsWithSavedFallback}
-                  value={selectedOption}
+                  value={selectedOption ?? undefined}
                   onChange={(_, v) => {
                     if (v) setLocalModel(v.id);
                   }}
