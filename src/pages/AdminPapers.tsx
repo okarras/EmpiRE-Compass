@@ -36,8 +36,15 @@ import {
   Visibility,
   VisibilityOff,
   OpenInNew,
+  ContentCopy,
+  Download,
 } from '@mui/icons-material';
 import CRUDPapers, { Paper as PaperType } from '../firestore/CRUDPapers';
+import {
+  paperToBibtexEntry,
+  papersToBibtexBibliography,
+  downloadBibtexFile,
+} from '../utils/paperBibtex';
 import { useAuth } from '../auth/useAuth';
 import { useKeycloak } from '@react-keycloak/web';
 
@@ -259,6 +266,24 @@ const AdminPapers = () => {
     }
   };
 
+  const handleCopyBibtex = async (paper: PaperType) => {
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(paperToBibtexEntry(paper));
+      setSuccess('BibTeX copied to clipboard');
+      setTimeout(() => setSuccess(null), 4000);
+    } catch {
+      setError('Could not copy BibTeX to clipboard');
+    }
+  };
+
+  const handleDownloadAllBibtex = () => {
+    const text = papersToBibtexBibliography(papers);
+    downloadBibtexFile(text, 'empire-compass-all-papers.bib');
+    setSuccess('Bibliography file download started');
+    setTimeout(() => setSuccess(null), 4000);
+  };
+
   if (loading) {
     return (
       <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -293,12 +318,28 @@ const AdminPapers = () => {
             </Typography>
           </Box>
         </Box>
-        <Box sx={{ display: 'flex', gap: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
           <Tooltip title="Refresh papers list">
             <IconButton onClick={fetchPapers} color="primary">
               <Refresh />
             </IconButton>
           </Tooltip>
+          <Button
+            variant="outlined"
+            startIcon={<Download />}
+            onClick={handleDownloadAllBibtex}
+            disabled={papers.length === 0}
+            sx={{
+              borderColor: '#e86161',
+              color: '#e86161',
+              '&:hover': {
+                borderColor: '#d45151',
+                backgroundColor: 'rgba(232, 97, 97, 0.06)',
+              },
+            }}
+          >
+            Download .bib
+          </Button>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -449,6 +490,15 @@ const AdminPapers = () => {
                             ) : (
                               <VisibilityOff />
                             )}
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Copy BibTeX">
+                          <IconButton
+                            size="small"
+                            onClick={() => void handleCopyBibtex(paper)}
+                            color="secondary"
+                          >
+                            <ContentCopy fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Edit">
