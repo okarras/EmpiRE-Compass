@@ -143,7 +143,7 @@ const ADMIN_NAV_ITEMS: NavItemConfig[] = [
   },
   {
     path: '/admin/papers',
-    label: 'Papers',
+    label: 'Papers Management',
     tooltip: 'Manage published papers',
     Icon: MenuBook,
   },
