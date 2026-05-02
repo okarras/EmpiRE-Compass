@@ -88,15 +88,20 @@ function countMatchingRows(
   return papers.size;
 }
 
-/** Same denominator as aggregate charts: rows in bucket, or unique papers when the processor uses that. */
-function bucketDenominator(
+/** All papers/rows in (x bucket, venue) — used as denominator for “share within this venue”. */
+function venueBucketDenominator(
   rawData: RawDataItem[],
   xAxisKey: string,
   xVal: unknown,
+  venueField: string,
+  venue: string,
   dedupeByPaper: boolean,
   queryUid: string
 ): number {
-  const inBucket = rawData.filter((r) => xValuesEqual(r[xAxisKey], xVal));
+  const inBucket = rawData.filter(
+    (r) =>
+      xValuesEqual(r[xAxisKey], xVal) && String(r[venueField] ?? '') === venue
+  );
   if (inBucket.length === 0) return 0;
   const useUniquePapers =
     dedupeByPaper || shouldUseUniquePaperBucketDenominator(queryUid);
@@ -113,9 +118,8 @@ export interface VenueCategorizedResult {
 
 /**
  * Builds one numeric column per venue (grouped bars).
- * When normalized (Relative), each value is (matching count / total in x bucket) × 100 —
- * same semantics as the non–venue chart (e.g. Query1: filtered share of all papers in that year),
- * not a partition of 100% across venues.
+ * When normalized (Relative), each bar is (matching count / total papers for that venue in the x bucket) × 100
+ * — e.g. Query1: share of empirical studies within that venue’s papers in that year (1 of 1 → 100%).
  */
 export function buildVenueCategorizedDataset(
   rawData: RawDataItem[],
@@ -176,14 +180,16 @@ export function buildVenueCategorizedDataset(
     );
 
     if (options.normalized) {
-      const denom = bucketDenominator(
-        rawData,
-        xAxisKey,
-        xVal,
-        dedupeByPaper,
-        options.queryUid
-      );
       venues.forEach((venue, i) => {
+        const denom = venueBucketDenominator(
+          rawData,
+          xAxisKey,
+          xVal,
+          venueField,
+          venue,
+          dedupeByPaper,
+          options.queryUid
+        );
         row[venueDataKey(venue, true)] =
           denom > 0 ? Number(((counts[i] * 100) / denom).toFixed(2)) : 0;
       });
