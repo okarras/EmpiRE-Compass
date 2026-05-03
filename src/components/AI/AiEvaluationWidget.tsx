@@ -4,8 +4,6 @@ import {
   Button,
   TextField,
   IconButton,
-  Typography,
-  Collapse,
   Snackbar,
   Alert,
   Tooltip,
@@ -94,14 +92,12 @@ const AiEvaluationWidget: React.FC<AiEvaluationWidgetProps> = ({
         p: 2,
         bgcolor: 'background.paper',
         borderRadius: 1,
-        border: '1px solid',
-        borderColor: 'divider',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 2,
+        flexWrap: 'nowrap',
       }}
     >
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-        How was this AI-generated {targetType}?
-      </Typography>
-
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Tooltip title="Helpful">
           <IconButton
@@ -124,20 +120,20 @@ const AiEvaluationWidget: React.FC<AiEvaluationWidgetProps> = ({
         </Tooltip>
       </Box>
 
-      <Collapse in={showComment}>
-        <Box sx={{ mt: 2 }}>
+      {showComment && (
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}
+        >
           <TextField
             fullWidth
             size="small"
             label="Additional comments (optional)"
-            multiline
-            rows={2}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             disabled={isSubmitting}
-            sx={{ mb: 1 }}
+            sx={{ minWidth: '400px' }}
           />
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
               size="small"
               onClick={() => {
@@ -146,6 +142,7 @@ const AiEvaluationWidget: React.FC<AiEvaluationWidgetProps> = ({
                 setComment('');
               }}
               disabled={isSubmitting}
+              sx={{ whiteSpace: 'nowrap' }}
             >
               Cancel
             </Button>
@@ -154,12 +151,13 @@ const AiEvaluationWidget: React.FC<AiEvaluationWidgetProps> = ({
               variant="contained"
               onClick={handleSubmit}
               disabled={isSubmitting || rating === null}
+              sx={{ whiteSpace: 'nowrap' }}
             >
               Submit Feedback
             </Button>
           </Box>
         </Box>
-      </Collapse>
+      )}
 
       <Snackbar
         open={snackbar.open}
