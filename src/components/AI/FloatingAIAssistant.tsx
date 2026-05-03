@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
 import {
   Box,
   Fab,
@@ -15,7 +15,12 @@ import {
   Link,
   Card,
   CardContent,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  CircularProgress,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -30,6 +35,11 @@ import type {
 } from '../../context/AIAssistantContext';
 import AIAssistant from './AIAssistant';
 import { useLocation } from 'react-router-dom';
+import { extractOrkgResourceId } from '../../utils/orkgResource';
+
+const PaperStatementsGraph = React.lazy(
+  () => import('../ORKG/PaperStatementsGraph')
+);
 
 const ORKG_ASK_ITEM_URL = 'https://ask.orkg.org/item/';
 
@@ -134,79 +144,126 @@ const PaperInfoView: React.FC<{
   item: PaperInfoItem;
   orkgResourceUri?: string | null;
   onClose: () => void;
-}> = ({ item, orkgResourceUri, onClose }) => (
-  <Paper
-    elevation={0}
-    sx={{
-      p: 3,
-      background: 'rgba(255,255,255,0.95)',
-      borderRadius: 2,
-      border: '1px solid #eee',
-    }}
-  >
-    <Typography variant="h6" sx={{ color: '#e86161', fontWeight: 700, mb: 2 }}>
-      {item.title ?? 'Paper'}
-    </Typography>
-    {item.authors && (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        <b>Authors:</b> {formatAuthors(item.authors)}
+}> = ({ item, orkgResourceUri, onClose }) => {
+  const fromUri = orkgResourceUri
+    ? extractOrkgResourceId(orkgResourceUri)
+    : null;
+  const fromItemId =
+    item.id && /^R[A-Za-z0-9_-]+$/i.test(String(item.id))
+      ? String(item.id)
+      : null;
+  const graphResourceId = fromUri || fromItemId;
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        background: 'rgba(255,255,255,0.95)',
+        borderRadius: 2,
+        border: '1px solid #eee',
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{ color: '#e86161', fontWeight: 700, mb: 2 }}
+      >
+        {item.title ?? 'Paper'}
       </Typography>
-    )}
-    {(item.year ?? item.date_published) && (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        <b>Year:</b> {String(item.year ?? item.date_published ?? '')}
-      </Typography>
-    )}
-    {item.doi && (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        <b>DOI:</b>{' '}
-        <Link
-          href={`https://doi.org/${item.doi}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {item.doi}
-        </Link>
-      </Typography>
-    )}
-    {orkgResourceUri && (
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-        <b>ORKG:</b>{' '}
-        <Link href={orkgResourceUri} target="_blank" rel="noopener noreferrer">
-          View in ORKG
-        </Link>
-      </Typography>
-    )}
-    {item.abstract && (
-      <Box sx={{ mt: 2, mb: 2 }}>
-        <Typography
-          variant="subtitle2"
-          sx={{ fontWeight: 600, mb: 1, color: '#e86161' }}
-        >
-          Abstract
+      {item.authors && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <b>Authors:</b> {formatAuthors(item.authors)}
         </Typography>
-        <Typography
-          variant="body2"
+      )}
+      {(item.year ?? item.date_published) && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <b>Year:</b> {String(item.year ?? item.date_published ?? '')}
+        </Typography>
+      )}
+      {item.doi && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <b>DOI:</b>{' '}
+          <Link
+            href={`https://doi.org/${item.doi}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {item.doi}
+          </Link>
+        </Typography>
+      )}
+      {orkgResourceUri && (
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          <b>ORKG:</b>{' '}
+          <Link
+            href={orkgResourceUri}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View in ORKG
+          </Link>
+        </Typography>
+      )}
+      {item.abstract && (
+        <Box sx={{ mt: 2, mb: 2 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontWeight: 600, mb: 1, color: '#e86161' }}
+          >
+            Abstract
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.6,
+              color: 'text.secondary',
+            }}
+          >
+            {item.abstract}
+          </Typography>
+        </Box>
+      )}
+      {item.relatedPapersInAsk && item.relatedPapersInAsk.length > 0 && (
+        <RelatedPapersSlider papers={item.relatedPapersInAsk} />
+      )}
+      {graphResourceId && (
+        <Accordion
+          disableGutters
+          elevation={0}
           sx={{
-            whiteSpace: 'pre-wrap',
-            lineHeight: 1.6,
-            color: 'text.secondary',
+            mt: 2,
+            border: '1px solid #eee',
+            borderRadius: 1,
+            '&:before': { display: 'none' },
           }}
         >
-          {item.abstract}
-        </Typography>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle2" fontWeight={600}>
+              ORKG statement graph (subject → predicate → object)
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ pt: 0 }}>
+            <Suspense
+              fallback={
+                <Box sx={{ py: 4, display: 'flex', justifyContent: 'center' }}>
+                  <CircularProgress size={32} sx={{ color: '#e86161' }} />
+                </Box>
+              }
+            >
+              <PaperStatementsGraph resourceId={graphResourceId} height={400} />
+            </Suspense>
+          </AccordionDetails>
+        </Accordion>
+      )}
+      <Box sx={{ mt: 2 }}>
+        <Button variant="outlined" onClick={onClose}>
+          Close
+        </Button>
       </Box>
-    )}
-    {item.relatedPapersInAsk && item.relatedPapersInAsk.length > 0 && (
-      <RelatedPapersSlider papers={item.relatedPapersInAsk} />
-    )}
-    <Box sx={{ mt: 2 }}>
-      <Button variant="outlined" onClick={onClose}>
-        Close
-      </Button>
-    </Box>
-  </Paper>
-);
+    </Paper>
+  );
+};
 
 const Transition = React.forwardRef(function Transition(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

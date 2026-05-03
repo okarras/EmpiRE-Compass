@@ -1,4 +1,9 @@
-import { getTeamMembers as getTeamMembersApi } from '../services/backendApi';
+import {
+  getTeamMembers as getTeamMembersApi,
+  createTeamMember as createTeamMemberApi,
+  updateTeamMember as updateTeamMemberApi,
+  deleteTeamMember as deleteTeamMemberApi,
+} from '../services/backendApi';
 import BackupService from '../services/BackupService';
 
 /**
@@ -14,7 +19,6 @@ import BackupService from '../services/BackupService';
  *       ├─ link: string (URL)
  *       └─ priority: number (lower number = higher priority)
  */
-
 export interface TeamMember {
   id: string;
   name: string;
@@ -26,8 +30,18 @@ export interface TeamMember {
   priority?: number;
 }
 
+export interface TeamMemberInput {
+  name: string;
+  role?: string;
+  description: string;
+  image: string;
+  email: string;
+  link?: string;
+  priority?: number;
+}
+
 /**
- * Get all team members from backend API
+ * Get all team members from backend API with backup fallback
  */
 const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
@@ -39,6 +53,7 @@ const getTeamMembers = async (): Promise<TeamMember[]> => {
     }
 
     const teamMembers = await getTeamMembersApi();
+
     // Ensure the response is an array and has the correct structure
     return Array.isArray(teamMembers) ? teamMembers : [];
   } catch (error) {
@@ -53,8 +68,94 @@ const getTeamMembers = async (): Promise<TeamMember[]> => {
   }
 };
 
+/**
+ * Create a new team member
+ */
+const createTeamMember = async (
+  memberData: TeamMemberInput,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<TeamMember> => {
+  try {
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for creating team members'
+      );
+    }
+
+    const newMember = await createTeamMemberApi(
+      memberData,
+      userId,
+      userEmail,
+      keycloakToken
+    );
+    return newMember;
+  } catch (error) {
+    console.error('Error creating team member:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing team member
+ */
+const updateTeamMember = async (
+  memberId: string,
+  memberData: TeamMemberInput,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<TeamMember> => {
+  try {
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for updating team members'
+      );
+    }
+
+    const updatedMember = await updateTeamMemberApi(
+      memberId,
+      memberData,
+      userId,
+      userEmail,
+      keycloakToken
+    );
+    return updatedMember;
+  } catch (error) {
+    console.error('Error updating team member:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete a team member
+ */
+const deleteTeamMember = async (
+  memberId: string,
+  userId: string,
+  userEmail: string,
+  keycloakToken?: string
+): Promise<void> => {
+  try {
+    if (!userId || !userEmail) {
+      throw new Error(
+        'UserId and userEmail are required for deleting team members'
+      );
+    }
+
+    await deleteTeamMemberApi(memberId, userId, userEmail, keycloakToken);
+  } catch (error) {
+    console.error('Error deleting team member:', error);
+    throw error;
+  }
+};
+
 const CRUDTeam = {
   getTeamMembers,
+  createTeamMember,
+  updateTeamMember,
+  deleteTeamMember,
 };
 
 export default CRUDTeam;

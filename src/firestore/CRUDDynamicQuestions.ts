@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * CRUD operations for Dynamic Questions through backend API.
  * Frontend never accesses Firestore directly.
@@ -28,6 +30,7 @@ export interface DynamicQuestion {
     sparqlQuery: string;
     sparqlTranslation?: string | null;
     queryResults?: any[] | null;
+    rawSparqlQueryResults?: any[] | null;
     chartHtml?: string | null;
     questionInterpretation?: string | null;
     dataCollectionInterpretation?: string | null;

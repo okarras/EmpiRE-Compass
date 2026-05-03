@@ -24,6 +24,7 @@ import {
 import {
   Edit,
   SmartToy,
+  AutoFixHigh,
   Save,
   Cancel,
   History,
@@ -45,6 +46,12 @@ import { CodeEditor } from '../CodeEditor';
 import { PredicatesMapping, PropertyMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
 import AiEvaluationWidget from './AiEvaluationWidget';
+import { updateTemplate, apiRequest } from '../../services/backendApi';
+import { useAuthData } from '../../auth/useAuthData';
+import { useAppSelector } from '../../store/hooks';
+import { generateQuestionAlignmentPrompt } from '../../utils/promptGenerator';
+import TemplateHierarchyPanel from './TemplateHierarchyPanel';
+import { extractOrkgPredicateIds } from '../../utils/sparqlPredicateIds';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -104,20 +111,9 @@ interface ClassMetadata {
   subtemplateLabel?: string;
 }
 
-const extractPredicateIds = (query: string): string[] => {
-  const regex = /orkgp:(P\d+)/gi;
-  const seen = new Set<string>();
-  const result: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(query)) !== null) {
-    const id = match[1].toUpperCase();
-    if (!seen.has(id)) {
-      seen.add(id);
-      result.push(id);
-    }
-  }
-  return result;
-};
+const KG_EMPIRE_DEFAULT_HTML = `<p>You can ask factual, comparative, and exploratory questions about empirical research practice in <strong>Requirements Engineering (RE)</strong>, grounded in the underlying <a href="{schemaUrl}" target="_blank" rel="noopener noreferrer">schema</a>.</p>
+
+<p>Main topics you can query include: <strong>research questions and answers</strong> (primary questions, subquestions, how answers are reported), <strong>research paradigm</strong>, <strong>data collection</strong> (what data were collected, data types, methods, URLs), <strong>data analysis</strong> (analysis methods, inferential and descriptive statistics, machine learning algorithms and metrics), <strong>hypotheses</strong> (null vs. alternative), <strong>measures and metrics</strong> (counts, percentages, central tendency and dispersion), and <strong>threats to validity</strong> (construct, internal, external, conclusion validity, reliability, generalizability, repeatability, and other validity types).</p>`;
 
 const extractClassIds = (query: string): string[] => {
   const regex = /orkgc:(C\d+)/gi;
@@ -294,11 +290,61 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   );
 
   // Use prop templateMapping if provided, otherwise fall back to context
+
+  // Intro text edit state
+  const [introEditOpen, setIntroEditOpen] = useState(false);
+  const [introEditText, setIntroEditText] = useState('');
+  const [introCustomText, setIntroCustomText] = useState<string | null>(null);
+  const [introSaving, setIntroSaving] = useState(false);
+  const [introSaveError, setIntroSaveError] = useState<string | null>(null);
+
+  const { user } = useAuthData();
+
+  const {
+    provider,
+    openaiModel,
+    groqModel,
+    mistralModel,
+    googleModel,
+    openrouterModel,
+  } = useAppSelector((s) => s.ai);
+
+  const currentModel =
+    provider === 'openai'
+      ? openaiModel
+      : provider === 'groq'
+        ? groqModel
+        : provider === 'mistral'
+          ? mistralModel
+          : provider === 'google'
+            ? googleModel
+            : openrouterModel;
+
+  const [aligningQuestion, setAligningQuestion] = useState(false);
+
   const templateMapping = (propTemplateMapping ??
     state.templateMapping ??
     undefined) as PredicatesMapping | undefined;
   const templateId = propTemplateId ?? state.templateId ?? undefined;
   const targetClassId = propTargetClassId ?? state.targetClassId ?? undefined;
+
+  // Load saved intro text from template when templateId changes
+  React.useEffect(() => {
+    const loadIntroText = async () => {
+      const activeTemplateId = (templateId || 'R186491').toUpperCase();
+      setIntroCustomText(null);
+      if (activeTemplateId === 'R1544125') return;
+      try {
+        const data = await apiRequest(`/api/templates/${activeTemplateId}`);
+        setIntroCustomText(data?.introText ?? null);
+      } catch {
+        setIntroCustomText(null);
+        // silently fall back to default text
+      }
+    };
+    void loadIntroText();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId]);
 
   const templateInsights = useMemo(() => {
     const hasTemplateContext =
@@ -313,7 +359,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
       };
     }
 
-    const predicateIds = extractPredicateIds(sparqlQuery);
+    const predicateIds = Array.from(extractOrkgPredicateIds(sparqlQuery));
     const predicateDetails: PredicateDetail[] = predicateIds.map(
       (predicateId) => {
         // Normalize predicate ID
@@ -468,6 +514,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
 
     if (activeTemplateId === 'R1544125') {
       // NLP4RE ID Card schema #TODO: make dynamic from firebase a HTML section
+
       return (
         <Alert
           severity="info"
@@ -503,40 +550,139 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     }
 
     // Default: Empirical Research Practice in RE (KG-EmpiRE) schema #TODO: make dynamic from firebase a HTML section
+    // KG-EmpiRE: inline editable
+    const activeSchemaUrl = `/${activeTemplateId || 'R186491'}/schema`;
+    const rawHtml = (introCustomText || KG_EMPIRE_DEFAULT_HTML).replace(
+      '{schemaUrl}',
+      activeSchemaUrl
+    );
+
+    const isAdmin = user?.is_admin === true;
+
+    if (introEditOpen && isAdmin) {
+      return (
+        <Box sx={{ mb: 2 }}>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            value={introEditText}
+            onChange={(e) => {
+              setIntroEditText(e.target.value);
+              setIntroSaveError(null);
+            }}
+            disabled={introSaving}
+            autoFocus
+            variant="outlined"
+            sx={{
+              mb: 1,
+              '& .MuiOutlinedInput-root': {
+                '&.Mui-focused > fieldset': { borderColor: '#e86161' },
+              },
+            }}
+          />
+          {introSaveError && (
+            <Alert severity="error" sx={{ mb: 1 }}>
+              {introSaveError}
+            </Alert>
+          )}
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+            <Button
+              size="small"
+              onClick={() => {
+                setIntroEditOpen(false);
+                setIntroSaveError(null);
+              }}
+              disabled={introSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={introSaving || !introEditText.trim()}
+              startIcon={
+                introSaving ? (
+                  <CircularProgress size={14} color="inherit" />
+                ) : null
+              }
+              onClick={async () => {
+                setIntroSaving(true);
+                setIntroSaveError(null);
+                try {
+                  await updateTemplate(
+                    activeTemplateId || 'R186491',
+                    { introText: introEditText.trim() },
+                    user?.id || '',
+                    user?.email || ''
+                  );
+                  setIntroCustomText(introEditText.trim());
+                  setIntroEditOpen(false);
+                } catch (err) {
+                  setIntroSaveError(
+                    err instanceof Error
+                      ? err.message
+                      : 'Failed to save. Please try again.'
+                  );
+                } finally {
+                  setIntroSaving(false);
+                }
+              }}
+              sx={{
+                backgroundColor: '#e86161',
+                '&:hover': { backgroundColor: '#d45151' },
+              }}
+            >
+              {introSaving ? 'Saving...' : 'Save'}
+            </Button>
+          </Box>
+        </Box>
+      );
+    }
+
     return (
-      <Alert
-        severity="info"
-        sx={{
-          mb: 2,
-          backgroundColor: 'rgba(232, 97, 97, 0.04)',
-          borderLeft: '4px solid #e86161',
+      <Box
+        sx={{ mb: 2, cursor: isAdmin ? 'text' : 'default' }}
+        onClick={() => {
+          if (!isAdmin) return;
+          setIntroEditText(introCustomText || KG_EMPIRE_DEFAULT_HTML);
+          setIntroEditOpen(true);
         }}
       >
-        <Typography variant="body2" sx={{ mb: 0.5 }}>
-          You can ask factual, comparative, and exploratory questions about
-          empirical research practice in{' '}
-          <strong>Requirements Engineering (RE)</strong>, grounded in the
-          underlying{' '}
-          <a href={schemaUrl} target="_blank" rel="noopener noreferrer">
-            schema
-          </a>
-          .
-        </Typography>
-        <Typography variant="body2">
-          Main topics you can query include:{' '}
-          <strong>research questions and answers</strong> (primary questions,
-          subquestions, how answers are reported),{' '}
-          <strong>research paradigm</strong>, <strong>data collection</strong>{' '}
-          (what data were collected, data types, methods, URLs),{' '}
-          <strong>data analysis</strong> (analysis methods, inferential and
-          descriptive statistics, machine learning algorithms and metrics),{' '}
-          <strong>hypotheses</strong> (null vs. alternative),{' '}
-          <strong>measures and metrics</strong> (counts, percentages, central
-          tendency and dispersion), and <strong>threats to validity</strong>{' '}
-          (construct, internal, external, conclusion validity, reliability,
-          generalizability, repeatability, and other validity types).
-        </Typography>
-      </Alert>
+        <Alert
+          severity="info"
+          sx={{
+            backgroundColor: 'rgba(232, 97, 97, 0.04)',
+            borderLeft: '4px solid #e86161',
+            cursor: isAdmin ? 'text' : 'default',
+            ...(isAdmin && {
+              '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
+              transition: 'background-color 0.2s',
+            }),
+          }}
+        >
+          <Box
+            dangerouslySetInnerHTML={{ __html: rawHtml }}
+            sx={{
+              '& p': { margin: 0, mb: 0.5, '&:last-child': { mb: 0 } },
+              '& strong': { fontWeight: 600 },
+              '& a': {
+                color: 'inherit',
+                pointerEvents: isAdmin ? 'none' : 'auto',
+              },
+            }}
+          />
+          {isAdmin && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 1, display: 'block', opacity: 0.6 }}
+            >
+              Click to edit
+            </Typography>
+          )}
+        </Alert>
+      </Box>
     );
   };
 
@@ -861,6 +1007,60 @@ Modified SPARQL Query:`;
     }
   };
 
+  const handleAlignQuestionWithSchema = async () => {
+    if (!question.trim()) {
+      setError('Enter a draft question first.');
+      return;
+    }
+    if (!templateMapping || Object.keys(templateMapping).length === 0) {
+      setError('Template schema is not loaded yet.');
+      return;
+    }
+    if (!aiService.isConfigured()) {
+      setError('Please configure your AI settings first.');
+      return;
+    }
+
+    setAligningQuestion(true);
+    setError(null);
+
+    try {
+      const prompt = generateQuestionAlignmentPrompt(
+        templateMapping,
+        (templateId || 'R186491').toUpperCase(),
+        question,
+        targetClassId ?? undefined
+      );
+      const result = await aiService.generateText(prompt, {
+        temperature: 0.3,
+        maxTokens: 500,
+        provider,
+        model: currentModel,
+        systemContext:
+          'You rewrite research questions to align with a given knowledge graph template. Output only the single rewritten question.',
+      });
+      const text = result.text.trim().replace(/^["']|["']$/g, '');
+      if (text) onQuestionChange(text);
+      if (result.cost) {
+        updateCosts([
+          ...state.costs,
+          {
+            ...result.cost,
+            section: 'Align question with schema',
+          },
+        ]);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to align question with schema'
+      );
+    } finally {
+      setAligningQuestion(false);
+    }
+  };
+
   return (
     <>
       {/* Question Input Section */}
@@ -910,13 +1110,44 @@ Modified SPARQL Query:`;
               },
             }}
           />
+          <TemplateHierarchyPanel
+            templateMapping={templateMapping}
+            sparqlQuery={sparqlQuery}
+          />
           <Box
             sx={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: 'space-between',
               alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 1,
             }}
           >
+            <Tooltip title="Rewrite your question using the template vocabulary and nested paths shown above.">
+              <span>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleAlignQuestionWithSchema}
+                  disabled={
+                    loading ||
+                    aligningQuestion ||
+                    !templateMapping ||
+                    Object.keys(templateMapping).length === 0
+                  }
+                  startIcon={
+                    aligningQuestion ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <AutoFixHigh />
+                    )
+                  }
+                  sx={{ textTransform: 'none' }}
+                >
+                  Align question with schema
+                </Button>
+              </span>
+            </Tooltip>
             <Button
               variant="contained"
               onClick={onGenerateAndRun}

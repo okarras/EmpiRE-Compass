@@ -1,4 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  OPENROUTER_DEFAULT_MODEL,
+  type OpenRouterModel,
+} from '../../constants/openrouter_models';
 
 // Available models for each provider
 export const OPENAI_MODELS = [
@@ -60,7 +64,13 @@ export type OpenAIModel = (typeof OPENAI_MODELS)[number];
 export type GroqModel = (typeof GROQ_MODELS)[number];
 export type MistralModel = (typeof MISTRAL_MODELS)[number];
 export type GoogleModel = (typeof GOOGLE_MODELS)[number];
-export type AIProvider = 'openai' | 'groq' | 'mistral' | 'google';
+export type { OpenRouterModel } from '../../constants/openrouter_models';
+export type AIProvider =
+  | 'openai'
+  | 'groq'
+  | 'mistral'
+  | 'google'
+  | 'openrouter';
 
 interface InitialState {
   provider: AIProvider;
@@ -68,10 +78,14 @@ interface InitialState {
   groqModel: GroqModel;
   mistralModel: MistralModel;
   googleModel: GoogleModel;
+  openrouterModel: OpenRouterModel;
   openaiApiKey: string;
   groqApiKey: string;
   mistralApiKey: string;
   googleApiKey: string;
+  openrouterApiKey: string;
+  /** User accepted OpenRouter security terms (required to use AI) */
+  openRouterTermsAccepted: boolean;
   isConfigured: boolean;
   useEnvironmentKeys: boolean;
 }
@@ -99,6 +113,8 @@ const loadAIConfig = (): Partial<InitialState> => {
         groqModel: parsed.groqModel,
         mistralModel: parsed.mistralModel,
         googleModel: parsed.googleModel,
+        openrouterModel: parsed.openrouterModel,
+        openRouterTermsAccepted: parsed.openRouterTermsAccepted,
         useEnvironmentKeys: parsed.useEnvironmentKeys,
         isConfigured: parsed.isConfigured, // We'll re-verify this below
       });
@@ -113,6 +129,7 @@ const loadAIConfig = (): Partial<InitialState> => {
         groqApiKey: parsedKeys.groqApiKey || '',
         mistralApiKey: parsedKeys.mistralApiKey || '',
         googleApiKey: parsedKeys.googleApiKey || '',
+        openrouterApiKey: parsedKeys.openrouterApiKey || '',
       });
     }
 
@@ -128,6 +145,8 @@ const loadAIConfig = (): Partial<InitialState> => {
           groqModel: parsedLegacy.groqModel,
           mistralModel: parsedLegacy.mistralModel,
           googleModel: parsedLegacy.googleModel,
+          openrouterModel: parsedLegacy.openrouterModel,
+          openRouterTermsAccepted: parsedLegacy.openRouterTermsAccepted,
           useEnvironmentKeys: parsedLegacy.useEnvironmentKeys,
         });
       }
@@ -137,18 +156,7 @@ const loadAIConfig = (): Partial<InitialState> => {
       localStorage.removeItem(STORAGE_KEYS.LEGACY);
     }
 
-    // Re-verify isConfigured based on the potentially empty keys
-    // If not using env keys, and no keys loaded from session, it's not configured
-    if (config.useEnvironmentKeys === false) {
-      const hasKey =
-        config.openaiApiKey ||
-        config.groqApiKey ||
-        config.mistralApiKey ||
-        config.googleApiKey;
-      if (!hasKey) {
-        config.isConfigured = false;
-      }
-    }
+    // OpenRouter-only: provider and keys are normalized below
 
     return config;
   } catch (error) {
@@ -156,6 +164,9 @@ const loadAIConfig = (): Partial<InitialState> => {
   }
   return {};
 };
+
+const isOpenRouterModel = (m: unknown): m is OpenRouterModel =>
+  typeof m === 'string' && m.trim().length > 0;
 
 // Split saving logic
 const saveSettings = (state: InitialState) => {
@@ -166,6 +177,8 @@ const saveSettings = (state: InitialState) => {
       groqModel: state.groqModel,
       mistralModel: state.mistralModel,
       googleModel: state.googleModel,
+      openrouterModel: state.openrouterModel,
+      openRouterTermsAccepted: state.openRouterTermsAccepted,
       useEnvironmentKeys: state.useEnvironmentKeys,
       isConfigured: state.isConfigured,
     };
@@ -182,6 +195,7 @@ const saveKeys = (state: InitialState) => {
       groqApiKey: state.groqApiKey,
       mistralApiKey: state.mistralApiKey,
       googleApiKey: state.googleApiKey,
+      openrouterApiKey: state.openrouterApiKey,
     };
     sessionStorage.setItem(STORAGE_KEYS.KEYS, JSON.stringify(keys));
   } catch (error) {
@@ -190,17 +204,49 @@ const saveKeys = (state: InitialState) => {
 };
 
 const defaultConfig: InitialState = {
-  provider: 'openai',
+  provider: 'openrouter',
   openaiModel: 'gpt-4o-mini',
   groqModel: 'llama-3.1-8b-instant',
   mistralModel: 'mistral-large-latest',
   googleModel: 'gemini-2.5-flash',
+  openrouterModel: OPENROUTER_DEFAULT_MODEL,
   openaiApiKey: '',
   groqApiKey: '',
   mistralApiKey: '',
   googleApiKey: '',
-  isConfigured: true,
-  useEnvironmentKeys: true,
+  openrouterApiKey: '',
+  openRouterTermsAccepted: false,
+  isConfigured: false,
+  useEnvironmentKeys: false,
+};
+
+/** System AI (env keys on server) vs personal OpenRouter key */
+const computeIsConfigured = (state: InitialState): boolean => {
+  if (state.useEnvironmentKeys) {
+    return true;
+  }
+  if (state.provider === 'openrouter') {
+    return (
+      state.openrouterApiKey.trim().length > 0 && state.openRouterTermsAccepted
+    );
+  }
+  return false;
+};
+
+const normalizeAIState = (state: InitialState): void => {
+  if (!isOpenRouterModel(state.openrouterModel)) {
+    state.openrouterModel = OPENROUTER_DEFAULT_MODEL;
+  }
+  if (typeof state.openRouterTermsAccepted !== 'boolean') {
+    state.openRouterTermsAccepted = false;
+  }
+  if (typeof state.useEnvironmentKeys !== 'boolean') {
+    state.useEnvironmentKeys = false;
+  }
+  if (state.useEnvironmentKeys && state.provider === 'openrouter') {
+    state.provider = 'openai';
+  }
+  state.isConfigured = computeIsConfigured(state);
 };
 
 const initialState: InitialState = {
@@ -208,12 +254,15 @@ const initialState: InitialState = {
   ...loadAIConfig(),
 };
 
+normalizeAIState(initialState);
+
 const aiSlice = createSlice({
   name: 'ai',
   initialState,
   reducers: {
     setProvider: (state, action: PayloadAction<AIProvider>) => {
       state.provider = action.payload;
+      state.isConfigured = computeIsConfigured(state);
       saveSettings(state);
     },
     setOpenAIModel: (state, action: PayloadAction<OpenAIModel>) => {
@@ -232,6 +281,10 @@ const aiSlice = createSlice({
       state.googleModel = action.payload;
       saveSettings(state);
     },
+    setOpenRouterModel: (state, action: PayloadAction<string>) => {
+      state.openrouterModel = action.payload;
+      saveSettings(state);
+    },
     setOpenAIApiKey: (state, action: PayloadAction<string>) => {
       state.openaiApiKey = action.payload;
       saveKeys(state);
@@ -248,12 +301,24 @@ const aiSlice = createSlice({
       state.googleApiKey = action.payload;
       saveKeys(state);
     },
+    setOpenRouterApiKey: (state, action: PayloadAction<string>) => {
+      state.openrouterApiKey = action.payload;
+      state.isConfigured = computeIsConfigured(state);
+      saveKeys(state);
+      saveSettings(state);
+    },
+    setOpenRouterTermsAccepted: (state, action: PayloadAction<boolean>) => {
+      state.openRouterTermsAccepted = action.payload;
+      state.isConfigured = computeIsConfigured(state);
+      saveSettings(state);
+    },
     setIsConfigured: (state, action: PayloadAction<boolean>) => {
       state.isConfigured = action.payload;
       saveSettings(state);
     },
     setUseEnvironmentKeys: (state, action: PayloadAction<boolean>) => {
       state.useEnvironmentKeys = action.payload;
+      state.isConfigured = computeIsConfigured(state);
       saveSettings(state);
     },
     resetConfiguration: (state) => {
@@ -261,6 +326,11 @@ const aiSlice = createSlice({
       state.groqApiKey = '';
       state.mistralApiKey = '';
       state.googleApiKey = '';
+      state.openrouterApiKey = '';
+      state.openRouterTermsAccepted = false;
+      state.useEnvironmentKeys = false;
+      state.provider = 'openrouter';
+      state.openrouterModel = OPENROUTER_DEFAULT_MODEL;
       state.isConfigured = false;
       saveKeys(state);
       saveSettings(state);
@@ -283,10 +353,13 @@ export const {
   setGroqModel,
   setMistralModel,
   setGoogleModel,
+  setOpenRouterModel,
   setOpenAIApiKey,
   setGroqApiKey,
   setMistralApiKey,
   setGoogleApiKey,
+  setOpenRouterApiKey,
+  setOpenRouterTermsAccepted,
   setIsConfigured,
   setUseEnvironmentKeys,
   resetConfiguration,

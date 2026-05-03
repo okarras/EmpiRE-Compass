@@ -139,6 +139,13 @@ const formKeys: FormKeyConfig[] = [
     type: 'boolean',
   },
   {
+    key: 'categoryByVenue',
+    label: 'Default: categorize chart by venue',
+    type: 'boolean',
+    helperText:
+      'Initial state for the Combined / By venue toggle when venue_name is in SPARQL results.',
+  },
+  {
     key: 'hideDetailedChartLegend',
     label: 'Hide detailed chart legend',
     type: 'boolean',

@@ -4,6 +4,7 @@ import type {
   GroqModel,
   MistralModel,
   GoogleModel,
+  OpenRouterModel,
 } from '../store/slices/aiSlice';
 import { useAppSelector } from '../store/hooks';
 import { AIService, type AIConfig } from './aiService';
@@ -15,8 +16,10 @@ export interface BackendAIConfig {
   groqModel: GroqModel;
   mistralModel: MistralModel;
   googleModel: GoogleModel;
+  openrouterModel: OpenRouterModel;
+  openrouterApiKey: string;
+  openRouterTermsAccepted: boolean;
   useEnvironmentKeys: boolean;
-  // NOTE: API keys are NEVER sent to backend - backend uses its own environment keys
 }
 
 export interface GenerateTextRequest {
@@ -26,7 +29,6 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
-  // NOTE: API keys are NEVER included - backend uses its own environment keys
 }
 
 export interface GenerateTextResponse {
@@ -249,20 +251,36 @@ export class BackendAIService {
     usage?: GenerateTextResponse['usage'];
     cost?: GenerateTextResponse['cost'];
   }> {
+    const effectiveProvider = options?.provider || this.config.provider;
+
     const request: GenerateTextRequest = {
       prompt,
-      provider: options?.provider || this.config.provider,
-      model: options?.model,
+      provider: effectiveProvider,
+      model:
+        options?.model ??
+        (effectiveProvider === 'openrouter'
+          ? this.config.openrouterModel
+          : undefined),
       temperature: options?.temperature ?? 0.3,
       maxTokens: options?.maxTokens ?? 2000,
       systemContext: options?.systemContext,
     };
+
+    const extraHeaders: Record<string, string> = {};
+    if (effectiveProvider === 'openrouter') {
+      const k = this.config.openrouterApiKey.trim();
+      if (!k) {
+        throw new Error('OpenRouter API key is required');
+      }
+      extraHeaders['x-openrouter-api-key'] = k;
+    }
 
     const response = await this.makeRequest<GenerateTextResponse>(
       '/api/ai/generate',
       {
         method: 'POST',
         body: JSON.stringify(request),
+        headers: extraHeaders,
       }
     );
 
@@ -292,8 +310,15 @@ export class BackendAIService {
   }
 
   public isConfigured(): boolean {
-    // for backend service, assume its configured if we can reach backend
-    // actual config is handled in backend
+    if (this.config.useEnvironmentKeys) {
+      return true;
+    }
+    if (this.config.provider === 'openrouter') {
+      return (
+        this.config.openrouterApiKey.trim().length > 0 &&
+        this.config.openRouterTermsAccepted
+      );
+    }
     return true;
   }
 
@@ -307,6 +332,8 @@ export class BackendAIService {
       model = this.config.mistralModel;
     } else if (this.config.provider === 'google') {
       model = this.config.googleModel;
+    } else if (this.config.provider === 'openrouter') {
+      model = this.config.openrouterModel;
     } else {
       model = '';
     }
@@ -333,10 +360,13 @@ export class UnifiedAIService {
     groqModel: GroqModel;
     mistralModel: MistralModel;
     googleModel: GoogleModel;
+    openrouterModel: OpenRouterModel;
     openaiApiKey: string;
     groqApiKey: string;
     mistralApiKey: string;
     googleApiKey: string;
+    openrouterApiKey: string;
+    openRouterTermsAccepted: boolean;
     useEnvironmentKeys: boolean;
   };
 
@@ -346,10 +376,13 @@ export class UnifiedAIService {
     groqModel: GroqModel;
     mistralModel: MistralModel;
     googleModel: GoogleModel;
+    openrouterModel: OpenRouterModel;
     openaiApiKey: string;
     groqApiKey: string;
     mistralApiKey: string;
     googleApiKey: string;
+    openrouterApiKey: string;
+    openRouterTermsAccepted: boolean;
     useEnvironmentKeys: boolean;
   }) {
     this.config = config;
@@ -360,6 +393,9 @@ export class UnifiedAIService {
    * Returns true if user has provided their own API keys and is not using environment keys
    */
   private shouldUseFrontend(): boolean {
+    if (this.config.provider === 'openrouter') {
+      return false;
+    }
     // If using environment keys, always use backend
     if (this.config.useEnvironmentKeys) {
       return false;
@@ -401,10 +437,13 @@ export class UnifiedAIService {
         groqModel: this.config.groqModel,
         mistralModel: this.config.mistralModel,
         googleModel: this.config.googleModel,
+        openrouterModel: this.config.openrouterModel,
         openaiApiKey: this.config.openaiApiKey,
         groqApiKey: this.config.groqApiKey,
         mistralApiKey: this.config.mistralApiKey,
         googleApiKey: this.config.googleApiKey,
+        openrouterApiKey: this.config.openrouterApiKey,
+        openRouterTermsAccepted: this.config.openRouterTermsAccepted,
         useEnvironmentKeys: false, // Always false for frontend service
       };
       this.frontendService = new AIService(frontendConfig);
@@ -420,8 +459,10 @@ export class UnifiedAIService {
         groqModel: this.config.groqModel,
         mistralModel: this.config.mistralModel,
         googleModel: this.config.googleModel,
+        openrouterModel: this.config.openrouterModel,
+        openrouterApiKey: this.config.openrouterApiKey,
+        openRouterTermsAccepted: this.config.openRouterTermsAccepted,
         useEnvironmentKeys: this.config.useEnvironmentKeys,
-        // API keys are never sent to backend - backend uses its own environment keys
       });
     }
     return this.backendService;
@@ -502,13 +543,15 @@ export const useBackendAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new BackendAIService({
-    provider: aiConfig.provider || 'mistral',
+    provider: aiConfig.provider || 'openrouter',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
+    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-4o-mini',
+    openrouterApiKey: aiConfig.openrouterApiKey || '',
+    openRouterTermsAccepted: aiConfig.openRouterTermsAccepted ?? false,
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
-    // API keys are never sent to backend - backend uses its own environment keys
   });
 };
 
@@ -517,15 +560,18 @@ export const useAIService = () => {
   const aiConfig = useAppSelector((state) => state.ai);
 
   return new UnifiedAIService({
-    provider: aiConfig.provider || 'mistral',
+    provider: aiConfig.provider || 'openrouter',
     openaiModel: aiConfig.openaiModel || 'gpt-4o-mini',
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
+    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-4o-mini',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
     mistralApiKey: aiConfig.mistralApiKey || '',
     googleApiKey: aiConfig.googleApiKey || '',
+    openrouterApiKey: aiConfig.openrouterApiKey || '',
+    openRouterTermsAccepted: aiConfig.openRouterTermsAccepted ?? false,
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
   });
 };
@@ -533,26 +579,32 @@ export const useAIService = () => {
 // for components that dont use hooks
 export const createDefaultBackendAIService = () => {
   return new BackendAIService({
-    provider: 'openai',
+    provider: 'openrouter',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
-    useEnvironmentKeys: true,
+    openrouterModel: 'openai/gpt-4o-mini',
+    openrouterApiKey: '',
+    openRouterTermsAccepted: false,
+    useEnvironmentKeys: false,
   });
 };
 
 export const createDefaultAIService = () => {
   return new UnifiedAIService({
-    provider: 'openai',
+    provider: 'openrouter',
     openaiModel: 'gpt-4o-mini',
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
+    openrouterModel: 'openai/gpt-4o-mini',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',
     googleApiKey: '',
-    useEnvironmentKeys: true,
+    openrouterApiKey: '',
+    openRouterTermsAccepted: false,
+    useEnvironmentKeys: false,
   });
 };

@@ -56,6 +56,10 @@ export interface ChartSetting {
     y?: 'band' | 'line' | 'none';
   };
   grid?: { horizontal?: boolean; vertical?: boolean };
+  /** Default “by venue” state for the chart params toggle when `venue_name` is present. */
+  categoryByVenue?: boolean;
+  /** SPARQL field for venue labels (default `venue_name`). */
+  venueFieldKey?: string;
 }
 export interface Query {
   title?: string;
@@ -88,6 +92,10 @@ export interface Query {
     defaultColumns?: string[];
     defaultGroupBy?: string;
   };
+  sparqlQuery?: string;
+  sparqlQuery2?: string;
+  /** Optional: set false to hide venue options even if `venue_name` exists in results. */
+  venue?: boolean;
 }
 
 export const queries: Query[] = [

@@ -42,7 +42,7 @@ const isVercelPreviewUrl = (origin: string): boolean => {
 // rate limit
 export const createRateLimiter = (
   windowMs: number = 5 * 60 * 1000, // 5 minutes
-  max: number = 100
+  max: number = 2000
 ) => {
   return rateLimit({
     windowMs,
@@ -107,16 +107,39 @@ export const validateGenerateTextRequest = (
       .json({ error: 'Prompt is required and must be a string' });
   }
 
-  if (prompt.length > 100000) {
+  if (prompt.length > 300000) {
     return res
       .status(400)
-      .json({ error: 'Prompt too long (max 100000 characters)' });
+      .json({ error: 'Prompt too long (max 300000 characters)' });
   }
 
-  if (provider && !['openai', 'groq', 'mistral'].includes(provider)) {
+  const allowedProviders = [
+    'openai',
+    'groq',
+    'mistral',
+    'google',
+    'openrouter',
+  ];
+  if (provider && !allowedProviders.includes(provider)) {
     return res.status(400).json({
-      error: 'Invalid provider. Must be "openai", "groq", or "mistral"',
+      error: `Invalid provider. Must be one of: ${allowedProviders.join(', ')}`,
     });
+  }
+
+  if (provider === 'openrouter') {
+    const h = req.headers['x-openrouter-api-key'];
+    const key =
+      typeof h === 'string'
+        ? h.trim()
+        : Array.isArray(h) && h[0]
+          ? String(h[0]).trim()
+          : '';
+    if (!key) {
+      return res.status(400).json({
+        error:
+          'OpenRouter API key is required (send x-openrouter-api-key header)',
+      });
+    }
   }
 
   if (
@@ -176,6 +199,14 @@ export const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200,
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'x-api-key',
+    'x-user-id',
+    'x-user-email',
+    'x-openrouter-api-key',
+  ],
 };
 
 export const errorHandler = (

@@ -3,14 +3,8 @@ import { Box, Button, Typography, IconButton } from '@mui/material';
 import EditableSection from './EditableSection';
 import ChartParamsSelector from './CustomCharts/ChartParamsSelector';
 import ChartWrapper from './CustomCharts/ChartWrapper';
-import {
-  PREFIXES as EMPIRICAL_PREFIXES,
-  SPARQL_QUERIES as EMPIRICAL_SPARQL_QUERIES,
-} from '../api/SPARQL_QUERIES';
-import {
-  PREFIXES as NLP4RE_PREFIXES,
-  SPARQL_QUERIES as NLP4RE_SPARQL_QUERIES,
-} from '../api/SPARQL_QUERIES_NLP4RE';
+import { PREFIXES as EMPIRICAL_PREFIXES } from '../api/SPARQL_QUERIES';
+import { PREFIXES as NLP4RE_PREFIXES } from '../api/SPARQL_QUERIES_NLP4RE';
 import CodeIcon from '@mui/icons-material/Code';
 import LiveHelpIcon from '@mui/icons-material/LiveHelp';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -20,11 +14,20 @@ import { Query, ChartSetting } from '../constants/queries_chart_info';
 import { useLocation } from 'react-router-dom';
 import ChartSettingsEditor from './CustomCharts/ChartSettingsEditor';
 import type { ChartSettingsOverride } from '../firestore/CRUDStaticQuestionOverrides';
+import {
+  buildVenueCategorizedDataset,
+  getColorsForVenueSeries,
+} from '../utils/venueChartDataset';
+import type { RawDataItem } from '../constants/data_processing_helper_functions';
 
 interface QuestionChartViewProps {
   query: Query;
   normalized: boolean;
   setNormalized: React.Dispatch<React.SetStateAction<boolean>>;
+  categorizeByVenue: boolean;
+  setCategorizeByVenue: React.Dispatch<React.SetStateAction<boolean>>;
+  /** When false, hide the “by venue” chart control (no venue_name in data or question opts out). */
+  showVenueCategorization: boolean;
   queryId: string;
   chartSettings: ChartSetting;
   processedChartDataset: Record<string, unknown>[];
@@ -39,12 +42,16 @@ interface QuestionChartViewProps {
     changeDescription?: string
   ) => Promise<void>;
   onFetchOverrides?: () => Promise<void>;
+  rawChartData?: Record<string, unknown>[];
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   query,
   normalized,
   setNormalized,
+  categorizeByVenue,
+  setCategorizeByVenue,
+  showVenueCategorization,
   queryId,
   chartSettings,
   processedChartDataset,
@@ -55,17 +62,15 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   chartKey = 'chartSettings',
   onSaveChartSettings,
   onFetchOverrides,
+  rawChartData,
 }) => {
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
   const [chartEditorOpen, setChartEditorOpen] = useState(false);
   const [previewSettings, setPreviewSettings] =
     useState<ChartSettingsOverride | null>(null);
 
-  //TODO: we need better way to handle this
   const [prefixes, setPrefixes] = useState<string>(EMPIRICAL_PREFIXES);
-  const [sparqlQueries, setSparqlQueries] = useState<
-    typeof EMPIRICAL_SPARQL_QUERIES | typeof NLP4RE_SPARQL_QUERIES
-  >(EMPIRICAL_SPARQL_QUERIES);
+
   const [templateId, setTemplateId] = useState<string>('R186491');
   const location = useLocation();
 
@@ -75,25 +80,70 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
     setPrefixes(
       newTemplateId === 'R186491' ? EMPIRICAL_PREFIXES : NLP4RE_PREFIXES
     );
-    setSparqlQueries(
-      newTemplateId === 'R186491'
-        ? EMPIRICAL_SPARQL_QUERIES
-        : NLP4RE_SPARQL_QUERIES
-    );
   }, [location.pathname]);
 
   const effectiveChartSettings = {
     ...chartSettings,
     ...(chartEditorOpen && previewSettings ? previewSettings : {}),
   };
+
+  const venueQueryUid =
+    chartKey === 'chartSettings2' && query.uid_2 ? query.uid_2 : query.uid;
+
+  const venueSplit =
+    categorizeByVenue &&
+    showVenueCategorization &&
+    rawChartData &&
+    rawChartData.length > 0
+      ? buildVenueCategorizedDataset(
+          rawChartData as RawDataItem[],
+          effectiveChartSettings,
+          {
+            normalized,
+            queryUid: venueQueryUid,
+            venueField: effectiveChartSettings.venueFieldKey,
+          }
+        )
+      : null;
+
+  const chartDataset = venueSplit?.dataset ?? processedChartDataset;
+
   let series = chartSettings.series;
-  if (chartSettings.series.length > 1 && normalized) {
-    // add normalized to each series key string
+  if (venueSplit) {
+    series = venueSplit.series;
+  } else if (chartSettings.series.length > 1 && normalized) {
     series = series.map((chart: { dataKey: string }) => ({
       ...chart,
       dataKey: 'normalized_' + chart.dataKey,
     }));
   }
+
+  const venueColors =
+    venueSplit &&
+    getColorsForVenueSeries(
+      venueSplit.series.length,
+      effectiveChartSettings.colors
+    );
+
+  const chartSettingForWrapper: ChartSetting = {
+    ...effectiveChartSettings,
+    series,
+    ...(venueColors ? { colors: venueColors } : {}),
+    ...(venueSplit && effectiveChartSettings.yAxis?.[0]
+      ? {
+          yAxis: [
+            {
+              ...effectiveChartSettings.yAxis[0],
+              label:
+                normalized && !effectiveChartSettings.doesntHaveNormalization
+                  ? 'Share (%)'
+                  : (effectiveChartSettings.yAxis[0].label ?? 'Count'),
+            },
+          ],
+        }
+      : {}),
+  };
+
   const createHeading = (chart: { label: string }) => {
     if (effectiveChartSettings?.seriesHeadingTemplate) {
       return effectiveChartSettings.seriesHeadingTemplate.replace(
@@ -169,25 +219,22 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 
       {/* Main Chart Section */}
       <>
-        {!effectiveChartSettings.doesntHaveNormalization ? (
-          <Box sx={{ mb: 3 }}>
-            <ChartParamsSelector
-              normalized={normalized}
-              setNormalized={setNormalized}
-              query={query}
-            />
-          </Box>
-        ) : (
-          <></>
-        )}
+        <Box sx={{ mb: 3 }}>
+          <ChartParamsSelector
+            normalized={normalized}
+            setNormalized={setNormalized}
+            query={query}
+            categorizeByVenue={categorizeByVenue}
+            setCategorizeByVenue={setCategorizeByVenue}
+            showVenueCategorization={showVenueCategorization}
+            hideNormalization={!!effectiveChartSettings.doesntHaveNormalization}
+          />
+        </Box>
         <ChartWrapper
           key={`${queryId}-chart`}
           question_id={queryId}
-          dataset={processedChartDataset}
-          chartSetting={{
-            ...effectiveChartSettings,
-            series: series,
-          }}
+          dataset={chartDataset}
+          chartSetting={chartSettingForWrapper}
           normalized={normalized}
           loading={false}
           defaultChartType={query.chartType ?? 'bar'}
@@ -196,110 +243,111 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
       </>
 
       {/* Charts Section */}
-      {series.length > 1 && !effectiveChartSettings.hideDetailedCharts && (
-        <>
-          <Typography
-            variant="h5"
-            sx={{
-              mb: 3,
-              color: '#e86161',
-              fontWeight: 600,
-              fontSize: { xs: '1.25rem', sm: '1.5rem' },
-            }}
-          >
-            Detailed Charts
-          </Typography>
-          <Box
-            sx={{
-              position: 'relative',
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 400,
-            }}
-          >
-            <IconButton
-              onClick={handlePreviousChart}
+      {series.length > 1 &&
+        !effectiveChartSettings.hideDetailedCharts &&
+        !venueSplit && (
+          <>
+            <Typography
+              variant="h5"
               sx={{
-                position: 'absolute',
-                left: 0,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                bgcolor: 'white',
-                boxShadow: 1,
-                '&:hover': { bgcolor: 'grey.100' },
-                zIndex: 1,
+                mb: 3,
+                color: '#e86161',
+                fontWeight: 600,
+                fontSize: { xs: '1.25rem', sm: '1.5rem' },
               }}
-              aria-label="Previous chart"
             >
-              <ArrowBackIosNewIcon />
-            </IconButton>
+              Detailed Charts
+            </Typography>
             <Box
               sx={{
-                width: { xs: '90vw', sm: 900, md: 1300 },
-                maxWidth: 800,
-                mx: 'auto',
+                position: 'relative',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 400,
               }}
             >
-              <ChartWrapper
-                question_id={queryId}
-                dataset={processedChartDataset}
-                chartSetting={{
-                  ...effectiveChartSettings,
-                  series: [series[currentChartIndex]],
-                  heading: effectiveChartSettings.noHeadingInSeries
-                    ? ''
-                    : createHeading(series[currentChartIndex]),
-                  colors: [
-                    effectiveChartSettings.colors?.[currentChartIndex] ??
-                      '#e86161',
-                  ],
-                  yAxis: [
-                    {
-                      label: chartSettings.yAxis?.[0]?.label,
-                      dataKey: series[currentChartIndex].dataKey,
-                    },
-                  ],
-                }}
-                normalized={normalized}
-                loading={false}
-                defaultChartType={query.chartType ?? 'bar'}
-                availableCharts={['bar', 'pie']}
-                isSubChart={true}
-              />
-              {/* show the current chart index and total charts */}
-              <Typography
-                variant="body1"
+              <IconButton
+                onClick={handlePreviousChart}
                 sx={{
-                  fontSize: '0.8rem',
-                  color: 'text.secondary',
-                  mt: 2,
-                  textAlign: 'center',
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  bgcolor: 'white',
+                  boxShadow: 1,
+                  '&:hover': { bgcolor: 'grey.100' },
+                  zIndex: 1,
+                }}
+                aria-label="Previous chart"
+              >
+                <ArrowBackIosNewIcon />
+              </IconButton>
+              <Box
+                sx={{
+                  width: { xs: '90vw', sm: 900, md: 1300 },
+                  maxWidth: 800,
+                  mx: 'auto',
                 }}
               >
-                {currentChartIndex + 1} of {series.length}
-              </Typography>
+                <ChartWrapper
+                  question_id={queryId}
+                  dataset={chartDataset}
+                  chartSetting={{
+                    ...effectiveChartSettings,
+                    series: [series[currentChartIndex]],
+                    heading: effectiveChartSettings.noHeadingInSeries
+                      ? ''
+                      : createHeading(series[currentChartIndex]),
+                    colors: [
+                      effectiveChartSettings.colors?.[currentChartIndex] ??
+                        '#e86161',
+                    ],
+                    yAxis: [
+                      {
+                        label: chartSettings.yAxis?.[0]?.label,
+                        dataKey: series[currentChartIndex].dataKey,
+                      },
+                    ],
+                  }}
+                  normalized={normalized}
+                  loading={false}
+                  defaultChartType={query.chartType ?? 'bar'}
+                  availableCharts={['bar', 'pie']}
+                  isSubChart={true}
+                />
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: '0.8rem',
+                    color: 'text.secondary',
+                    mt: 2,
+                    textAlign: 'center',
+                  }}
+                >
+                  {currentChartIndex + 1} of {series.length}
+                </Typography>
+              </Box>
+              <IconButton
+                onClick={handleNextChart}
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  bgcolor: 'white',
+                  boxShadow: 1,
+                  '&:hover': { bgcolor: 'grey.100' },
+                  zIndex: 1,
+                }}
+                aria-label="Next chart"
+              >
+                <ArrowForwardIosIcon />
+              </IconButton>
             </Box>
-            <IconButton
-              onClick={handleNextChart}
-              sx={{
-                position: 'absolute',
-                right: 0,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                bgcolor: 'white',
-                boxShadow: 1,
-                '&:hover': { bgcolor: 'grey.100' },
-                zIndex: 1,
-              }}
-              aria-label="Next chart"
-            >
-              <ArrowForwardIosIcon />
-            </IconButton>
-          </Box>
-        </>
-      )}
+          </>
+        )}
       {isEditMode && onSaveInterpretation ? (
         <EditableSection
           isEditingInfo={isEditMode}
@@ -360,7 +408,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
           </Button>
         )}
         <Button
-          href={`https://orkg.org/sparql#${encodeURIComponent(prefixes + sparqlQueries[query.uid as keyof typeof sparqlQueries])}`}
+          href={`https://orkg.org/sparql#${encodeURIComponent(prefixes + query.sparqlQuery)}`}
           target="_blank"
           sx={{
             color: '#e86161',
