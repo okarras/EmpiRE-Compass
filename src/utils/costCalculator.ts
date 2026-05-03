@@ -130,6 +130,9 @@ export function calculateCost(
         output: 0,
       };
       break;
+    case 'openrouter':
+      pricing = { input: 0, output: 0 };
+      break;
     default:
       pricing = { input: 0, output: 0 };
   }

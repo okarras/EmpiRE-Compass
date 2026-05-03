@@ -2,7 +2,13 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-type CommonResult = { label: string; count: number; normalizedRatio: number };
+type CommonResult = {
+  label: string;
+  count: number;
+  normalizedRatio: number;
+  /** Raw rows that contributed to this bar / bucket (e.g. for paper drill-down). */
+  itemsInGroup: RawDataItem[];
+};
 
 export type BoxPlotItem = {
   label: string;
@@ -50,6 +56,7 @@ const processQuery = (
   // 2) If uniqueValueKey provided -> build map label -> Set(uniqueValue)
   if (uniqueValueKey) {
     const map = new Map<string, Set<string>>();
+    const rowsByLabel = new Map<string, RawDataItem[]>();
     for (const row of rows) {
       const label = String(row[labelKey] ?? '').trim();
       const val = String(row[uniqueValueKey] ?? '').trim();
@@ -58,10 +65,13 @@ const processQuery = (
         continue;
       if (!map.has(label)) map.set(label, new Set<string>());
       map.get(label)!.add(val);
+      if (!rowsByLabel.has(label)) rowsByLabel.set(label, []);
+      rowsByLabel.get(label)!.push(row);
     }
     // ensure required labels exist
     for (const req of requiredValues) {
       if (!map.has(req)) map.set(req, new Set<string>());
+      if (!rowsByLabel.has(req)) rowsByLabel.set(req, []);
     }
     const entries = Array.from(map.entries()).map(([label, s]) => ({
       label,
@@ -74,20 +84,25 @@ const processQuery = (
       label,
       count,
       normalizedRatio: base > 0 ? Number(((count * 100) / base).toFixed(3)) : 0,
+      itemsInGroup: rowsByLabel.get(label) ?? [],
     }));
   }
 
   // 3) Otherwise count (per row or per deduped paper as above)
   const counts = new Map<string, number>();
+  const rowsByLabel = new Map<string, RawDataItem[]>();
   for (const row of rows) {
     const label = String(row[labelKey] ?? '').trim();
     if (!label) continue;
     if (excludeValues.includes(label)) continue;
     counts.set(label, (counts.get(label) ?? 0) + 1);
+    if (!rowsByLabel.has(label)) rowsByLabel.set(label, []);
+    rowsByLabel.get(label)!.push(row);
   }
 
   for (const req of requiredValues) {
     if (!counts.has(req)) counts.set(req, 0);
+    if (!rowsByLabel.has(req)) rowsByLabel.set(req, []);
   }
   const entries = Array.from(counts.entries()).map(([label, count]) => ({
     label,
@@ -100,6 +115,7 @@ const processQuery = (
     label,
     count,
     normalizedRatio: base > 0 ? Number(((count * 100) / base).toFixed(3)) : 0,
+    itemsInGroup: rowsByLabel.get(label) ?? [],
   }));
 };
 
@@ -137,6 +153,7 @@ export const Query3DataProcessingFunction = (rawData: RawDataItem[] = []) => {
   const NLP_KEY = 'NLPTaskInputLabel';
   const CONTRIB_KEY = 'contribution';
   const pairMap = new Map<string, Set<string>>();
+  const rowsByKey = new Map<string, RawDataItem[]>();
 
   rawData.forEach((row, idx) => {
     const re = String(row[RE_KEY] ?? '').trim();
@@ -147,11 +164,18 @@ export const Query3DataProcessingFunction = (rawData: RawDataItem[] = []) => {
     const key = `${re}||${nlp}`;
     if (!pairMap.has(key)) pairMap.set(key, new Set<string>());
     pairMap.get(key)!.add(contrib);
+    if (!rowsByKey.has(key)) rowsByKey.set(key, []);
+    rowsByKey.get(key)!.push(row);
   });
 
   const result = Array.from(pairMap.entries()).map(([key, set]) => {
     const [re, nlp] = key.split('||');
-    return { xLabel: re, yLabel: nlp, value: set.size };
+    return {
+      xLabel: re,
+      yLabel: nlp,
+      value: set.size,
+      itemsInGroup: rowsByKey.get(key) ?? [],
+    };
   });
 
   result.sort((a, b) =>
@@ -219,6 +243,7 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[] = []) => {
   const NLP_KEY = 'NLPTaskTypeLabel';
   const CONTRIB_KEY = 'contribution';
   const pairMap = new Map<string, Set<string>>();
+  const rowsByKey = new Map<string, RawDataItem[]>();
 
   rawData.forEach((row, idx) => {
     const re = String(row[RE_KEY] ?? '').trim();
@@ -229,11 +254,18 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[] = []) => {
     const key = `${re}||${nlp}`;
     if (!pairMap.has(key)) pairMap.set(key, new Set<string>());
     pairMap.get(key)!.add(contrib);
+    if (!rowsByKey.has(key)) rowsByKey.set(key, []);
+    rowsByKey.get(key)!.push(row);
   });
 
   const result = Array.from(pairMap.entries()).map(([key, set]) => {
     const [re, nlp] = key.split('||');
-    return { xLabel: nlp, yLabel: re, value: set.size };
+    return {
+      xLabel: nlp,
+      yLabel: re,
+      value: set.size,
+      itemsInGroup: rowsByKey.get(key) ?? [],
+    };
   });
 
   result.sort((a, b) =>

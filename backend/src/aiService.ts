@@ -4,7 +4,12 @@ import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-export type AIProvider = 'openai' | 'groq' | 'mistral' | 'google';
+export type AIProvider =
+  | 'openai'
+  | 'groq'
+  | 'mistral'
+  | 'google'
+  | 'openrouter';
 export type OpenAIModel =
   // Frontier models - OpenAI's most advanced models
   | 'gpt-5.1'
@@ -60,6 +65,8 @@ export interface AIConfig {
   groqModel: GroqModel;
   mistralModel: MistralModel;
   googleModel: GoogleModel;
+  /** Default OpenRouter model id when request omits `model` */
+  openrouterModel: string;
   openaiApiKey: string;
   groqApiKey: string;
   mistralApiKey: string;
@@ -73,8 +80,6 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
-  // NOTE: API keys from request are IGNORED - backend uses environment keys only
-  // This is for security - user API keys should never be sent to backend
 }
 
 export interface GenerateTextResponse {
@@ -95,8 +100,9 @@ export class AIService {
   }
 
   private getApiKey(provider: AIProvider, _userProvidedKey?: string): string {
-    // SECURITY: Always ignore user-provided keys - only use environment keys
-    // User API keys should never be sent to backend for security reasons
+    if (provider === 'openrouter') {
+      return '';
+    }
     if (provider === 'openai') {
       return this.config.openaiApiKey;
     } else if (provider === 'groq') {
@@ -109,6 +115,19 @@ export class AIService {
     return '';
   }
 
+  private getOpenRouterHeaders(): Record<string, string> {
+    const refererRaw =
+      process.env.OPENROUTER_HTTP_REFERER || process.env.FRONTEND_URL || '';
+    const referer =
+      refererRaw.trim().replace(/^["']|["']$/g, '') ||
+      'https://empire-compass.tib.eu';
+    const title = (process.env.OPENROUTER_APP_TITLE || 'EmpiRE Compass').trim();
+    return {
+      'HTTP-Referer': referer,
+      'X-Title': title,
+    };
+  }
+
   private createProvider(provider: AIProvider, userProvidedKey?: string) {
     const apiKey = this.getApiKey(provider, userProvidedKey);
 
@@ -116,6 +135,9 @@ export class AIService {
       throw new Error(`${provider.toUpperCase()} API key is not configured`);
     }
 
+    if (provider === 'openrouter') {
+      throw new Error('OpenRouter uses a per-request API key from headers');
+    }
     if (provider === 'openai') {
       return createOpenAI({ apiKey });
     } else if (provider === 'groq') {
@@ -170,26 +192,39 @@ export class AIService {
   }
 
   public async generateText(
-    request: GenerateTextRequest
+    request: GenerateTextRequest,
+    options?: { openRouterApiKey?: string }
   ): Promise<GenerateTextResponse> {
     try {
       const targetProvider = request.provider || this.config.provider;
-      // SECURITY: Never use API keys from request - always use environment keys
-      // This ensures user API keys are never processed by the backend
 
-      // Check if API key is configured
-      const apiKey = this.getApiKey(targetProvider);
-      if (!apiKey || apiKey.trim().length === 0) {
-        throw new Error(
-          `${targetProvider.toUpperCase()} API key is not configured`
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let model: any;
+
+      if (targetProvider === 'openrouter') {
+        const orKey = options?.openRouterApiKey?.trim();
+        if (!orKey) {
+          throw new Error('OpenRouter API key is required');
+        }
+        const openrouter = createOpenAI({
+          apiKey: orKey,
+          baseURL: 'https://openrouter.ai/api/v1',
+          headers: this.getOpenRouterHeaders(),
+        });
+        const modelId = this.sanitizeModelName(
+          request.model || this.config.openrouterModel
         );
-      }
+        model = openrouter.languageModel(modelId);
+      } else {
+        const apiKey = this.getApiKey(targetProvider);
+        if (!apiKey || apiKey.trim().length === 0) {
+          throw new Error(
+            `${targetProvider.toUpperCase()} API key is not configured`
+          );
+        }
 
-      const model = this.getEnhancedModel(
-        targetProvider,
-        request.model,
-        undefined // Never pass user API keys
-      );
+        model = this.getEnhancedModel(targetProvider, request.model, undefined);
+      }
 
       const generateOptions: {
         model: any;
@@ -314,6 +349,8 @@ export class AIService {
       model = this.config.mistralModel;
     } else if (this.config.provider === 'google') {
       model = this.config.googleModel;
+    } else if (this.config.provider === 'openrouter') {
+      model = this.config.openrouterModel;
     } else {
       model = '';
     }

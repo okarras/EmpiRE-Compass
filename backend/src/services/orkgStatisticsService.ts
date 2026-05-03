@@ -262,14 +262,20 @@ export async function fetchPaperList(sparqlQuery: string): Promise<string[]> {
  * /api/statements/bundle/{resourceId}
  */
 export async function fetchStatementsBundle(
-  resourceId: string
+  resourceId: string,
+  options?: { maxLevel?: number }
 ): Promise<ORKGStatement[]> {
   // ORKG API endpoint for statements bundle
   // Format: https://www.orkg.org/api/statements/{resource_id}/bundle
-  const url = `${ORKG_API_BASE}/statements/${resourceId}/bundle`;
+  const url = new URL(
+    `${ORKG_API_BASE}/statements/${encodeURIComponent(resourceId)}/bundle`
+  );
+  if (options?.maxLevel != null && Number.isFinite(options.maxLevel)) {
+    url.searchParams.set('maxLevel', String(options.maxLevel));
+  }
 
   const fetchWithRetry = async () => {
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         Accept: 'application/json',

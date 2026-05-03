@@ -13,6 +13,7 @@ export interface DynamicQuestionState {
   sparqlQuery: string;
   sparqlTranslation: string;
   queryResults: Record<string, unknown>[];
+  rawSparqlQueryResults: Record<string, unknown>[];
   chartHtml: string;
   questionInterpretation: string;
   dataCollectionInterpretation: string;
@@ -43,6 +44,7 @@ const initialState: DynamicQuestionState = {
   sparqlQuery: '',
   sparqlTranslation: '',
   queryResults: [],
+  rawSparqlQueryResults: [],
   chartHtml: '',
   questionInterpretation: '',
   dataCollectionInterpretation: '',
@@ -90,6 +92,7 @@ interface DynamicQuestionContextType {
   removeMultipleFromHistory: (ids: string[]) => void;
   resetState: () => void;
   loadSavedState: (savedState: DynamicQuestionState) => void;
+  updateRawSparqlQueryResults: (results: Record<string, unknown>[]) => void;
 }
 
 export const DynamicQuestionContext = createContext<
@@ -113,6 +116,9 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
           costs: Array.isArray(parsed.costs) ? parsed.costs : [],
           queryResults: Array.isArray(parsed.queryResults)
             ? parsed.queryResults
+            : [],
+          rawSparqlQueryResults: Array.isArray(parsed.rawSparqlQueryResults)
+            ? parsed.rawSparqlQueryResults
             : [],
         };
       }
@@ -303,6 +309,13 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
     }));
   };
 
+  const updateRawSparqlQueryResults = (results: Record<string, unknown>[]) => {
+    setState((prev) => ({
+      ...prev,
+      rawSparqlQueryResults: results,
+    }));
+  };
+
   const getHistoryByType = (type: DynamicQuestionHistory['type']) => {
     return state.history.filter((entry) => entry.type === type);
   };
@@ -367,6 +380,7 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
         removeMultipleFromHistory,
         resetState,
         loadSavedState,
+        updateRawSparqlQueryResults,
       }}
     >
       {children}

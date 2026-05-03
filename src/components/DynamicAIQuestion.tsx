@@ -42,6 +42,7 @@ const DynamicAIQuestion = () => {
     updateSparqlQuery,
     updateSparqlTranslation,
     updateQueryResults,
+    updateRawSparqlQueryResults,
     updateChartHtml,
     updateQuestionInterpretation,
     updateDataCollectionInterpretation,
@@ -191,23 +192,31 @@ const DynamicAIQuestion = () => {
     dynamicQuery,
   ]);
 
-  // Execute SPARQL queries with processing
+  // Execute SPARQL queries with processing; `raw` is triplestore bindings, `transformed` is after JS processing
   const executeQueries = async (
     queryString: string,
     useProcessingFn = true
-  ): Promise<Record<string, unknown>[]> => {
+  ): Promise<{
+    raw: Record<string, unknown>[];
+    transformed: Record<string, unknown>[];
+  }> => {
     const blocks = parseSparqlBlocks(queryString);
     const rawData = await fetchSPARQLData(blocks[0].query);
+    const raw = rawData as Record<string, unknown>[];
 
+    let transformed: Record<string, unknown>[];
     if (useProcessingFn && processingFn) {
       try {
-        return processingFn(rawData);
+        transformed = processingFn(rawData);
       } catch (e) {
         console.warn('Processing function failed, falling back to default:', e);
-        return processDynamicData(rawData);
+        transformed = processDynamicData(rawData);
       }
+    } else {
+      transformed = processDynamicData(rawData);
     }
-    return processDynamicData(rawData);
+
+    return { raw, transformed };
   };
 
   const handleRunQuery = async (queryString: string) => {
@@ -219,7 +228,9 @@ const DynamicAIQuestion = () => {
     updateDataAnalysisInterpretation('');
 
     try {
-      const transformed = await executeQueries(queryString);
+      const { raw, transformed } = await executeQueries(queryString);
+
+      updateRawSparqlQueryResults(raw);
 
       if (
         !transformed ||
@@ -232,7 +243,6 @@ const DynamicAIQuestion = () => {
         updateQueryResults([]);
         return;
       }
-
       updateQueryResults(transformed);
 
       // Auto-update processing function if needed
@@ -296,6 +306,7 @@ const DynamicAIQuestion = () => {
 
       setError(errorMessage);
       updateQueryResults([]);
+      updateRawSparqlQueryResults([]);
     } finally {
       setLoading(false);
     }
@@ -325,6 +336,7 @@ const DynamicAIQuestion = () => {
     updateSparqlQuery('');
     updateSparqlTranslation('');
     updateQueryResults([]);
+    updateRawSparqlQueryResults([]);
     setDynamicQuery(null);
     updateProcessingFunctionCode('', 'Reset before new generation');
     updateCosts([]); // Reset costs for new generation
@@ -346,8 +358,11 @@ const DynamicAIQuestion = () => {
           'Query executed successfully but returned no results after multiple refinement attempts. Try modifying your research question.'
         );
         updateQueryResults([]);
+        updateRawSparqlQueryResults([]);
         return;
       }
+
+      updateRawSparqlQueryResults(rawData as Record<string, unknown>[]);
 
       const newProcessingFn = await generateProcessingFunction(
         rawData,
@@ -412,6 +427,7 @@ const DynamicAIQuestion = () => {
     updateDataCollectionInterpretation('');
     updateDataAnalysisInterpretation('');
     updateQueryResults([]);
+    updateRawSparqlQueryResults([]);
 
     // Auto-regenerate processing function when SPARQL is edited
     if (state.question && state.question.trim()) {
@@ -524,6 +540,7 @@ const DynamicAIQuestion = () => {
     sparqlQuery: string;
     sparqlTranslation: string;
     queryResults: Record<string, unknown>[];
+    rawSparqlQueryResults: Record<string, unknown>[];
     chartHtml: string;
     questionInterpretation: string;
     dataCollectionInterpretation: string;
@@ -591,6 +608,7 @@ const DynamicAIQuestion = () => {
           const blocks = parseSparqlBlocks(state.sparqlQuery);
           const rawData = await executeQueriesRaw(blocks);
           if (rawData && Array.isArray(rawData) && rawData.length > 0) {
+            updateRawSparqlQueryResults(rawData as Record<string, unknown>[]);
             const reprocessedData = compiled(rawData);
             if (
               reprocessedData &&
@@ -687,6 +705,16 @@ const DynamicAIQuestion = () => {
         JSON.stringify(exampleState.queryResults)
       );
       updateQueryResults(serializedResults);
+      if (
+        exampleState.rawSparqlQueryResults &&
+        Array.isArray(exampleState.rawSparqlQueryResults)
+      ) {
+        updateRawSparqlQueryResults(
+          JSON.parse(JSON.stringify(exampleState.rawSparqlQueryResults))
+        );
+      } else {
+        updateRawSparqlQueryResults(serializedResults);
+      }
     }
     if (exampleState.chartHtml) {
       updateChartHtml(exampleState.chartHtml);
@@ -742,6 +770,7 @@ const DynamicAIQuestion = () => {
       sparqlQuery: state.sparqlQuery || '',
       sparqlTranslation: state.sparqlTranslation || '',
       queryResults: state.queryResults || [],
+      rawSparqlQueryResults: state.rawSparqlQueryResults || [],
       chartHtml: state.chartHtml || '',
       questionInterpretation: state.questionInterpretation || '',
       dataCollectionInterpretation: state.dataCollectionInterpretation || '',
@@ -758,6 +787,7 @@ const DynamicAIQuestion = () => {
     updateSparqlQuery('');
     updateSparqlTranslation('');
     updateQueryResults([]);
+    updateRawSparqlQueryResults([]);
     updateChartHtml('');
     updateQuestionInterpretation('');
     updateDataCollectionInterpretation('');
@@ -782,6 +812,7 @@ const DynamicAIQuestion = () => {
     updateSparqlQuery(previousState.sparqlQuery);
     updateSparqlTranslation(previousState.sparqlTranslation);
     updateQueryResults(previousState.queryResults);
+    updateRawSparqlQueryResults(previousState.rawSparqlQueryResults);
     updateChartHtml(previousState.chartHtml);
     updateQuestionInterpretation(previousState.questionInterpretation);
     updateDataCollectionInterpretation(
@@ -834,6 +865,7 @@ const DynamicAIQuestion = () => {
           sparqlQuery: state.sparqlQuery || '',
           sparqlTranslation: state.sparqlTranslation || '',
           queryResults: state.queryResults || [],
+          rawSparqlQueryResults: state.rawSparqlQueryResults || [],
           chartHtml: state.chartHtml || '',
           questionInterpretation: state.questionInterpretation || '',
           dataCollectionInterpretation:
@@ -1005,6 +1037,7 @@ const DynamicAIQuestion = () => {
         question={state.question}
         sparqlQuery={state.sparqlQuery}
         queryResults={state.queryResults}
+        rawSparqlQueryResults={state.rawSparqlQueryResults}
         chartHtml={state.chartHtml}
         questionInterpretation={state.questionInterpretation}
         dataCollectionInterpretation={state.dataCollectionInterpretation}

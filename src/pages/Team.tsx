@@ -12,16 +12,28 @@ import {
   List,
   ListItem,
   Paper,
+  Button,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  Stack,
 } from '@mui/material';
 import EmailIcon from '@mui/icons-material/Email';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DownloadIcon from '@mui/icons-material/Download';
 import { ThemeProvider } from '@mui/material/styles';
 import { useEffect, useState } from 'react';
 import theme from '../utils/theme';
 import DOMPurify from 'dompurify';
 import CRUDTeam, { TeamMember } from '../firestore/CRUDTeam';
 import CRUDPapers, { Paper as PaperType } from '../firestore/CRUDPapers';
+import {
+  paperToBibtexEntry,
+  papersToBibtexBibliography,
+  downloadBibtexFile,
+} from '../utils/paperBibtex';
 
 // Placeholder image as data URI
 const PLACEHOLDER_IMAGE =
@@ -34,7 +46,23 @@ const Team = () => {
   const [papers, setPapers] = useState<PaperType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bibtexSnack, setBibtexSnack] = useState<string | null>(null);
   const backupVersion = useBackupChange(); // Listen for backup changes
+
+  const handleCopyBibtex = async (paper: PaperType) => {
+    try {
+      await navigator.clipboard.writeText(paperToBibtexEntry(paper));
+      setBibtexSnack('BibTeX citation copied to clipboard');
+    } catch {
+      setBibtexSnack('Could not copy to clipboard');
+    }
+  };
+
+  const handleDownloadAllBibtex = () => {
+    const text = papersToBibtexBibliography(papers);
+    downloadBibtexFile(text, 'empire-compass-publications.bib');
+    setBibtexSnack('Download started');
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -271,22 +299,48 @@ const Team = () => {
           {/* Publications Section */}
           {papers.length > 0 && (
             <Box sx={{ mb: { xs: 5, md: 7 } }}>
-              <Typography
-                variant="h4"
-                component="h2"
+              <Box
                 sx={{
-                  fontWeight: 600,
-                  mb: 3,
-                  color: 'text.primary',
-                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
                   display: 'flex',
+                  flexWrap: 'wrap',
                   alignItems: 'center',
-                  gap: 1,
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  mb: 3,
                 }}
               >
-                <MenuBookIcon sx={{ color: '#e86161' }} />
-                Publications
-              </Typography>
+                <Typography
+                  variant="h4"
+                  component="h2"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'text.primary',
+                    fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <MenuBookIcon sx={{ color: '#e86161' }} />
+                  Publications
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleDownloadAllBibtex}
+                  sx={{
+                    borderColor: '#e86161',
+                    color: '#e86161',
+                    '&:hover': {
+                      borderColor: '#d45151',
+                      backgroundColor: 'rgba(232, 97, 97, 0.06)',
+                    },
+                  }}
+                >
+                  Download .bib
+                </Button>
+              </Box>
               <Paper
                 component={List}
                 sx={{
@@ -298,16 +352,7 @@ const Team = () => {
                 {papers.map((paper: PaperType) => (
                   <ListItem
                     key={paper.id}
-                    component={paper.link ? 'a' : 'div'}
-                    href={paper.link || undefined}
-                    target={
-                      paper.link?.startsWith('http') ? '_blank' : undefined
-                    }
-                    rel={
-                      paper.link?.startsWith('http')
-                        ? 'noopener noreferrer'
-                        : undefined
-                    }
+                    component="div"
                     sx={{
                       display: 'flex',
                       flexDirection: 'column',
@@ -316,12 +361,7 @@ const Team = () => {
                       px: 3,
                       borderBottom: '1px solid',
                       borderColor: 'divider',
-                      cursor: paper.link ? 'pointer' : 'default',
-                      textDecoration: 'none',
                       color: 'inherit',
-                      '&:hover': paper.link
-                        ? { backgroundColor: 'rgba(232, 97, 97, 0.04)' }
-                        : {},
                       '&:last-child': { borderBottom: 'none' },
                     }}
                   >
@@ -338,10 +378,26 @@ const Team = () => {
                       <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography
                           variant="h6"
+                          component={paper.link ? Link : 'div'}
+                          href={paper.link ?? undefined}
+                          target={
+                            /^https?:/i.test(paper.link ?? '')
+                              ? '_blank'
+                              : undefined
+                          }
+                          rel={
+                            /^https?:/i.test(paper.link ?? '')
+                              ? 'noopener noreferrer'
+                              : undefined
+                          }
                           sx={{
                             fontWeight: 600,
                             color: 'text.primary',
                             fontSize: { xs: '1rem', sm: '1.1rem' },
+                            textDecoration: paper.link ? 'none' : undefined,
+                            '&:hover': paper.link
+                              ? { textDecoration: 'underline' }
+                              : {},
                           }}
                         >
                           {paper.title}
@@ -377,15 +433,33 @@ const Team = () => {
                           />
                         )}
                       </Box>
-                      {paper.link && (
-                        <OpenInNewIcon
-                          sx={{
-                            color: '#e86161',
-                            fontSize: '1.25rem',
-                            flexShrink: 0,
-                          }}
-                        />
-                      )}
+                      <Stack direction="row" spacing={0.5} flexShrink={0}>
+                        <Tooltip title="Copy BibTeX citation">
+                          <IconButton
+                            size="small"
+                            aria-label="Copy BibTeX citation"
+                            onClick={() => void handleCopyBibtex(paper)}
+                            sx={{ color: '#e86161' }}
+                          >
+                            <ContentCopyIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {paper.link && /^https?:/i.test(paper.link) && (
+                          <Tooltip title="Open publication link">
+                            <IconButton
+                              size="small"
+                              component={Link}
+                              href={paper.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="Open publication link"
+                              sx={{ color: '#e86161' }}
+                            >
+                              <OpenInNewIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Stack>
                     </Box>
                   </ListItem>
                 ))}
@@ -393,6 +467,13 @@ const Team = () => {
             </Box>
           )}
         </Container>
+        <Snackbar
+          open={Boolean(bibtexSnack)}
+          autoHideDuration={4000}
+          onClose={() => setBibtexSnack(null)}
+          message={bibtexSnack}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        />
       </Box>
     </ThemeProvider>
   );

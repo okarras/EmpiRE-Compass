@@ -21,6 +21,7 @@ import statisticsRouter from './routes/statistics.js';
 import newsRouter from './routes/news.js';
 import papersRouter from './routes/papers.js';
 import orkgAskRouter from './routes/orkgAsk.js';
+import statementsRouter from './routes/statements.js';
 import restoreRouter from './routes/restore.js';
 import questionOverridesRouter from './routes/questionOverrides.js';
 import backupRouter from './routes/backup.js';
@@ -157,6 +158,10 @@ const aiConfig: AIConfig = {
       | 'gemini-1.5-flash-8b'
       | 'gemma-3-27b-it') || 'gemini-1.5-flash',
   googleApiKey: sanitizeEnvVar(process.env.GOOGLE_API_KEY, ''),
+  openrouterModel: sanitizeEnvVar(
+    process.env.OPENROUTER_MODEL,
+    'openai/gpt-4o-mini'
+  ),
 };
 
 const aiService = new AIService(aiConfig);
@@ -176,6 +181,7 @@ app.use('/api/statistics', statisticsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/papers', papersRouter);
 app.use('/api/orkg-ask', orkgAskRouter);
+app.use('/api/statements', statementsRouter);
 app.use('/api/restore', restoreRouter);
 app.use('/api/question-overrides', questionOverridesRouter);
 app.use('/api/backup', backupRouter);

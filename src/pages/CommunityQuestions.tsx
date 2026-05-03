@@ -20,6 +20,9 @@ import CRUDDynamicQuestions, {
 } from '../firestore/CRUDDynamicQuestions';
 import CommunityQuestionAccordion from '../components/CommunityQuestionAccordion';
 import { useAuthData } from '../auth/useAuthData';
+import { useParams } from 'react-router-dom';
+import TemplateManagement from '../firestore/TemplateManagement';
+import { useKeycloak } from '@react-keycloak/web';
 
 const CommunityQuestions = () => {
   const [questions, setQuestions] = useState<DynamicQuestion[]>([]);
@@ -28,6 +31,8 @@ const CommunityQuestions = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   const { user } = useAuthData();
+  const { keycloak } = useKeycloak();
+  const { templateId } = useParams();
   const isAdmin = user?.is_admin === true;
   console.log(questions);
 
@@ -123,6 +128,33 @@ const CommunityQuestions = () => {
       await CRUDDynamicQuestions.deleteDynamicQuestion(id, true);
       setQuestions((prev) => prev.filter((q) => q.id !== id));
       setDeleteSuccess(true);
+
+      // Also remove any curated questions in the menu that came from this community question
+      if (templateId && user?.id && user.email) {
+        try {
+          const existingQuestions =
+            await TemplateManagement.getAllQuestions(templateId);
+          const linkedQuestions = existingQuestions.filter(
+            (q) => q.fromCommunity && q.communityQuestionId === id
+          );
+
+          for (const q of linkedQuestions) {
+            const docId = q.uid || String(q.id);
+            await TemplateManagement.deleteQuestion(
+              templateId,
+              docId,
+              user.id,
+              user.email,
+              keycloak?.token
+            );
+          }
+        } catch (cleanupError) {
+          console.error(
+            'Failed to clean up curated questions linked to deleted community question',
+            cleanupError
+          );
+        }
+      }
     } catch (err) {
       console.error('Failed to delete question', err);
       setError('Failed to delete question. Please try again.');
@@ -204,6 +236,7 @@ const CommunityQuestions = () => {
           <FormControl size="small" sx={{ minWidth: 150 }}>
             <Select
               value={sortBy}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => setSortBy(e.target.value as any)}
               displayEmpty
               inputProps={{ 'aria-label': 'Sort by' }}
