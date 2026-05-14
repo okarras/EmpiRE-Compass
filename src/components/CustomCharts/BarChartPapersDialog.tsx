@@ -33,6 +33,7 @@ import {
   extractOrkgResourceId,
   isOrkgResourceUri,
   isValidUrl,
+  orkgPaperBrowseUrl,
 } from '../../utils/orkgResource';
 
 export type PaperRowState =
@@ -350,7 +351,7 @@ const BarChartPapersDialog: React.FC<BarChartPapersDialogProps> = ({
             <Box key={`${row.uri}-${idx}`} sx={{ mb: 2 }}>
               {row.status === 'loading' && (
                 <Typography variant="body2" color="text.secondary">
-                  Loading… {row.uri}
+                  Loading… {orkgPaperBrowseUrl(row.uri) ?? row.uri}
                 </Typography>
               )}
               {row.status === 'not_orkg' && (
@@ -370,7 +371,7 @@ const BarChartPapersDialog: React.FC<BarChartPapersDialogProps> = ({
               {row.status === 'error' && (
                 <Alert severity="warning" sx={{ py: 0.5 }}>
                   <Typography variant="body2" component="span">
-                    {row.uri}
+                    {orkgPaperBrowseUrl(row.uri) ?? row.uri}
                   </Typography>
                   <Typography variant="caption" display="block">
                     {row.message}
@@ -408,7 +409,7 @@ const BarChartPapersDialog: React.FC<BarChartPapersDialogProps> = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <a
-                      href={row.uri}
+                      href={orkgPaperBrowseUrl(row.uri) ?? row.uri}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -419,7 +420,7 @@ const BarChartPapersDialog: React.FC<BarChartPapersDialogProps> = ({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {row.uri}
+                      {orkgPaperBrowseUrl(row.uri) ?? row.uri}
                     </a>
                     <Tooltip title="View paper in AI Assistant">
                       <IconButton

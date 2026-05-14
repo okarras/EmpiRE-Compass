@@ -27,6 +27,7 @@ import type { PaperInfoItem } from '../context/AIAssistantContext';
 import {
   extractOrkgResourceId,
   isOrkgResourceUri,
+  orkgPaperBrowseUrl,
   isValidUrl,
 } from '../utils/orkgResource';
 
@@ -155,6 +156,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
           isOrkgResourceUri(value)
         ) {
           const paperId = extractOrkgResourceId(value);
+          const paperHref = orkgPaperBrowseUrl(value) ?? value;
           if (paperId) {
             return (
               <Box
@@ -169,7 +171,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
                 onMouseDown={(e) => e.stopPropagation()}
               >
                 <a
-                  href={value}
+                  href={paperHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -181,7 +183,7 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
                   }}
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {value}
+                  {paperHref}
                 </a>
                 <Tooltip title="View paper in AI Assistant">
                   <IconButton
