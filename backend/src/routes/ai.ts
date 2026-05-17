@@ -137,11 +137,12 @@ const getAIService = (): AIService => {
     // Fallback initialization if not already initialized
     const fallbackConfig: AIConfig = {
       provider:
-        (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
+        (sanitizeEnvVar(process.env.AI_PROVIDER, 'openrouter') as
           | 'openai'
           | 'groq'
           | 'mistral'
-          | 'google') || 'mistral',
+          | 'google'
+          | 'openrouter') || 'openrouter',
       openaiModel:
         (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
           | 'gpt-5.1'
@@ -258,7 +259,7 @@ router.get('/config', async (req: AuthenticatedRequest, res: Response) => {
         hasGroqKey: !!process.env.GROQ_API_KEY,
         hasMistralKey: !!process.env.MISTRAL_API_KEY,
         hasGoogleKey: !!process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-        provider: process.env.AI_PROVIDER || 'groq',
+        provider: process.env.AI_PROVIDER || 'openrouter',
       }),
     });
   } catch (error) {
@@ -424,10 +425,14 @@ router.post(
       const { prompt, provider, model, temperature, maxTokens, systemContext } =
         req.body;
 
+      const service = getAIService();
+      const effectiveProvider = provider || service.getCurrentConfig().provider;
       const openRouterKey =
-        provider === 'openrouter' ? readOpenRouterApiKey(req) : '';
+        effectiveProvider === 'openrouter'
+          ? service.resolveOpenRouterApiKey(readOpenRouterApiKey(req))
+          : '';
 
-      const result = await getAIService().generateText(
+      const result = await service.generateText(
         {
           prompt,
           provider,
@@ -436,7 +441,7 @@ router.post(
           maxTokens,
           systemContext,
         },
-        provider === 'openrouter'
+        effectiveProvider === 'openrouter'
           ? { openRouterApiKey: openRouterKey }
           : undefined
       );

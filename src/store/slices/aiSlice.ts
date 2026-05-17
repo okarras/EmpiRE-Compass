@@ -243,8 +243,8 @@ const normalizeAIState = (state: InitialState): void => {
   if (typeof state.useEnvironmentKeys !== 'boolean') {
     state.useEnvironmentKeys = false;
   }
-  if (state.useEnvironmentKeys && state.provider === 'openrouter') {
-    state.provider = 'openai';
+  if (state.useEnvironmentKeys && state.provider !== 'openrouter') {
+    state.provider = 'openrouter';
   }
   state.isConfigured = computeIsConfigured(state);
 };

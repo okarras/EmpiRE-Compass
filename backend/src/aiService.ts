@@ -99,9 +99,16 @@ export class AIService {
     this.config = config;
   }
 
+  /** OPENAI_API_KEY holds the OpenRouter key when provider is openrouter */
+  public resolveOpenRouterApiKey(headerKey?: string): string {
+    const fromHeader = headerKey?.trim() || '';
+    if (fromHeader) return fromHeader;
+    return this.config.openaiApiKey.trim();
+  }
+
   private getApiKey(provider: AIProvider, _userProvidedKey?: string): string {
     if (provider === 'openrouter') {
-      return '';
+      return this.config.openaiApiKey;
     }
     if (provider === 'openai') {
       return this.config.openaiApiKey;
@@ -202,7 +209,7 @@ export class AIService {
       let model: any;
 
       if (targetProvider === 'openrouter') {
-        const orKey = options?.openRouterApiKey?.trim();
+        const orKey = this.resolveOpenRouterApiKey(options?.openRouterApiKey);
         if (!orKey) {
           throw new Error('OpenRouter API key is required');
         }
