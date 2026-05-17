@@ -267,7 +267,7 @@ export class BackendAIService {
     };
 
     const extraHeaders: Record<string, string> = {};
-    if (effectiveProvider === 'openrouter') {
+    if (effectiveProvider === 'openrouter' && !this.config.useEnvironmentKeys) {
       const k = this.config.openrouterApiKey.trim();
       if (!k) {
         throw new Error('OpenRouter API key is required');
