@@ -44,35 +44,40 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   const renderChart = () => {
     if (chartRef.current && chartHtml) {
-      // Create container for the chart
-      chartRef.current.innerHTML = `
-        <div style="width: 100%; height: ${isExpanded ? 400 : 200}px; position: relative;">
-          <canvas id="chart-${Date.now()}"></canvas>
-        </div>
-      `;
-
-      // Extract chart configuration from the provided HTML
-      const chartConfigMatch = chartHtml.match(
-        /new Chart\(.*?,\s*({[\s\S]*?})\);/
+      // Extract all chart configurations from the provided HTML
+      const chartConfigMatches = Array.from(
+        chartHtml.matchAll(/new Chart\(.*?,\s*({[\s\S]*?})\);/g)
       );
-      if (chartConfigMatch) {
-        try {
-          // Replace the eval with a safer JSON parsing approach
-          const configString = chartConfigMatch[1]
-            .replace(/(\w+):/g, '"$1":') // Convert property names to quoted strings
-            .replace(/'/g, '"'); // Replace single quotes with double quotes
 
-          const chartConfig = JSON.parse(configString);
-          const canvas = chartRef.current.querySelector('canvas');
-          if (canvas) {
+      if (chartConfigMatches.length > 0) {
+        chartRef.current.innerHTML = ''; // Clear container
+
+        chartConfigMatches.forEach((match, index) => {
+          const canvasId = `chart-${Date.now()}-${index}`;
+
+          // Create wrapper div and canvas elements
+          const wrapper = document.createElement('div');
+          wrapper.style.width = '100%';
+          wrapper.style.height = isExpanded ? '400px' : '250px';
+          wrapper.style.position = 'relative';
+          wrapper.style.marginBottom = '32px';
+
+          const canvas = document.createElement('canvas');
+          canvas.id = canvasId;
+          wrapper.appendChild(canvas);
+          chartRef.current?.appendChild(wrapper);
+
+          try {
+            // Use Function constructor to safely evaluate the object literal
+            const chartConfig = new Function(`return ${match[1]}`)();
             const ctx = canvas.getContext('2d');
             if (ctx) {
               new (window as any).Chart(ctx, chartConfig);
             }
+          } catch (error) {
+            console.error(`Error initializing chart ${index}:`, error);
           }
-        } catch (error) {
-          console.error('Error initializing chart:', error);
-        }
+        });
       }
     }
   };
