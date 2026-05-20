@@ -256,6 +256,20 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       { content: structuredPrompt, isUser: true },
     ]);
 
+    // Check if user wants a chart
+    const wantsChart =
+      structuredPrompt.toLowerCase().includes('chart') ||
+      structuredPrompt.toLowerCase().includes('graph') ||
+      structuredPrompt.toLowerCase().includes('visualize') ||
+      structuredPrompt.toLowerCase().includes('plot');
+
+    // Check if this is the "Generate Alternative Views" prompt
+    const isAlternativeViews =
+      structuredPrompt
+        .toLowerCase()
+        .includes('alternative ways to visualize') ||
+      structuredPrompt.toLowerCase().includes('generate alternative views');
+
     try {
       const response = await generateWithProvider(
         `${generateSystemContext()}
@@ -263,12 +277,46 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
 
         Please provide a detailed and comprehensive answer to this structured question about the research data.
         
-        When the user lists multiple items to include (e.g. "Include: A, B, C, D"), use an <h3> heading for each item, followed by your analysis in <p> tags. Example structure:
+        ${
+          !isAlternativeViews
+            ? `When the user lists multiple items to include (e.g. "Include: A, B, C, D"), use an <h3> heading for each item, followed by your analysis in <p> tags. Example structure:
         <h3>First item (exact title from user)</h3>
         <p>Your analysis...</p>
         <h3>Second item</h3>
-        <p>Your analysis...</p>
+        <p>Your analysis...</p>`
+            : `CRITICAL INSTRUCTION:
+        1. Do NOT analyze or write sections/explanations for "Alternative grouping or categorization approaches", "Statistical analysis methods", "What additional questions could be explored", or "How different perspectives might change our understanding". 
+        2. Focus EXCLUSIVELY on generating the alternative graphs. Do not write paragraphs or headings for the other bullet points in the user question.
+        3. For each alternative graph, output ONLY a brief title and a 1-2 sentence academic explanation of the specific data insight this graph shows. Do not write textbook explanations of chart types.`
+        }
         
+        ${
+          wantsChart
+            ? `Additionally, generate at least 2 distinct alternative visual charts using Chart.js to visualize this data from different perspectives. 
+
+        Follow these specific instructions:
+        1. Do NOT write generic explanations of what chart types are (e.g. do not write descriptions explaining what a line chart is or what a bar chart is).
+        2. **Visualize Different Things**: Each chart must visualize a DIFFERENT aspect, subset, metric, or dimension of the data. Do NOT just plot the exact same data metric in two different chart shapes. For example, if Chart 1 shows the trend of a metric over time (e.g. a line chart), Chart 2 should show a categorical comparison, a distribution breakdown, or a completely different variable or subset of the data (e.g. a bar chart comparing different categories, or a pie chart showing proportions of a specific subset).
+        3. Choose the most appropriate chart types dynamically based on the specific metric/dimension being visualized.
+        4. For each alternative chart, provide:
+           - A short 1-2 sentence analytical explanation of the specific insight this alternative view reveals based on that distinct aspect of the data.
+           - The complete, self-contained HTML/Chart.js code to render the chart.
+        5. Ensure that every chart has its own distinct <canvas> tag with a unique ID and its own distinct <script> tag initializing it.
+        6. Make the charts fully responsive and use a cohesive, premium color scheme (e.g. shades of '#e86161', soft blues, HSL tailored colors).
+        7. Format the chart code blocks clearly like this:
+        <canvas id="chart1"></canvas>
+        <script>
+          const ctx1 = document.getElementById('chart1').getContext('2d');
+          new Chart(ctx1, {
+            type: 'bar',
+            data: { ... },
+            options: { ... }
+          });
+        </script>
+        `
+            : ''
+        }
+
         Important instructions:
         1. Base your answer ONLY on the data and analysis provided above
         2. Do not make assumptions or include information not present in the data
@@ -277,15 +325,27 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         5. Format citations as [Author (Year). Title.](https://doi.org/...) or <a href="URL">citation</a>
         6. Do not include any markdown code blocks or backticks in your response
         7. Provide specific insights and detailed explanations
+        ${wantsChart ? '8. Choose the most appropriate chart type based on the data and what you want to show' : ''}
+        ${wantsChart ? '9. The chart width should be 100%' : ''}
+        ${
+          isAlternativeViews
+            ? `10. **CRITICAL REQUIREMENT (VISUALIZE DIFFERENT VARIABLES/DIMENSIONS)**: The alternative charts must plot completely different data variables, categories, subsets, or dimensions (e.g. if Chart 1 plots empirical studies trend over time, Chart 2 MUST plot something completely different, such as a category breakdown, author distribution, or a separate metric). Do NOT just plot the exact same metric in different chart shapes.
+        11. Make sure each chart has a distinct, descriptive title reflecting its distinct variable.`
+            : ''
+        }
         `
       );
 
       const { text, reasoning } = response;
 
+      // Ensure text is always a string to prevent undefined errors
+      const textString =
+        typeof text === 'string' ? text : text ? String(text) : '';
+
       // Clean up the response: markdown code blocks, prompt leaks, convert [text](url) to HTML links
       const cleanedText = markdownLinksToHtml(
         stripPromptLeaks(
-          text
+          (textString || '')
             .replace(/```html\n/g, '')
             .replace(/```\n/g, '')
             .replace(/```html/g, '')
@@ -294,13 +354,39 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         )
       );
 
+      // Extract chart HTML if present (match from <canvas> to the last </script> tag)
+      let chartHtml: string | undefined = undefined;
+      let textWithoutChart = cleanedText;
+
+      if (wantsChart) {
+        // Try to match from <canvas> to the last </script> tag
+        const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
+        if (chartMatch) {
+          chartHtml = chartMatch[1];
+          // Strip the chart HTML from the text
+          textWithoutChart = cleanedText.replace(chartHtml, '').trim();
+
+          // Also clean up any leftover <div class="chart-code"> wrapper tags
+          textWithoutChart = textWithoutChart
+            .replace(/<div class="chart-code">/gi, '')
+            .replace(/<\/div>/gi, '')
+            .trim();
+
+          chartHtml = chartHtml
+            .replace(/<div class="chart-code">/gi, '')
+            .replace(/<\/div>/gi, '')
+            .trim();
+        }
+      }
+
       // Add the final message
       setMessages((prev) => [
         ...prev,
         {
-          content: cleanedText,
+          content: textWithoutChart,
           isUser: false,
           reasoning,
+          chartHtml,
         },
       ]);
     } catch (err) {
@@ -521,34 +607,37 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
         )
       );
 
-      // Extract chart HTML if present
-      const chartHtml = wantsChart
-        ? cleanedText.match(/<div class="chart-code">([\s\S]*?)<\/div>/)?.[1]
-        : undefined;
-      const textWithoutChart = wantsChart
-        ? cleanedText
-            .replace(/<div class="chart-code">[\s\S]*?<\/div>/, '')
-            .trim()
-        : cleanedText;
+      // Extract chart HTML if present (match from <canvas> to the last </script> tag)
+      let chartHtml: string | undefined = undefined;
+      let textWithoutChart = cleanedText;
 
-      // Escape HTML for the code block
-      const escapedChartHtml = chartHtml
-        ? chartHtml
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;')
-        : '';
+      if (wantsChart) {
+        // Try to match from <canvas> to the last </script> tag
+        const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
+        if (chartMatch) {
+          chartHtml = chartMatch[1];
+          // Strip the chart HTML from the text
+          textWithoutChart = cleanedText.replace(chartHtml, '').trim();
+
+          // Also clean up any leftover <div class="chart-code"> wrapper tags
+          textWithoutChart = textWithoutChart
+            .replace(/<div class="chart-code">/gi, '')
+            .replace(/<\/div>/gi, '')
+            .trim();
+
+          chartHtml = chartHtml
+            .replace(/<div class="chart-code">/gi, '')
+            .replace(/<\/div>/gi, '')
+            .trim();
+        }
+      }
 
       // Clear streaming text and add the final message
       setStreamingText('');
       setMessages((prev) => [
         ...prev,
         {
-          content:
-            textWithoutChart +
-            (chartHtml ? `<pre><code>${escapedChartHtml}</code></pre>` : ''),
+          content: textWithoutChart,
           isUser: false,
           reasoning,
           chartHtml,
