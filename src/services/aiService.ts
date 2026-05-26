@@ -129,6 +129,7 @@ export class AIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      responseFormat?: 'text' | 'json';
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
@@ -139,6 +140,9 @@ export class AIService {
       prompt,
       system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
+      ...(options?.responseFormat
+        ? { responseFormat: options.responseFormat }
+        : {}),
       // omit maxTokens to match SDK typings
     });
 

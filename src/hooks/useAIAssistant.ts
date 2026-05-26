@@ -147,7 +147,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   /** Generate text using the selected provider (ORKG Ask default, or store AI) */
   const generateWithProvider = async (
     fullPrompt: string,
-    systemContext?: string
+    systemContext?: string,
+    responseFormat?: 'text' | 'json'
   ): Promise<{ text: string; reasoning?: string }> => {
     if (assistantProvider === 'orkg-ask') {
       const res = await orkgAskService.generate(fullPrompt, {
@@ -161,6 +162,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       systemContext,
       temperature: 0.3,
       maxTokens: 2000,
+      responseFormat,
     });
   };
   const [prompt, setPrompt] = useState('');
@@ -256,19 +258,66 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       { content: structuredPrompt, isUser: true },
     ]);
 
-    // Check if user wants a chart
-    const wantsChart =
-      structuredPrompt.toLowerCase().includes('chart') ||
-      structuredPrompt.toLowerCase().includes('graph') ||
-      structuredPrompt.toLowerCase().includes('visualize') ||
-      structuredPrompt.toLowerCase().includes('plot');
-
     // Check if this is the "Generate Alternative Views" prompt
     const isAlternativeViews =
       structuredPrompt
         .toLowerCase()
         .includes('alternative ways to visualize') ||
       structuredPrompt.toLowerCase().includes('generate alternative views');
+
+    if (isAlternativeViews) {
+      try {
+        const response = await generateWithProvider(
+          `${generateSystemContext()}
+          User Question: ${structuredPrompt}
+
+          CRITICAL INSTRUCTION:
+          Suggest at least 5 alternative ways to visualize this data.
+          You MUST respond ONLY with a single JSON object matching the schema below.
+          Do NOT include any markdown code blocks, backticks, comments, or surrounding text.
+          The output must be pure, parsable JSON.
+
+          JSON Schema:
+          {
+            "Suggestions": [
+              {
+                "chartType": "Bar chart",
+                "chartDescription": "Explanation of why this fits the data."
+              }
+            ]
+          }`,
+          undefined,
+          'json'
+        );
+
+        const { text, reasoning } = response;
+        const textString =
+          typeof text === 'string' ? text : text ? String(text) : '';
+
+        // Add the final message with JSON content
+        setMessages((prev) => [
+          ...prev,
+          {
+            content: textString.trim(),
+            isUser: false,
+            reasoning,
+          },
+        ]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('AI Generation Error:', err);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Check if user wants a chart
+    const wantsChart =
+      structuredPrompt.toLowerCase().includes('chart') ||
+      structuredPrompt.toLowerCase().includes('graph') ||
+      structuredPrompt.toLowerCase().includes('visualize') ||
+      structuredPrompt.toLowerCase().includes('plot');
 
     try {
       const response = await generateWithProvider(
@@ -507,6 +556,65 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
 
     // Add user message
     setMessages((prev) => [...prev, { content: prompt, isUser: true }]);
+
+    const isChartSuggestions =
+      prompt.toLowerCase().includes('alternative ways to visualize') ||
+      prompt.toLowerCase().includes('generate alternative views') ||
+      (prompt.toLowerCase().includes('suggest') &&
+        (prompt.toLowerCase().includes('chart') ||
+          prompt.toLowerCase().includes('graph') ||
+          prompt.toLowerCase().includes('visualize') ||
+          prompt.toLowerCase().includes('plot')));
+
+    if (isChartSuggestions) {
+      try {
+        const response = await generateWithProvider(
+          `${generateSystemContext()}
+          User Question: ${prompt}
+
+          CRITICAL INSTRUCTION:
+          Suggest at least 5 alternative ways to visualize this data.
+          You MUST respond ONLY with a single JSON object matching the schema below.
+          Do NOT include any markdown code blocks, backticks, comments, or surrounding text.
+          The output must be pure, parsable JSON.
+
+          JSON Schema:
+          {
+            "Suggestions": [
+              {
+                "chartType": "Bar chart",
+                "chartDescription": "Explanation of why this fits the data."
+              }
+            ]
+          }`,
+          undefined,
+          'json'
+        );
+
+        const { text, reasoning } = response;
+        const textString =
+          typeof text === 'string' ? text : text ? String(text) : '';
+
+        // Clear streaming text and add the final message
+        setStreamingText('');
+        setMessages((prev) => [
+          ...prev,
+          {
+            content: textString.trim(),
+            isUser: false,
+            reasoning,
+          },
+        ]);
+        setPrompt('');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        console.error('AI Generation Error:', err);
+      } finally {
+        setLoading(false);
+        setStreamingText('');
+      }
+      return;
+    }
 
     // Check if user wants detailed explanation
     const wantsDetailed =
@@ -752,6 +860,134 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
     URL.revokeObjectURL(url);
   };
 
+  const generateChartSilently = async (chartType: string) => {
+    if (loading) return;
+
+    setLoading(true);
+    setError(null);
+    setStreamingText('');
+
+    // Add a clean, user-friendly message to the chat history
+    setMessages((prev) => [
+      ...prev,
+      { content: `Generate ${chartType}`, isUser: true },
+    ]);
+
+    const hiddenPrompt = `generate a ${chartType} chart using the dataset provided in the system context.`;
+
+    try {
+      const response = await generateWithProvider(
+        `${generateSystemContext()}
+        User Question: ${hiddenPrompt}
+
+        Please generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
+        1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
+        2. Choose the most appropriate chart type based on the data and what you want to show (specifically, generate a ${chartType}):
+           - Use 'line' for trends over time
+           - Use 'bar' for comparing quantities across categories
+           - Use 'pie' or 'doughnut' for showing proportions
+           - Use 'scatter' for showing relationships between variables
+           - Use 'radar' for comparing multiple variables
+        3. The chart code should be complete and self-contained
+        4. Use proper indentation and formatting
+        5. Make the chart responsive and use appropriate colors
+        6. Include proper axis labels and title
+        7. Format the chart code like this example:
+        <div class="chart-code">
+          <canvas id="myChart"></canvas>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script>
+            const ctx = document.getElementById('myChart').getContext('2d');
+            new Chart(ctx, {
+              type: //choose the most appropriate type
+              data: {
+                labels: ['Category 1', 'Category 2'],
+                datasets: [{
+                  label: 'Dataset',
+                  data: [10, 20],
+                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                  borderColor: 'rgba(75, 192, 192, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  title: {
+                    display: true,
+                    text: 'Chart Title'
+                  }
+                }
+              }
+            });
+          </script>
+        </div>
+
+        Important instructions:
+        1. Keep your response under 300 words and maximum 2 paragraphs
+        2. Base your answer ONLY on the data and analysis provided above
+        3. Do not make assumptions or include information not present in the data
+        4. Focus on the most relevant findings from the data
+        5. Use clear and direct language
+        6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
+        7. Do not include any markdown code blocks or backticks in your response
+        8. Answer based on the data and analysis provided above
+        9. The chart width should be 100%`
+      );
+
+      const { text, reasoning } = response;
+      const textString =
+        typeof text === 'string' ? text : text ? String(text) : '';
+
+      const cleanedText = markdownLinksToHtml(
+        stripPromptLeaks(
+          (textString || '')
+            .replace(/```html\n/g, '')
+            .replace(/```\n/g, '')
+            .replace(/```html/g, '')
+            .replace(/```/g, '')
+            .trim()
+        )
+      );
+
+      let chartHtml: string | undefined = undefined;
+      let textWithoutChart = cleanedText;
+
+      const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
+      if (chartMatch) {
+        chartHtml = chartMatch[1];
+        textWithoutChart = cleanedText.replace(chartHtml, '').trim();
+
+        textWithoutChart = textWithoutChart
+          .replace(/<div class="chart-code">/gi, '')
+          .replace(/<\/div>/gi, '')
+          .trim();
+
+        chartHtml = chartHtml
+          .replace(/<div class="chart-code">/gi, '')
+          .replace(/<\/div>/gi, '')
+          .trim();
+      }
+
+      setStreamingText('');
+      setMessages((prev) => [
+        ...prev,
+        {
+          content: textWithoutChart,
+          isUser: false,
+          reasoning,
+          chartHtml,
+        },
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('AI Generation Error:', err);
+    } finally {
+      setLoading(false);
+      setStreamingText('');
+    }
+  };
+
   return {
     prompt,
     setPrompt,
@@ -775,6 +1011,7 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
     setShowChart,
     clearChatHistory,
     exportChatHistory,
+    generateChartSilently,
   };
 };
 

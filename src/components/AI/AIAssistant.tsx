@@ -67,6 +67,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
     setShowChart,
     clearChatHistory,
     exportChatHistory,
+    generateChartSilently,
   } = useAIAssistant({ query, questionData });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -475,6 +476,8 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
               showReasoning={showReasoning}
               chartHtml={message.chartHtml}
               showChart={showChart}
+              onSuggestionClick={generateChartSilently}
+              disabledSuggestions={loading}
             />
           </Suspense>
         ))}
