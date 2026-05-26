@@ -1,9 +1,64 @@
-import { Paper, Box } from '@mui/material';
+import { Paper, Box, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
 import CodeBlock from './CodeBlock';
 import ReasoningSection from './ReasoningSection';
 import MessageContent from './MessageContent';
+import ChartSuggestionGroup from './ChartSuggestionGroup';
+
+interface ChartSuggestion {
+  chartType: string;
+  chartDescription: string;
+}
+
+interface SuggestionsPayload {
+  Suggestions: ChartSuggestion[];
+}
+
+const parseChartSuggestions = (content: string): SuggestionsPayload | null => {
+  try {
+    let cleaned = content.trim();
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```(?:json)?\n?|```$/g, '').trim();
+    }
+
+    const parsed = JSON.parse(cleaned);
+    if (parsed && Array.isArray(parsed.Suggestions)) {
+      const valid = parsed.Suggestions.every(
+        (item: any) =>
+          item &&
+          typeof item === 'object' &&
+          typeof item.chartType === 'string' &&
+          typeof item.chartDescription === 'string'
+      );
+      if (valid) {
+        return parsed as SuggestionsPayload;
+      }
+    }
+  } catch (e) {
+    try {
+      const match = content.match(/\{[\s\S]*"Suggestions"[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        if (parsed && Array.isArray(parsed.Suggestions)) {
+          const valid = parsed.Suggestions.every(
+            (item: any) =>
+              item &&
+              typeof item === 'object' &&
+              typeof item.chartType === 'string' &&
+              typeof item.chartDescription === 'string'
+          );
+          if (valid) {
+            return parsed as SuggestionsPayload;
+          }
+        }
+      }
+    } catch (innerError) {
+      // ignore
+    }
+  }
+  return null;
+};
 
 interface ChatMessageProps {
   content: string;
@@ -12,6 +67,8 @@ interface ChatMessageProps {
   showReasoning?: boolean;
   chartHtml?: string;
   showChart?: boolean;
+  onSuggestionClick?: (chartType: string) => void;
+  disabledSuggestions?: boolean;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
@@ -21,9 +78,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   showReasoning,
   chartHtml,
   showChart,
+  onSuggestionClick,
+  disabledSuggestions = false,
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const { isExpanded } = useAIAssistantContext();
+
+  const suggestionsPayload = !isUser ? parseChartSuggestions(content) : null;
 
   useEffect(() => {
     if (chartHtml && showChart && chartRef.current) {
@@ -173,7 +234,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           borderColor: 'divider',
         }}
       >
-        {renderProcessedContent()}
+        {suggestionsPayload ? (
+          <Box>
+            <Typography variant="body2" sx={{ mb: 1, lineHeight: 1.5 }}>
+              I have analyzed your request and suggested some custom alternative
+              visualizations that best present this dataset:
+            </Typography>
+            <ChartSuggestionGroup
+              suggestions={suggestionsPayload.Suggestions}
+              onSuggestionClick={onSuggestionClick || (() => {})}
+              disabled={disabledSuggestions}
+            />
+          </Box>
+        ) : (
+          renderProcessedContent()
+        )}
 
         {chartHtml && showChart && (
           <Box

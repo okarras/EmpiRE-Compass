@@ -80,6 +80,7 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
+  responseFormat?: 'text' | 'json';
 }
 
 export interface GenerateTextResponse {
@@ -239,12 +240,17 @@ export class AIService {
         temperature?: number;
         maxTokens?: number;
         system?: string;
+        responseFormat?: 'text' | 'json';
       } = {
         model,
         prompt: request.prompt,
         temperature: request.temperature ?? 0.3,
         system: request.systemContext,
       };
+
+      if (request.responseFormat) {
+        generateOptions.responseFormat = request.responseFormat;
+      }
 
       // Only include maxTokens if it's provided and valid
       if (request.maxTokens && request.maxTokens > 0) {
