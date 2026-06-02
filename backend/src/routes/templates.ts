@@ -1316,4 +1316,87 @@ router.delete(
   }
 );
 
+// ========== KG-EmpiRE Query Results (Nested) ==========
+
+router.post(
+  '/:templateId/kg-empire-query-results',
+  validateKeycloakToken,
+  requireAdmin,
+  validateRequiredFields(['id', 'results']),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const { templateId } = req.params;
+      const { id, results, rowCount, storedAt, sparqlQuery } = req.body;
+
+      const totalRows: number = rowCount ?? results.length;
+      const finalStoredAt: string = storedAt ?? new Date().toISOString();
+
+      const CHUNK_SIZE = 50;
+      const chunks: Record<string, string>[][] = [];
+      for (let i = 0; i < results.length; i += CHUNK_SIZE) {
+        chunks.push(results.slice(i, i + CHUNK_SIZE));
+      }
+
+      const collectionRef = db
+        .collection('Templates')
+        .doc(templateId)
+        .collection('KgEmpireQueryResults');
+
+      await collectionRef.doc(id).set({
+        id,
+        rowCount: totalRows,
+        chunkCount: chunks.length,
+        storedAt: finalStoredAt,
+        sparqlQuery: sparqlQuery ?? '',
+      });
+
+      await Promise.all(
+        chunks.map((chunk, index) =>
+          collectionRef.doc(`${id}_chunk_${index}`).set({
+            parentId: id,
+            chunkIndex: index,
+            results: chunk,
+          })
+        )
+      );
+
+      await logRequest(
+        'write',
+        `Templates/${templateId}/KgEmpireQueryResults`,
+        id,
+        true,
+        req.userId,
+        req.userEmail,
+        undefined,
+        { method: 'POST' },
+        { id, rowCount: totalRows, chunkCount: chunks.length }
+      );
+
+      res.json({
+        success: true,
+        firestoreDocId: id,
+        rowCount: totalRows,
+        chunkCount: chunks.length,
+        storedAt: finalStoredAt,
+      });
+    } catch (error) {
+      console.error('Error storing KG-EmpiRE query results:', error);
+
+      await logRequest(
+        'write',
+        `Templates/${req.params.templateId}/KgEmpireQueryResults`,
+        req.body.id,
+        false,
+        req.userId,
+        req.userEmail,
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+
+      res.status(500).json({
+        error: 'Failed to store KG-EmpiRE query results',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+);
 export default router;
