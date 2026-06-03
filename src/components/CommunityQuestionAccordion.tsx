@@ -123,9 +123,7 @@ const CommunityQuestionAccordion = ({
       }
 
       const curatedQuestion: QuestionData = {
-        // Use a large unique id that won’t collide with existing curated questions
         id: Date.now(),
-        // Use a stable uid namespace for community-derived curated items
         uid: `community-${question.id}`,
         title: question.name,
         fromCommunity: true,

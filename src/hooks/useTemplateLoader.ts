@@ -20,19 +20,14 @@ export const useTemplateLoader = ({
   updateTargetClassId,
   currentTargetClassId,
 }: UseTemplateLoaderProps) => {
-  /**
-   * Load template data and extract all related templates
-   */
   const loadTemplateData = useCallback(
     async (templateId: string) => {
       const templateFlow = await loadTemplateFlowByID(templateId, new Set());
       const allTemplates: Template[] = [];
 
-      // Add the main template
       if (templateFlow && 'id' in templateFlow && templateFlow.id) {
         allTemplates.push(templateFlow as Template);
 
-        // Extract and store target class ID
         if (
           'target_class' in templateFlow &&
           templateFlow.target_class &&
@@ -44,7 +39,6 @@ export const useTemplateLoader = ({
         }
       }
 
-      // Recursively extract neighbor templates
       const extractNeighborTemplates = (node: { neighbors?: unknown[] }) => {
         if (node.neighbors && Array.isArray(node.neighbors)) {
           node.neighbors.forEach((neighbor) => {
@@ -56,11 +50,9 @@ export const useTemplateLoader = ({
               typeof neighbor.id === 'string' &&
               neighbor.id.startsWith('R')
             ) {
-              // Check if we already have this template to avoid duplicates
               if (!allTemplates.find((t) => t.id === neighbor.id)) {
                 allTemplates.push(neighbor as Template);
               }
-              // Recursively extract neighbors
               extractNeighborTemplates(neighbor as { neighbors?: unknown[] });
             }
           });
@@ -69,25 +61,19 @@ export const useTemplateLoader = ({
 
       extractNeighborTemplates(templateFlow);
 
-      // Generate and return template mapping
       return generateTemplateMapping(allTemplates);
     },
     [updateTargetClassId]
   );
 
-  /**
-   * Handle template ID change with persistence
-   */
   const handleTemplateChange = useCallback(
     async (newTemplateId: string) => {
       updateTemplateId(newTemplateId);
 
-      // Load template data for ALL templates (including default R186491)
       try {
         const templateMapping = await loadTemplateData(newTemplateId);
         updateTemplateMapping(templateMapping);
 
-        // Ensure default target class ID for default template if not already set
         if (
           newTemplateId === DEFAULT_TEMPLATE_ID &&
           currentTargetClassId !== DEFAULT_TARGET_CLASS_ID
@@ -95,22 +81,19 @@ export const useTemplateLoader = ({
           updateTargetClassId(DEFAULT_TARGET_CLASS_ID);
         }
 
-        // Persist to localStorage
         try {
           localStorage.setItem(STORAGE_KEY, newTemplateId);
         } catch {
-          // Ignore storage errors
+          // storage unavailable
         }
       } catch (err) {
         console.error('Error loading schema data:', err);
-        // If loading fails, ensure default target class for default template
         if (
           newTemplateId === DEFAULT_TEMPLATE_ID &&
           currentTargetClassId !== DEFAULT_TARGET_CLASS_ID
         ) {
           updateTargetClassId(DEFAULT_TARGET_CLASS_ID);
         }
-        // Continue with empty mapping if template loading fails
         updateTemplateMapping({});
       }
     },
@@ -123,9 +106,6 @@ export const useTemplateLoader = ({
     ]
   );
 
-  /**
-   * Load template from localStorage
-   */
   const loadSavedTemplate = useCallback(
     async (currentTemplateId: string) => {
       try {
@@ -135,7 +115,7 @@ export const useTemplateLoader = ({
           return saved;
         }
       } catch {
-        // Ignore storage errors
+        // storage unavailable
       }
       return null;
     },

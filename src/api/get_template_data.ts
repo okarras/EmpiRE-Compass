@@ -160,7 +160,6 @@ const statementApiRequest = async <T>(
   return response.json();
 };
 
-// Get a single template by ID
 export const getTemplate = (id: string): Promise<Template> => {
   return templateApiRequest<Template>(`templates/${id}`);
 };
@@ -248,7 +247,6 @@ export const getTemplatesByClass = (classID: string): Promise<string[]> =>
       return [];
     });
 
-// Load template flow by ID
 export const loadTemplateFlowByID = (
   id: string,
   loadedNodes: Set<string>
@@ -270,7 +268,6 @@ export const loadTemplateFlowByID = (
               );
 
               if (resourceTemplateIds.length > 0) {
-                // Load the first actual template for this class
                 const subtemplate = await loadTemplateFlowByID(
                   resourceTemplateIds[0],
                   loadedNodes

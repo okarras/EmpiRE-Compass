@@ -121,7 +121,6 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Update the state when initialNodes/initialEdges change
   useEffect(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
@@ -153,7 +152,6 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
   const generateTemplateMapping = useCallback(() => {
     const predicatesMapping: PredicatesMapping = {};
 
-    // Create a map of templates by their target class ID for quick lookup
     const templateMap = new Map<string, Template>();
     templates.forEach((template) => {
       if (template.target_class?.id) {
@@ -161,7 +159,6 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
       }
     });
 
-    // Process each template and its properties
     templates.forEach((template) => {
       if (!template.properties || template.properties.length === 0) return;
 
@@ -222,7 +219,6 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
                   class_label: subProperty.class?.label,
                 };
 
-                // Check if this sub-property also has a class (nested subtemplate)
                 if (subProperty.class?.id) {
                   const subTargetTemplate = templateMap.get(
                     subProperty.class.id

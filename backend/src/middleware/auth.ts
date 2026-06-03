@@ -137,9 +137,6 @@ export const validateKeycloakTokenOrOrkgAskConfigured = async (
   });
 };
 
-/**
- * Middleware to check if user is admin
- */
 export const requireAdmin = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -150,7 +147,6 @@ export const requireAdmin = async (
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Check if user is admin
     if (!req.isAdmin) {
       // Double-check against Firebase
       const userDoc = await db.collection('Users').doc(req.userId).get();

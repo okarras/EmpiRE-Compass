@@ -46,7 +46,6 @@ export default function LoginORKG() {
     }
   }, [isAuthenticated, user, hasShownSuccess]);
 
-  // Handle error display
   useEffect(() => {
     if (error) {
       setShowError(true);

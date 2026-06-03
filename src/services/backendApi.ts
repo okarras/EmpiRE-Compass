@@ -1,14 +1,9 @@
-/**
- * Backend API Client
- * Centralized service for all backend API calls
- */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getKeycloakToken as getKeycloakTokenFromStore } from '../auth/keycloakStore';
 
 // Determine backend URL based on frontend domain
 const getBackendUrl = () => {
-  // Check if we're on Vercel deployment
   const isVercel =
     typeof window !== 'undefined' &&
     (window.location.hostname.includes('.vercel.app') ||
@@ -38,10 +33,6 @@ export interface ApiRequestOptions extends RequestInit {
   keycloakToken?: string;
 }
 
-/**
- * Get Keycloak token if available
- * Uses the global Keycloak store
- */
 const getKeycloakToken = (): string | null => {
   try {
     return getKeycloakTokenFromStore();
@@ -51,9 +42,6 @@ const getKeycloakToken = (): string | null => {
   }
 };
 
-/**
- * Make a request to the backend API
- */
 export const apiRequest = async <T = any>(
   endpoint: string,
   options: ApiRequestOptions = {}

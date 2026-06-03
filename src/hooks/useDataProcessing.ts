@@ -62,9 +62,6 @@ export const useDataProcessing = ({
   );
   const [processingCode, setProcessingCode] = useState<string | null>(null);
 
-  /**
-   * Compile a processing function from JS code block with error handling
-   */
   const compileProcessingFunction = useCallback(
     (jsCode: string): DataProcessingFn | null => {
       try {
@@ -106,9 +103,6 @@ export const useDataProcessing = ({
     []
   );
 
-  /**
-   * Generate data processing function based on actual data structure
-   */
   const generateProcessingFunction = useCallback(
     async (
       rawData: Record<string, unknown>[],
@@ -130,7 +124,6 @@ export const useDataProcessing = ({
           return null;
         }
 
-        // Create a sample of the data structure for the LLM
         const dataSample = rawData.slice(0, 5);
         const dataStructure = {
           totalRows: rawData.length,
@@ -199,7 +192,6 @@ ${domainKnowledge}
 
 \`\`\`javascript
 function processData(rows) {
-  // Your implementation here
 }
 \`\`\``;
 
@@ -234,9 +226,6 @@ function processData(rows) {
     ]
   );
 
-  /**
-   * Update processing code and recompile
-   */
   const updateProcessingCode = useCallback(
     (code: string) => {
       setProcessingCode(code);
@@ -247,9 +236,6 @@ function processData(rows) {
     [compileProcessingFunction]
   );
 
-  /**
-   * Hydrate processing function from persisted code
-   */
   const hydrateProcessingFunction = useCallback(
     (code: string) => {
       if (code && code.trim()) {

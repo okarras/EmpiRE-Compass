@@ -144,7 +144,6 @@ router.get('/metadata', async (req, res) => {
     const collectionRef = db.collection('BackupFiles');
     const snapshot = await collectionRef.get();
 
-    // Build a set of existing identifiers (by doc ID and fileName field)
     const existingIds = new Set<string>();
     snapshot.docs.forEach((doc) => {
       existingIds.add(doc.id);

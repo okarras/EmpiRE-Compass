@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  // IconButton,
-  // Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -11,7 +9,6 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-// import { Input } from '@mui/icons-material';
 
 interface ResourceIdInputButtonProps {
   currentTemplateId: string | null;
@@ -27,16 +24,9 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Update input value when currentTemplateId changes
   useEffect(() => {
     setInputValue(currentTemplateId || '');
   }, [currentTemplateId]);
-
-  // const handleOpenDialog = () => {
-  //   setInputValue(currentTemplateId || '');
-  //   setError(null);
-  //   setDialogOpen(true);
-  // };
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -82,20 +72,6 @@ const ResourceIdInputButton: React.FC<ResourceIdInputButtonProps> = ({
 
   return (
     <>
-      {/* <Tooltip title="Change Resource Template ID">
-        <IconButton
-          onClick={handleOpenDialog}
-          sx={{
-            color: 'text.secondary',
-            '&:hover': {
-              backgroundColor: 'rgba(232, 97, 97, 0.08)',
-            },
-          }}
-        >
-          <Input />
-        </IconButton>
-      </Tooltip> */}
-
       <Dialog
         open={dialogOpen}
         onClose={handleCloseDialog}

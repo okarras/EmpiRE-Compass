@@ -23,7 +23,6 @@ const FloatingAIAssistant = lazy(
   () => import('./components/AI/FloatingAIAssistant')
 );
 
-// Create a wrapper component to use Redux hooks and theme
 const AppContent = () => {
   const { mode } = useTheme();
 

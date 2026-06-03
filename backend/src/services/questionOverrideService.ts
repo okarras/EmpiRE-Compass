@@ -252,7 +252,6 @@ export async function restoreQuestionVersion(params: {
     versions: doc.versions,
   });
 
-  // Return the updated document directly so the caller doesn't need a second fetch
   return {
     id: queryUid,
     latestVersion: restoredAsLatest,

@@ -6,10 +6,6 @@ const router = Router();
 // Store reference to AI service for health check
 let aiService: AIService | null = null;
 
-/**
- * Set AI service instance for health check
- * Should be called during server initialization
- */
 export const setAIServiceForHealth = (service: AIService): void => {
   aiService = service;
 };

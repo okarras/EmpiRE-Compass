@@ -103,7 +103,6 @@ const DynamicQuestionExamples = ({
       } else {
         await CRUDDynamicQuestions.deleteDynamicQuestion(questionToDelete.id);
       }
-      // Remove from local state
       setExamples((prev) => prev.filter((ex) => ex.id !== questionToDelete.id));
       setDeleteDialogOpen(false);
       setQuestionToDelete(null);
