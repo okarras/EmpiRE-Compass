@@ -479,6 +479,7 @@ export class UnifiedAIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      responseFormat?: 'text' | 'json';
     }
   ): Promise<{
     text: string;
@@ -495,6 +496,7 @@ export class UnifiedAIService {
         provider: options?.provider,
         model: options?.model,
         systemContext: options?.systemContext,
+        responseFormat: options?.responseFormat,
       });
     }
 
