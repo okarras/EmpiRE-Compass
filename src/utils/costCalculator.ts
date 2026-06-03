@@ -1,9 +1,3 @@
-/**
- * Cost calculator for AI model usage
- * Pricing per 1M tokens (as of 2025)
- * Prices are in USD
- */
-
 import type {
   AIProvider,
   OpenAIModel,
@@ -100,9 +94,6 @@ export interface CostBreakdown {
   section?: string; // Optional label for which section this cost is for (e.g., "Query Generation", "Chart Generation")
 }
 
-/**
- * Calculate cost for a single API call
- */
 export function calculateCost(
   provider: AIProvider,
   model: string,
@@ -153,9 +144,6 @@ export function calculateCost(
   };
 }
 
-/**
- * Format cost for display
- */
 export function formatCost(cost: number): string {
   if (cost === 0) return '$0.00';
   if (cost < 0.0001) return '<$0.0001';
@@ -163,9 +151,6 @@ export function formatCost(cost: number): string {
   return `$${cost.toFixed(4)}`;
 }
 
-/**
- * Aggregate multiple cost breakdowns
- */
 export function aggregateCosts(costs: CostBreakdown[]): CostBreakdown {
   const total = costs.reduce(
     (acc, cost) => ({

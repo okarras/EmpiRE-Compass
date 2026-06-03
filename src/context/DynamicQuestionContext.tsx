@@ -349,7 +349,6 @@ export const DynamicQuestionProvider: React.FC<{ children: ReactNode }> = ({
 
   const loadSavedState = (savedState: DynamicQuestionState) => {
     setState(savedState);
-    // Save to localStorage for persistence
     localStorage.setItem(
       'current-dynamic-question',
       JSON.stringify(savedState)

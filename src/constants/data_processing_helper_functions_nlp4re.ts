@@ -53,7 +53,6 @@ const processQuery = (
     });
   }
 
-  // 2) If uniqueValueKey provided -> build map label -> Set(uniqueValue)
   if (uniqueValueKey) {
     const map = new Map<string, Set<string>>();
     const rowsByLabel = new Map<string, RawDataItem[]>();
@@ -88,7 +87,6 @@ const processQuery = (
     }));
   }
 
-  // 3) Otherwise count (per row or per deduped paper as above)
   const counts = new Map<string, number>();
   const rowsByLabel = new Map<string, RawDataItem[]>();
   for (const row of rows) {

@@ -245,7 +245,6 @@ const MuiDataGrid: React.FC<Props> = ({ questionData, gridOptions }) => {
     }));
   }, [questionData, handlePaperClick, loading]);
 
-  // Ensure each row has a unique 'id' field
   const rows = React.useMemo(() => {
     if (!questionData || !Array.isArray(questionData)) {
       return [];

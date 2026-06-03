@@ -18,8 +18,6 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-// import LightModeIcon from '@mui/icons-material/LightMode';
-// import DarkModeIcon from '@mui/icons-material/DarkMode';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -32,7 +30,6 @@ import {
   useParams,
 } from 'react-router-dom';
 import { queries } from '../constants/queries_chart_info';
-// import { useTheme } from '../contexts/ThemeContext';
 import LoginORKG from './LoginORKG';
 import { templateConfig } from '../constants/template_config';
 import { useState, useEffect } from 'react';
@@ -53,7 +50,6 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const location = useLocation();
   const navigate = useNavigate();
-  // const { mode, toggleColorMode } = useTheme();
 
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('R186491');
@@ -64,12 +60,10 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const backupVersion = useBackupChange(); // Listen for backup changes
 
   useEffect(() => {
-    // Check for current backup and update state
     const name = BackupService.getCurrentBackupName();
     setCurrentBackupName(name || ''); // Clear if no backup
   }, [backupVersion]); // Re-run when backup changes
 
-  // Load templates from Firebase
   useEffect(() => {
     const loadTemplates = async () => {
       const content = await CRUDHomeContent.getHomeContent();

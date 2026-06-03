@@ -1,13 +1,9 @@
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { createKeycloak } from './keycloak';
-// import { getKeycloakConfig } from './keycloakConfig';
 import KeycloakTokenRefresher from './KeycloakTokenRefresher';
 import { AuthContextProvider } from './AuthContext';
 import { AuthContext, type AuthContextType } from './AuthContextTypes';
 
-/**
- * Check if Keycloak configuration is available
- */
 const isKeycloakConfigured = (): boolean => {
   return !!(
     import.meta.env.VITE_KEYCLOAK_URL &&
@@ -42,7 +38,6 @@ export default function AuthProvider({
 }: {
   children: React.ReactNode;
 }) {
-  // Check if Keycloak is configured
   if (!isKeycloakConfigured()) {
     console.warn(
       'Keycloak configuration is missing. Running in unauthenticated mode. ' +

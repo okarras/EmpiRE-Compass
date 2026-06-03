@@ -34,14 +34,6 @@ export interface DynamicQuestion {
   };
 }
 
-/**
- * GET /api/dynamic-questions
- * Get all dynamic questions (public read)
- */
-/**
- * GET /api/dynamic-questions
- * Get all dynamic questions (public read)
- */
 router.get('/', async (req, res) => {
   try {
     const limitCount = parseInt(req.query.limit as string) || 50;
@@ -67,10 +59,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-/**
- * GET /api/dynamic-questions/community
- * Get community dynamic questions (public read)
- */
 router.get('/community', async (req, res) => {
   try {
     const limitCount = parseInt(req.query.limit as string) || 50;
@@ -97,10 +85,6 @@ router.get('/community', async (req, res) => {
   }
 });
 
-/**
- * GET /api/dynamic-questions/:questionId
- * Get a single dynamic question by ID (public read)
- */
 router.get('/:questionId', async (req, res) => {
   try {
     const { questionId } = req.params;
@@ -121,10 +105,6 @@ router.get('/:questionId', async (req, res) => {
   }
 });
 
-/**
- * POST /api/dynamic-questions
- * Create or update a dynamic question (admin only)
- */
 router.post(
   '/',
   validateKeycloakToken,
@@ -208,10 +188,6 @@ router.post(
   }
 );
 
-/**
- * PUT /api/dynamic-questions/:questionId
- * Update a dynamic question (admin only)
- */
 router.put(
   '/:questionId',
   validateKeycloakToken,
@@ -281,10 +257,6 @@ router.put(
   }
 );
 
-/**
- * DELETE /api/dynamic-questions/:questionId
- * Delete a dynamic question (admin only)
- */
 router.delete(
   '/:questionId',
   validateKeycloakToken,

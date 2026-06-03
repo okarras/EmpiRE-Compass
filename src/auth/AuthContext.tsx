@@ -57,7 +57,6 @@ const AuthContextProvider: React.FC<AuthProviderProps> = ({ children }) => {
             keycloak.token
           );
 
-          // Update local state with Firebase user data (includes is_admin)
           setUser({
             ...userInfo,
             is_admin: firebaseUser.is_admin,

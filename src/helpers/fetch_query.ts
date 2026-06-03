@@ -45,7 +45,6 @@ const fetchSPARQLData = async (
       console.warn('Could not read error response body:', e);
     }
 
-    // Include the query that caused the error for better context
     const errorWithQuery = `${errorMessage}\n\nSPARQL query:\n${fullQuery}`;
     throw new Error(errorWithQuery);
   }
