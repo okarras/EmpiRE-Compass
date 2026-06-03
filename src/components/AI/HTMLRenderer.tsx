@@ -104,7 +104,6 @@ const HTMLRenderer: React.FC<HTMLRendererProps> = ({
     const seenContents = new Set();
     return allHistory
       .filter((item) => {
-        // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
         const trimmedContent = item.content.trim();
         if (
           !trimmedContent ||

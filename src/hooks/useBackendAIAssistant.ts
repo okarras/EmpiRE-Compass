@@ -51,7 +51,6 @@ const setCache = (cache: Record<string, CacheEntry>) => {
   }
 };
 
-// chat history management
 const getChatHistory = (): Record<string, ChatHistory> => {
   try {
     const history = localStorage.getItem(CHAT_HISTORY_KEY);
@@ -97,7 +96,6 @@ const useBackendAIAssistant = ({
   const [showReasoning, setShowReasoning] = useState(false);
   const [showChart, setShowChart] = useState(true);
 
-  // load chat
   useEffect(() => {
     const chatHistory = getChatHistory();
     const queryHistory = chatHistory[query.id];
@@ -108,7 +106,6 @@ const useBackendAIAssistant = ({
     }
   }, [query.id]);
 
-  // save chat
   useEffect(() => {
     if (messages.length > 0) {
       const chatHistory = getChatHistory();
@@ -142,7 +139,6 @@ Instructions:
 5. Do not include markdown code blocks in your response`;
   };
 
-  // process structured prompt
   const processStructuredPrompt = async (structuredPrompt: string) => {
     if (!structuredPrompt.trim() || loading) return;
 

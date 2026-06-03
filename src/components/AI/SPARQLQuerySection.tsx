@@ -157,22 +157,15 @@ const getPredicateUsageSamples = (
     .slice(0, maxSamples);
 };
 
-/**
- * Check if a SPARQL query already contains PREFIX declarations
- */
 const hasPrefixes = (query: string): boolean => {
   const trimmedQuery = query.trim();
   return /^\s*PREFIX\s+/i.test(trimmedQuery);
 };
 
-/**
- * Remove PREFIX declarations from a SPARQL query
- */
 const removePrefixes = (query: string): string => {
   const lines = query.split('\n');
   const prefixLines: number[] = [];
 
-  // Find all PREFIX lines
   lines.forEach((line, index) => {
     if (/^\s*PREFIX\s+/i.test(line.trim())) {
       prefixLines.push(index);
@@ -191,9 +184,6 @@ const removePrefixes = (query: string): string => {
   return query;
 };
 
-/**
- * Ensure a SPARQL query has prefixes, adding them only if missing
- */
 const ensurePrefixes = (query: string, prefixes: string): string => {
   if (hasPrefixes(query)) {
     // Query already has prefixes, remove duplicates and ensure we have the standard ones
@@ -903,7 +893,6 @@ LIMIT 1`;
     const seenContents = new Set();
     return allHistory
       .filter((item: { content: string }) => {
-        // Skip if content is empty, whitespace-only, same as current, or if we've seen this content before
         const trimmedContent = item.content.trim();
         if (
           !trimmedContent ||

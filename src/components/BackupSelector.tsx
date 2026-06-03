@@ -167,7 +167,6 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
         // Clear all existing data and caches before setting new data
         BackupService.setData(data);
         setCurrentBackup(file.name);
-        // Set a marker in localStorage to indicate we are using an uploaded file
         localStorage.setItem('EMPIRE_BACKUP_FILENAME', 'UPLOADED_FILE');
         // Note: We no longer clear LIVE_MODE_KEY - users can switch between live and backup freely
 

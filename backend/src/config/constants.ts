@@ -10,9 +10,6 @@ export const ADMIN_USER_EMAILS = [
   'yucelclkk@gmail.com', // Yucel Celik
 ];
 
-/**
- * Check if a user email is an admin
- */
 export const isAdminEmail = (email: string): boolean => {
   return ADMIN_USER_EMAILS.includes(email.toLowerCase());
 };
