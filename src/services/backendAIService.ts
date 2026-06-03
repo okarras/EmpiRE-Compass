@@ -57,10 +57,6 @@ export interface AIConfigResponse {
   apiKeyConfigured: boolean;
 }
 
-/**
- * Get Keycloak token if available
- * Uses the global Keycloak store
- */
 const getKeycloakToken = (): string | null => {
   try {
     return getKeycloakTokenFromStore();
@@ -401,7 +397,6 @@ export class UnifiedAIService {
       return false;
     }
 
-    // Check if user has provided API keys for the current provider
     const hasOpenAIKey =
       this.config.openaiApiKey && this.config.openaiApiKey.trim().length > 0;
     const hasGroqKey =

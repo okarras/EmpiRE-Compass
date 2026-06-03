@@ -125,41 +125,13 @@ const AdminRequestMonitor = () => {
     filterCollection,
   ]);
 
-  //   const handleTestLog = async () => {
-  //     setTestStatus('Creating test log...');
-  //     try {
-  //       await RequestLogger.logRequest(
-  //         'write',
-  //         'TestCollection',
-  //         'test-doc-123',
-  //         true,
-  //         user?.id || 'test-user',
-  //         user?.email || 'test@example.com',
-  //         undefined,
-  //         { method: 'test', note: 'This is a test log entry' },
-  //         { testData: 'Hello from request monitor!' },
-  //         { success: true }
-  //       );
-  //       setTestStatus('✅ Test log created successfully! Check the table below.');
-  //       setTimeout(() => setTestStatus(''), 3000);
-  //     } catch (error) {
-  //       setTestStatus(
-  //         '❌ Failed to create test log: ' +
-  //           (error instanceof Error ? error.message : 'Unknown error')
-  //       );
-  //       console.error('Test log error:', error);
-  //     }
-  //   };
-
   useEffect(() => {
     let filtered = [...requests];
 
-    // Filter by operation
     if (filterOperation !== 'all') {
       filtered = filtered.filter((req) => req.operation === filterOperation);
     }
 
-    // Filter by collection
     if (filterCollection !== 'all') {
       filtered = filtered.filter((req) => req.collection === filterCollection);
     }

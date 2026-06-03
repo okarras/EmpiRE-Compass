@@ -205,7 +205,6 @@ app.use(
 // error handling middleware
 app.use(errorHandler);
 
-// Export the Express app for Vercel (default export)
 export default app;
 
 // For local development, listen on a port

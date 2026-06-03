@@ -121,7 +121,6 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
     null
   );
 
-  // Load preferences from localStorage on component mount
   useEffect(() => {
     const savedPreferences = localStorage.getItem(LLM_CONTEXT_PREFERENCES_KEY);
     if (savedPreferences) {
@@ -134,7 +133,6 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
     }
   }, []);
 
-  // Save preferences to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(
       LLM_CONTEXT_PREFERENCES_KEY,
@@ -252,7 +250,6 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
       case 'oldest':
         return [...items].sort((a, b) => a.timestamp - b.timestamp);
       case 'relevance':
-        // Sort by latest first, then by exclusion status, then by timestamp
         return [...items].sort((a, b) => {
           if (a.isLatest !== b.isLatest) return a.isLatest ? -1 : 1;
           if (a.isExcluded !== b.isExcluded) return a.isExcluded ? 1 : -1;
@@ -354,7 +351,6 @@ const LLMContextHistoryDialog: React.FC<LLMContextHistoryDialogProps> = ({
   const totalItems = getFilteredHistory().length;
 
   const handleToggleExclusion = (itemId: string) => {
-    // Find the item to check if it's the latest SPARQL result
     const item = promptHistory.find((h) => h.id === itemId);
     if (item?.isLatest) {
       // Don't allow excluding the latest SPARQL result

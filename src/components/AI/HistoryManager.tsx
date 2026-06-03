@@ -165,25 +165,9 @@ const HistoryManager: React.FC<HistoryManagerProps> = ({
     }
   }, [history, preferences.enableAutoSave]);
 
-  // Save preferences to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(HISTORY_PREFERENCES_KEY, JSON.stringify(preferences));
   }, [preferences]);
-
-  // const addToHistory = (
-  //   type: HistoryItem['type'],
-  //   content: string,
-  //   title: string
-  // ) => {
-  //   const newItem: HistoryItem = {
-  //     id: Date.now().toString(),
-  //     timestamp: Date.now(),
-  //     content,
-  //     type,
-  //     title,
-  //   };
-  //   setHistory((prev) => [newItem, ...prev.slice(0, 49)]); // Keep last 50 items
-  // };
 
   const applyHistoryItem = (item: HistoryItem) => {
     onApplyHistoryItem(item);
@@ -213,7 +197,6 @@ const HistoryManager: React.FC<HistoryManagerProps> = ({
     setHistory((prev) =>
       prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
     );
-    // Apply the edit to current state if it's the same type
     applyHistoryItem(updatedItem);
     closeEditDialog();
   };
@@ -899,7 +882,6 @@ export const SectionHistoryDialog: React.FC<SectionHistoryDialogProps> = ({
     if (!editingItem) return;
 
     const updatedItem = { ...editingItem, content: editContent };
-    // Update the history in localStorage
     const savedHistory = localStorage.getItem('dynamicAI_history');
     if (savedHistory) {
       try {
@@ -911,7 +893,6 @@ export const SectionHistoryDialog: React.FC<SectionHistoryDialogProps> = ({
           'dynamicAI_history',
           JSON.stringify(updatedHistory)
         );
-        // Apply the edit to current state
         onRevert(updatedItem);
       } catch (error) {
         console.error('Error updating history:', error);

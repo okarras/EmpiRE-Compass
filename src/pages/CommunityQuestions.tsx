@@ -50,7 +50,6 @@ const CommunityQuestions = () => {
 
   const filteredQuestions = questions
     .filter((q) => {
-      // 1. Filter by Status/Role
       if (!isAdmin) {
         // Regular users only see published or their own
         if (
@@ -68,7 +67,6 @@ const CommunityQuestions = () => {
         if (status !== filterStatus) return false;
       }
 
-      // 2. Filter by Search Term
       if (searchTerm) {
         const lowerTerm = searchTerm.toLowerCase();
         const matchesName = q.name?.toLowerCase().includes(lowerTerm);
@@ -79,7 +77,6 @@ const CommunityQuestions = () => {
       return true;
     })
     .sort((a, b) => {
-      // 3. Sort
       if (sortBy === 'newest') {
         return b.timestamp - a.timestamp;
       }

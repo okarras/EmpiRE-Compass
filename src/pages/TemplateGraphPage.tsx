@@ -129,13 +129,10 @@ const TemplateGraphPage = () => {
         setLoading(true);
         setError(null);
 
-        // Load template flow using the templateId from URL
         const templateFlow = await loadTemplateFlowByID(templateId, new Set());
 
-        // Extract all templates from the flow (including the main template and its neighbors)
         const allTemplates: GraphTemplate[] = [];
 
-        // Add the main template
         if (templateFlow && 'id' in templateFlow && templateFlow.id) {
           allTemplates.push(adaptTemplate(templateFlow as ApiTemplate));
         }
@@ -155,7 +152,6 @@ const TemplateGraphPage = () => {
                   typeof neighbor.id === 'string' &&
                   neighbor.id.startsWith('R')
                 ) {
-                  // Check if we already have this template to avoid duplicates
                   if (!allTemplates.find((t) => t.id === neighbor.id)) {
                     allTemplates.push(adaptTemplate(neighbor as ApiTemplate));
                   }

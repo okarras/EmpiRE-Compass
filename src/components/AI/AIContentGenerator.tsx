@@ -497,7 +497,6 @@ Return ONLY the explanation text.`;
       const dataAnalysisInterpretationWithoutCodeBlocks =
         dataAnalysisInterpretation.replace(/```html\n|```/g, '');
 
-      // Call the callback with generated content and costs
       onContentGenerated(
         chartHtmlWithoutCodeBlocks,
         chartDescription,
@@ -521,7 +520,6 @@ Return ONLY the explanation text.`;
     }
   }, []); // Empty dependency array - only run once on mount
 
-  // Check if AI is configured
   if (!aiService.isConfigured()) {
     return (
       <Paper

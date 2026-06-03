@@ -75,9 +75,7 @@ export const createUserRateLimiter = () => {
         const rateLimitData = rateLimitDoc.data() as UserRateLimit;
         const resetTime = rateLimitData.resetAt.toMillis();
 
-        // Check if window has expired
         if (now.toMillis() >= resetTime) {
-          // Reset the counter
           await rateLimitRef.set({
             userId,
             count: 1,
@@ -96,7 +94,6 @@ export const createUserRateLimiter = () => {
           return next();
         }
 
-        // Check if limit exceeded
         if (rateLimitData.count >= MAX_REQUESTS) {
           const remainingSeconds = Math.ceil(
             (resetTime - now.toMillis()) / 1000

@@ -5,9 +5,6 @@
 
 let keycloakInstance: any = null;
 
-/**
- * Set the Keycloak instance (called from AuthProvider)
- */
 export const setKeycloakInstance = (instance: any) => {
   keycloakInstance = instance;
   // Also set on window for backward compatibility
@@ -16,9 +13,6 @@ export const setKeycloakInstance = (instance: any) => {
   }
 };
 
-/**
- * Get the Keycloak instance
- */
 export const getKeycloakInstance = (): any => {
   // Try to get from store first
   if (keycloakInstance) {
@@ -33,9 +27,6 @@ export const getKeycloakInstance = (): any => {
   return null;
 };
 
-/**
- * Get the Keycloak token if available
- */
 export const getKeycloakToken = (): string | null => {
   const keycloak = getKeycloakInstance();
 
@@ -45,7 +36,6 @@ export const getKeycloakToken = (): string | null => {
 
   try {
     if (keycloak.token) {
-      // Check if token is expired (basic check - backend will verify properly)
       if (keycloak.isTokenExpired && keycloak.isTokenExpired()) {
         // Try to refresh token
         if (keycloak.updateToken) {

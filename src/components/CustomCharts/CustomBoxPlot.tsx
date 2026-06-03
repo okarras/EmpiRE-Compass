@@ -248,7 +248,6 @@ export default function CustomBoxPlot({
     );
   }, [boxData, effectiveShowOutliers]);
 
-  // Create a separate dataset for tooltips using the median point
   const tooltipData = useMemo(() => {
     return boxData.map((d) => ({
       x: d.x,

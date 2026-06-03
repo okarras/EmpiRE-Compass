@@ -1,14 +1,7 @@
-/**
- * Service to check if backend API is available (live mode)
- */
-
 let backendAvailableCache: boolean | null = null;
 let lastCheckTime: number = 0;
 const CACHE_DURATION = 30000; // Cache for 30 seconds
 
-/**
- * Check if backend API is available
- */
 export const checkBackendAvailability = async (): Promise<boolean> => {
   const now = Date.now();
 
@@ -45,16 +38,10 @@ export const checkBackendAvailability = async (): Promise<boolean> => {
   return false;
 };
 
-/**
- * Check if we're in live mode (backend available)
- */
 export const isLiveMode = async (): Promise<boolean> => {
   return await checkBackendAvailability();
 };
 
-/**
- * Clear the cache (useful for testing or when backend status changes)
- */
 export const clearBackendAvailabilityCache = () => {
   backendAvailableCache = null;
   lastCheckTime = 0;
