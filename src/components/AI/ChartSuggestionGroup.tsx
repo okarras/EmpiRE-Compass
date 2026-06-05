@@ -34,6 +34,7 @@ const getChartIcon = (chartType: string) => {
   if (lower.includes('scatter') || lower.includes('bubble'))
     return <ScatterChartIcon />;
   if (lower.includes('radar')) return <RadarIcon />;
+
   return <DefaultChartIcon />;
 };
 
