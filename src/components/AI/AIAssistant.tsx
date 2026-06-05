@@ -26,7 +26,6 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import LoginIcon from '@mui/icons-material/Login';
 import { Query } from '../../constants/queries_chart_info';
-// import useBackendAIAssistant from '../../hooks/useBackendAIAssistant';
 import { useRef, useEffect, useState, lazy, Suspense } from 'react';
 import AIConfigurationButton from './AIConfigurationButton';
 import useAIAssistant from '../../hooks/useAIAssistant';

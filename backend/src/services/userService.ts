@@ -19,9 +19,6 @@ export interface SyncUserRequest {
   display_name: string;
 }
 
-/**
- * Get user from Firebase
- */
 export const getFirebaseUser = async (
   userId: string
 ): Promise<FirebaseUser | null> => {
@@ -38,9 +35,6 @@ export const getFirebaseUser = async (
   }
 };
 
-/**
- * Get recent users from Firebase (newest first)
- */
 export const listFirebaseUsers = async (
   limitCount = 50
 ): Promise<FirebaseUser[]> => {
@@ -75,10 +69,8 @@ export const syncUserToFirebase = async (
     const userId = orkgUser.id;
     const userRef = db.collection('Users').doc(userId);
 
-    // Check if user already exists
     const existingUserDoc = await userRef.get();
 
-    // Check if user is admin based on email
     const isAdmin = isAdminEmail(orkgUser.email);
 
     if (existingUserDoc.exists) {
@@ -119,9 +111,6 @@ export const syncUserToFirebase = async (
   }
 };
 
-/**
- * Update user's admin role
- */
 export const updateUserAdminRole = async (
   userId: string,
   isAdmin: boolean
@@ -143,9 +132,6 @@ export const updateUserAdminRole = async (
   }
 };
 
-/**
- * Delete user by id
- */
 export const deleteFirebaseUser = async (userId: string): Promise<void> => {
   try {
     const userRef = db.collection('Users').doc(userId);
@@ -162,9 +148,6 @@ export const deleteFirebaseUser = async (userId: string): Promise<void> => {
   }
 };
 
-/**
- * Check if user is admin
- */
 export const checkUserIsAdmin = async (userId: string): Promise<boolean> => {
   try {
     const user = await getFirebaseUser(userId);

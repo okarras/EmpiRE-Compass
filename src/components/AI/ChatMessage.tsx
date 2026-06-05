@@ -147,7 +147,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    // Process all pre blocks
     doc.querySelectorAll('pre').forEach((pre) => {
       const codeBlock = document.createElement('div');
       codeBlock.setAttribute('data-code-content', pre.textContent || '');

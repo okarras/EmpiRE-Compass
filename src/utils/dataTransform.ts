@@ -1,10 +1,3 @@
-/**
- * Data transformation utilities for processing SPARQL query results
- */
-
-/**
- * Transform method/category data by year
- */
 export const transformMethodDataByYear = (
   data: Record<string, unknown>[]
 ): Record<string, unknown>[] => {
@@ -76,9 +69,6 @@ export const transformMethodDataByYear = (
     });
 };
 
-/**
- * Process dynamic data with fallback logic
- */
 export const processDynamicData = (
   data: Record<string, unknown>[]
 ): Record<string, unknown>[] => {
@@ -90,7 +80,6 @@ export const processDynamicData = (
   const firstItem = data[0] as Record<string, unknown>;
   const keys = Object.keys(firstItem);
 
-  // Check if this looks like method/category data with counts
   const hasMethodType = keys.some(
     (key) =>
       key.toLowerCase().includes('method') ||
@@ -108,7 +97,6 @@ export const processDynamicData = (
     return transformMethodDataByYear(data);
   }
 
-  // Get all unique numeric keys from the data
   const allKeys = new Set<string>();
   data.forEach((item) => {
     Object.keys(item).forEach((key) => {

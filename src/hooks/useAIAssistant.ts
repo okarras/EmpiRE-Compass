@@ -19,7 +19,6 @@ interface Message {
   timestamp?: number;
 }
 
-// Cache interfaces
 interface CacheEntry {
   analysis: string;
   timestamp: number;
@@ -31,11 +30,9 @@ interface ChatHistory {
   lastUpdated: number;
 }
 
-// Cache storage keys
 const CACHE_STORAGE_KEY = 'ai_assistant_initial_analysis_cache';
 const CHAT_HISTORY_KEY = 'ai_assistant_chat_history';
 
-// Cache management functions
 const getCache = (): Record<string, CacheEntry> => {
   try {
     const cachedData = localStorage.getItem(CACHE_STORAGE_KEY);
@@ -56,7 +53,6 @@ const setCache = (cache: Record<string, CacheEntry>) => {
   }
 };
 
-// Chat history management functions
 const getChatHistory = (): Record<string, ChatHistory> => {
   try {
     const history = localStorage.getItem(CHAT_HISTORY_KEY);
@@ -184,7 +180,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   const [showReasoning, setShowReasoning] = useState(false);
   const [showChart, setShowChart] = useState(true);
 
-  // Load chat history when query changes
   useEffect(() => {
     const chatHistory = getChatHistory();
     const queryHistory = chatHistory[query.id];
@@ -195,7 +190,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     }
   }, [query.id]);
 
-  // Save chat history when messages change
   useEffect(() => {
     if (messages.length > 0) {
       const chatHistory = getChatHistory();
@@ -208,18 +202,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
   }, [messages, query.id]);
 
   const generateSystemContext = () => {
-    /*
-       ${
-          query.dataProcessingFunction2
-            ? `Data Analysis Data: ${JSON.stringify(
-                query.dataProcessingFunction2?.(questionData),
-                null,
-                2
-              )}`
-            : ''
-        }
-        */
-    // Helper function to safely convert to string
     const safeString = (value: string | string[] | undefined): string => {
       if (!value) return '';
       if (Array.isArray(value)) return value.join(' ');
@@ -490,7 +472,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
           generateSystemContext()
         );
 
-        // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
         const cleanedText = markdownLinksToHtml(
           stripPromptLeaks(
             text
@@ -513,7 +494,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
         };
         setCache(updatedCache);
 
-        // Save the previous cached analysis for undo
         const prevCacheEntry = responseCache[cacheKey] as
           | CacheEntry
           | undefined;
@@ -622,7 +602,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
       prompt.toLowerCase().includes('explain') ||
       prompt.toLowerCase().includes('elaborate');
 
-    // Check if user wants a chart
     const wantsChart =
       prompt.toLowerCase().includes('chart') ||
       prompt.toLowerCase().includes('graph') ||
@@ -770,7 +749,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
       setError(null);
       const cacheKey = `query_${query.id}`;
       const responseCache: Record<string, CacheEntry> = getCache();
-      // Save the previous cached analysis for undo
       const prevCacheEntry = responseCache[cacheKey] as CacheEntry | undefined;
       if (prevCacheEntry && typeof prevCacheEntry.analysis === 'string') {
         setLastCachedAnalysis(prevCacheEntry.analysis);
@@ -791,7 +769,6 @@ Structure your response with these HTML sections:
 Write the actual analysis in <p> tags. For References: use markdown-style links [Author, A., Author, B., & Author, C. (Year). Title. Journal, Volume(Issue), pages.](https://doi.org/DOI) or <a href="URL">full citation</a> in HTML. Always include the DOI or ORKG URL. Do not echo these instructions in your output.`,
         generateSystemContext()
       );
-      // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
       const cleanedText = markdownLinksToHtml(
         stripPromptLeaks(
           text

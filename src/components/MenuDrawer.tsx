@@ -33,10 +33,6 @@ import TemplateManagement, {
 } from '../firestore/TemplateManagement';
 import { useAuthData } from '../auth/useAuthData';
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
 const DRAWER_WIDTH = 280;
 
 const ACCENT_COLOR = '#e86161';
@@ -57,10 +53,6 @@ const sectionHeaderStyles: SxProps<Theme> = {
   mb: 1,
 };
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 interface NavItemConfig {
   path: string;
   label: string;
@@ -72,10 +64,6 @@ interface MenuDrawerProps {
   open: boolean;
   handleDrawerClose: () => void;
 }
-
-// ---------------------------------------------------------------------------
-// Navigation Items Config
-// ---------------------------------------------------------------------------
 
 const GENERAL_NAV_ITEMS: NavItemConfig[] = [
   {
@@ -163,10 +151,6 @@ const COMMUNITY_NAV_ITEMS: NavItemConfig[] = [
     Icon: Psychology,
   },
 ];
-
-// ---------------------------------------------------------------------------
-// Sub-Components
-// ---------------------------------------------------------------------------
 
 interface SectionHeaderProps {
   children: React.ReactNode;
@@ -299,10 +283,6 @@ function QuestionNavItem({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------------------------
-
 function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -311,7 +291,6 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
   const [selectedTemplate, setSelectedTemplate] = useState('R186491');
   const [questions, setQuestions] = useState<QuestionData[]>([]);
 
-  // Sync template from URL
   useEffect(() => {
     const pathSegments = location.pathname.split('/').filter(Boolean);
     const templateFromUrl = pathSegments[0];

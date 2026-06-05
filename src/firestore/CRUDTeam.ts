@@ -40,9 +40,6 @@ export interface TeamMemberInput {
   priority?: number;
 }
 
-/**
- * Get all team members from backend API with backup fallback
- */
 const getTeamMembers = async (): Promise<TeamMember[]> => {
   try {
     // If user has explicitly selected a backup/offline mode, use that first
@@ -54,7 +51,6 @@ const getTeamMembers = async (): Promise<TeamMember[]> => {
 
     const teamMembers = await getTeamMembersApi();
 
-    // Ensure the response is an array and has the correct structure
     return Array.isArray(teamMembers) ? teamMembers : [];
   } catch (error) {
     console.warn('Backend API failed, falling back to local backup:', error);
@@ -68,9 +64,6 @@ const getTeamMembers = async (): Promise<TeamMember[]> => {
   }
 };
 
-/**
- * Create a new team member
- */
 const createTeamMember = async (
   memberData: TeamMemberInput,
   userId: string,
@@ -97,9 +90,6 @@ const createTeamMember = async (
   }
 };
 
-/**
- * Update an existing team member
- */
 const updateTeamMember = async (
   memberId: string,
   memberData: TeamMemberInput,
@@ -128,9 +118,6 @@ const updateTeamMember = async (
   }
 };
 
-/**
- * Delete a team member
- */
 const deleteTeamMember = async (
   memberId: string,
   userId: string,

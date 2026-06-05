@@ -26,7 +26,6 @@ const getAllowedOrigins = (): string[] => {
   return origins;
 };
 
-// Check if origin is a Vercel preview/feature branch URL
 const isVercelPreviewUrl = (origin: string): boolean => {
   try {
     const url = new URL(origin);

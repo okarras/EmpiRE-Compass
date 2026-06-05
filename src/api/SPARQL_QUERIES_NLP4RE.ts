@@ -54,14 +54,11 @@ export const SPARQL_QUERIES = {
 
   //                         OPTIONAL{?contribution orkgp:P56008 ?data_collection.
   //                                 ?data_collection rdfs:label ?dc_label.
-  //                         }
   //                         OPTIONAL{?contribution orkgp:P15124 ?data_analysis.
   //                                 ?data_analysis rdfs:label ?da_label.
-  //                         }
 
   //                         #FILTER(xsd:integer(?year) > "1999"^^xsd:integer)
   //                         FILTER (?venue_name = "IEEE International Requirements Engineering Conference"^^xsd:string)
-  //                 }
   // `,
 
   query_3: `

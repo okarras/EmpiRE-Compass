@@ -16,7 +16,6 @@ import {
   updateOrkgStatisticsStream,
   type StatisticsStreamEvent,
 } from '../../services/backendApi';
-import FetchKgEmpireButton from './FetchKgEmpireButton';
 
 type TemplateKey = 'empire' | 'nlp4re';
 
@@ -167,7 +166,6 @@ const StatisticsUpdateSection = () => {
         >
           {updating === 'nlp4re' ? 'Updating...' : 'Update NLP4RE'}
         </Button>
-        <FetchKgEmpireButton disabled={!!updating} />
       </Box>
 
       {updating && (

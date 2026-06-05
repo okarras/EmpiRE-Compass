@@ -147,7 +147,6 @@ export const fetchQuestionData = createAsyncThunk(
     const { sparql } = getTemplateResources(templateId);
     //@ts-expect-error
     const data = await fetchSPARQLData(sparql[questionId]);
-    // Create a new array from the data to avoid read-only issues
     return {
       questionId,
       data: Array.isArray(data) ? [...data] : data,
@@ -185,7 +184,6 @@ const questionSlice = createSlice({
         return;
       }
 
-      // Merge with Firebase data if available
       const firebaseData = state.firebaseQuestions[targetQuery.uid];
       if (firebaseData) {
         // Merge but preserve functions from local query config

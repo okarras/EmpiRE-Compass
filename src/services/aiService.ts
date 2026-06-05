@@ -117,7 +117,6 @@ export class AIService {
 
   public getEnhancedModel(provider?: AIProvider, modelName?: string) {
     const targetProvider = provider || this.config.provider;
-    // Return the provider model directly; cast to satisfy SDK typings
     return this.getModel(targetProvider, modelName) as unknown as any;
   }
 

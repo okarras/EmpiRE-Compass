@@ -95,9 +95,6 @@ export interface HomeContentData {
   updatedAt?: string;
 }
 
-/**
- * Default home content (fallback if backend data is not available)
- */
 export const defaultHomeContent: HomeContentData = {
   header: {
     title: 'EmpiRE-Compass',
@@ -218,9 +215,6 @@ export const defaultHomeContent: HomeContentData = {
   ],
 };
 
-/**
- * Get home content from backend API
- */
 export const getHomeContent = async (): Promise<HomeContentData> => {
   try {
     // If user has explicitly selected a backup/offline mode, use that first
