@@ -226,6 +226,56 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       `;
   };
 
+  const classifyIntent = async (userPrompt: string) => {
+    try {
+      const response = await generateWithProvider(
+        `Analyze the following user prompt and determine the user's intent.
+        Respond ONLY with a valid JSON object matching this schema:
+        {
+          "isChartSuggestions": boolean, // true if asking for suggestions, ideas, or alternative ways to visualize, chart, or graph the data
+          "wantsChart": boolean, // true if asking to generate, draw, or show a specific chart, graph, or plot
+          "wantsDetailed": boolean // true if asking for a detailed, explain, or elaborate explanation
+        }
+
+        User Prompt: "${userPrompt}"`,
+        undefined,
+        'json'
+      );
+
+      const textString =
+        typeof response.text === 'string'
+          ? response.text
+          : String(response.text);
+      const cleaned = textString
+        .replace(/```json/g, '')
+        .replace(/```/g, '')
+        .trim();
+      return JSON.parse(cleaned);
+    } catch (err) {
+      console.error('Failed to parse intent JSON', err);
+      const lowerPrompt = userPrompt.toLowerCase();
+      return {
+        isChartSuggestions:
+          lowerPrompt.includes('alternative ways to visualize') ||
+          lowerPrompt.includes('generate alternative views') ||
+          (lowerPrompt.includes('suggest') &&
+            (lowerPrompt.includes('chart') ||
+              lowerPrompt.includes('graph') ||
+              lowerPrompt.includes('visualize') ||
+              lowerPrompt.includes('plot'))),
+        wantsChart:
+          lowerPrompt.includes('chart') ||
+          lowerPrompt.includes('graph') ||
+          lowerPrompt.includes('visualize') ||
+          lowerPrompt.includes('plot'),
+        wantsDetailed:
+          lowerPrompt.includes('detailed') ||
+          lowerPrompt.includes('explain') ||
+          lowerPrompt.includes('elaborate'),
+      };
+    }
+  };
+
   // Process structured prompt function
   const processStructuredPrompt = async (structuredPrompt: string) => {
     if (!structuredPrompt.trim() || loading) return;
@@ -240,12 +290,9 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       { content: structuredPrompt, isUser: true },
     ]);
 
-    // Check if this is the "Generate Alternative Views" prompt
-    const isAlternativeViews =
-      structuredPrompt
-        .toLowerCase()
-        .includes('alternative ways to visualize') ||
-      structuredPrompt.toLowerCase().includes('generate alternative views');
+    // Use LLM to classify intent
+    const intent = await classifyIntent(structuredPrompt);
+    const isAlternativeViews = intent.isChartSuggestions;
 
     if (isAlternativeViews) {
       try {
@@ -294,12 +341,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       return;
     }
 
-    // Check if user wants a chart
-    const wantsChart =
-      structuredPrompt.toLowerCase().includes('chart') ||
-      structuredPrompt.toLowerCase().includes('graph') ||
-      structuredPrompt.toLowerCase().includes('visualize') ||
-      structuredPrompt.toLowerCase().includes('plot');
+    const wantsChart = intent.wantsChart;
 
     try {
       const response = await generateWithProvider(
@@ -537,14 +579,8 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
     // Add user message
     setMessages((prev) => [...prev, { content: prompt, isUser: true }]);
 
-    const isChartSuggestions =
-      prompt.toLowerCase().includes('alternative ways to visualize') ||
-      prompt.toLowerCase().includes('generate alternative views') ||
-      (prompt.toLowerCase().includes('suggest') &&
-        (prompt.toLowerCase().includes('chart') ||
-          prompt.toLowerCase().includes('graph') ||
-          prompt.toLowerCase().includes('visualize') ||
-          prompt.toLowerCase().includes('plot')));
+    const intent = await classifyIntent(prompt);
+    const isChartSuggestions = intent.isChartSuggestions;
 
     if (isChartSuggestions) {
       try {
@@ -596,17 +632,9 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
       return;
     }
 
-    // Check if user wants detailed explanation
-    const wantsDetailed =
-      prompt.toLowerCase().includes('detailed') ||
-      prompt.toLowerCase().includes('explain') ||
-      prompt.toLowerCase().includes('elaborate');
-
-    const wantsChart =
-      prompt.toLowerCase().includes('chart') ||
-      prompt.toLowerCase().includes('graph') ||
-      prompt.toLowerCase().includes('visualize') ||
-      prompt.toLowerCase().includes('plot');
+    // Check intent for detail and charts
+    const wantsDetailed = intent.wantsDetailed;
+    const wantsChart = intent.wantsChart;
 
     try {
       const response = await generateWithProvider(
