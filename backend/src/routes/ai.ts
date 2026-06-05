@@ -111,17 +111,10 @@ const readOpenRouterApiKey = (req: AuthenticatedRequest): string => {
 // Initialize AI service (singleton pattern)
 let aiService: AIService | null = null;
 
-/**
- * Initialize AI service with configuration
- * Should be called once during server startup
- */
 export const initializeAIService = (config: AIConfig): void => {
   aiService = new AIService(config);
 };
 
-/**
- * Get the AI service instance
- */
 // Helper function to sanitize environment variables (remove quotes)
 const sanitizeEnvVar = (
   value: string | undefined,
@@ -349,7 +342,6 @@ router.get(
       const rateLimitData = rateLimitDoc.data() as UserRateLimit;
       const resetTime = rateLimitData.resetAt.toMillis();
 
-      // Check if window has expired
       if (now.toMillis() >= resetTime) {
         return res.json({
           limit: MAX_REQUESTS,

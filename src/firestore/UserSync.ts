@@ -3,11 +3,6 @@ import {
   syncUser as syncUserApi,
 } from '../services/backendApi';
 
-/**
- * User Sync Service
- * Uses backend API for reads and writes.
- */
-
 export interface FirebaseUser {
   email: string;
   display_name: string;
@@ -26,9 +21,6 @@ export interface FirebaseUser {
  * synced by the backend based on ADMIN_USER_EMAILS.
  */
 
-/**
- * Get user via backend API
- */
 export const getFirebaseUser = async (
   userId: string
 ): Promise<FirebaseUser | null> => {
@@ -68,9 +60,6 @@ export const syncUserToFirebase = async (
   }
 };
 
-/**
- * Check if current user is admin by checking Firebase
- */
 export const checkUserIsAdmin = async (userId: string): Promise<boolean> => {
   try {
     const user = await getFirebaseUser(userId);

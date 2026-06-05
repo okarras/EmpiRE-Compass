@@ -40,9 +40,6 @@ const emitBackupChange = () => {
 // Load available backups from file system using Vite's glob import
 const backupFiles = import.meta.glob('../../backups/*.json');
 
-/**
- * Get list of available backup files
- */
 export const getAvailableBackups = () => {
   return Object.keys(backupFiles).map((path) => {
     // Extract filename from path (e.g., "../../backups/backup.json" -> "backup.json")
@@ -50,9 +47,6 @@ export const getAvailableBackups = () => {
   });
 };
 
-/**
- * Get the latest backup filename by date (firebase-backup-YYYY-MM-DDTHH-MM-SS-SSSZ.json)
- */
 const getLatestBackupFilename = (): string => {
   const backups = getAvailableBackups();
   if (backups.length === 0) return '';
@@ -61,9 +55,6 @@ const getLatestBackupFilename = (): string => {
   return sorted[0];
 };
 
-/**
- * Initialize data from default backup file
- */
 const initializeDefaultData = async () => {
   if (currentData) return;
 
@@ -157,7 +148,6 @@ export const loadBackupFile = async (
       localStorage.setItem(STORAGE_KEY, filename);
     }
     // Note: We no longer clear LIVE_MODE_KEY - users can switch between live and backup freely
-    // Check for nested structure (Templates with Questions inside)
     const hasNestedQuestions = backupData.Templates?.some(
       (t: any) =>
         t.Questions && Array.isArray(t.Questions) && t.Questions.length > 0
@@ -189,12 +179,8 @@ export const loadBackupFile = async (
   }
 };
 
-/**
- * Set data manually (e.g. from drag and drop)
- */
 export const setData = (newData: BackupData) => {
   currentData = newData;
-  // Reset all caches to force re-processing
   processedEmpiricalQuestions = null;
   processedNlp4reQuestions = null;
   processedEmpiricalStatistics = null;
@@ -202,14 +188,8 @@ export const setData = (newData: BackupData) => {
   // Note: emitBackupChange() should be called by the caller after setting data
 };
 
-/**
- * Get name of currently loaded backup
- */
 export const getCurrentBackupName = () => currentBackupFilename;
 
-/**
- * Check if we are explicitly using a selected backup (vs just default fallback)
- */
 export const isExplicitlyUsingBackup = () => {
   return !!localStorage.getItem(STORAGE_KEY);
 };
@@ -230,9 +210,6 @@ export const clearBackupSelection = () => {
   // We don't automatically reload default here, closest is to let caller handle it or next API call will init default
 };
 
-/**
- * Check if user has explicitly chosen to use live mode
- */
 export const isLiveModeEnabled = () => {
   return localStorage.getItem(LIVE_MODE_KEY) === 'true';
 };

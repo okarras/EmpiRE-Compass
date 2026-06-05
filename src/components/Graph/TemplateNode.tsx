@@ -37,12 +37,10 @@ export const TemplateNode: React.FC<TemplateNodeProps> = ({ data }) => {
       tooltipHideTimerRef.current = null;
     }
 
-    // Set the active tooltip
     setActiveTooltip({ propertyId, position });
   };
 
   const hideTooltip = () => {
-    // Set a delay before hiding the tooltip
     tooltipHideTimerRef.current = setTimeout(() => {
       setActiveTooltip(null);
       tooltipHideTimerRef.current = null;

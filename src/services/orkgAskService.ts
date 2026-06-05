@@ -71,9 +71,6 @@ export const orkgAskService = {
     });
   },
 
-  /**
-   * Generate text using ORKG Ask LLM. Returns { text, reasoning? }.
-   */
   async generate(
     prompt: string,
     options?: { systemContext?: string }

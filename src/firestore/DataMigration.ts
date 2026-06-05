@@ -12,14 +12,6 @@ import TemplateManagement, {
 // Placeholder for NLP4RE SPARQL queries - update when available
 const SPARQL_QUERIES_NLP4RE: Record<string, string> = {};
 
-/**
- * Data Migration Utility
- * Converts old flat structure to new nested structure
- */
-
-/**
- * Serialize object - remove functions to make Firebase-safe
- */
 const serializeObject = (obj: any): any => {
   if (!obj || typeof obj !== 'object') return obj;
   if (Array.isArray(obj)) {
@@ -108,9 +100,6 @@ const prepareQuestionsForFirebase = (
   });
 };
 
-/**
- * Convert statistics SPARQL queries to Firebase format
- */
 const prepareStatisticsForFirebase = (
   sparqlQueries: Record<string, string>
 ): StatisticData[] => {
@@ -122,13 +111,6 @@ const prepareStatisticsForFirebase = (
   }));
 };
 
-/**
- * Migrate Empirical Research Practice template
- */
-
-/**
- * Migrate empirical template
- */
 const migrateEmpiricalTemplate = async (
   userId: string,
   userEmail: string,
@@ -162,9 +144,6 @@ const migrateEmpiricalTemplate = async (
   );
 };
 
-/**
- * Migrate NLP4RE template with authentication
- */
 export const migrateNLP4RETemplateWithAuth = async (
   userId: string,
   userEmail: string,
@@ -198,9 +177,6 @@ export const migrateNLP4RETemplateWithAuth = async (
   );
 };
 
-/**
- * Migrate empirical template with authentication
- */
 const migrateEmpiricalTemplateWithAuth = async (
   userId: string,
   userEmail: string,
@@ -234,9 +210,6 @@ const migrateEmpiricalTemplateWithAuth = async (
   );
 };
 
-/**
- * Migrate all templates
- */
 export const migrateAllTemplates = async (): Promise<{
   success: boolean;
   error?: string;
@@ -263,9 +236,6 @@ export const migrateAllTemplates = async (): Promise<{
   }
 };
 
-/**
- * Export template data in new format
- */
 export const exportTemplateToJSON = async (templateId: string) => {
   const data = await TemplateManagement.getCompleteTemplate(templateId);
 
@@ -283,9 +253,6 @@ export const exportTemplateToJSON = async (templateId: string) => {
   return exportData;
 };
 
-/**
- * Import template from JSON with authentication
- */
 export const importTemplateFromJSONWithAuth = async (
   jsonData: any,
   userId: string,

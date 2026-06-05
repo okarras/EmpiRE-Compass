@@ -15,9 +15,6 @@ export interface FirebaseRequest {
   responseData?: any;
 }
 
-/**
- * Remove undefined values from an object (Firestore doesn't allow undefined)
- */
 const removeUndefined = (obj: Record<string, any>): Record<string, any> => {
   const cleaned: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -37,9 +34,6 @@ const removeUndefined = (obj: Record<string, any>): Record<string, any> => {
   return cleaned;
 };
 
-/**
- * Log a Firebase request
- */
 export const logRequest = async (
   operation: FirebaseRequest['operation'],
   collection: string,

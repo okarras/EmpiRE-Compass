@@ -103,7 +103,6 @@ const loadAIConfig = (): Partial<InitialState> => {
   try {
     const config: Partial<InitialState> = {};
 
-    // 1. Load non-sensitive settings from localStorage
     const savedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
@@ -120,7 +119,6 @@ const loadAIConfig = (): Partial<InitialState> => {
       });
     }
 
-    // 2. Load sensitive keys from sessionStorage
     const savedKeys = sessionStorage.getItem(STORAGE_KEYS.KEYS);
     if (savedKeys) {
       const parsedKeys = JSON.parse(savedKeys);
@@ -133,7 +131,6 @@ const loadAIConfig = (): Partial<InitialState> => {
       });
     }
 
-    // 3. Migration: Check for legacy localStorage and clean it up if it holds keys
     const legacyConfig = localStorage.getItem(STORAGE_KEYS.LEGACY);
     if (legacyConfig) {
       const parsedLegacy = JSON.parse(legacyConfig);

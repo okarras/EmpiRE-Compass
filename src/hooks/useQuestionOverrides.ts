@@ -122,7 +122,6 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
     }
   }, [query, applyOverrides]);
 
-  // Initial load
   useEffect(() => {
     void fetchOverrides();
   }, [fetchOverrides]);
@@ -134,12 +133,8 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
   ) => {
     if (!isAuthenticated || !user) throw new Error('Not authenticated');
 
-    // Construct the partial update object based on the field path
-    // This is a simplified implementation for the specific fields we allowed
     const updateData: Partial<QuestionVersion> = {};
 
-    // We need to map the flat field update to the nested QuestionVersion structure
-    // This is a bit manual but safe
     if (field === 'title') {
       updateData.title = content as string;
     } else if (field.startsWith('dataAnalysisInformation.')) {
@@ -172,7 +167,6 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
         changeDescription
       );
 
-      // Reload to get the fresh state (including the new version in history)
       await fetchOverrides();
       return true;
     } catch (err) {
@@ -210,7 +204,6 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
     if (!isAuthenticated || !user) {
       throw new Error('Not authenticated');
     }
-    // Backend returns the restored document directly — no second round-trip needed
     const restoredDoc =
       await CRUDStaticQuestionOverrides.restoreQuestionVersion(
         query.uid,
@@ -218,7 +211,6 @@ export const useQuestionOverrides = ({ query }: UseQuestionOverridesProps) => {
         user.id || 'unknown',
         user.display_name
       );
-    // Apply the restored overrides immediately from the returned document
     setOverrideData(restoredDoc);
     setMergedQuery(applyOverrides(restoredDoc));
   };

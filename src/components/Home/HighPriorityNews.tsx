@@ -29,7 +29,6 @@ const HighPriorityNews = () => {
     setError(null);
     try {
       const items = await CRUDNews.getAllNews(true); // Only published news
-      // Filter for news that should be shown on home page
       const homeNews = items
         .filter((item) => item.showOnHome === true)
         .sort((a, b) => {

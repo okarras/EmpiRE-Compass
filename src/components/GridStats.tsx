@@ -71,7 +71,6 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
     null
   );
 
-  // Get all available columns
   const availableColumns = React.useMemo(() => {
     if (
       !questionData ||
@@ -160,7 +159,6 @@ const GridStats: React.FC<Props> = ({ questionData, gridOptions }) => {
           stringValue = String(value);
         }
 
-        // Check for null, undefined, empty string, or string 'null'/'undefined'/'none'
         const stringLower = stringValue.toLowerCase().trim();
         if (
           value === null ||

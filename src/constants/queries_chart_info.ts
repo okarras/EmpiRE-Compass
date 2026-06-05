@@ -288,7 +288,6 @@ export const queries: Query[] = [
         };
       });
 
-      // count each papers keys other than paper and year {Number of empirical methods used, Number of Papers using X empirical methods}
       const countedData = mergedData.map((item) => {
         const keys = Object.keys(item).filter(
           (key) => key !== 'paper' && key !== 'year'
@@ -306,7 +305,6 @@ export const queries: Query[] = [
       //sort data by count
       countedData.sort((a, b) => b.count - a.count);
 
-      //count the number of papers in each count {numberOfMethodsUsed: number of papers, count: number of papers, normalizedRatio: number of papers / total number of papers}
       const result = countedData.reduce((acc, item) => {
         acc[item.numberOfMethodsUsed] =
           (acc[item.numberOfMethodsUsed] || 0) + 1;
