@@ -19,7 +19,8 @@
     "deploy:surge": "npm run build-storybook && surge storybook-static",
     "preview:storybook": "npm run build-storybook && npm run storybook:serve",
     "prepare": "husky",
-    "release": "standard-version"
+    "release": "standard-version",
+    "issue:enhance": "node scripts/enhance-issue.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0-alpha.3",

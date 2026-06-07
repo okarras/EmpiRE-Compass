@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/okarras/EmpiRE-Compass/blob/main/docs/CONTRIBUTING.md
+    about: Branch naming, commit conventions, and the AI-enhanced issue workflow
+  - name: Ask a question
+    url: https://github.com/okarras/EmpiRE-Compass/discussions
+    about: Use Discussions for questions that are not bugs or feature requests
