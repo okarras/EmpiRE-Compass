@@ -1,0 +1,67 @@
+name: Documentation
+description: Report missing, outdated, or unclear documentation
+title: '[Docs]: '
+labels: ['documentation', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use **GitHub Copilot** or
+        `npm run issue:enhance -- --type docs --text "…"` to expand a rough note.
+        See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What documentation needs attention?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation Type
+      options:
+        - README
+        - CONTRIBUTING / developer guide
+        - API / Swagger docs
+        - Inline code comments
+        - Storybook / component docs
+        - Deployment / environment setup
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: File path, URL, or page where the gap exists
+      placeholder: 'e.g. docs/CONTRIBUTING.md, /R186491/admin'
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current State
+      description: What is missing, wrong, or confusing today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested Improvement
+      description: What should the documentation say or cover?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked whether this is already covered elsewhere
+          required: true
