@@ -1,0 +1,62 @@
+name: Refactor / Tech Debt
+description: Propose internal code improvements without changing user-facing behavior
+title: '[Refactor]: '
+labels: ['refactor', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use **GitHub Copilot** or
+        `npm run issue:enhance -- --type refactor --text "…"` to expand a rough note.
+        See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What code or module should be improved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why refactor now? (maintainability, performance, duplication, etc.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Files, modules, or patterns in scope (and explicitly out of scope)
+      placeholder: 'e.g. src/services/backendApi.ts — split into domain modules'
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed Approach
+      description: High-level plan; no need for full implementation detail
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Migration Notes
+      description: Breaking changes, test gaps, or rollout considerations
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: This change should not alter user-visible behavior
+          required: true
+        - label: I identified relevant tests to update or add
+          required: true
