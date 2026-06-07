@@ -1,0 +1,13 @@
+---
+description: Data adapter layer conventions
+globs: "{src/firestore/**,src/services/backendApi/**}"
+alwaysApply: false
+---
+
+# Data Adapters
+
+- `src/firestore/*` files are **backend API adapters** with backup fallback, not direct Firestore SDK.
+- Pattern: try backend API → catch → fall back to `BackupService` when appropriate.
+- New backend calls go in `src/services/backendApi/` domain modules.
+- Preserve barrel re-exports in `src/services/backendApi.ts` during migration.
+- Add module-level JSDoc explaining adapter + fallback behavior on new files.
