@@ -3,61 +3,21 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import type {
+  AIProvider,
+  OpenAIModel,
+  GroqModel,
+  MistralModel,
+  GoogleModel,
+} from '../../shared/aiModels.js';
 
-export type AIProvider =
-  | 'openai'
-  | 'groq'
-  | 'mistral'
-  | 'google'
-  | 'openrouter';
-export type OpenAIModel =
-  // Frontier models - OpenAI's most advanced models
-  | 'gpt-5.1'
-  | 'gpt-5-mini'
-  | 'gpt-5-nano'
-  | 'gpt-5-pro'
-  | 'gpt-5'
-  | 'gpt-4.1'
-  // Previous generation models
-  | 'gpt-4o-mini'
-  | 'gpt-4o'
-  | 'gpt-4-turbo'
-  | 'gpt-4o-2024-08-06'
-  | 'gpt-4-turbo-2024-04-09'
-  | 'o1-preview'
-  | 'o1-mini'
-  | 'gpt-4'
-  | 'gpt-3.5-turbo';
-export type GroqModel =
-  | 'llama-3.1-8b-instant'
-  | 'llama-3.1-70b-versatile'
-  | 'llama-3.1-405b-reasoning'
-  | 'llama-3.3-70b-versatile'
-  | 'openai/gpt-oss-120b'
-  | 'openai/gpt-oss-20b'
-  | 'llama-3-70b-8192';
-export type MistralModel =
-  | 'mistral-large-latest'
-  | 'mistral-medium-latest'
-  | 'mistral-small-latest'
-  | 'pixtral-large-latest'
-  | 'open-mistral-nemo';
-export type GoogleModel =
-  // Gemini 3 series
-  | 'gemini-3-pro-preview'
-  // Gemini 2.5 series
-  | 'gemini-2.5-pro'
-  | 'gemini-2.5-flash'
-  // Gemini 2.0 series
-  | 'gemini-2.0-flash'
-  | 'gemini-2.0-flash-exp'
-  | 'gemini-2.0-flash-lite'
-  // Gemini 1.5 series
-  | 'gemini-1.5-pro'
-  | 'gemini-1.5-flash'
-  | 'gemini-1.5-flash-8b'
-  // Other models
-  | 'gemma-3-27b-it';
+export type {
+  AIProvider,
+  OpenAIModel,
+  GroqModel,
+  MistralModel,
+  GoogleModel,
+} from '../../shared/aiModels.js';
 
 export interface AIConfig {
   provider: AIProvider;

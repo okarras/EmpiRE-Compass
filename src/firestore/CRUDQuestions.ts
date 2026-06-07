@@ -1,3 +1,8 @@
+/**
+ * Backend API adapter for template questions with backup fallback.
+ * Despite the `firestore/` path, this module calls the Express backend via `backendApi`
+ * and falls back to `BackupService` when offline mode is active or the API fails.
+ */
 import {
   getQuestions as getQuestionsApi,
   createQuestion as createQuestionApi,
