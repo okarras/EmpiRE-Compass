@@ -38,20 +38,43 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     ) => {
       const row = dataset?.[item.dataIndex];
       if (!row || typeof row !== 'object') return;
-      const itemsInGroup = (row as Record<string, unknown>).itemsInGroup;
-      if (!Array.isArray(itemsInGroup) || itemsInGroup.length === 0) return;
+
+      const recordRow = row as Record<string, unknown>;
+      let itemsToUse = recordRow.itemsInGroup;
+
+      // try using series specific items if they exist
+      if (
+        recordRow.itemsBySeries &&
+        typeof recordRow.itemsBySeries === 'object'
+      ) {
+        const itemsBySeries = recordRow.itemsBySeries as Record<
+          string,
+          unknown[]
+        >;
+        const seriesKey =
+          chartSetting.series.find((s: any) => s.id === item.seriesId)
+            ?.dataKey || item.seriesId;
+
+        if (itemsBySeries[seriesKey as string]) {
+          itemsToUse = itemsBySeries[seriesKey as string];
+        }
+      }
+
+      if (!Array.isArray(itemsToUse) || itemsToUse.length === 0) return;
+
       const xKey = chartSetting.xAxis?.[0]?.dataKey ?? 'year';
       const barTitle =
-        (row as Record<string, unknown>)[xKey] != null
-          ? String((row as Record<string, unknown>)[xKey])
+        recordRow[xKey] != null
+          ? String(recordRow[xKey])
           : `Item ${item.dataIndex}`;
+
       setPapersDialog({
         open: true,
-        itemsInGroup: itemsInGroup as Record<string, unknown>[],
+        itemsInGroup: itemsToUse as Record<string, unknown>[],
         barTitle,
       });
     },
-    [dataset, chartSetting.xAxis]
+    [dataset, chartSetting.xAxis, chartSetting.series]
   );
 
   const closePapersDialog = useCallback(() => {
