@@ -7,7 +7,7 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { AIService, type AIConfig } from './aiService.js';
+import { AIService, type AIConfig, type GroqModel } from './aiService.js';
 import { createRateLimiter, corsOptions, errorHandler } from './middleware.js';
 import usersRouter from './routes/users.js';
 import teamRouter from './routes/team.js';
@@ -54,6 +54,8 @@ const swaggerOptions = {
   apis: [
     path.join(__dirname, 'routes', '*.ts'),
     path.join(__dirname, 'routes', '*.js'),
+    path.join(__dirname, 'routes', 'templates', '*.ts'),
+    path.join(__dirname, 'routes', 'templates', '*.js'),
   ],
 };
 
@@ -128,14 +130,10 @@ const aiConfig: AIConfig = {
       | 'gpt-4'
       | 'gpt-3.5-turbo') || 'gpt-4o-mini',
   groqModel:
-    (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
-      | 'llama-3.1-8b-instant'
-      | 'llama-3.1-70b-versatile'
-      | 'llama-3.1-405b-reasoning'
-      | 'llama-3.3-70b-versatile'
-      | 'openai/gpt-oss-120b'
-      | 'openai/gpt-oss-20b'
-      | 'llama-3-70b-8192') || 'llama-3.1-8b-instant',
+    (sanitizeEnvVar(
+      process.env.GROQ_MODEL,
+      'llama-3.1-8b-instant'
+    ) as GroqModel) || 'llama-3.1-8b-instant',
   mistralModel:
     (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
       | 'mistral-large-latest'
@@ -161,7 +159,7 @@ const aiConfig: AIConfig = {
   googleApiKey: sanitizeEnvVar(process.env.GOOGLE_API_KEY, ''),
   openrouterModel: sanitizeEnvVar(
     process.env.OPENROUTER_MODEL,
-    'openai/gpt-4o-mini'
+    'openai/gpt-oss-120b'
   ),
 };
 
