@@ -8,7 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "lint": "eslint src --config eslint.config.js || true",
+    "lint": "eslint src --config eslint.config.js",
     "test": "vitest"
   },
   "dependencies": {

@@ -1,0 +1,14 @@
+---
+description: AI layer conventions for EmpiRE-Compass
+globs: "{src/**/AI/**,src/**/ai*.ts,src/services/*AI*,backend/**/ai*.ts,shared/aiModels.ts}"
+alwaysApply: false
+---
+
+# AI Layer
+
+- Route all AI calls through `UnifiedAIService` in `src/services/backendAIService.ts`.
+- Model types and provider config: import from `shared/aiModels.ts` only.
+- Cost calculation: import from `shared/costCalculator.ts` only.
+- Do not add duplicate `useAIService` hooks or parallel AI service classes.
+- User API keys → client `AIService`; shared/env keys → backend `/api/ai/generate`.
+- Prompt templates live in `src/utils/promptGenerator.ts`; keep prompts out of components.
