@@ -3,74 +3,30 @@ import {
   OPENROUTER_DEFAULT_MODEL,
   type OpenRouterModel,
 } from '../../constants/openrouter_models';
+import {
+  OPENAI_MODELS,
+  GROQ_MODELS,
+  MISTRAL_MODELS,
+  GOOGLE_MODELS,
+  type OpenAIModel,
+  type GroqModel,
+  type MistralModel,
+  type GoogleModel,
+  type AIProvider,
+} from '@shared/aiModels';
 
-// Available models for each provider
-export const OPENAI_MODELS = [
-  // Frontier models - OpenAI's most advanced models
-  'gpt-5.1',
-  'gpt-5-mini',
-  'gpt-5-nano',
-  'gpt-5-pro',
-  'gpt-5',
-  'gpt-4.1',
-  // Previous generation models
-  'gpt-4o',
-  'gpt-4o-mini',
-  'gpt-4-turbo',
-  'gpt-4o-2024-08-06',
-  'gpt-4-turbo-2024-04-09',
-  'o1-preview',
-  'o1-mini',
-  'gpt-4',
-  'gpt-3.5-turbo',
-] as const;
-
-export const GROQ_MODELS = [
-  'llama-3.1-8b-instant',
-  'llama-3.1-70b-versatile',
-  'llama-3.1-405b-reasoning',
-  'llama-3.3-70b-versatile',
-  'openai/gpt-oss-120b',
-  'openai/gpt-oss-20b',
-] as const;
-
-export const MISTRAL_MODELS = [
-  'mistral-large-latest',
-  'mistral-medium-latest',
-  'mistral-small-latest',
-  'pixtral-large-latest',
-  'open-mistral-nemo',
-] as const;
-
-export const GOOGLE_MODELS = [
-  // Gemini 3 series
-  'gemini-3-pro-preview',
-  // Gemini 2.5 series
-  'gemini-2.5-pro',
-  'gemini-2.5-flash',
-  // Gemini 2.0 series
-  'gemini-2.0-flash',
-  'gemini-2.0-flash-exp',
-  'gemini-2.0-flash-lite',
-  // Gemini 1.5 series
-  'gemini-1.5-pro',
-  'gemini-1.5-flash',
-  'gemini-1.5-flash-8b',
-  // Other models
-  'gemma-3-27b-it',
-] as const;
-
-export type OpenAIModel = (typeof OPENAI_MODELS)[number];
-export type GroqModel = (typeof GROQ_MODELS)[number];
-export type MistralModel = (typeof MISTRAL_MODELS)[number];
-export type GoogleModel = (typeof GOOGLE_MODELS)[number];
+export {
+  OPENAI_MODELS,
+  GROQ_MODELS,
+  MISTRAL_MODELS,
+  GOOGLE_MODELS,
+  type OpenAIModel,
+  type GroqModel,
+  type MistralModel,
+  type GoogleModel,
+  type AIProvider,
+};
 export type { OpenRouterModel } from '../../constants/openrouter_models';
-export type AIProvider =
-  | 'openai'
-  | 'groq'
-  | 'mistral'
-  | 'google'
-  | 'openrouter';
 
 interface InitialState {
   provider: AIProvider;
@@ -315,6 +271,9 @@ const aiSlice = createSlice({
     },
     setUseEnvironmentKeys: (state, action: PayloadAction<boolean>) => {
       state.useEnvironmentKeys = action.payload;
+      if (action.payload && state.provider !== 'openrouter') {
+        state.provider = 'openrouter';
+      }
       state.isConfigured = computeIsConfigured(state);
       saveSettings(state);
     },

@@ -1,0 +1,15 @@
+---
+description: React component patterns for EmpiRE-Compass
+globs: src/**/*.tsx
+alwaysApply: false
+---
+
+# React Components
+
+- Use functional components with typed props interfaces.
+- Extract custom hooks when logic exceeds ~30 lines or is reused.
+- Keep components ≤ ~300 lines; split UI into subcomponents by dialog/section.
+- Side effects and API calls belong in hooks or services, not inline in JSX handlers.
+- Use MUI components consistently; avoid inline styles when `sx` prop suffices.
+- Redux: use `useAppSelector` / `useAppDispatch` from `src/store/hooks`.
+- Auth in components: `useAuthData()`; never read Keycloak token directly in JSX.

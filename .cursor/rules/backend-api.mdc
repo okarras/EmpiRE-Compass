@@ -1,0 +1,15 @@
+---
+description: Backend API conventions for EmpiRE-Compass
+globs: backend/**/*.ts
+alwaysApply: false
+---
+
+# Backend API
+
+- Routes: validate input → call service → log → respond. Keep handlers thin.
+- Firestore/Admin SDK access belongs in `backend/src/services/`, not route files.
+- All write routes require `validateKeycloakToken` and admin checks where applicable.
+- Use Zod schemas in `backend/src/middleware/validation.ts` for request bodies.
+- Swagger JSDoc blocks stay with their route module.
+- Return consistent error shapes: `{ error: string }` with appropriate HTTP status.
+- Rate limiting: apply existing middleware (`aiRateLimit.ts`) for AI endpoints.
