@@ -4,4 +4,4 @@
  */
 export type OpenRouterModel = string;
 
-export const OPENROUTER_DEFAULT_MODEL = 'openai/gpt-4o-mini';
+export const OPENROUTER_DEFAULT_MODEL = 'openai/gpt-oss-120b';
