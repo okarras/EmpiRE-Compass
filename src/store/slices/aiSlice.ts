@@ -271,6 +271,9 @@ const aiSlice = createSlice({
     },
     setUseEnvironmentKeys: (state, action: PayloadAction<boolean>) => {
       state.useEnvironmentKeys = action.payload;
+      if (action.payload && state.provider !== 'openrouter') {
+        state.provider = 'openrouter';
+      }
       state.isConfigured = computeIsConfigured(state);
       saveSettings(state);
     },
