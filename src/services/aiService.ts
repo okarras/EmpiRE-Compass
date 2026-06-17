@@ -263,7 +263,7 @@ export const createDefaultAIService = () => {
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
-    openrouterModel: 'openai/gpt-4o-mini',
+    openrouterModel: 'openai/gpt-oss-120b',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',
