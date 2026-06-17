@@ -31,6 +31,15 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     barTitle: string;
   }>({ open: false, itemsInGroup: [], barTitle: '' });
 
+  const mappedSeries = React.useMemo(() => {
+    return chartSetting.series.map((s: any, index: number) => ({
+      ...s,
+      id: s.id ?? `series-${index}`,
+      dataKey:
+        normalized || hasMultipleSubCharts || isSubChart ? s.dataKey : 'count',
+    }));
+  }, [chartSetting.series, normalized, hasMultipleSubCharts, isSubChart]);
+
   const handleBarItemClick = useCallback(
     (
       _event: React.MouseEvent<SVGElement, MouseEvent>,
@@ -52,8 +61,8 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
           unknown[]
         >;
         const seriesKey =
-          chartSetting.series.find((s: any) => s.id === item.seriesId)
-            ?.dataKey || item.seriesId;
+          mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
+          item.seriesId;
 
         if (itemsBySeries[seriesKey as string]) {
           itemsToUse = itemsBySeries[seriesKey as string];
@@ -74,7 +83,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         barTitle,
       });
     },
-    [dataset, chartSetting.xAxis, chartSetting.series]
+    [dataset, chartSetting.xAxis, mappedSeries]
   );
 
   const closePapersDialog = useCallback(() => {
@@ -154,13 +163,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         {...chartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
-        series={chartSetting.series.map((s: Record<string, unknown>) => ({
-          ...s,
-          dataKey:
-            normalized || hasMultipleSubCharts || isSubChart
-              ? s.dataKey
-              : 'count',
-        }))}
+        series={mappedSeries}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
         onItemClick={handleBarItemClick}
