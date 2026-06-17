@@ -1,5 +1,5 @@
 import { Router, Response, Request } from 'express';
-import { AIService, type AIConfig } from '../aiService.js';
+import { AIService, type AIConfig, type GroqModel } from '../aiService.js';
 import { validateGenerateTextRequest } from '../middleware.js';
 import {
   validateKeycloakToken,
@@ -154,14 +154,10 @@ const getAIService = (): AIService => {
           | 'gpt-4'
           | 'gpt-3.5-turbo') || 'gpt-4o-mini',
       groqModel:
-        (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
-          | 'llama-3.1-8b-instant'
-          | 'llama-3.1-70b-versatile'
-          | 'llama-3.1-405b-reasoning'
-          | 'llama-3.3-70b-versatile'
-          | 'openai/gpt-oss-120b'
-          | 'openai/gpt-oss-20b'
-          | 'llama-3-70b-8192') || 'llama-3.1-8b-instant',
+        (sanitizeEnvVar(
+          process.env.GROQ_MODEL,
+          'llama-3.1-8b-instant'
+        ) as GroqModel) || 'llama-3.1-8b-instant',
       mistralModel:
         (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
           | 'mistral-large-latest'
@@ -182,7 +178,7 @@ const getAIService = (): AIService => {
       ),
       openrouterModel: sanitizeEnvVar(
         process.env.OPENROUTER_MODEL,
-        'openai/gpt-4o-mini'
+        'openai/gpt-oss-120b'
       ),
     };
     aiService = new AIService(fallbackConfig);
@@ -418,16 +414,20 @@ router.post(
         req.body;
 
       const service = getAIService();
-      const effectiveProvider = provider || service.getCurrentConfig().provider;
+      const headerOpenRouterKey = readOpenRouterApiKey(req);
+      const effectiveProvider = service.getEffectiveProvider(
+        provider,
+        headerOpenRouterKey
+      );
       const openRouterKey =
         effectiveProvider === 'openrouter'
-          ? service.resolveOpenRouterApiKey(readOpenRouterApiKey(req))
+          ? service.resolveOpenRouterApiKey(headerOpenRouterKey)
           : '';
 
       const result = await service.generateText(
         {
           prompt,
-          provider,
+          provider: effectiveProvider,
           model,
           temperature,
           maxTokens,
@@ -443,8 +443,11 @@ router.post(
       if (result.usage) {
         const service = getAIService();
         const config = service.getCurrentConfig();
-        const actualProvider = provider || config.provider;
-        const actualModel = model || config.model;
+        const actualProvider = effectiveProvider;
+        const actualModel =
+          effectiveProvider === 'openrouter' && model && !model.includes('/')
+            ? config.model
+            : model || config.model;
 
         // Import cost calculator
         const { calculateCost } = await import('../utils/costCalculator.js');
