@@ -52,6 +52,10 @@ export interface GenerateTextResponse {
   };
 }
 
+/** OpenRouter keys use the sk-or-v1- prefix; OPENAI_API_KEY may hold one when using OpenRouter. */
+export const isOpenRouterApiKey = (apiKey: string): boolean =>
+  apiKey.trim().startsWith('sk-or-');
+
 export class AIService {
   private config: AIConfig;
 
@@ -64,6 +68,33 @@ export class AIService {
     const fromHeader = headerKey?.trim() || '';
     if (fromHeader) return fromHeader;
     return this.config.openaiApiKey.trim();
+  }
+
+  /**
+   * Route OpenRouter keys to OpenRouter even when AI_PROVIDER is mis-set to openai.
+   * Personal keys may arrive only via x-openrouter-api-key.
+   */
+  public getEffectiveProvider(
+    requested?: AIProvider,
+    openRouterApiKey?: string
+  ): AIProvider {
+    const configured = requested ?? this.config.provider;
+    if (configured === 'openrouter') {
+      return 'openrouter';
+    }
+    const headerOrEnvKey = this.resolveOpenRouterApiKey(openRouterApiKey);
+    if (isOpenRouterApiKey(headerOrEnvKey)) {
+      return 'openrouter';
+    }
+    return configured;
+  }
+
+  private resolveOpenRouterModelId(requestModel?: string): string {
+    const sanitized = requestModel ? this.sanitizeModelName(requestModel) : '';
+    if (sanitized.includes('/')) {
+      return sanitized;
+    }
+    return this.sanitizeModelName(this.config.openrouterModel);
   }
 
   private getApiKey(provider: AIProvider, _userProvidedKey?: string): string {
@@ -163,7 +194,10 @@ export class AIService {
     options?: { openRouterApiKey?: string }
   ): Promise<GenerateTextResponse> {
     try {
-      const targetProvider = request.provider || this.config.provider;
+      const targetProvider = this.getEffectiveProvider(
+        request.provider,
+        options?.openRouterApiKey
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let model: any;
@@ -178,9 +212,7 @@ export class AIService {
           baseURL: 'https://openrouter.ai/api/v1',
           headers: this.getOpenRouterHeaders(),
         });
-        const modelId = this.sanitizeModelName(
-          request.model || this.config.openrouterModel
-        );
+        const modelId = this.resolveOpenRouterModelId(request.model);
         model = openrouter.languageModel(modelId);
       } else {
         const apiKey = this.getApiKey(targetProvider);
@@ -289,7 +321,7 @@ export class AIService {
         error,
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        provider: request.provider || this.config.provider,
+        provider: this.getEffectiveProvider(request.provider),
       });
 
       // Re-throw with more context
@@ -301,29 +333,33 @@ export class AIService {
   }
 
   public isConfigured(provider?: AIProvider): boolean {
-    const targetProvider = provider || this.config.provider;
+    const targetProvider = this.getEffectiveProvider(provider);
+    if (targetProvider === 'openrouter') {
+      return this.resolveOpenRouterApiKey().length > 0;
+    }
     const apiKey = this.getApiKey(targetProvider);
     return !!apiKey && apiKey.length > 0;
   }
 
   public getCurrentConfig() {
+    const provider = this.getEffectiveProvider();
     let model: string;
-    if (this.config.provider === 'openai') {
+    if (provider === 'openai') {
       model = this.config.openaiModel;
-    } else if (this.config.provider === 'groq') {
+    } else if (provider === 'groq') {
       model = this.config.groqModel;
-    } else if (this.config.provider === 'mistral') {
+    } else if (provider === 'mistral') {
       model = this.config.mistralModel;
-    } else if (this.config.provider === 'google') {
+    } else if (provider === 'google') {
       model = this.config.googleModel;
-    } else if (this.config.provider === 'openrouter') {
+    } else if (provider === 'openrouter') {
       model = this.config.openrouterModel;
     } else {
       model = '';
     }
 
     return {
-      provider: this.config.provider,
+      provider,
       model,
       apiKeyConfigured: this.isConfigured(),
     };
