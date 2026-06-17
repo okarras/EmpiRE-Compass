@@ -1,0 +1,14 @@
+---
+description: Core coding standards for EmpiRE-Compass
+alwaysApply: true
+---
+
+# Core Standards
+
+- Make the smallest correct change; no unrelated refactors.
+- Match existing naming, imports, and patterns in the surrounding file.
+- Prefer editing existing modules over creating new ones unless splitting a god file.
+- Use Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`).
+- Never commit secrets (`.env`, service account keys, API keys).
+- Run `npm run format` before committing; frontend lint via `npm run lint`.
+- See [AGENTS.md](../../AGENTS.md) for architecture rules and file-size targets.
