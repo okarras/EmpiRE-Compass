@@ -7,50 +7,47 @@ import {
   TextField,
   Button,
   CircularProgress,
-  IconButton,
   Tooltip,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  List,
-  ListItem,
-  Divider,
   Chip,
   Stack,
   Grid,
+  Divider,
 } from '@mui/material';
-import {
-  Edit,
-  SmartToy,
-  AutoFixHigh,
-  Save,
-  Cancel,
-  History,
-  Refresh,
-  Restore,
-  Close,
-  Info,
-} from '@mui/icons-material';
-import LiveHelpIcon from '@mui/icons-material/LiveHelp';
+import { AutoFixHigh, Info } from '@mui/icons-material';
 
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/backendAIService';
-import {
-  DynamicQuestionHistory,
-  useDynamicQuestion,
-} from '../../context/DynamicQuestionContext';
+import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 import { PREFIXES } from '../../api/SPARQL_QUERIES';
-import { CodeEditor } from '../CodeEditor';
-import { PredicatesMapping, PropertyMapping } from '../Graph/types';
+import { PredicatesMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
-import { updateTemplate, apiRequest } from '../../services/backendApi';
 import { useAuthData } from '../../auth/useAuthData';
-import { useAppSelector } from '../../store/hooks';
-import { generateQuestionAlignmentPrompt } from '../../utils/promptGenerator';
 import TemplateHierarchyPanel from './TemplateHierarchyPanel';
 import { extractOrkgPredicateIds } from '../../utils/sparqlPredicateIds';
+import {
+  extractClassIds,
+  extractResourceIds,
+  getPredicateUsageSamples,
+  ensurePrefixes,
+  resolveClassMetadata,
+  KG_EMPIRE_DEFAULT_HTML,
+  PredicateDetail,
+} from '../../utils/sparqlQueryHelpers';
+import {
+  DEFAULT_TEMPLATE_ID,
+  NLP4RE_TEMPLATE_ID,
+  saveTemplateIntroText,
+  useTemplateIntroText,
+} from '../../utils/sparqlTemplateSync';
+import { useSparqlEditorState } from '../../hooks/useSparqlEditorState';
+import { usePredicateAlignment } from '../../hooks/usePredicateAlignment';
+import SparqlHistoryDialog, { getSparqlHistory } from './SparqlHistoryDialog';
+import SparqlEditorPanel from './SparqlEditorPanel';
 
 interface SPARQLQuerySectionProps {
   question: string;
@@ -69,24 +66,6 @@ interface SPARQLQuerySectionProps {
   targetClassId?: string | null;
 }
 
-interface PredicateDetail {
-  id: string;
-  label: string;
-  description: string;
-  cardinality: string;
-  predicateLabel?: string;
-  classId?: string;
-  classLabel?: string;
-  subtemplateId?: string;
-  subtemplateLabel?: string;
-  nestedProperties: Array<{
-    id: string;
-    label: string;
-    classLabel?: string;
-  }>;
-  usageSamples: string[];
-}
-
 interface ClassDetail {
   id: string;
   label: string;
@@ -102,140 +81,6 @@ interface ResourceDetail {
   type: 'active' | 'template' | 'inline';
   introducedBy?: string;
 }
-
-interface ClassMetadata {
-  label?: string;
-  viaPredicates: string[];
-  subtemplateId?: string;
-  subtemplateLabel?: string;
-}
-
-const KG_EMPIRE_DEFAULT_HTML = `<p>You can ask factual, comparative, and exploratory questions about empirical research practice in <strong>Requirements Engineering (RE)</strong>, grounded in the underlying <a href="{schemaUrl}" target="_blank" rel="noopener noreferrer">schema</a>.</p>
-
-<p>Main topics you can query include: <strong>research questions and answers</strong> (primary questions, subquestions, how answers are reported), <strong>research paradigm</strong>, <strong>data collection</strong> (what data were collected, data types, methods, URLs), <strong>data analysis</strong> (analysis methods, inferential and descriptive statistics, machine learning algorithms and metrics), <strong>hypotheses</strong> (null vs. alternative), <strong>measures and metrics</strong> (counts, percentages, central tendency and dispersion), and <strong>threats to validity</strong> (construct, internal, external, conclusion validity, reliability, generalizability, repeatability, and other validity types).</p>`;
-
-const extractClassIds = (query: string): string[] => {
-  const regex = /orkgc:(C\d+)/gi;
-  const seen = new Set<string>();
-  const result: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(query)) !== null) {
-    const id = match[1].toUpperCase();
-    if (!seen.has(id)) {
-      seen.add(id);
-      result.push(id);
-    }
-  }
-  return result;
-};
-
-const extractResourceIds = (query: string): string[] => {
-  const regex = /orkgr:(R\d+)/gi;
-  const seen = new Set<string>();
-  const result: string[] = [];
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(query)) !== null) {
-    const id = match[1].toUpperCase();
-    if (!seen.has(id)) {
-      seen.add(id);
-      result.push(id);
-    }
-  }
-  return result;
-};
-
-const getPredicateUsageSamples = (
-  query: string,
-  predicateId: string,
-  maxSamples = 3
-): string[] => {
-  const lowerId = `orkgp:${predicateId.toLowerCase()}`;
-  return query
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.toLowerCase().includes(lowerId))
-    .slice(0, maxSamples);
-};
-
-const hasPrefixes = (query: string): boolean => {
-  const trimmedQuery = query.trim();
-  return /^\s*PREFIX\s+/i.test(trimmedQuery);
-};
-
-const removePrefixes = (query: string): string => {
-  const lines = query.split('\n');
-  const prefixLines: number[] = [];
-
-  lines.forEach((line, index) => {
-    if (/^\s*PREFIX\s+/i.test(line.trim())) {
-      prefixLines.push(index);
-    }
-  });
-
-  // If we found PREFIX lines, remove them
-  if (prefixLines.length > 0) {
-    // Remove lines in reverse order to maintain indices
-    const linesWithoutPrefixes = lines.filter(
-      (_, index) => !prefixLines.includes(index)
-    );
-    return linesWithoutPrefixes.join('\n').trim();
-  }
-
-  return query;
-};
-
-const ensurePrefixes = (query: string, prefixes: string): string => {
-  if (hasPrefixes(query)) {
-    // Query already has prefixes, remove duplicates and ensure we have the standard ones
-    const queryWithoutPrefixes = removePrefixes(query);
-    return `${prefixes.trim()}\n${queryWithoutPrefixes}`;
-  }
-  // Query doesn't have prefixes, add them
-  return `${prefixes.trim()}\n${query}`;
-};
-
-const walkMappingForClass = (
-  mapping: PropertyMapping | undefined,
-  predicateChain: string[],
-  targetClassId: string
-): ClassMetadata | null => {
-  if (!mapping) return null;
-
-  if (mapping.class_id === targetClassId) {
-    return {
-      label: mapping.class_label ?? mapping.label,
-      viaPredicates: predicateChain,
-      subtemplateId: mapping.subtemplate_id,
-      subtemplateLabel: mapping.subtemplate_label,
-    };
-  }
-
-  if (!mapping.subtemplate_properties) return null;
-
-  for (const [childPredicateId, childMapping] of Object.entries(
-    mapping.subtemplate_properties
-  )) {
-    const childChain = [...predicateChain, childPredicateId];
-    const result = walkMappingForClass(childMapping, childChain, targetClassId);
-    if (result) return result;
-  }
-
-  return null;
-};
-
-const resolveClassMetadata = (
-  classId: string,
-  templateMapping?: PredicatesMapping
-): ClassMetadata | null => {
-  if (!templateMapping) return null;
-
-  for (const [predicateId, mapping] of Object.entries(templateMapping)) {
-    const result = walkMappingForClass(mapping, [predicateId], classId);
-    if (result) return result;
-  }
-
-  return null;
-};
 
 const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   question,
@@ -257,10 +102,8 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const aiService = useAIService();
   const { state, getHistoryByType, updateCosts } = useDynamicQuestion();
 
-  const [isEditing, setIsEditing] = useState(false);
   const [isAIModifying, setIsAIModifying] = useState(false);
   const [showAIDialog, setShowAIDialog] = useState(false);
-  const [editContent, setEditContent] = useState(sparqlQuery);
   const [aiPrompt, setAiPrompt] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
@@ -278,38 +121,15 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     new Set()
   );
 
-  // Use prop templateMapping if provided, otherwise fall back to context
-
-  // Intro text edit state
   const [introEditOpen, setIntroEditOpen] = useState(false);
   const [introEditText, setIntroEditText] = useState('');
-  const [introCustomText, setIntroCustomText] = useState<string | null>(null);
   const [introSaving, setIntroSaving] = useState(false);
   const [introSaveError, setIntroSaveError] = useState<string | null>(null);
 
   const { user } = useAuthData();
-
-  const {
-    provider,
-    openaiModel,
-    groqModel,
-    mistralModel,
-    googleModel,
-    openrouterModel,
-  } = useAppSelector((s) => s.ai);
-
-  const currentModel =
-    provider === 'openai'
-      ? openaiModel
-      : provider === 'groq'
-        ? groqModel
-        : provider === 'mistral'
-          ? mistralModel
-          : provider === 'google'
-            ? googleModel
-            : openrouterModel;
-
-  const [aligningQuestion, setAligningQuestion] = useState(false);
+  const { introCustomText, setIntroCustomText } = useTemplateIntroText(
+    propTemplateId ?? state.templateId ?? undefined
+  );
 
   const templateMapping = (propTemplateMapping ??
     state.templateMapping ??
@@ -317,23 +137,30 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
   const templateId = propTemplateId ?? state.templateId ?? undefined;
   const targetClassId = propTargetClassId ?? state.targetClassId ?? undefined;
 
-  // Load saved intro text from template when templateId changes
-  React.useEffect(() => {
-    const loadIntroText = async () => {
-      const activeTemplateId = (templateId || 'R186491').toUpperCase();
-      setIntroCustomText(null);
-      if (activeTemplateId === 'R1544125') return;
-      try {
-        const data = await apiRequest(`/api/templates/${activeTemplateId}`);
-        setIntroCustomText(data?.introText ?? null);
-      } catch {
-        setIntroCustomText(null);
-        // silently fall back to default text
-      }
-    };
-    void loadIntroText();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId]);
+  const clearError = () => setError(null);
+  const {
+    isEditing,
+    editContent,
+    setEditContent,
+    handleEdit,
+    handleSave,
+    handleCancel,
+  } = useSparqlEditorState(sparqlQuery, onSparqlChange, clearError);
+
+  const { aligningQuestion, handleAlignQuestionWithSchema } =
+    usePredicateAlignment({
+      question,
+      templateMapping,
+      templateId,
+      targetClassId,
+      onQuestionChange,
+      setError,
+    });
+
+  const sparqlHistoryItems = getSparqlHistory(
+    getHistoryByType('sparql'),
+    sparqlQuery
+  );
 
   const templateInsights = useMemo(() => {
     const hasTemplateContext =
@@ -351,7 +178,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     const predicateIds = Array.from(extractOrkgPredicateIds(sparqlQuery));
     const predicateDetails: PredicateDetail[] = predicateIds.map(
       (predicateId) => {
-        // Normalize predicate ID
         const normalizedId = predicateId.toUpperCase();
         const idWithoutP = normalizedId.startsWith('P')
           ? normalizedId.substring(1)
@@ -367,7 +193,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
           templateMapping?.[predicateId.toLowerCase()] ||
           templateMapping?.[predicateId];
 
-        // Check fetched metadata
         const fetchedMeta =
           predicateMetadata.get(normalizedId) ||
           predicateMetadata.get(idWithP) ||
@@ -470,7 +295,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
       }
     });
 
-    // Enhance resource details with fetched metadata
     const enhancedResourceDetails = Array.from(resourceMap.values()).map(
       (resource) => {
         const metadata = resourceMetadata.get(resource.id);
@@ -499,11 +323,9 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
 
   const renderIntroductoryText = () => {
     const activeTemplateId = (templateId || '').toUpperCase();
-    const schemaUrl = `/${activeTemplateId || 'R186491'}/schema`;
+    const schemaUrl = `/${activeTemplateId || DEFAULT_TEMPLATE_ID}/schema`;
 
-    if (activeTemplateId === 'R1544125') {
-      // NLP4RE ID Card schema #TODO: make dynamic from firebase a HTML section
-
+    if (activeTemplateId === NLP4RE_TEMPLATE_ID) {
       return (
         <Alert
           severity="info"
@@ -538,9 +360,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
       );
     }
 
-    // Default: Empirical Research Practice in RE (KG-EmpiRE) schema #TODO: make dynamic from firebase a HTML section
-    // KG-EmpiRE: inline editable
-    const activeSchemaUrl = `/${activeTemplateId || 'R186491'}/schema`;
+    const activeSchemaUrl = `/${activeTemplateId || DEFAULT_TEMPLATE_ID}/schema`;
     const rawHtml = (introCustomText || KG_EMPIRE_DEFAULT_HTML).replace(
       '{schemaUrl}',
       activeSchemaUrl
@@ -599,9 +419,9 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
                 setIntroSaving(true);
                 setIntroSaveError(null);
                 try {
-                  await updateTemplate(
-                    activeTemplateId || 'R186491',
-                    { introText: introEditText.trim() },
+                  await saveTemplateIntroText(
+                    activeTemplateId || DEFAULT_TEMPLATE_ID,
+                    introEditText,
                     user?.id || '',
                     user?.email || ''
                   );
@@ -675,7 +495,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
     );
   };
 
-  // Fetch predicate metadata using SPARQL if not in templateMapping
   React.useEffect(() => {
     const fetchPredicateMetadata = async () => {
       if (!sparqlQuery || !templateInsights.predicateDetails.length) return;
@@ -717,7 +536,6 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
         setLoadingPredicates(new Set(loadingSet));
 
         try {
-          // Fetch predicate metadata using SPARQL
           const query = `
 PREFIX orkgp: <http://orkg.org/orkg/predicate/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -746,7 +564,6 @@ LIMIT 1`;
                 description: binding.description?.value,
               });
             } else {
-              // Fallback: ORKG properties API
               try {
                 const propResponse = await fetch(
                   `https://orkg.org/api/properties/${predicateId}`,
@@ -788,7 +605,6 @@ LIMIT 1`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sparqlQuery, templateInsights.predicateDetails.length, templateMapping]);
 
-  // Fetch resource metadata for resources that don't have labels
   React.useEffect(() => {
     const fetchMissingMetadata = async () => {
       const resourceIds = templateInsights.resourceDetails
@@ -833,81 +649,10 @@ LIMIT 1`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sparqlQuery, templateInsights.resourceDetails.length]);
 
-  const handleEdit = () => {
-    setEditContent(sparqlQuery);
-    setIsEditing(true);
-  };
-
-  const handleSave = () => {
-    onSparqlChange(editContent);
-    setIsEditing(false);
-    setError(null);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setEditContent(sparqlQuery);
-    setError(null);
-  };
-
-  const handleOpenHistory = () => {
-    setHistoryDialogOpen(true);
-  };
-
   const handleOpenInORKG = () => {
     const queryWithPrefixes = ensurePrefixes(sparqlQuery, PREFIXES);
     const url = `https://orkg.org/sparql#${encodeURIComponent(queryWithPrefixes)}`;
     window.open(url, '_blank');
-  };
-
-  const handleCloseHistory = () => {
-    setHistoryDialogOpen(false);
-  };
-
-  const handleRevertHistory = (item: DynamicQuestionHistory) => {
-    onSparqlChange(item.content);
-    handleCloseHistory();
-  };
-
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-    if (diffInHours < 1) {
-      const diffInMinutes = Math.floor(diffInHours * 60);
-      return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
-    } else if (diffInHours < 24) {
-      const hours = Math.floor(diffInHours);
-      return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    } else {
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    }
-  };
-
-  const getSparqlHistory = () => {
-    const allHistory = getHistoryByType('sparql');
-    const currentContent = sparqlQuery;
-
-    // Filter history items that are different from current content and not duplicates
-    const seenContents = new Set();
-    return allHistory
-      .filter((item: { content: string }) => {
-        const trimmedContent = item.content.trim();
-        if (
-          !trimmedContent ||
-          trimmedContent === currentContent.trim() ||
-          seenContents.has(trimmedContent)
-        ) {
-          return false;
-        }
-        seenContents.add(trimmedContent);
-        return true;
-      })
-      .sort(
-        (a: { timestamp: number }, b: { timestamp: number }) =>
-          b.timestamp - a.timestamp
-      ); // Sort by newest first
   };
 
   const handleAIModify = async () => {
@@ -966,7 +711,6 @@ Modified SPARQL Query:`;
 
       let modifiedQuery = result.text.trim();
 
-      // Clean up any markdown code fences that might be in the response
       modifiedQuery = modifiedQuery
         .replace(/```sparql\s*/gi, '')
         .replace(/```\s*$/gm, '')
@@ -975,7 +719,6 @@ Modified SPARQL Query:`;
 
       onSparqlChange(modifiedQuery);
 
-      // Track cost for AI modification
       if (result.cost) {
         const costWithSection = {
           ...result.cost,
@@ -995,63 +738,8 @@ Modified SPARQL Query:`;
     }
   };
 
-  const handleAlignQuestionWithSchema = async () => {
-    if (!question.trim()) {
-      setError('Enter a draft question first.');
-      return;
-    }
-    if (!templateMapping || Object.keys(templateMapping).length === 0) {
-      setError('Template schema is not loaded yet.');
-      return;
-    }
-    if (!aiService.isConfigured()) {
-      setError('Please configure your AI settings first.');
-      return;
-    }
-
-    setAligningQuestion(true);
-    setError(null);
-
-    try {
-      const prompt = generateQuestionAlignmentPrompt(
-        templateMapping,
-        (templateId || 'R186491').toUpperCase(),
-        question,
-        targetClassId ?? undefined
-      );
-      const result = await aiService.generateText(prompt, {
-        temperature: 0.3,
-        maxTokens: 500,
-        provider,
-        model: currentModel,
-        systemContext:
-          'You rewrite research questions to align with a given knowledge graph template. Output only the single rewritten question.',
-      });
-      const text = result.text.trim().replace(/^["']|["']$/g, '');
-      if (text) onQuestionChange(text);
-      if (result.cost) {
-        updateCosts([
-          ...state.costs,
-          {
-            ...result.cost,
-            section: 'Align question with schema',
-          },
-        ]);
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to align question with schema'
-      );
-    } finally {
-      setAligningQuestion(false);
-    }
-  };
-
   return (
     <>
-      {/* Question Input Section */}
       <Paper
         elevation={0}
         sx={{
@@ -1160,7 +848,6 @@ Modified SPARQL Query:`;
         </Box>
       </Paper>
 
-      {/* Query Explanation Dialog */}
       <Dialog
         open={explanationDialogOpen}
         onClose={() => setExplanationDialogOpen(false)}
@@ -1185,7 +872,6 @@ Modified SPARQL Query:`;
           {sparqlQuery && (
             <>
               <Grid container spacing={1.5} sx={{ mt: 0.5 }}>
-                {/* Predicates Column */}
                 {templateInsights.predicateDetails.length > 0 && (
                   <Grid item xs={12} md={6}>
                     <Box>
@@ -1361,7 +1047,6 @@ Modified SPARQL Query:`;
                   </Grid>
                 )}
 
-                {/* Classes & Resources Column */}
                 {(templateInsights.classDetails.length > 0 ||
                   templateInsights.resourceDetails.length > 0) && (
                   <Grid item xs={12} md={6}>
@@ -1555,7 +1240,6 @@ Modified SPARQL Query:`;
                 )}
               </Grid>
 
-              {/* Natural Language Translation */}
               {sparqlTranslation && (
                 <>
                   <Divider sx={{ my: 2 }} />
@@ -1591,468 +1275,38 @@ Modified SPARQL Query:`;
         </DialogActions>
       </Dialog>
 
-      {/* SPARQL Query Section */}
-      {sparqlQuery && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            mb: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 2,
-            border: '1px solid rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mb: 2,
-            }}
-          >
-            <Typography variant="h5" sx={{ color: '#e86161', fontWeight: 600 }}>
-              SPARQL Query
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-              {isEditing ? (
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={handleSave}
-                    startIcon={<Save />}
-                    sx={{
-                      backgroundColor: '#e86161',
-                      '&:hover': { backgroundColor: '#d45151' },
-                    }}
-                  >
-                    Save
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={handleCancel}
-                    startIcon={<Cancel />}
-                  >
-                    Cancel
-                  </Button>
-                  {getSparqlHistory().length > 0 && (
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={handleOpenHistory}
-                      startIcon={<History />}
-                      sx={{
-                        borderColor: '#e86161',
-                        color: '#e86161',
-                        '&:hover': {
-                          borderColor: '#d45151',
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      History ({getSparqlHistory().length})
-                    </Button>
-                  )}
-                </Box>
-              ) : (
-                <>
-                  <Button
-                    onClick={handleOpenInORKG}
-                    sx={{
-                      color: '#e86161',
-                      mt: { xs: 2, sm: 0 },
-                      ml: 2,
-                      '&:hover': {
-                        color: '#b33a3a',
-                      },
-                    }}
-                    variant="outlined"
-                  >
-                    <LiveHelpIcon sx={{ mr: 1 }} />
-                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                      Open in ORKG
-                    </Typography>
-                  </Button>
-                  <Tooltip title="Edit manually">
-                    <IconButton
-                      onClick={handleEdit}
-                      size="small"
-                      sx={{
-                        color: '#e86161',
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Ask AI to modify">
-                    <IconButton
-                      onClick={() => setShowAIDialog(true)}
-                      size="small"
-                      sx={{
-                        color: 'text.secondary',
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      <SmartToy />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="View query explanation">
-                    <IconButton
-                      onClick={() => setExplanationDialogOpen(true)}
-                      size="small"
-                      sx={{
-                        color: '#e86161',
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                        },
-                      }}
-                    >
-                      <Info />
-                    </IconButton>
-                  </Tooltip>
-                  {getSparqlHistory().length > 0 && (
-                    <Tooltip
-                      title={`View ${getSparqlHistory().length} previous versions`}
-                    >
-                      <IconButton
-                        onClick={handleOpenHistory}
-                        size="small"
-                        sx={{
-                          color: '#e86161',
-                          '&:hover': {
-                            backgroundColor: 'rgba(232, 97, 97, 0.08)',
-                          },
-                        }}
-                      >
-                        <History />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                </>
-              )}
-            </Box>
-          </Box>
+      <SparqlEditorPanel
+        sparqlQuery={sparqlQuery}
+        loading={loading}
+        queryResults={queryResults}
+        queryError={queryError}
+        isEditing={isEditing}
+        editContent={editContent}
+        setEditContent={setEditContent}
+        onSparqlChange={onSparqlChange}
+        onRunEditedQuery={onRunEditedQuery}
+        handleEdit={handleEdit}
+        handleSave={handleSave}
+        handleCancel={handleCancel}
+        handleOpenInORKG={handleOpenInORKG}
+        onOpenExplanation={() => setExplanationDialogOpen(true)}
+        historyCount={sparqlHistoryItems.length}
+        onOpenHistory={() => setHistoryDialogOpen(true)}
+        error={error}
+        showAIDialog={showAIDialog}
+        setShowAIDialog={setShowAIDialog}
+        aiPrompt={aiPrompt}
+        setAiPrompt={setAiPrompt}
+        isAIModifying={isAIModifying}
+        handleAIModify={handleAIModify}
+      />
 
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <Box sx={{ mt: 2, mb: 2 }}>
-            <CodeEditor
-              value={isEditing ? editContent : sparqlQuery}
-              onChange={(value) =>
-                isEditing ? setEditContent(value) : onSparqlChange(value)
-              }
-              language="sparql"
-              height="400px"
-              readOnly={loading || !isEditing}
-              label="SPARQL Query"
-              copyable={true}
-              formattable={!isEditing}
-              fullscreenable={true}
-              showMinimap={false}
-              placeholder={`PREFIX orkgp: <http://orkg.org/orkg/predicate/>
-PREFIX orkgc: <http://orkg.org/orkg/class/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-
-SELECT ?paper ?title
-WHERE {
-  ?paper orkgp:P31 ?contribution .
-  ?paper rdfs:label ?title .
-}
-LIMIT 10`}
-            />
-          </Box>
-
-          {/* Query Results Status */}
-          {!loading && sparqlQuery && !queryError && (
-            <Box sx={{ mb: 2 }}>
-              {queryResults &&
-              Array.isArray(queryResults) &&
-              queryResults.length > 0 ? (
-                <Alert severity="success" sx={{ mb: 2 }}>
-                  <Typography variant="body2">
-                    ✅ Query executed successfully! Found{' '}
-                    <strong>{queryResults.length}</strong> result
-                    {queryResults.length !== 1 ? 's' : ''}.
-                  </Typography>
-                </Alert>
-              ) : (
-                <Alert severity="warning" sx={{ mb: 2 }}>
-                  <Typography variant="body2">
-                    ⚠️ Query executed successfully but returned no results. Try
-                    modifying your query or research question.
-                  </Typography>
-                </Alert>
-              )}
-            </Box>
-          )}
-
-          {/* Query Error */}
-          {!loading && queryError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <Typography variant="body2">
-                ❌ Query failed: {queryError}
-              </Typography>
-            </Alert>
-          )}
-
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              onClick={() =>
-                onRunEditedQuery(isEditing ? editContent : sparqlQuery)
-              }
-              disabled={loading}
-              startIcon={
-                loading ? <CircularProgress size={20} color="inherit" /> : null
-              }
-              sx={{
-                backgroundColor: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.dark',
-                },
-              }}
-            >
-              {loading ? 'Running...' : 'Run'}
-            </Button>
-          </Box>
-        </Paper>
-      )}
-
-      {/* AI Modification Dialog */}
-      <Dialog
-        open={showAIDialog}
-        onClose={() => setShowAIDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <SmartToy sx={{ color: '#e86161' }} />
-            <Typography variant="h6">AI Query Modification</Typography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Describe how you want the AI to modify the SPARQL query. The AI will
-            have access to the full context of your research question and
-            previous changes.
-          </Typography>
-          <TextField
-            fullWidth
-            multiline
-            rows={4}
-            value={aiPrompt}
-            onChange={(e) => setAiPrompt(e.target.value)}
-            placeholder="Describe how you want to modify the SPARQL query..."
-            variant="outlined"
-            disabled={isAIModifying}
-          />
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => setShowAIDialog(false)}
-            disabled={isAIModifying}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleAIModify}
-            variant="contained"
-            disabled={isAIModifying || !aiPrompt.trim()}
-            startIcon={
-              isAIModifying ? <CircularProgress size={16} /> : <Refresh />
-            }
-            sx={{
-              backgroundColor: '#e86161',
-              '&:hover': { backgroundColor: '#d45151' },
-            }}
-          >
-            {isAIModifying ? 'Modifying...' : 'Modify with AI'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* History Dialog */}
-      <Dialog
+      <SparqlHistoryDialog
         open={historyDialogOpen}
-        onClose={handleCloseHistory}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <History sx={{ color: '#e86161' }} />
-              <Typography variant="h6">SPARQL Query History</Typography>
-            </Box>
-            <IconButton onClick={handleCloseHistory} size="small">
-              <Close />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          {getSparqlHistory().length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 4 }}>
-              <History sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="body1" color="text.secondary">
-                No SPARQL query history available yet.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Changes will appear here once you make edits or AI
-                modifications.
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ p: 0 }}>
-              {getSparqlHistory().map(
-                (item: DynamicQuestionHistory, index: number) => (
-                  <React.Fragment key={item.id}>
-                    <ListItem
-                      sx={{
-                        flexDirection: 'column',
-                        alignItems: 'stretch',
-                        p: 2,
-                        '&:hover': {
-                          backgroundColor: 'rgba(232, 97, 97, 0.04)',
-                        },
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'flex-start',
-                          mb: 1,
-                        }}
-                      >
-                        <Box sx={{ flex: 1 }}>
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1,
-                              mb: 0.5,
-                            }}
-                          >
-                            <Typography
-                              variant="subtitle2"
-                              fontWeight="bold"
-                              color="text.primary"
-                            >
-                              {item.action === 'ai_modified'
-                                ? 'AI Modified SPARQL'
-                                : 'Manual Edit SPARQL'}
-                            </Typography>
-                            <Chip
-                              label={
-                                item.action === 'ai_modified'
-                                  ? 'LLM Context'
-                                  : 'Manual'
-                              }
-                              size="small"
-                              color={
-                                item.action === 'ai_modified'
-                                  ? 'primary'
-                                  : 'default'
-                              }
-                              variant="outlined"
-                            />
-                          </Box>
-                          <Typography variant="caption" color="text.secondary">
-                            {formatTimestamp(item.timestamp)}
-                          </Typography>
-                          {item.prompt && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: 'block', mt: 0.5 }}
-                            >
-                              <strong>LLM Prompt:</strong> {item.prompt}
-                            </Typography>
-                          )}
-                          {item.previousContent && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: 'block', mt: 0.5 }}
-                            >
-                              <strong>Previous Content:</strong>{' '}
-                              {item.previousContent.substring(0, 100)}...
-                            </Typography>
-                          )}
-                        </Box>
-                        <Box sx={{ display: 'flex', gap: 1, ml: 2 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            startIcon={<Restore />}
-                            onClick={() => handleRevertHistory(item)}
-                            sx={{
-                              backgroundColor: '#e86161',
-                              '&:hover': { backgroundColor: '#d45151' },
-                            }}
-                          >
-                            Restore
-                          </Button>
-                        </Box>
-                      </Box>
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2,
-                          backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                          borderRadius: 1,
-                          border: '1px solid rgba(0, 0, 0, 0.05)',
-                          fontFamily: 'monospace',
-                          fontSize: '0.875rem',
-                          maxHeight: '120px',
-                          overflowY: 'auto',
-                        }}
-                      >
-                        <Typography
-                          variant="body2"
-                          component="pre"
-                          sx={{ margin: 0, whiteSpace: 'pre-wrap' }}
-                        >
-                          {item.content.length > 200
-                            ? `${item.content.substring(0, 200)}...`
-                            : item.content}
-                        </Typography>
-                      </Paper>
-                    </ListItem>
-                    {index < getSparqlHistory().length - 1 && <Divider />}
-                  </React.Fragment>
-                )
-              )}
-            </List>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseHistory}>Close</Button>
-        </DialogActions>
-      </Dialog>
+        onClose={() => setHistoryDialogOpen(false)}
+        historyItems={sparqlHistoryItems}
+        onRevert={(item) => onSparqlChange(item.content)}
+      />
     </>
   );
 };

@@ -54,6 +54,8 @@ const swaggerOptions = {
   apis: [
     path.join(__dirname, 'routes', '*.ts'),
     path.join(__dirname, 'routes', '*.js'),
+    path.join(__dirname, 'routes', 'templates', '*.ts'),
+    path.join(__dirname, 'routes', 'templates', '*.js'),
   ],
 };
 

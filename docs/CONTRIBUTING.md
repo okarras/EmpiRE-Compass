@@ -132,9 +132,21 @@ docs: update API documentation
    - All CI checks must pass
    - Commits should be squashed if necessary
 
+### Architecture & Conventions
+
+For detailed architecture rules, file-size targets, and agent directions, see **[AGENTS.md](../AGENTS.md)** at the repo root.
+
+Key conventions:
+
+- **UI vs logic**: components render; hooks and services handle state and side effects.
+- **Data layer**: `src/firestore/*` files are backend API adapters with backup fallback (not direct Firestore SDK).
+- **AI**: route through `UnifiedAIService` in `src/services/backendAIService.ts`; shared types in `shared/`.
+- **File size**: aim for ≤ ~300 lines per component/hook; split when mixing UI, API, and prompts.
+- **Cursor rules**: file-specific guidance in [`.cursor/rules/`](../.cursor/rules/).
+
 ### Code Style
 
-- Follow consistent code formatting
+- Follow consistent code formatting (`npm run format` before committing)
 - Write clear, self-documenting code
 - Include comments for complex logic
 - Follow language-specific best practices
