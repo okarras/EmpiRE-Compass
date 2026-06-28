@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CHART_GENERATION_SUGGESTION_PROMPT } from '../constants/prompts';
 import { Query } from '../constants/queries_chart_info';
 import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/backendAIService';
@@ -185,22 +186,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         const response = await generateWithProvider(
           `${generateSystemContext()}
           User Question: ${structuredPrompt}
-
-          CRITICAL INSTRUCTION:
-          Suggest at least 5 alternative ways to visualize this data.
-          You MUST respond ONLY with a single JSON object matching the schema below.
-          Do NOT include any markdown code blocks, backticks, comments, or surrounding text.
-          The output must be pure, parsable JSON.
-
-          JSON Schema:
-          {
-            "Suggestions": [
-              {
-                "chartType": "Bar chart",
-                "chartDescription": "Explanation of why this fits the data."
-              }
-            ]
-          }`,
+${CHART_GENERATION_SUGGESTION_PROMPT}`,
           undefined,
           'json'
         );
@@ -423,13 +409,16 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         ${
           wantsChart
             ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
-        1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
-        2. Choose the most appropriate chart type based on the data and what you want to show:
+        1. Put ALL chart-related code (canvas and Chart.js initialization script) inside a single <div class="chart-code"> tag.
+        2. You MUST inline all data and options directly inside the new Chart(ctx, { ... }) configuration object. Do NOT declare separate variables like const data = ... or const options = ... outside the Chart object.
+        3. Choose the most appropriate chart type based on the data and what you want to show:
            - Use 'line' for trends over time
            - Use 'bar' for comparing quantities across categories
            - Use 'pie' or 'doughnut' for showing proportions
            - Use 'scatter' for showing relationships between variables
            - Use 'radar' for comparing multiple variables
+           - If a Heatmap is requested or appropriate, use type: 'matrix'. Format dataset data as [{x: 1, y: 1, v: 10}] where 'v' is the value.
+           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Format dataset data as an array of raw numbers (e.g. data: [1, 2, 3, 4, 5]).
         3. The chart code should be complete and self-contained
         4. Use proper indentation and formatting
         5. Make the chart responsive and use appropriate colors
@@ -437,11 +426,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         7. Format the chart code like this example:
         <div class="chart-code">
           <canvas id="myChart"></canvas>
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script>
             const ctx = document.getElementById('myChart').getContext('2d');
             new Chart(ctx, {
-              type: //choose the most appropriate type
+              type: //choose the most appropriate type (e.g. 'bar', 'matrix', 'boxplot')
               data: {
                 labels: ['Category 1', 'Category 2'],
                 datasets: [{
@@ -552,13 +540,16 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         User Question: ${hiddenPrompt}
 
         Please generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
-        1. Put ALL chart-related code (canvas, script tags, and Chart.js initialization) inside a single <div class="chart-code"> tag
-        2. Choose the most appropriate chart type based on the data and what you want to show (specifically, generate a ${chartType}):
+        1. Put ALL chart-related code (canvas and Chart.js initialization script) inside a single <div class="chart-code"> tag.
+        2. You MUST inline all data and options directly inside the new Chart(ctx, { ... }) configuration object. Do NOT declare separate variables like const data = ... or const options = ... outside the Chart object.
+        3. Choose the most appropriate chart type to visually represent a ${chartType}:
            - Use 'line' for trends over time
            - Use 'bar' for comparing quantities across categories
            - Use 'pie' or 'doughnut' for showing proportions
            - Use 'scatter' for showing relationships between variables
            - Use 'radar' for comparing multiple variables
+           - If a Heatmap is requested or appropriate, use type: 'matrix'. Format dataset data as [{x: 1, y: 1, v: 10}] where 'v' is the value.
+           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Format dataset data as an array of raw numbers (e.g. data: [1, 2, 3, 4, 5]).
         3. The chart code should be complete and self-contained
         4. Use proper indentation and formatting
         5. Make the chart responsive and use appropriate colors
@@ -566,11 +557,10 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
         7. Format the chart code like this example:
         <div class="chart-code">
           <canvas id="myChart"></canvas>
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
           <script>
             const ctx = document.getElementById('myChart').getContext('2d');
             new Chart(ctx, {
-              type: //choose the most appropriate type
+              type: //choose the most appropriate type (e.g. 'bar', 'matrix', 'boxplot')
               data: {
                 labels: ['Category 1', 'Category 2'],
                 datasets: [{
