@@ -220,18 +220,34 @@ const AdminTeam = () => {
     <>
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4, gap: 2 }}>
-            <TeamIcon sx={{ fontSize: 40, color: '#e86161' }} />
-            <Box sx={{ flex: 1 }}>
-              <Typography
-                variant="h4"
-                sx={{ color: '#e86161', fontWeight: 700 }}
-              >
-                Team Member Management
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                Manage team members displayed on the team page
-              </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              mb: 4,
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}
+            >
+              <TeamIcon sx={{ fontSize: 40, color: '#e86161' }} />
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    color: '#e86161',
+                    fontWeight: 700,
+                    fontSize: { xs: '1.5rem', sm: '2.125rem' },
+                  }}
+                >
+                  Team Member Management
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                  Manage team members displayed on the team page
+                </Typography>
+              </Box>
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
