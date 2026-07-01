@@ -18,15 +18,38 @@ Issues are a great way to keep track of tasks, enhancements, and bugs for our pr
 
 #### Creating Issues
 
-1. **Use Issue Templates**: When available, use the appropriate issue template
-2. **Clear Title**: Write a clear, descriptive title that summarizes the issue
-3. **Detailed Description**: Include:
-   - Expected behavior
-   - Current behavior
-   - Steps to reproduce (for bugs)
-   - Screenshots (if applicable)
-   - Environment details (OS, browser, etc.)
-4. **Labels**: Use appropriate labels to categorize your issue
+We use a **hybrid workflow**: structured GitHub templates plus optional AI expansion from a rough note.
+
+**Quick path (recommended)**
+
+1. Write one or two sentences describing the problem or idea.
+2. Expand it using one of:
+   - **GitHub Copilot** (VS Code / github.com): e.g. `Create a bug report: SPARQL editor crashes on paste`
+   - **CLI script** (uses keys from `backend/.env`):
+     ```sh
+     npm run issue:enhance -- --type bug --text "your rough description"
+     npm run issue:enhance -- --type feature --text "export charts as PNG" --create
+     ```
+   - **Cursor**: ask the agent to draft an issue (project skill: `.cursor/skills/github-issue/`)
+3. Open [New Issue](https://github.com/okarras/EmpiRE-Compass/issues/new/choose), pick the matching template, and paste the result.
+
+**Issue templates** (`.github/ISSUE_TEMPLATE/`):
+
+| Template             | `--type`   | Labels                    |
+| -------------------- | ---------- | ------------------------- |
+| Bug Report           | `bug`      | `bug`, `triage`           |
+| Feature Request      | `feature`  | `enhancement`, `triage`   |
+| Documentation        | `docs`     | `documentation`, `triage` |
+| Refactor / Tech Debt | `refactor` | `refactor`, `triage`      |
+
+**Manual path**
+
+1. **Use Issue Templates**: Pick the appropriate template on GitHub
+2. **Clear Title**: Prefix with `[Bug]:`, `[Feature]:`, `[Docs]:`, or `[Refactor]:`
+3. **Detailed Description**: Include expected vs actual behavior (bugs), acceptance criteria (features), or scope (refactors)
+4. **Labels**: Applied automatically by templates where configured
+
+Copilot and the enhance script follow guidance in [`.github/copilot-instructions.md`](../.github/copilot-instructions.md). Keep issues **concise and specific** (~125 words) for best results with AI coding agents.
 
 ### Branch Naming Convention
 
@@ -109,9 +132,21 @@ docs: update API documentation
    - All CI checks must pass
    - Commits should be squashed if necessary
 
+### Architecture & Conventions
+
+For detailed architecture rules, file-size targets, and agent directions, see **[AGENTS.md](../AGENTS.md)** at the repo root.
+
+Key conventions:
+
+- **UI vs logic**: components render; hooks and services handle state and side effects.
+- **Data layer**: `src/firestore/*` files are backend API adapters with backup fallback (not direct Firestore SDK).
+- **AI**: route through `UnifiedAIService` in `src/services/backendAIService.ts`; shared types in `shared/`.
+- **File size**: aim for ≤ ~300 lines per component/hook; split when mixing UI, API, and prompts.
+- **Cursor rules**: file-specific guidance in [`.cursor/rules/`](../.cursor/rules/).
+
 ### Code Style
 
-- Follow consistent code formatting
+- Follow consistent code formatting (`npm run format` before committing)
 - Write clear, self-documenting code
 - Include comments for complex logic
 - Follow language-specific best practices

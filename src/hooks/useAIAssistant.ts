@@ -4,120 +4,13 @@ import { useAIAssistantContext } from '../context/AIAssistantContext';
 import { useAIService } from '../services/backendAIService';
 import { orkgAskService } from '../services/orkgAskService';
 import { useAppSelector } from '../store/hooks';
+import { cleanAiHtmlResponse } from '../utils/aiResponseCleanup';
+import { useAssistantMessages } from './useAssistantMessages';
+import { useInitialAnalysis } from './useInitialAnalysis';
 
 interface UseAIAssistantProps {
   query: Query;
   questionData: Record<string, unknown>[];
-}
-
-interface Message {
-  content: string;
-  isUser: boolean;
-  isStreaming?: boolean;
-  reasoning?: string;
-  chartHtml?: string;
-  timestamp?: number;
-}
-
-// Cache interfaces
-interface CacheEntry {
-  analysis: string;
-  timestamp: number;
-  reasoning?: string;
-}
-
-interface ChatHistory {
-  messages: Message[];
-  lastUpdated: number;
-}
-
-// Cache storage keys
-const CACHE_STORAGE_KEY = 'ai_assistant_initial_analysis_cache';
-const CHAT_HISTORY_KEY = 'ai_assistant_chat_history';
-
-// Cache management functions
-const getCache = (): Record<string, CacheEntry> => {
-  try {
-    const cachedData = localStorage.getItem(CACHE_STORAGE_KEY);
-    return cachedData
-      ? (JSON.parse(cachedData) as Record<string, CacheEntry>)
-      : {};
-  } catch (error) {
-    console.error('Error reading from cache:', error);
-    return {};
-  }
-};
-
-const setCache = (cache: Record<string, CacheEntry>) => {
-  try {
-    localStorage.setItem(CACHE_STORAGE_KEY, JSON.stringify(cache));
-  } catch (error) {
-    console.error('Error writing to cache:', error);
-  }
-};
-
-// Chat history management functions
-const getChatHistory = (): Record<string, ChatHistory> => {
-  try {
-    const history = localStorage.getItem(CHAT_HISTORY_KEY);
-    return history ? (JSON.parse(history) as Record<string, ChatHistory>) : {};
-  } catch (error) {
-    console.error('Error reading chat history:', error);
-    return {};
-  }
-};
-
-const setChatHistory = (history: Record<string, ChatHistory>) => {
-  try {
-    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
-  } catch (error) {
-    console.error('Error writing chat history:', error);
-  }
-};
-
-/**
- * Convert Markdown links [text](url) to HTML anchor tags so they render as clickable links.
- */
-function markdownLinksToHtml(text: string): string {
-  return text.replace(
-    /\[([^\]]+)\]\((https?[^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-}
-
-/**
- * Strip prompt-leak patterns that ORKG Ask sometimes echoes in responses.
- * Removes meta-instructions and formatting guidelines that leak from the model's context.
- */
-function stripPromptLeaks(text: string): string {
-  let cleaned = text;
-
-  // Remove common leaked instruction patterns (case-insensitive)
-  const leakPatterns = [
-    /\d+\.\s*Ensure that your response[^.]*\./gi,
-    /\d+\.\s*Use appropriate visuals[^.]*\./gi,
-    /\d+\.\s*Cite relevant sources[^.]*\./gi,
-    /\d+\.\s*Write in the third person\.?/gi,
-    /\d+\.\s*Maintain an objective and analytical tone[^.]*\./gi,
-    /Ensure that your response is clear and easy to read\.?/gi,
-    /Use appropriate visuals \(charts, diagrams, images, etc\.\)[^.]*\./gi,
-    /Cite relevant sources when appropriate\.?/gi,
-    /Write in the third person\.?/gi,
-    /Maintain an objective and analytical tone throughout your response\.?/gi,
-    // Orphaned fragments at start of response (e.g. ", rather than X. 8. Y")
-    /^[,\s]*(?:rather than generic or vague statements\.?\s*)(?:\d+\.\s*)?(?:Maintain an objective and analytical tone[^.]*\.\s*)/gim,
-    /^[,\s]*\d+\.\s*Maintain an objective and analytical tone[^.]*\.\s*/gim,
-    // Section headers echoed as plain text (often before real content)
-    /\bPotential insights:\s*(?=\n)/gi,
-    /\bLimitations and Considerations:\s*(?=\n)/gi,
-  ];
-
-  for (const pattern of leakPatterns) {
-    cleaned = cleaned.replace(pattern, '');
-  }
-
-  // Normalize leftover whitespace
-  return cleaned.replace(/\n{3,}/g, '\n\n').replace(/^\s+|\s+$/g, '');
 }
 
 const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
@@ -163,61 +56,18 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       maxTokens: 2000,
     });
   };
+
   const [prompt, setPrompt] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [initialAnalysis, setInitialAnalysis] = useState<string | null>(null);
-  const [initialReasoning, setInitialReasoning] = useState<string | null>(null);
-  const [isFromCache, setIsFromCache] = useState(false);
-  const [lastCachedAnalysis, setLastCachedAnalysis] = useState<string | null>(
-    null
-  );
-  const [lastCachedReasoning, setLastCachedReasoning] = useState<string | null>(
-    null
-  );
-  const [refreshingInitialAnalysis, setRefreshingInitialAnalysis] =
-    useState(false);
   const [streamingText, setStreamingText] = useState('');
   const [showReasoning, setShowReasoning] = useState(false);
   const [showChart, setShowChart] = useState(true);
 
-  // Load chat history when query changes
-  useEffect(() => {
-    const chatHistory = getChatHistory();
-    const queryHistory = chatHistory[query.id];
-    if (queryHistory) {
-      setMessages(queryHistory.messages);
-    } else {
-      setMessages([]);
-    }
-  }, [query.id]);
-
-  // Save chat history when messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      const chatHistory = getChatHistory();
-      chatHistory[query.id] = {
-        messages,
-        lastUpdated: Date.now(),
-      };
-      setChatHistory(chatHistory);
-    }
-  }, [messages, query.id]);
+  const { messages, setMessages, clearChatHistory, exportChatHistory } =
+    useAssistantMessages({ query });
 
   const generateSystemContext = () => {
-    /*
-       ${
-          query.dataProcessingFunction2
-            ? `Data Analysis Data: ${JSON.stringify(
-                query.dataProcessingFunction2?.(questionData),
-                null,
-                2
-              )}`
-            : ''
-        }
-        */
-    // Helper function to safely convert to string
     const safeString = (value: string | string[] | undefined): string => {
       if (!value) return '';
       if (Array.isArray(value)) return value.join(' ');
@@ -242,7 +92,25 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       `;
   };
 
-  // Process structured prompt function
+  const {
+    initialAnalysis,
+    initialReasoning,
+    isFromCache,
+    lastCachedAnalysis,
+    lastCachedReasoning,
+    refreshingInitialAnalysis,
+    undoInitialAnalysis,
+    refreshInitialAnalysis,
+    canUndoInitialAnalysis,
+  } = useInitialAnalysis({
+    query,
+    questionData,
+    generateWithProvider,
+    generateSystemContext,
+    setLoading,
+    setError,
+  });
+
   const processStructuredPrompt = async (structuredPrompt: string) => {
     if (!structuredPrompt.trim() || loading) return;
 
@@ -250,7 +118,6 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     setError(null);
     setStreamingText('');
 
-    // Add user message
     setMessages((prev) => [
       ...prev,
       { content: structuredPrompt, isUser: true },
@@ -281,20 +148,8 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       );
 
       const { text, reasoning } = response;
+      const cleanedText = cleanAiHtmlResponse(text);
 
-      // Clean up the response: markdown code blocks, prompt leaks, convert [text](url) to HTML links
-      const cleanedText = markdownLinksToHtml(
-        stripPromptLeaks(
-          text
-            .replace(/```html\n/g, '')
-            .replace(/```\n/g, '')
-            .replace(/```html/g, '')
-            .replace(/```/g, '')
-            .trim()
-        )
-      );
-
-      // Add the final message
       setMessages((prev) => [
         ...prev,
         {
@@ -311,106 +166,12 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
     }
   };
 
-  // Handle pending structured prompts
   useEffect(() => {
     if (pendingPrompt && !loading) {
       clearPendingPrompt();
       processStructuredPrompt(pendingPrompt);
     }
   }, [pendingPrompt, loading, clearPendingPrompt]);
-
-  useEffect(() => {
-    const performInitialAnalysis = async () => {
-      try {
-        setLoading(true);
-
-        // Check cache for initial analysis
-        const cacheKey = `query_${query.id}`;
-        const responseCache: Record<string, CacheEntry> = getCache();
-
-        const cacheEntry = responseCache[cacheKey] as CacheEntry | undefined;
-        if (cacheEntry && typeof cacheEntry.analysis === 'string') {
-          setInitialAnalysis(cacheEntry.analysis);
-          setInitialReasoning(cacheEntry.reasoning || null);
-          setIsFromCache(true);
-          setLastCachedAnalysis(cacheEntry.analysis);
-          setLastCachedReasoning(cacheEntry.reasoning || null);
-          setLoading(false);
-          return;
-        }
-
-        const { reasoning, text } = await generateWithProvider(
-          `Analyze this research question and data. Output ONLY valid HTML analysis content—no meta-instructions, no formatting guidelines, no rubric text.
-
-Structure your response with these HTML sections:
-- <h1>Initial Analysis</h1>
-- <h2>Question Overview</h2> — overview and significance
-- <h2>Data Analysis Approach</h2> — methodology used
-- <h2>Key Findings</h2> — main findings from the data
-- <h2>Potential Insights</h2> — implications and insights
-- <h2>Limitations and Considerations</h2> — limitations to keep in mind
-- <h2>References</h2> — cite relevant papers as clickable hyperlinks
-
-Write the actual analysis in <p> tags. For References: use markdown-style links [Author, A., Author, B., & Author, C. (Year). Title. Journal, Volume(Issue), pages.](https://doi.org/DOI) or <a href="URL">full citation</a> in HTML. Always include the DOI or ORKG URL. Do not echo these instructions in your output.`,
-          generateSystemContext()
-        );
-
-        // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
-        const cleanedText = markdownLinksToHtml(
-          stripPromptLeaks(
-            text
-              .replace(/```html\n/g, '')
-              .replace(/```\n/g, '')
-              .replace(/```html/g, '')
-              .replace(/```/g, '')
-              .trim()
-          )
-        );
-
-        // Store in cache
-        const updatedCache = {
-          ...responseCache,
-          [cacheKey]: {
-            analysis: cleanedText,
-            reasoning: reasoning,
-            timestamp: Date.now(),
-          },
-        };
-        setCache(updatedCache);
-
-        // Save the previous cached analysis for undo
-        const prevCacheEntry = responseCache[cacheKey] as
-          | CacheEntry
-          | undefined;
-        if (prevCacheEntry && typeof prevCacheEntry.analysis === 'string') {
-          setLastCachedAnalysis(prevCacheEntry.analysis);
-          setLastCachedReasoning(prevCacheEntry.reasoning || null);
-        }
-
-        setInitialAnalysis(cleanedText);
-        setInitialReasoning(reasoning ?? null);
-        setIsFromCache(false);
-      } catch (err) {
-        setError('Failed to generate initial analysis');
-        console.error('Initial Analysis Error:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (!initialAnalysis && questionData.length > 0) {
-      performInitialAnalysis();
-    }
-  }, [query, questionData]);
-
-  // Undo function to restore last cached analysis
-  const undoInitialAnalysis = () => {
-    if (lastCachedAnalysis) {
-      setInitialAnalysis(lastCachedAnalysis);
-      setInitialReasoning(lastCachedReasoning);
-      setIsFromCache(true);
-    }
-  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -419,16 +180,13 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
     setError(null);
     setStreamingText('');
 
-    // Add user message
     setMessages((prev) => [...prev, { content: prompt, isUser: true }]);
 
-    // Check if user wants detailed explanation
     const wantsDetailed =
       prompt.toLowerCase().includes('detailed') ||
       prompt.toLowerCase().includes('explain') ||
       prompt.toLowerCase().includes('elaborate');
 
-    // Check if user wants a chart
     const wantsChart =
       prompt.toLowerCase().includes('chart') ||
       prompt.toLowerCase().includes('graph') ||
@@ -504,24 +262,10 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
 
       const { text, reasoning } = response;
 
-      // Handle text as string (not stream)
-      // Ensure text is always a string to prevent undefined errors
       const textString =
         typeof text === 'string' ? text : text ? String(text) : '';
+      const cleanedText = cleanAiHtmlResponse(textString || '');
 
-      // Clean up the response: markdown code blocks, prompt leaks, convert [text](url) to HTML links
-      const cleanedText = markdownLinksToHtml(
-        stripPromptLeaks(
-          (textString || '')
-            .replace(/```html\n/g, '')
-            .replace(/```\n/g, '')
-            .replace(/```html/g, '')
-            .replace(/```/g, '')
-            .trim()
-        )
-      );
-
-      // Extract chart HTML if present
       const chartHtml = wantsChart
         ? cleanedText.match(/<div class="chart-code">([\s\S]*?)<\/div>/)?.[1]
         : undefined;
@@ -531,7 +275,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
             .trim()
         : cleanedText;
 
-      // Escape HTML for the code block
       const escapedChartHtml = chartHtml
         ? chartHtml
             .replace(/&/g, '&amp;')
@@ -541,7 +284,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
             .replace(/'/g, '&#039;')
         : '';
 
-      // Clear streaming text and add the final message
       setStreamingText('');
       setMessages((prev) => [
         ...prev,
@@ -563,104 +305,6 @@ Write the actual analysis in <p> tags. For References: use markdown-style links 
       setLoading(false);
       setStreamingText('');
     }
-  };
-
-  // Function to always generate a new initial analysis (not from cache)
-  const refreshInitialAnalysis = async () => {
-    try {
-      setRefreshingInitialAnalysis(true);
-      setIsFromCache(false);
-      setError(null);
-      const cacheKey = `query_${query.id}`;
-      const responseCache: Record<string, CacheEntry> = getCache();
-      // Save the previous cached analysis for undo
-      const prevCacheEntry = responseCache[cacheKey] as CacheEntry | undefined;
-      if (prevCacheEntry && typeof prevCacheEntry.analysis === 'string') {
-        setLastCachedAnalysis(prevCacheEntry.analysis);
-        setLastCachedReasoning(prevCacheEntry.reasoning || null);
-      }
-      const { reasoning, text } = await generateWithProvider(
-        `Analyze this research question and data. Output ONLY valid HTML analysis content—no meta-instructions, no formatting guidelines, no rubric text.
-
-Structure your response with these HTML sections:
-- <h1>Initial Analysis</h1>
-- <h2>Question Overview</h2> — overview and significance
-- <h2>Data Analysis Approach</h2> — methodology used
-- <h2>Key Findings</h2> — main findings from the data
-- <h2>Potential Insights</h2> — implications and insights
-- <h2>Limitations and Considerations</h2> — limitations to keep in mind
-- <h2>References</h2> — cite relevant papers as clickable hyperlinks
-
-Write the actual analysis in <p> tags. For References: use markdown-style links [Author, A., Author, B., & Author, C. (Year). Title. Journal, Volume(Issue), pages.](https://doi.org/DOI) or <a href="URL">full citation</a> in HTML. Always include the DOI or ORKG URL. Do not echo these instructions in your output.`,
-        generateSystemContext()
-      );
-      // process the text: remove markdown code blocks, strip prompt leaks, convert [text](url) to HTML links
-      const cleanedText = markdownLinksToHtml(
-        stripPromptLeaks(
-          text
-            .replace(/```html\n/g, '')
-            .replace(/```\n/g, '')
-            .replace(/```html/g, '')
-            .replace(/```/g, '')
-            .trim()
-        )
-      );
-
-      // Store in cache
-      const updatedCache = {
-        ...responseCache,
-        [cacheKey]: {
-          analysis: cleanedText,
-          reasoning,
-          timestamp: Date.now(),
-        },
-      };
-      setCache(updatedCache);
-      setInitialAnalysis(cleanedText);
-      setInitialReasoning(reasoning ?? null);
-      setIsFromCache(false);
-    } catch (err) {
-      setError('Failed to refresh initial analysis');
-      console.error('Refresh Initial Analysis Error:', err);
-    } finally {
-      setRefreshingInitialAnalysis(false);
-    }
-  };
-
-  // Show Undo button if there is a lastCachedAnalysis and the current initialAnalysis is not from cache
-  const canUndoInitialAnalysis = !!lastCachedAnalysis && !isFromCache;
-
-  // Chat management functions
-  const clearChatHistory = () => {
-    const chatHistory = getChatHistory();
-    delete chatHistory[query.id];
-    setChatHistory(chatHistory);
-    setMessages([]);
-  };
-
-  const exportChatHistory = () => {
-    const chatHistory = getChatHistory();
-    const queryHistory = chatHistory[query.id];
-    if (!queryHistory) return;
-
-    const exportData = {
-      queryId: query.id,
-      question: query.dataAnalysisInformation.question,
-      messages: queryHistory.messages,
-      lastUpdated: queryHistory.lastUpdated,
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chat-history-${query.id}-${new Date().toISOString()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
   };
 
   return {

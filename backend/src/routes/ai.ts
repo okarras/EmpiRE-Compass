@@ -1,5 +1,5 @@
 import { Router, Response, Request } from 'express';
-import { AIService, type AIConfig } from '../aiService.js';
+import { AIService, type AIConfig, type GroqModel } from '../aiService.js';
 import { validateGenerateTextRequest } from '../middleware.js';
 import {
   validateKeycloakToken,
@@ -111,17 +111,10 @@ const readOpenRouterApiKey = (req: AuthenticatedRequest): string => {
 // Initialize AI service (singleton pattern)
 let aiService: AIService | null = null;
 
-/**
- * Initialize AI service with configuration
- * Should be called once during server startup
- */
 export const initializeAIService = (config: AIConfig): void => {
   aiService = new AIService(config);
 };
 
-/**
- * Get the AI service instance
- */
 // Helper function to sanitize environment variables (remove quotes)
 const sanitizeEnvVar = (
   value: string | undefined,
@@ -137,11 +130,12 @@ const getAIService = (): AIService => {
     // Fallback initialization if not already initialized
     const fallbackConfig: AIConfig = {
       provider:
-        (sanitizeEnvVar(process.env.AI_PROVIDER, 'mistral') as
+        (sanitizeEnvVar(process.env.AI_PROVIDER, 'openrouter') as
           | 'openai'
           | 'groq'
           | 'mistral'
-          | 'google') || 'mistral',
+          | 'google'
+          | 'openrouter') || 'openrouter',
       openaiModel:
         (sanitizeEnvVar(process.env.OPENAI_MODEL, 'gpt-4o-mini') as
           | 'gpt-5.1'
@@ -160,14 +154,10 @@ const getAIService = (): AIService => {
           | 'gpt-4'
           | 'gpt-3.5-turbo') || 'gpt-4o-mini',
       groqModel:
-        (sanitizeEnvVar(process.env.GROQ_MODEL, 'llama-3.1-8b-instant') as
-          | 'llama-3.1-8b-instant'
-          | 'llama-3.1-70b-versatile'
-          | 'llama-3.1-405b-reasoning'
-          | 'llama-3.3-70b-versatile'
-          | 'openai/gpt-oss-120b'
-          | 'openai/gpt-oss-20b'
-          | 'llama-3-70b-8192') || 'llama-3.1-8b-instant',
+        (sanitizeEnvVar(
+          process.env.GROQ_MODEL,
+          'llama-3.1-8b-instant'
+        ) as GroqModel) || 'llama-3.1-8b-instant',
       mistralModel:
         (sanitizeEnvVar(process.env.MISTRAL_MODEL, 'mistral-large-latest') as
           | 'mistral-large-latest'
@@ -188,7 +178,7 @@ const getAIService = (): AIService => {
       ),
       openrouterModel: sanitizeEnvVar(
         process.env.OPENROUTER_MODEL,
-        'openai/gpt-4o-mini'
+        'openai/gpt-oss-120b'
       ),
     };
     aiService = new AIService(fallbackConfig);
@@ -258,7 +248,7 @@ router.get('/config', async (req: AuthenticatedRequest, res: Response) => {
         hasGroqKey: !!process.env.GROQ_API_KEY,
         hasMistralKey: !!process.env.MISTRAL_API_KEY,
         hasGoogleKey: !!process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-        provider: process.env.AI_PROVIDER || 'groq',
+        provider: process.env.AI_PROVIDER || 'openrouter',
       }),
     });
   } catch (error) {
@@ -348,7 +338,6 @@ router.get(
       const rateLimitData = rateLimitDoc.data() as UserRateLimit;
       const resetTime = rateLimitData.resetAt.toMillis();
 
-      // Check if window has expired
       if (now.toMillis() >= resetTime) {
         return res.json({
           limit: MAX_REQUESTS,
@@ -424,19 +413,27 @@ router.post(
       const { prompt, provider, model, temperature, maxTokens, systemContext } =
         req.body;
 
+      const service = getAIService();
+      const headerOpenRouterKey = readOpenRouterApiKey(req);
+      const effectiveProvider = service.getEffectiveProvider(
+        provider,
+        headerOpenRouterKey
+      );
       const openRouterKey =
-        provider === 'openrouter' ? readOpenRouterApiKey(req) : '';
+        effectiveProvider === 'openrouter'
+          ? service.resolveOpenRouterApiKey(headerOpenRouterKey)
+          : '';
 
-      const result = await getAIService().generateText(
+      const result = await service.generateText(
         {
           prompt,
-          provider,
+          provider: effectiveProvider,
           model,
           temperature,
           maxTokens,
           systemContext,
         },
-        provider === 'openrouter'
+        effectiveProvider === 'openrouter'
           ? { openRouterApiKey: openRouterKey }
           : undefined
       );
@@ -446,8 +443,11 @@ router.post(
       if (result.usage) {
         const service = getAIService();
         const config = service.getCurrentConfig();
-        const actualProvider = provider || config.provider;
-        const actualModel = model || config.model;
+        const actualProvider = effectiveProvider;
+        const actualModel =
+          effectiveProvider === 'openrouter' && model && !model.includes('/')
+            ? config.model
+            : model || config.model;
 
         // Import cost calculator
         const { calculateCost } = await import('../utils/costCalculator.js');

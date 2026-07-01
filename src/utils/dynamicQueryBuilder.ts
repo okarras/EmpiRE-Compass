@@ -1,7 +1,3 @@
-/**
- * Utility for building dynamic query objects from state and data
- */
-
 export interface DynamicQuery {
   title: string;
   id: number;
@@ -36,9 +32,6 @@ interface BuildDynamicQueryParams {
   dataAnalysisInterpretation?: string;
 }
 
-/**
- * Build a dynamic query object from state and transformed data
- */
 export const buildDynamicQuery = ({
   question,
   transformedData,

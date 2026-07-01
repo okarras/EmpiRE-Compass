@@ -8,6 +8,8 @@
     "build": "node scripts/check-env-vars.js && tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "format": "prettier --write .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -19,7 +21,8 @@
     "deploy:surge": "npm run build-storybook && surge storybook-static",
     "preview:storybook": "npm run build-storybook && npm run storybook:serve",
     "prepare": "husky",
-    "release": "standard-version"
+    "release": "standard-version",
+    "issue:enhance": "node scripts/enhance-issue.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.0-alpha.3",
@@ -92,6 +95,7 @@
     "globals": "^15.14.0",
     "http-server": "^14.1.1",
     "husky": "^9.1.7",
+    "jsdom": "^29.1.1",
     "lint-staged": "^16.1.2",
     "playwright": "^1.52.0",
     "prettier": "^3.4.2",

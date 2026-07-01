@@ -107,7 +107,6 @@ const DynamicQuestionManager: React.FC = () => {
 
   const handleLoadQuestion = (savedQuestion: SavedDynamicQuestion) => {
     try {
-      // Load the saved state directly into the context
       loadSavedState(savedQuestion.state);
 
       setShowLoadDialog(false);
@@ -128,7 +127,6 @@ const DynamicQuestionManager: React.FC = () => {
 
   const handleExportAll = () => {
     try {
-      // Ensure the current in-memory question (including processingFunctionCode)
       // is also exported even if the user hasn't explicitly saved it.
       const hasCurrent = Boolean(state.question.trim());
       const currentAsSaved = hasCurrent
@@ -177,7 +175,6 @@ const DynamicQuestionManager: React.FC = () => {
           throw new Error('Invalid file format');
         }
 
-        // Merge with existing questions, avoiding duplicates
         const existingIds = new Set(savedQuestions.map((q) => q.id));
         const duplicateQuestions = importedQuestions.filter((q) =>
           existingIds.has(q.id)

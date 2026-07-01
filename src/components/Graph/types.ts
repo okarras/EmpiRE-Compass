@@ -41,9 +41,6 @@ export type PropertyMapping = {
    * Helps explain predicates even when they point to subtemplates.
    */
   predicate_label?: string;
-  /**
-   * Optional metadata about the target class/subtemplate.
-   */
   class_id?: string;
   class_label?: string;
   subtemplate_id?: string;

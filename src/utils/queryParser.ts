@@ -13,9 +13,6 @@ export interface ParsedQueryResponse {
   javascript: string | null;
 }
 
-/**
- * Extract SPARQL and JavaScript blocks from Markdown output
- */
 export const extractFromMarkdown = (markdown: string): ParsedQueryResponse => {
   const sparqlBlockRegex = /```sparql\n([\s\S]*?)\n```/gi;
   const jsRegex = /```(?:javascript|js)\n([\s\S]*?)\n```/i;
@@ -51,9 +48,6 @@ export const extractFromMarkdown = (markdown: string): ParsedQueryResponse => {
   };
 };
 
-/**
- * Sanitize a raw SPARQL query string by removing markdown code fences
- */
 export const sanitizeSparqlQuery = (query: string): string => {
   return query
     .replace(/^```.*$/gm, '')
@@ -61,9 +55,6 @@ export const sanitizeSparqlQuery = (query: string): string => {
     .trim();
 };
 
-/**
- * Parse SPARQL blocks from a query string (with or without markdown)
- */
 export const parseSparqlBlocks = (queryString: string): SPARQLBlock[] => {
   const { sparqlBlocks } = extractFromMarkdown(
     '```sparql\n' + queryString + '\n```'
@@ -82,9 +73,6 @@ export const parseSparqlBlocks = (queryString: string): SPARQLBlock[] => {
   ];
 };
 
-/**
- * Combine multiple SPARQL blocks into a single display string
- */
 export const combineSparqlBlocks = (blocks: SPARQLBlock[]): string => {
   return blocks.map((b) => `# id: ${b.id}\n${b.query}`).join('\n\n');
 };

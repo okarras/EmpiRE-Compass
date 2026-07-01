@@ -269,15 +269,11 @@ For queries accessing nested properties (e.g., dataset → datatype → dataform
   },
 };
 
-/**
- * Generate a template mapping from template data
- */
 export const generateTemplateMapping = (
   templates: Template[]
 ): PredicatesMapping => {
   const predicatesMapping: PredicatesMapping = {};
 
-  // Create a map of templates by their target class ID for quick lookup
   const templateMap = new Map<string, Template>();
   templates.forEach((template) => {
     if (template.target_class?.id) {
@@ -285,7 +281,6 @@ export const generateTemplateMapping = (
     }
   });
 
-  // Process each template and its properties
   templates.forEach((template) => {
     if (!template.properties || template.properties.length === 0) return;
 
@@ -343,7 +338,6 @@ export const generateTemplateMapping = (
                 class_label: subProperty.class?.label,
               };
 
-              // Check if this sub-property also has a class (nested subtemplate)
               if (subProperty.class?.id) {
                 const subTargetTemplate = templateMap.get(subProperty.class.id);
                 if (subTargetTemplate) {
@@ -408,16 +402,12 @@ export const generateTemplateMapping = (
   return predicatesMapping;
 };
 
-/**
- * Generate a dynamic SPARQL prompt based on template information
- */
 export const generateDynamicSPARQLPrompt = (
   templateMapping: PredicatesMapping,
   templateId: string,
   templateLabel?: string,
   targetClassId?: string
 ): string => {
-  // Check if we have template-specific guidance for this template
   const specificGuidance = TEMPLATE_SPECIFIC_GUIDANCE[templateId];
 
   const basePrompt = `# SPARQL Query Generator for ORKG Research Analysis
@@ -461,7 +451,6 @@ The schema is based on the template which describes research practices in public
 | Publication Year | \`orkgp:P29\` | Predicate | Year of publication. **Only use when the question asks for temporal analysis, trends over time, or specific year ranges.** Usage: \`?paper orkgp:P29 ?year\` |
 | Venue Serie | \`orkgp:P135046\` | Predicate | Conference venue. **Only use when the question asks about venues or conferences.** Usage: \`?contribution orkgp:P135046 ?venue\` |`;
 
-  // Generate the schema section based on template mapping
   const schemaSection = generateSchemaSection(templateMapping);
 
   // Generate hierarchy section
@@ -787,9 +776,6 @@ You will now be given the research question to process.
   );
 };
 
-/**
- * Generate the schema section from template mapping
- */
 const generateSchemaSection = (templateMapping: PredicatesMapping): string => {
   let schemaSection = '\n\n#### Template Properties\n\n';
 
@@ -842,9 +828,6 @@ const generateSchemaSection = (templateMapping: PredicatesMapping): string => {
   return schemaSection;
 };
 
-/**
- * Generate hierarchy section showing the nested structure
- */
 const generateHierarchySection = (
   templateMapping: PredicatesMapping
 ): string => {

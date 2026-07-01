@@ -29,7 +29,6 @@ export function computeHierarchicalLayout(
   const horizontalSpacing = 400; // Horizontal spacing between levels (now x-axis)
   const minVerticalSpacing = 150; // Minimum vertical spacing between nodes (padding to prevent overlap)
 
-  // Find the root node - use the first template as it's always the main template
   // The main template is guaranteed to be first in the array by TemplateGraphPage
   const rootTemplate = templates[0];
 

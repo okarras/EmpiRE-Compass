@@ -8,7 +8,6 @@ const AIConfigurationButton: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { isConfigured } = useAppSelector((state) => state.ai);
 
-  // Check if settings are loaded from localStorage
   const hasStoredSettings = () => {
     try {
       return localStorage.getItem('ai-configuration-settings') !== null;

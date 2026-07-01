@@ -17,35 +17,18 @@ export const AVAILABLE_TEMPLATES: TemplateInfo[] = [
     description: 'Research practices with data collection and analysis methods',
     category: 'Research Methods',
   },
-  // Add more templates here as they become available
-  // Example:
-  // {
-  //   id: 'R123456',
-  //   label: 'Software Engineering Practices',
-  //   description: 'Software development methodologies and practices',
-  //   category: 'Software Engineering'
-  // },
 ];
 
-/**
- * Get template by ID
- */
 export const getTemplateById = (id: string): TemplateInfo | undefined => {
   return AVAILABLE_TEMPLATES.find((template) => template.id === id);
 };
 
-/**
- * Get templates by category
- */
 export const getTemplatesByCategory = (category: string): TemplateInfo[] => {
   return AVAILABLE_TEMPLATES.filter(
     (template) => template.category === category
   );
 };
 
-/**
- * Get all available categories
- */
 export const getAvailableCategories = (): string[] => {
   const categories = AVAILABLE_TEMPLATES.map(
     (template) => template.category
@@ -54,9 +37,6 @@ export const getAvailableCategories = (): string[] => {
   return [...new Set(categories)].sort();
 };
 
-/**
- * Get default template
- */
 export const getDefaultTemplate = (): TemplateInfo => {
   return (
     AVAILABLE_TEMPLATES[0] || {
