@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DEBUG_AI } from '../config/debugConfig';
 import {
   CHART_GENERATION_SUGGESTION_PROMPT,
   SILENT_CHART_GENERATION_PROMPT,
@@ -372,18 +373,20 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
                   chartConfig.options.scales.y = {};
                 chartConfig.options.scales.y.beginAtZero = true;
 
-                console.log(
-                  '📊 DEBUG: Generated Chart Config Structure:',
-                  chartConfig
-                );
-                chartConfig.data?.datasets?.forEach(
-                  (dataset: any, index: number) => {
-                    console.log(
-                      `Dataset ${index} (${dataset.label}) raw data:`,
-                      dataset.data
-                    );
-                  }
-                );
+                if (DEBUG_AI) {
+                  console.log(
+                    '📊 DEBUG: Generated Chart Config Structure:',
+                    chartConfig
+                  );
+                  chartConfig.data?.datasets?.forEach(
+                    (dataset: any, index: number) => {
+                      console.log(
+                        `Dataset ${index} (${dataset.label}) raw data:`,
+                        dataset.data
+                      );
+                    }
+                  );
+                }
 
                 chartConfigs.push(chartConfig);
               }
@@ -752,10 +755,12 @@ ${SILENT_CHART_GENERATION_PROMPT(chartType)}`
                     .map(Number)
                     .filter((n: number) => !isNaN(n));
 
-                  console.log(
-                    `📊 DEBUG: First 5 values for '${ds.label || 'Category'}':`,
-                    numbers.slice(0, 5)
-                  );
+                  if (DEBUG_AI) {
+                    console.log(
+                      `📊 DEBUG: First 5 values for '${ds.label || 'Category'}':`,
+                      numbers.slice(0, 5)
+                    );
+                  }
 
                   // Skip empty data arrays to prevent rendering crashes
                   if (numbers.length > 0) {
@@ -911,18 +916,20 @@ ${SILENT_CHART_GENERATION_PROMPT(chartType)}`
               chartConfig.options.scales.y.beginAtZero = false;
             }
 
-            console.log(
-              '📊 DEBUG: Generated Chart Config Structure:',
-              chartConfig
-            );
-            chartConfig.data?.datasets?.forEach(
-              (dataset: any, index: number) => {
-                console.log(
-                  `Dataset ${index} (${dataset.label}) raw data:`,
-                  dataset.data
-                );
-              }
-            );
+            if (DEBUG_AI) {
+              console.log(
+                '📊 DEBUG: Generated Chart Config Structure:',
+                chartConfig
+              );
+              chartConfig.data?.datasets?.forEach(
+                (dataset: any, index: number) => {
+                  console.log(
+                    `Dataset ${index} (${dataset.label}) raw data:`,
+                    dataset.data
+                  );
+                }
+              );
+            }
 
             chartConfigs.push(chartConfig);
           }
