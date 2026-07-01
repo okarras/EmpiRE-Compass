@@ -15,3 +15,4 @@ export * from './dynamicQuestions';
 export * from './news';
 export * from './papers';
 export * from './questionOverrides';
+export * from './aiEvaluations';

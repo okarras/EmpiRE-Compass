@@ -50,6 +50,7 @@ interface SparqlEditorPanelProps {
   setAiPrompt: (prompt: string) => void;
   isAIModifying: boolean;
   handleAIModify: () => void;
+  evaluationWidget?: React.ReactNode;
 }
 
 const SparqlEditorPanel: React.FC<SparqlEditorPanelProps> = ({
@@ -76,6 +77,7 @@ const SparqlEditorPanel: React.FC<SparqlEditorPanelProps> = ({
   setAiPrompt,
   isAIModifying,
   handleAIModify,
+  evaluationWidget,
 }) => {
   if (!sparqlQuery) return null;
 
@@ -292,7 +294,19 @@ LIMIT 10`}
           </Alert>
         )}
 
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+        <Box
+          sx={{
+            mt: 2,
+            display: 'flex',
+            justifyContent: evaluationWidget ? 'space-between' : 'flex-end',
+            alignItems: 'flex-start',
+          }}
+        >
+          {evaluationWidget && (
+            <Box sx={{ flex: 1, maxWidth: '500px', mr: 2 }}>
+              {evaluationWidget}
+            </Box>
+          )}
           <Button
             variant="contained"
             onClick={() =>
