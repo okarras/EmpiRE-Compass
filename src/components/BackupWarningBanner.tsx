@@ -4,9 +4,6 @@ import BackupService from '../services/BackupService';
 import { useBackupChange } from '../hooks/useBackupChange';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 
-/**
- * Banner component that shows a warning when backup mode is active
- */
 const BackupWarningBanner = () => {
   const [isUsingBackup, setIsUsingBackup] = useState(false);
   const [backupName, setBackupName] = useState<string>('');

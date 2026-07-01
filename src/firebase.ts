@@ -23,7 +23,6 @@ const requiredConfigKeys: (keyof typeof firebaseConfig)[] = [
   'appId',
 ];
 
-// Check for missing or undefined values (including checking for 'undefined' string)
 const missingKeys = requiredConfigKeys.filter((key) => {
   const value = firebaseConfig[key];
   return (

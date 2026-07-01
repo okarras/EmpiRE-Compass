@@ -246,7 +246,6 @@ const AdminDashboard = () => {
         getKeycloakToken() || undefined
       );
 
-      // Update local state
       setUsers((prev) =>
         prev.map((u) =>
           u.id === user.id ? { ...u, is_admin: newAdminStatus } : u
@@ -282,15 +281,12 @@ const AdminDashboard = () => {
       if (timestamp.toDate && typeof timestamp.toDate === 'function') {
         return timestamp.toDate().toLocaleString();
       }
-      // Handle if it's already a Date object
       if (timestamp instanceof Date) {
         return timestamp.toLocaleString();
       }
-      // Handle if it's a number (Unix timestamp)
       if (typeof timestamp === 'number') {
         return new Date(timestamp).toLocaleString();
       }
-      // Handle if it's a string
       if (typeof timestamp === 'string') {
         return new Date(timestamp).toLocaleString();
       }

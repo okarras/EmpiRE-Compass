@@ -19,7 +19,6 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   //     ?paper orkgp:P31 ?contri .
   //     ?contri a orkgc:C121001 .
   //     ?paper ?p ?o .
-  //   }
   // }`,
   // RESOURCES_QUERY: `
   // SELECT (COUNT(?resource) AS ?resourceCount) (COUNT(DISTINCT ?resource) AS ?distinctResourceCount)
@@ -31,7 +30,6 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   //     ?paper orkgp:P31 ?contri .
   //     ?contri a orkgc:C121001 .
   //     ?paper ?p ?resource .
-  //   }
   // }`,
   // Literals_QUERY: `
   // SELECT (COUNT(?literal) AS ?literalCount) (COUNT(DISTINCT ?literal) AS ?distinctLiteralCount)
@@ -45,7 +43,6 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   //     ?contri a orkgc:C121001 .
   //     ?paper ?p ?literal .
   //     FILTER(isLiteral(?literal))
-  //   }
   // }`,
   // PROPERTIES_QUERY: `
   // SELECT (COUNT(?property) AS ?propertyCount) (COUNT(DISTINCT ?property) AS ?distinctPropertyCount)
@@ -57,7 +54,6 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   //     ?paper orkgp:P31 ?contri .
   //     ?contri a orkgc:C121001 .
   //     ?paper ?property ?o .
-  //   }
   // }`,
   PAPERS_PER_VENUE_QUERY: `
   SELECT ?venue (COUNT(?paper) AS ?paperCount)

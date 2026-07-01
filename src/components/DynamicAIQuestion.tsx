@@ -413,7 +413,6 @@ const DynamicAIQuestion = () => {
   };
 
   const handleRunEditedQuery = async (queryToRun?: string) => {
-    // Use the provided query or fall back to state
     const query = queryToRun || state.sparqlQuery;
 
     if (!query || !query.trim()) {
@@ -549,7 +548,6 @@ const DynamicAIQuestion = () => {
     costs: CostBreakdown[];
   } | null>(null);
 
-  // Check if user is authenticated and admin
   const {
     isAuthenticated,
     isLoading: authLoading,
@@ -689,7 +687,6 @@ const DynamicAIQuestion = () => {
     // Reset iteration history when loading a new example
     resetIterationHistory();
 
-    // Load all state from the example
     if (exampleState.question) {
       updateQuestion(exampleState.question);
     }

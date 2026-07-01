@@ -3,61 +3,21 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import type {
+  AIProvider,
+  OpenAIModel,
+  GroqModel,
+  MistralModel,
+  GoogleModel,
+} from '../../shared/aiModels.js';
 
-export type AIProvider =
-  | 'openai'
-  | 'groq'
-  | 'mistral'
-  | 'google'
-  | 'openrouter';
-export type OpenAIModel =
-  // Frontier models - OpenAI's most advanced models
-  | 'gpt-5.1'
-  | 'gpt-5-mini'
-  | 'gpt-5-nano'
-  | 'gpt-5-pro'
-  | 'gpt-5'
-  | 'gpt-4.1'
-  // Previous generation models
-  | 'gpt-4o-mini'
-  | 'gpt-4o'
-  | 'gpt-4-turbo'
-  | 'gpt-4o-2024-08-06'
-  | 'gpt-4-turbo-2024-04-09'
-  | 'o1-preview'
-  | 'o1-mini'
-  | 'gpt-4'
-  | 'gpt-3.5-turbo';
-export type GroqModel =
-  | 'llama-3.1-8b-instant'
-  | 'llama-3.1-70b-versatile'
-  | 'llama-3.1-405b-reasoning'
-  | 'llama-3.3-70b-versatile'
-  | 'openai/gpt-oss-120b'
-  | 'openai/gpt-oss-20b'
-  | 'llama-3-70b-8192';
-export type MistralModel =
-  | 'mistral-large-latest'
-  | 'mistral-medium-latest'
-  | 'mistral-small-latest'
-  | 'pixtral-large-latest'
-  | 'open-mistral-nemo';
-export type GoogleModel =
-  // Gemini 3 series
-  | 'gemini-3-pro-preview'
-  // Gemini 2.5 series
-  | 'gemini-2.5-pro'
-  | 'gemini-2.5-flash'
-  // Gemini 2.0 series
-  | 'gemini-2.0-flash'
-  | 'gemini-2.0-flash-exp'
-  | 'gemini-2.0-flash-lite'
-  // Gemini 1.5 series
-  | 'gemini-1.5-pro'
-  | 'gemini-1.5-flash'
-  | 'gemini-1.5-flash-8b'
-  // Other models
-  | 'gemma-3-27b-it';
+export type {
+  AIProvider,
+  OpenAIModel,
+  GroqModel,
+  MistralModel,
+  GoogleModel,
+} from '../../shared/aiModels.js';
 
 export interface AIConfig {
   provider: AIProvider;
@@ -92,6 +52,10 @@ export interface GenerateTextResponse {
   };
 }
 
+/** OpenRouter keys use the sk-or-v1- prefix; OPENAI_API_KEY may hold one when using OpenRouter. */
+export const isOpenRouterApiKey = (apiKey: string): boolean =>
+  apiKey.trim().startsWith('sk-or-');
+
 export class AIService {
   private config: AIConfig;
 
@@ -99,9 +63,43 @@ export class AIService {
     this.config = config;
   }
 
+  /** OPENAI_API_KEY holds the OpenRouter key when provider is openrouter */
+  public resolveOpenRouterApiKey(headerKey?: string): string {
+    const fromHeader = headerKey?.trim() || '';
+    if (fromHeader) return fromHeader;
+    return this.config.openaiApiKey.trim();
+  }
+
+  /**
+   * Route OpenRouter keys to OpenRouter even when AI_PROVIDER is mis-set to openai.
+   * Personal keys may arrive only via x-openrouter-api-key.
+   */
+  public getEffectiveProvider(
+    requested?: AIProvider,
+    openRouterApiKey?: string
+  ): AIProvider {
+    const configured = requested ?? this.config.provider;
+    if (configured === 'openrouter') {
+      return 'openrouter';
+    }
+    const headerOrEnvKey = this.resolveOpenRouterApiKey(openRouterApiKey);
+    if (isOpenRouterApiKey(headerOrEnvKey)) {
+      return 'openrouter';
+    }
+    return configured;
+  }
+
+  private resolveOpenRouterModelId(requestModel?: string): string {
+    const sanitized = requestModel ? this.sanitizeModelName(requestModel) : '';
+    if (sanitized.includes('/')) {
+      return sanitized;
+    }
+    return this.sanitizeModelName(this.config.openrouterModel);
+  }
+
   private getApiKey(provider: AIProvider, _userProvidedKey?: string): string {
     if (provider === 'openrouter') {
-      return '';
+      return this.config.openaiApiKey;
     }
     if (provider === 'openai') {
       return this.config.openaiApiKey;
@@ -196,13 +194,16 @@ export class AIService {
     options?: { openRouterApiKey?: string }
   ): Promise<GenerateTextResponse> {
     try {
-      const targetProvider = request.provider || this.config.provider;
+      const targetProvider = this.getEffectiveProvider(
+        request.provider,
+        options?.openRouterApiKey
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let model: any;
 
       if (targetProvider === 'openrouter') {
-        const orKey = options?.openRouterApiKey?.trim();
+        const orKey = this.resolveOpenRouterApiKey(options?.openRouterApiKey);
         if (!orKey) {
           throw new Error('OpenRouter API key is required');
         }
@@ -211,9 +212,7 @@ export class AIService {
           baseURL: 'https://openrouter.ai/api/v1',
           headers: this.getOpenRouterHeaders(),
         });
-        const modelId = this.sanitizeModelName(
-          request.model || this.config.openrouterModel
-        );
+        const modelId = this.resolveOpenRouterModelId(request.model);
         model = openrouter.languageModel(modelId);
       } else {
         const apiKey = this.getApiKey(targetProvider);
@@ -322,7 +321,7 @@ export class AIService {
         error,
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        provider: request.provider || this.config.provider,
+        provider: this.getEffectiveProvider(request.provider),
       });
 
       // Re-throw with more context
@@ -334,29 +333,33 @@ export class AIService {
   }
 
   public isConfigured(provider?: AIProvider): boolean {
-    const targetProvider = provider || this.config.provider;
+    const targetProvider = this.getEffectiveProvider(provider);
+    if (targetProvider === 'openrouter') {
+      return this.resolveOpenRouterApiKey().length > 0;
+    }
     const apiKey = this.getApiKey(targetProvider);
     return !!apiKey && apiKey.length > 0;
   }
 
   public getCurrentConfig() {
+    const provider = this.getEffectiveProvider();
     let model: string;
-    if (this.config.provider === 'openai') {
+    if (provider === 'openai') {
       model = this.config.openaiModel;
-    } else if (this.config.provider === 'groq') {
+    } else if (provider === 'groq') {
       model = this.config.groqModel;
-    } else if (this.config.provider === 'mistral') {
+    } else if (provider === 'mistral') {
       model = this.config.mistralModel;
-    } else if (this.config.provider === 'google') {
+    } else if (provider === 'google') {
       model = this.config.googleModel;
-    } else if (this.config.provider === 'openrouter') {
+    } else if (provider === 'openrouter') {
       model = this.config.openrouterModel;
     } else {
       model = '';
     }
 
     return {
-      provider: this.config.provider,
+      provider,
       model,
       apiKeyConfigured: this.isConfigured(),
     };

@@ -27,12 +27,7 @@ import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { getTemplateConfig } from '../constants/template_config';
 import GaugeChart from '../components/GaugeChart';
-// import KPICard from '../components/KPICard';
 import { FormControlLabel, Switch, Box } from '@mui/material';
-// import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-// import StorageIcon from '@mui/icons-material/Storage';
-// import CustomGaugeChart from '../components/CustomCharts/CustomGaugeChart';
-// import StatsChartTypeSelector from '../components/CustomCharts/StatsChartTypeSelector';
 
 interface VenueData {
   venue: string;
@@ -81,7 +76,6 @@ export default function Statistics() {
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
   const [isGaugeMode, setIsGaugeMode] = useState(false);
-  // const [chartType, setChartType] = useState<'gauge' | 'card'>('gauge');
 
   useEffect(() => {
     // Reset loading state and statistics when template changes
@@ -218,15 +212,6 @@ export default function Statistics() {
                 link="https://orkg.org/papers"
               />
             </Box>
-            {/* <Box sx={{ width: { xs: '100%', sm: 300 } }}>
-              <GaugeChart
-                label="Venues"
-                value={venueCount}
-                max={totalORKGObservatories || venueCount}
-                color="#e86161"
-                link="https://orkg.org/observatories"
-              />
-            </Box> */}
             <Box sx={{ width: { xs: '100%', sm: 300 } }}>
               <GaugeChart
                 label="Resources"

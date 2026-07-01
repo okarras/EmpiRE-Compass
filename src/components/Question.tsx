@@ -73,7 +73,6 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
   // Update AI Assistant context when data changes
   useEffect(() => {
     if (!loading1 && !error1) {
-      // Use the merged query for context so AI sees the edits
       setContext(query, dataCollection);
     }
   }, [query, dataCollection, loading1, error1, setContext]);

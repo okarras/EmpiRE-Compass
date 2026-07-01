@@ -71,9 +71,6 @@ export const useQueryGeneration = ({
     []
   );
 
-  /**
-   * Execute SPARQL queries and return raw data
-   */
   const executeQueriesRaw = useCallback(
     async (blocks: SPARQLBlock[]): Promise<Record<string, unknown>[]> => {
       if (!blocks || blocks.length === 0) return [];
@@ -89,16 +86,12 @@ export const useQueryGeneration = ({
         datasets[b.id] = rows;
       }
 
-      // Return the first dataset for now
       const firstKey = Object.keys(datasets)[0];
       return firstKey ? datasets[firstKey] : [];
     },
     []
   );
 
-  /**
-   * Evaluate query results and generate feedback
-   */
   const evaluateQueryResults = useCallback(
     (
       data: Record<string, unknown>[],
@@ -107,7 +100,6 @@ export const useQueryGeneration = ({
       generatedQuery?: string
     ): QueryEvaluation => {
       if (queryError) {
-        // Check for common mistakes
         let specificGuidance = '';
         if (generatedQuery) {
           // Pattern 1: IF() in SELECT clause (causes Virtuoso internal errors)
@@ -148,7 +140,6 @@ export const useQueryGeneration = ({
 
       const firstRow = data[0];
 
-      // Check if any entire column has all null/zero values across all rows
       const columns = Object.keys(firstRow);
       const problematicColumns: string[] = [];
 
@@ -194,9 +185,6 @@ export const useQueryGeneration = ({
     []
   );
 
-  /**
-   * Build SPARQL prompt based on template configuration
-   */
   const buildSparqlPrompt = useCallback(
     (question: string): string => {
       if (templateMapping && templateId) {
@@ -213,9 +201,6 @@ export const useQueryGeneration = ({
     [templateMapping, templateId, targetClassId]
   );
 
-  /**
-   * Build refinement prompt for iterations
-   */
   const buildRefinementPrompt = useCallback(
     (
       question: string,
@@ -251,9 +236,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
     [templateMapping, templateId, targetClassId]
   );
 
-  /**
-   * Generate and refine SPARQL query iteratively
-   */
   const generateQueryWithRefinement = useCallback(
     async (
       question: string,
@@ -285,7 +267,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
           }`
         );
 
-        // Build prompt
         if (iteration === 1) {
           currentPrompt = buildSparqlPrompt(question);
         } else {
@@ -340,7 +321,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
           continue;
         }
 
-        // Execute query
         setIterationFeedback(
           `Iteration ${iteration}/${maxIterations}: Executing query...`
         );
@@ -360,7 +340,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
 
         previousQuery = combineSparqlBlocks(sparqlBlocks);
 
-        // Evaluate results
         const evaluation = evaluateQueryResults(
           rawData,
           question,
@@ -424,7 +403,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
         }
       }
 
-      // Save the best query
       const combinedQuery = combineSparqlBlocks(bestSparqlBlocks);
       updateSparqlQuery(combinedQuery, currentPrompt);
 
@@ -452,9 +430,6 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
     ]
   );
 
-  /**
-   * Reset iteration history and state
-   */
   const resetIterationHistory = useCallback(() => {
     setCurrentIteration(0);
     setIterationFeedback('');

@@ -57,10 +57,6 @@ export interface AIConfigResponse {
   apiKeyConfigured: boolean;
 }
 
-/**
- * Get Keycloak token if available
- * Uses the global Keycloak store
- */
 const getKeycloakToken = (): string | null => {
   try {
     return getKeycloakTokenFromStore();
@@ -267,7 +263,7 @@ export class BackendAIService {
     };
 
     const extraHeaders: Record<string, string> = {};
-    if (effectiveProvider === 'openrouter') {
+    if (effectiveProvider === 'openrouter' && !this.config.useEnvironmentKeys) {
       const k = this.config.openrouterApiKey.trim();
       if (!k) {
         throw new Error('OpenRouter API key is required');
@@ -401,7 +397,6 @@ export class UnifiedAIService {
       return false;
     }
 
-    // Check if user has provided API keys for the current provider
     const hasOpenAIKey =
       this.config.openaiApiKey && this.config.openaiApiKey.trim().length > 0;
     const hasGroqKey =
@@ -548,7 +543,7 @@ export const useBackendAIService = () => {
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
-    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-4o-mini',
+    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-oss-120b',
     openrouterApiKey: aiConfig.openrouterApiKey || '',
     openRouterTermsAccepted: aiConfig.openRouterTermsAccepted ?? false,
     useEnvironmentKeys: aiConfig.useEnvironmentKeys || false,
@@ -565,7 +560,7 @@ export const useAIService = () => {
     groqModel: aiConfig.groqModel || 'llama-3.1-8b-instant',
     mistralModel: aiConfig.mistralModel || 'mistral-large-latest',
     googleModel: aiConfig.googleModel || 'gemini-2.5-flash',
-    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-4o-mini',
+    openrouterModel: aiConfig.openrouterModel || 'openai/gpt-oss-120b',
     openaiApiKey: aiConfig.openaiApiKey || '',
     groqApiKey: aiConfig.groqApiKey || '',
     mistralApiKey: aiConfig.mistralApiKey || '',
@@ -584,7 +579,7 @@ export const createDefaultBackendAIService = () => {
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
-    openrouterModel: 'openai/gpt-4o-mini',
+    openrouterModel: 'openai/gpt-oss-120b',
     openrouterApiKey: '',
     openRouterTermsAccepted: false,
     useEnvironmentKeys: false,
@@ -598,7 +593,7 @@ export const createDefaultAIService = () => {
     groqModel: 'llama-3.1-8b-instant',
     mistralModel: 'mistral-large-latest',
     googleModel: 'gemini-2.5-flash',
-    openrouterModel: 'openai/gpt-4o-mini',
+    openrouterModel: 'openai/gpt-oss-120b',
     openaiApiKey: '',
     groqApiKey: '',
     mistralApiKey: '',

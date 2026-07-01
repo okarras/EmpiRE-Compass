@@ -126,7 +126,6 @@ router.get('/', async (req, res) => {
       }
     });
 
-    // Sort by priority (lower = first), then by year desc
     papers.sort((a, b) => {
       const priorityA = a.priority ?? 999;
       const priorityB = b.priority ?? 999;

@@ -1,9 +1,5 @@
 import { jwtVerify, createRemoteJWKSet } from 'jose';
 
-/**
- * Keycloak configuration
- * Defaults to ORKG Keycloak instance
- */
 const parseClientIds = (value?: string | null): string[] => {
   if (!value) {
     return [];
@@ -36,9 +32,6 @@ export const getKeycloakConfig = () => {
   };
 };
 
-/**
- * Get Keycloak JWKS URL
- */
 export const getKeycloakJWKSUrl = (): string => {
   const config = getKeycloakConfig();
   return `${config.url}/realms/${config.realm}/protocol/openid-connect/certs`;

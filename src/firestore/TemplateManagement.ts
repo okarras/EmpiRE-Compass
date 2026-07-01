@@ -88,9 +88,6 @@ export interface StatisticData {
   description?: string;
 }
 
-/**
- * Template CRUD Operations
- */
 export const createTemplate = async (
   templateId: string,
   templateData: TemplateData,
@@ -166,9 +163,6 @@ export const deleteTemplate = async (
   await deleteTemplateApi(templateId, userId, userEmail, keycloakToken);
 };
 
-/**
- * Question CRUD Operations (Nested under Templates)
- */
 export const createQuestion = async (
   templateId: string,
   _questionId: string, // Unused - backend API creates ID from questionData
@@ -256,9 +250,6 @@ export const deleteQuestion = async (
   );
 };
 
-/**
- * Statistics CRUD Operations (Nested under Templates)
- */
 export const createStatistic = async (
   templateId: string,
   _statisticId: string, // Unused - backend API creates ID from statisticData
@@ -344,9 +335,6 @@ export const deleteStatistic = async (
   );
 };
 
-/**
- * Batch Operations
- */
 export const importTemplateWithQuestions = async (
   templateId: string,
   templateData: TemplateData,
@@ -392,9 +380,6 @@ export const importTemplateWithQuestions = async (
   }
 };
 
-/**
- * Get complete template with all nested data
- */
 export const getCompleteTemplate = async (
   templateId: string
 ): Promise<{
@@ -413,9 +398,6 @@ export const getCompleteTemplate = async (
   };
 };
 
-/**
- * Export template data in the new format
- */
 export const exportTemplateData = async (templateId: string) => {
   const data = await getCompleteTemplate(templateId);
   return data;

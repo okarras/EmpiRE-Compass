@@ -48,6 +48,7 @@ import {
   type OpenRouterApiModel,
   type BackendAiConfigResponse,
 } from '../../services/openrouterModelsService';
+import { OPENROUTER_DEFAULT_MODEL } from '../../constants/openrouter_models';
 
 interface AIConfigurationDialogProps {
   open: boolean;
@@ -84,6 +85,9 @@ function applyServerModelToState(
       break;
     case 'google':
       dispatch(setGoogleModel(model as GoogleModel));
+      break;
+    case 'openrouter':
+      dispatch(setOpenRouterModel(model));
       break;
     default:
       break;
@@ -199,7 +203,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
         dispatch(setUseEnvironmentKeys(true));
         if (
           cfg &&
-          ['openai', 'groq', 'mistral', 'google'].includes(cfg.provider)
+          ['openai', 'groq', 'mistral', 'google', 'openrouter'].includes(
+            cfg.provider
+          )
         ) {
           dispatch(setProvider(cfg.provider as AIProvider));
           applyServerModelToState(
@@ -208,8 +214,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             cfg.model
           );
         } else {
-          dispatch(setProvider('openai'));
-          dispatch(setOpenAIModel('gpt-4o-mini'));
+          dispatch(setProvider('openrouter'));
+          dispatch(setOpenRouterModel(OPENROUTER_DEFAULT_MODEL));
         }
         onClose();
         return;
@@ -376,10 +382,11 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
             <>
               <Alert severity="info">
                 <Typography variant="body2" component="div">
-                  The deployment operator configures the default provider and
-                  model (e.g. OpenAI, Groq, Mistral, Google) using environment
-                  variables. You use that shared setup; you do not need to paste
-                  an API key here.
+                  The deployment operator configures the default OpenRouter
+                  model using environment variables (including{' '}
+                  <code>OPENAI_API_KEY</code> for the OpenRouter API key). You
+                  use that shared setup; you do not need to paste an API key
+                  here.
                 </Typography>
               </Alert>
               <Box>
@@ -412,8 +419,9 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                 ) : (
                   <Alert severity="warning">
                     Could not load server AI settings (you may need to sign in).
-                    Saving will fall back to OpenAI / gpt-4o-mini for request
-                    routing; the server may still use its own defaults.
+                    Saving will fall back to OpenRouter /{' '}
+                    {OPENROUTER_DEFAULT_MODEL} for request routing; the server
+                    may still use its own defaults.
                   </Alert>
                 )}
               </Box>

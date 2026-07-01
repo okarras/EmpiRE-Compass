@@ -26,7 +26,6 @@ const getAllowedOrigins = (): string[] => {
   return origins;
 };
 
-// Check if origin is a Vercel preview/feature branch URL
 const isVercelPreviewUrl = (origin: string): boolean => {
   try {
     const url = new URL(origin);
@@ -128,16 +127,19 @@ export const validateGenerateTextRequest = (
 
   if (provider === 'openrouter') {
     const h = req.headers['x-openrouter-api-key'];
-    const key =
+    const headerKey =
       typeof h === 'string'
         ? h.trim()
         : Array.isArray(h) && h[0]
           ? String(h[0]).trim()
           : '';
-    if (!key) {
+    const envKey = (process.env.OPENAI_API_KEY || '')
+      .trim()
+      .replace(/^["']|["']$/g, '');
+    if (!headerKey && !envKey) {
       return res.status(400).json({
         error:
-          'OpenRouter API key is required (send x-openrouter-api-key header)',
+          'OpenRouter API key is required (send x-openrouter-api-key header or set OPENAI_API_KEY)',
       });
     }
   }

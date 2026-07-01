@@ -169,16 +169,10 @@ const STATISTICS_PAPERS_COLLECTION = 'StatisticsPapers';
 // Helper Functions
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Sleep for specified milliseconds
- */
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Retry a function with exponential backoff
- */
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries: number = MAX_RETRIES,
@@ -205,9 +199,6 @@ async function retryWithBackoff<T>(
 // ORKG API Functions
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Fetch paper list from ORKG using SPARQL query
- */
 export async function fetchPaperList(sparqlQuery: string): Promise<string[]> {
   const url = new URL(SPARQL_ENDPOINT);
   url.searchParams.set('query', sparqlQuery);
@@ -304,9 +295,6 @@ export async function fetchStatementsBundle(
 // Statistics Calculation
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Analyze a single paper and return counts and IDs
- */
 export function analyzePaper(statements: ORKGStatement[]): {
   total: number;
   resourceCount: number;
@@ -353,9 +341,6 @@ export function analyzePaper(statements: ORKGStatement[]): {
   };
 }
 
-/**
- * Calculate global distinct counts across all papers
- */
 export function calculateGlobalDistinctCounts(
   allStatements: Record<string, ORKGStatement[]>
 ): {
@@ -401,16 +386,12 @@ export function calculateGlobalDistinctCounts(
 // Firebase Integration
 // ──────────────────────────────────────────────────────────────────────────────
 
-/**
- * Update statistics in Firebase Firestore
- */
 export async function updateFirebaseStatistics(
   statistics: GlobalStatistics,
   templateId: string,
   statisticId: string
 ): Promise<boolean> {
   try {
-    // Ensure the Template document exists first
     const templateRef = db.collection('Templates').doc(templateId);
     const templateDoc = await templateRef.get();
 
@@ -438,7 +419,6 @@ export async function updateFirebaseStatistics(
       id: statisticId,
     };
 
-    // Update the document using nested path structure
     const docRef = db
       .collection('Templates')
       .doc(templateId)
@@ -458,9 +438,6 @@ export async function updateFirebaseStatistics(
   }
 }
 
-/**
- * Get Firebase paths for progress and cached papers within the template
- */
 function getTemplateProgressPaths(templateKey: TemplateKey) {
   const config = TEMPLATE_CONFIGS[templateKey];
   const templateId = config.firebaseTemplateId;

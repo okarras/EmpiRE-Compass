@@ -1,0 +1,102 @@
+name: Bug Report
+description: Report something that is not working as expected
+title: '[Bug]: '
+labels: ['bug', 'triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write a short rough note if you prefer — then use **GitHub Copilot** in chat
+        (`Create a bug report: …`) or run `npm run issue:enhance -- --type bug --text "…"`
+        to expand it into this template. See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing the problem
+      placeholder: 'e.g. SPARQL editor crashes when pasting a long query'
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Numbered steps to reproduce the behavior
+      placeholder: |
+        1. Go to '…'
+        2. Click on '…'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened (include error messages if any)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of EmpiRE-Compass is affected?
+      options:
+        - Frontend (React / UI)
+        - Backend API
+        - AI / SPARQL generation
+        - Firebase / Firestore
+        - Authentication (Keycloak)
+        - Templates / ORKG data
+        - Storybook / design system
+        - CI / deployment
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App Version
+      description: Version from package.json or deployed URL (if known)
+      placeholder: 'e.g. 1.12.0 or https://empire-compass.tib.eu'
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, Node.js version (for local dev)
+      placeholder: 'e.g. macOS 15, Chrome 131, Node 20'
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Logs
+      description: Drag and drop images or paste relevant console/network logs
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for duplicates
+          required: true
+        - label: I included enough detail for someone else to reproduce this
+          required: true
