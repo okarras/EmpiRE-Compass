@@ -17,14 +17,22 @@ export const Query1DataProcessingFunction = (
   const years = [...new Set(rawData.map((item) => item.year))];
 
   const itemsPerYear = years.map((year) => {
-    const count = filteredData.filter((item) => item.year === year).length;
-    const rawCount = rawData.filter((item) => item.year === year).length;
+    const yearRawData = rawData.filter((item) => item.year === year);
+    const yearFilteredData = filteredData.filter((item) => item.year === year);
+
+    const count = yearFilteredData.length;
+    const rawCount = yearRawData.length;
+
     return {
+      ...yearRawData[0], // Other properties
       count,
       rawCount,
       year,
-      ...rawData.find((item) => item.year === year), // Other properties
-      itemsInGroup: rawData.filter((item) => item.year === year),
+      itemsInGroup: yearRawData,
+      itemsBySeries: {
+        count: yearFilteredData,
+        rawCount: yearRawData,
+      },
     };
   });
 
@@ -85,11 +93,25 @@ export const Query2DataProcessingFunctionForDataCollection = (
             : 0,
         ])
       );
+      const yearRawData = rawData.filter((item) => item.year === year);
+      const itemsBySeries: Record<string, unknown[]> = {};
+      yearRawData.forEach((item) => {
+        const methodKey = dataKeys.includes(item.dc_method_type_label)
+          ? item.dc_method_type_label
+          : 'others';
+        if (!itemsBySeries[methodKey]) itemsBySeries[methodKey] = [];
+        itemsBySeries[methodKey].push(item);
+        if (!itemsBySeries[`normalized_${methodKey}`])
+          itemsBySeries[`normalized_${methodKey}`] = [];
+        itemsBySeries[`normalized_${methodKey}`].push(item);
+      });
+
       return {
         year,
         ...methods,
         ...normalizedFields,
-        itemsInGroup: rawData.filter((item) => item.year === year),
+        itemsInGroup: yearRawData,
+        itemsBySeries,
       };
     });
   return result;
@@ -111,6 +133,7 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
   const processedData: {
     year: number;
     itemsInGroup: StatisticItem[];
+    itemsBySeries?: Record<string, StatisticItem[]>;
     descriptive: number;
     normalized_descriptive: number;
     inferential: number;
@@ -164,9 +187,60 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       });
     });
 
+    const yearRawData = rawData.filter((item) => item.year === year);
+    const itemsBySeries: Record<string, StatisticItem[]> = {
+      descriptive: [],
+      normalized_descriptive: [],
+      inferential: [],
+      normalized_inferential: [],
+      machine_learning: [],
+      normalized_machine_learning: [],
+      method: [],
+      normalized_method: [],
+      others: [],
+      normalized_others: [],
+    };
+    yearRawData.forEach((item) => {
+      if (item.descriptive) {
+        itemsBySeries.descriptive.push(item);
+        itemsBySeries.normalized_descriptive.push(item);
+      }
+      if (item.inferential) {
+        itemsBySeries.inferential.push(item);
+        itemsBySeries.normalized_inferential.push(item);
+      }
+      if (item.machine_learning) {
+        itemsBySeries.machine_learning.push(item);
+        itemsBySeries.normalized_machine_learning.push(item);
+      }
+      if (item.method) {
+        itemsBySeries.method.push(item);
+        itemsBySeries.normalized_method.push(item);
+      }
+
+      let isOther = false;
+      Object.keys(item).forEach((key) => {
+        if (
+          key !== 'paper' &&
+          key !== 'year' &&
+          key !== 'da_label' &&
+          key !== 'descriptive' &&
+          key !== 'inferential' &&
+          key !== 'machine_learning'
+        ) {
+          isOther = true;
+        }
+      });
+      if (isOther) {
+        itemsBySeries.others.push(item);
+        itemsBySeries.normalized_others.push(item);
+      }
+    });
+
     processedData.push({
       year: Number(year),
-      itemsInGroup: rawData.filter((item) => item.year === year),
+      itemsInGroup: yearRawData,
+      itemsBySeries,
       descriptive,
       normalized_descriptive: +((descriptive * 100) / total).toFixed(2),
       inferential,
@@ -198,14 +272,22 @@ export const Query3DataProcessingFunction = (
   const years = [...new Set(rawData.map((item) => item.year))];
 
   const itemsPerYear = years.map((year) => {
-    const count = filteredData.filter((item) => item.year === year).length;
-    const rawCount = rawData.filter((item) => item.year === year).length;
+    const yearRawData = rawData.filter((item) => item.year === year);
+    const yearFilteredData = filteredData.filter((item) => item.year === year);
+
+    const count = yearFilteredData.length;
+    const rawCount = yearRawData.length;
+
     return {
+      ...yearRawData[0], // Other properties
       count,
       rawCount,
       year,
-      ...rawData.find((item) => item.year === year), // Other properties
-      itemsInGroup: rawData.filter((item) => item.year === year),
+      itemsInGroup: yearRawData,
+      itemsBySeries: {
+        count: yearFilteredData,
+        rawCount: yearRawData,
+      },
     };
   });
 
@@ -518,26 +600,22 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[]) => {
   });
   const uniquePapers = Array.from(paperMap.values());
 
-  const totalPapersPerYear: Record<number, number> = {};
+  const papersByYear: Record<number, RawDataItem[]> = {};
   uniquePapers.forEach((item) => {
-    totalPapersPerYear[item.year as number] =
-      (totalPapersPerYear[item.year as number] || 0) + 1;
+    const y = item.year as number;
+    if (!papersByYear[y]) papersByYear[y] = [];
+    papersByYear[y].push(item);
   });
 
-  const papersWithThreats = uniquePapers.filter((item) =>
-    booleanFields.some((field) => item[field] === true)
-  );
-
-  const threatPapersPerYear: Record<number, number> = {};
-  papersWithThreats.forEach((item) => {
-    threatPapersPerYear[item.year as number] =
-      (threatPapersPerYear[item.year as number] || 0) + 1;
-  });
-
-  const result = Object.keys(totalPapersPerYear).map((yearStr) => {
+  const result = Object.keys(papersByYear).map((yearStr) => {
     const year = parseInt(yearStr, 10);
-    const total = totalPapersPerYear[year] || 0;
-    const withThreats = threatPapersPerYear[year] || 0;
+    const yearPapers = papersByYear[year];
+    const threatYearPapers = yearPapers.filter((item) =>
+      booleanFields.some((field) => item[field] === true)
+    );
+    const total = yearPapers.length;
+    const withThreats = threatYearPapers.length;
+
     return {
       year,
       numberOfAllPapers: total,
@@ -545,9 +623,11 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[]) => {
       normalizedRatio: total
         ? Number(((withThreats * 100) / total).toFixed(2))
         : 0,
-      itemsInGroup: uniquePapers.filter(
-        (item) => (item.year as number) === year
-      ),
+      itemsInGroup: yearPapers,
+      itemsBySeries: {
+        count: threatYearPapers,
+        numberOfAllPapers: yearPapers,
+      },
     };
   });
 
@@ -645,12 +725,17 @@ export const Query11DataProcessingFunction = (rawData: RawDataItem[]) => {
     .map((yearStr) => {
       const total = allPapersPerYear[yearStr];
       const withData = papersWithDataPerYear[yearStr] || 0;
+      const yearPapers = uniquePapers.filter((p) => String(p.year) === yearStr);
       return {
         year: parseInt(yearStr, 10),
         count: withData, // number of papers with a URL
         normalizedRatio:
           total > 0 ? Number(((withData * 100) / total).toFixed(2)) : 0,
-        itemsInGroup: uniquePapers.filter((p) => String(p.year) === yearStr),
+        itemsInGroup: yearPapers,
+        itemsBySeries: {
+          count: yearPapers.filter((p) => p.url),
+          numberOfAllPapers: yearPapers, // Assuming this is used like Query 8
+        },
       };
     });
 
@@ -671,47 +756,45 @@ export const Query12DataProcessingFunction = (rawData: RawDataItem[]) => {
   cleaned.forEach((item) => paperMap.set(item.paper as string, item));
   const uniquePapers = Array.from(paperMap.values());
 
-  const papersPerYear: Record<string, number> = {};
-  uniquePapers.forEach(({ year }) => {
-    papersPerYear[year as string] = (papersPerYear[year as string] || 0) + 1;
+  const papersByYear: Record<string, RawDataItem[]> = {};
+  uniquePapers.forEach((item) => {
+    const y = item.year as string;
+    if (!papersByYear[y]) papersByYear[y] = [];
+    papersByYear[y].push(item);
   });
 
-  const noRQ = uniquePapers.filter((item) => item.question === 'No question');
-  const hasRQ = uniquePapers.filter((item) => item.question !== 'No question');
-
-  const countComb = (
-    arr: RawDataItem[],
-    qFlag: boolean | null,
-    aFlag: boolean
-  ): Record<string, number> =>
-    arr
-      .filter((item) =>
-        qFlag === null
-          ? item.highlighted_a === aFlag
-          : item.highlighted_q === qFlag && item.highlighted_a === aFlag
-      )
-      .reduce<Record<string, number>>((acc, { year }) => {
-        acc[year as string] = (acc[year as string] || 0) + 1;
-        return acc;
-      }, {});
-
-  const cnt_noRQ_HA = countComb(noRQ, null, true);
-  const cnt_noRQ_HI = countComb(noRQ, null, false);
-  const cnt_HQ_HA = countComb(hasRQ, true, true);
-  const cnt_HQ_HI = countComb(hasRQ, true, false);
-  const cnt_HiQ_HA = countComb(hasRQ, false, true);
-  const cnt_HiQ_HI = countComb(hasRQ, false, false);
-
-  const result = Object.keys(papersPerYear)
+  const result = Object.keys(papersByYear)
     .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
     .map((year) => {
-      const total = papersPerYear[year as string] || 0;
-      const c1 = cnt_noRQ_HA[year as string] || 0;
-      const c2 = cnt_noRQ_HI[year as string] || 0;
-      const c3 = cnt_HQ_HA[year as string] || 0;
-      const c4 = cnt_HQ_HI[year as string] || 0;
-      const c5 = cnt_HiQ_HA[year as string] || 0;
-      const c6 = cnt_HiQ_HI[year as string] || 0;
+      const yearPapers = papersByYear[year];
+      const total = yearPapers.length;
+
+      const noRQYear = yearPapers.filter((p) => p.question === 'No question');
+      const hasRQYear = yearPapers.filter((p) => p.question !== 'No question');
+
+      const noRQHighlighted = noRQYear.filter((p) => p.highlighted_a === true);
+      const noRQHidden = noRQYear.filter((p) => p.highlighted_a === false);
+
+      const hqha = hasRQYear.filter(
+        (p) => p.highlighted_q === true && p.highlighted_a === true
+      );
+      const hqhaHidden = hasRQYear.filter(
+        (p) => p.highlighted_q === true && p.highlighted_a === false
+      );
+      const hidqha = hasRQYear.filter(
+        (p) => p.highlighted_q === false && p.highlighted_a === true
+      );
+      const hidqhid = hasRQYear.filter(
+        (p) => p.highlighted_q === false && p.highlighted_a === false
+      );
+
+      const c1 = noRQHighlighted.length;
+      const c2 = noRQHidden.length;
+      const c3 = hqha.length;
+      const c4 = hqhaHidden.length;
+      const c5 = hidqha.length;
+      const c6 = hidqhid.length;
+
       return {
         year,
         noRQHighlighted: c1,
@@ -728,7 +811,15 @@ export const Query12DataProcessingFunction = (rawData: RawDataItem[]) => {
         normalized_hidqha: total ? +((c5 * 100) / total).toFixed(2) : 0,
         hidqhid: c6,
         normalized_hidqhid: total ? +((c6 * 100) / total).toFixed(2) : 0,
-        itemsInGroup: uniquePapers.filter((p) => p.year === year),
+        itemsInGroup: yearPapers,
+        itemsBySeries: {
+          noRQHighlighted,
+          noRQHidden,
+          hqha,
+          hqhaHidden,
+          hidqha,
+          hidqhid,
+        },
       };
     });
   return result;

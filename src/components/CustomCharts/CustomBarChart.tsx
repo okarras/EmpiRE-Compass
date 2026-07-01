@@ -31,27 +31,50 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     barTitle: string;
   }>({ open: false, itemsInGroup: [], barTitle: '' });
 
+  const mappedSeries = React.useMemo(() => {
+    return chartSetting.series.map((s: any, index: number) => ({
+      ...s,
+      id: s.id ?? `series-${index}`,
+      dataKey:
+        normalized || hasMultipleSubCharts || isSubChart ? s.dataKey : 'count',
+    }));
+  }, [chartSetting.series, normalized, hasMultipleSubCharts, isSubChart]);
+
   const handleBarItemClick = useCallback(
     (
       _event: React.MouseEvent<SVGElement, MouseEvent>,
       item: BarItemIdentifier
     ) => {
-      const row = dataset?.[item.dataIndex];
+      const row = dataset?.[item.dataIndex] as Record<string, any>;
       if (!row || typeof row !== 'object') return;
-      const itemsInGroup = (row as Record<string, unknown>).itemsInGroup;
-      if (!Array.isArray(itemsInGroup) || itemsInGroup.length === 0) return;
+
+      let itemsToUse = row.itemsInGroup;
+
+      // try using series specific items if they exist
+      if (row.itemsBySeries && typeof row.itemsBySeries === 'object') {
+        const itemsBySeries = row.itemsBySeries as Record<string, any[]>;
+        const seriesKey =
+          mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
+          item.seriesId;
+
+        if (itemsBySeries[seriesKey as string]) {
+          itemsToUse = itemsBySeries[seriesKey as string];
+        }
+      }
+
+      if (!Array.isArray(itemsToUse) || itemsToUse.length === 0) return;
+
       const xKey = chartSetting.xAxis?.[0]?.dataKey ?? 'year';
       const barTitle =
-        (row as Record<string, unknown>)[xKey] != null
-          ? String((row as Record<string, unknown>)[xKey])
-          : `Item ${item.dataIndex}`;
+        row[xKey] != null ? String(row[xKey]) : `Item ${item.dataIndex}`;
+
       setPapersDialog({
         open: true,
-        itemsInGroup: itemsInGroup as Record<string, unknown>[],
+        itemsInGroup: itemsToUse as Record<string, unknown>[],
         barTitle,
       });
     },
-    [dataset, chartSetting.xAxis]
+    [dataset, chartSetting.xAxis, mappedSeries]
   );
 
   const closePapersDialog = useCallback(() => {
@@ -131,13 +154,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         {...chartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
-        series={chartSetting.series.map((s: Record<string, unknown>) => ({
-          ...s,
-          dataKey:
-            normalized || hasMultipleSubCharts || isSubChart
-              ? s.dataKey
-              : 'count',
-        }))}
+        series={mappedSeries}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
         onItemClick={handleBarItemClick}
