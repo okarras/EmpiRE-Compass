@@ -1,5 +1,7 @@
 import { Paper, Box, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
+import { DEBUG_AI } from '../../config/debugConfig';
+
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
 import CodeBlock from './CodeBlock';
 import ReasoningSection from './ReasoningSection';
@@ -16,12 +18,14 @@ interface SuggestionsPayload {
 }
 
 const parseChartSuggestions = (content: string): SuggestionsPayload | null => {
-  console.log('🛠️ DEBUG [Suggestions Phase]: Raw LLM Response:', content);
+  if (DEBUG_AI)
+    console.log('🛠️ DEBUG [Suggestions Phase]: Raw LLM Response:', content);
 
   if (!content || content.trim() === '') {
-    console.warn(
-      '🛠️ DEBUG [Suggestions Phase]: LLM returned an empty response.'
-    );
+    if (DEBUG_AI)
+      console.warn(
+        '🛠️ DEBUG [Suggestions Phase]: LLM returned an empty response.'
+      );
     return null;
   }
 
@@ -31,26 +35,29 @@ const parseChartSuggestions = (content: string): SuggestionsPayload | null => {
     content.includes('```js') ||
     content.includes('return {')
   ) {
-    console.debug(
-      '🛠️ DEBUG [Suggestions Phase]: JSON ignored (looks like JS code block, not valid Suggestion object).'
-    );
+    if (DEBUG_AI)
+      console.debug(
+        '🛠️ DEBUG [Suggestions Phase]: JSON ignored (looks like JS code block, not valid Suggestion object).'
+      );
     return null;
   }
 
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     const extractedJsonStr = jsonMatch[0];
-    console.log(
-      '🛠️ DEBUG [Suggestions Phase]: Extracted JSON String:',
-      extractedJsonStr
-    );
+    if (DEBUG_AI)
+      console.log(
+        '🛠️ DEBUG [Suggestions Phase]: Extracted JSON String:',
+        extractedJsonStr
+      );
 
     try {
       const parsedData = JSON.parse(extractedJsonStr);
-      console.log(
-        '🛠️ DEBUG [Suggestions Phase]: Successfully Parsed JSON Object:',
-        parsedData
-      );
+      if (DEBUG_AI)
+        console.log(
+          '🛠️ DEBUG [Suggestions Phase]: Successfully Parsed JSON Object:',
+          parsedData
+        );
 
       if (parsedData.Suggestions && Array.isArray(parsedData.Suggestions)) {
         const valid = parsedData.Suggestions.every(
@@ -61,30 +68,35 @@ const parseChartSuggestions = (content: string): SuggestionsPayload | null => {
             typeof item.chartDescription === 'string'
         );
         if (valid) {
-          console.log(
-            '🛠️ DEBUG [Suggestions Phase]: Valid Suggestions array found. Triggering UI buttons.'
-          );
+          if (DEBUG_AI)
+            console.log(
+              '🛠️ DEBUG [Suggestions Phase]: Valid Suggestions array found. Triggering UI buttons.'
+            );
           return parsedData as SuggestionsPayload;
         } else {
-          console.warn(
-            "🛠️ DEBUG [Suggestions Phase]: JSON parsed, but 'Suggestions' array items are invalid."
-          );
+          if (DEBUG_AI)
+            console.warn(
+              "🛠️ DEBUG [Suggestions Phase]: JSON parsed, but 'Suggestions' array items are invalid."
+            );
         }
       } else {
-        console.warn(
-          "🛠️ DEBUG [Suggestions Phase]: JSON parsed, but 'Suggestions' array is missing or invalid."
-        );
+        if (DEBUG_AI)
+          console.warn(
+            "🛠️ DEBUG [Suggestions Phase]: JSON parsed, but 'Suggestions' array is missing or invalid."
+          );
       }
     } catch (error) {
-      console.error(
-        '🛠️ DEBUG [Suggestions Phase]: JSON Parsing Failed!',
-        error
-      );
+      if (DEBUG_AI)
+        console.error(
+          '🛠️ DEBUG [Suggestions Phase]: JSON Parsing Failed!',
+          error
+        );
     }
   } else {
-    console.warn(
-      '🛠️ DEBUG [Suggestions Phase]: No JSON object detected in the response.'
-    );
+    if (DEBUG_AI)
+      console.warn(
+        '🛠️ DEBUG [Suggestions Phase]: No JSON object detected in the response.'
+      );
   }
 
   return null;
