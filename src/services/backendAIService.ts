@@ -29,6 +29,7 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
+  responseFormat?: 'text' | 'json';
 }
 
 export interface GenerateTextResponse {
@@ -240,6 +241,7 @@ export class BackendAIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      responseFormat?: 'text' | 'json';
     }
   ): Promise<{
     text: string;
@@ -260,6 +262,7 @@ export class BackendAIService {
       temperature: options?.temperature ?? 0.3,
       maxTokens: options?.maxTokens ?? 2000,
       systemContext: options?.systemContext,
+      responseFormat: options?.responseFormat,
     };
 
     const extraHeaders: Record<string, string> = {};
@@ -471,6 +474,7 @@ export class UnifiedAIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      responseFormat?: 'text' | 'json';
     }
   ): Promise<{
     text: string;
@@ -487,6 +491,7 @@ export class UnifiedAIService {
         provider: options?.provider,
         model: options?.model,
         systemContext: options?.systemContext,
+        responseFormat: options?.responseFormat,
       });
     }
 
