@@ -45,21 +45,14 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       _event: React.MouseEvent<SVGElement, MouseEvent>,
       item: BarItemIdentifier
     ) => {
-      const row = dataset?.[item.dataIndex];
+      const row = dataset?.[item.dataIndex] as Record<string, any>;
       if (!row || typeof row !== 'object') return;
 
-      const recordRow = row as Record<string, unknown>;
-      let itemsToUse = recordRow.itemsInGroup;
+      let itemsToUse = row.itemsInGroup;
 
       // try using series specific items if they exist
-      if (
-        recordRow.itemsBySeries &&
-        typeof recordRow.itemsBySeries === 'object'
-      ) {
-        const itemsBySeries = recordRow.itemsBySeries as Record<
-          string,
-          unknown[]
-        >;
+      if (row.itemsBySeries && typeof row.itemsBySeries === 'object') {
+        const itemsBySeries = row.itemsBySeries as Record<string, any[]>;
         const seriesKey =
           mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
           item.seriesId;
@@ -73,9 +66,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
 
       const xKey = chartSetting.xAxis?.[0]?.dataKey ?? 'year';
       const barTitle =
-        recordRow[xKey] != null
-          ? String(recordRow[xKey])
-          : `Item ${item.dataIndex}`;
+        row[xKey] != null ? String(row[xKey]) : `Item ${item.dataIndex}`;
 
       setPapersDialog({
         open: true,
