@@ -248,20 +248,18 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         3. Choose the most appropriate chart types dynamically based on the specific metric/dimension being visualized.
         4. For each alternative chart, provide:
            - A short 1-2 sentence analytical explanation of the specific insight this alternative view reveals based on that distinct aspect of the data.
-           - The complete, self-contained HTML/Chart.js code to render the chart.
-        5. Ensure that every chart has its own distinct <canvas> tag with a unique ID and its own distinct <script> tag initializing it.
+           - Based on the user's question and the provided data, generate a JavaScript function body that processes the data and returns a chart configuration object. Do not return HTML, <canvas>, or <script> tags. Return ONLY the JavaScript code inside a Markdown code block (\`\`\`javascript ... \`\`\`). The code must conclude by returning the configuration object.
+        5. Provide each chart's JavaScript code in a SEPARATE markdown code block. The code will have access to an 'inputData' variable containing the data.
         6. Make the charts fully responsive and use a cohesive, premium color scheme (e.g. shades of '#e86161', soft blues, HSL tailored colors).
-        7. Format the chart code blocks clearly like this:
-        <canvas id="chart1"></canvas>
-        <script>
-          const ctx1 = document.getElementById('chart1').getContext('2d');
-          new Chart(ctx1, {
-            type: 'bar',
-            data: { ... },
-            options: { ... }
-          });
-        </script>
-        `
+        7. Format the code blocks clearly like this:
+        \`\`\`javascript
+        const config = {
+          type: 'bar',
+          data: { ... },
+          options: { ... }
+        };
+        return config;
+        \`\`\``
             : ''
         }
 
@@ -287,25 +285,117 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
       const { text, reasoning } = response;
       const cleanedText = cleanAiHtmlResponse(text);
 
-      // Extract chart HTML if present (match from <canvas> to the last </script> tag)
-      let chartHtml: string | undefined = undefined;
+      const chartConfigs: Record<string, unknown>[] = [];
       let textWithoutChart = cleanedText;
 
       if (wantsChart) {
-        // Try to match from <canvas> to the last </script> tag
-        const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
-        if (chartMatch) {
-          chartHtml = chartMatch[1];
-          textWithoutChart = cleanedText.replace(chartHtml, '').trim();
+        const codeMatches = Array.from(
+          cleanedText.matchAll(/```(?:javascript|js)\n([\s\S]*?)```/gi)
+        );
+        if (codeMatches.length > 0) {
+          codeMatches.forEach((match) => {
+            try {
+              const generateChartConfig = new Function('inputData', match[1]);
+              const chartConfig = generateChartConfig(questionData);
+              if (chartConfig) {
+                if (!chartConfig.options) {
+                  chartConfig.options = {};
+                }
+                chartConfig.options.responsive = true;
+                chartConfig.options.maintainAspectRatio = false;
 
-          textWithoutChart = textWithoutChart
-            .replace(/<div class="chart-code">/gi, '')
-            .replace(/<\/div>/gi, '')
-            .trim();
+                // Chart.js requires a single dataset for boxplots, but LLMs often generate multiple datasets. Pivot them to prevent rendering errors.
+                if (chartConfig.type === 'boxplot') {
+                  const originalDatasets = chartConfig.data?.datasets || [];
 
-          chartHtml = chartHtml
-            .replace(/<div class="chart-code">/gi, '')
-            .replace(/<\/div>/gi, '')
+                  if (originalDatasets.length > 1) {
+                    const pivotedLabels: string[] = [];
+                    const pivotedData: any[] = [];
+                    const backgroundColors: string[] = [];
+                    const borderColors: string[] = [];
+
+                    originalDatasets.forEach((ds: any) => {
+                      let rawArr = Array.isArray(ds.data[0])
+                        ? ds.data[0]
+                        : ds.data;
+                      let numbers = rawArr
+                        .map(Number)
+                        .filter((n: number) => !isNaN(n));
+
+                      if (numbers.length > 0) {
+                        pivotedLabels.push(ds.label || 'Unknown Category');
+                        pivotedData.push(numbers);
+                        backgroundColors.push(
+                          ds.backgroundColor || 'rgba(54, 162, 235, 0.5)'
+                        );
+                        borderColors.push(
+                          ds.borderColor || 'rgba(54, 162, 235, 1)'
+                        );
+                      }
+                    });
+
+                    chartConfig.data.labels = pivotedLabels;
+                    chartConfig.data.datasets = [
+                      {
+                        label: 'Data Distribution',
+                        data: pivotedData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        outlierBackgroundColor: '#000',
+                      },
+                    ];
+                  } else if (originalDatasets.length === 1) {
+                    const ds = originalDatasets[0];
+                    ds.data = ds.data.map((innerArr: any) => {
+                      const arr = Array.isArray(innerArr)
+                        ? innerArr
+                        : [innerArr];
+                      return arr.map(Number).filter((n: number) => !isNaN(n));
+                    });
+
+                    if (
+                      !chartConfig.data.labels ||
+                      chartConfig.data.labels.length === 0
+                    ) {
+                      chartConfig.data.labels = ds.data.map(
+                        (_: any, i: number) => `Category ${i + 1}`
+                      );
+                    }
+                  }
+                }
+
+                // Force y-axis to start at zero to handle LLM scaling hallucinations
+                if (!chartConfig.options.scales)
+                  chartConfig.options.scales = {};
+                if (!chartConfig.options.scales.y)
+                  chartConfig.options.scales.y = {};
+                chartConfig.options.scales.y.beginAtZero = true;
+
+                console.log(
+                  '📊 DEBUG: Generated Chart Config Structure:',
+                  chartConfig
+                );
+                chartConfig.data?.datasets?.forEach(
+                  (dataset: any, index: number) => {
+                    console.log(
+                      `Dataset ${index} (${dataset.label}) raw data:`,
+                      dataset.data
+                    );
+                  }
+                );
+
+                chartConfigs.push(chartConfig);
+              }
+            } catch (error) {
+              console.error(
+                'AI generated invalid JavaScript configuration:',
+                error
+              );
+            }
+          });
+          textWithoutChart = cleanedText
+            .replace(/```(?:javascript|js)\n[\s\S]*?```/gi, '')
             .trim();
         }
       }
@@ -317,7 +407,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
           content: textWithoutChart,
           isUser: false,
           reasoning,
-          chartHtml,
+          chartConfigs,
         },
       ]);
     } catch (err) {
@@ -355,19 +445,9 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
 
           CRITICAL INSTRUCTION:
           Suggest at least 5 alternative ways to visualize this data.
-          You MUST respond ONLY with a single JSON object matching the schema below.
-          Do NOT include any markdown code blocks, backticks, comments, or surrounding text.
-          The output must be pure, parsable JSON.
-
-          JSON Schema:
-          {
-            "Suggestions": [
-              {
-                "chartType": "Bar chart",
-                "chartDescription": "Explanation of why this fits the data."
-              }
-            ]
-          }`,
+          Respond ONLY with a raw JSON object containing a 'Suggestions' array. Do not include markdown code blocks, backticks, or any conversational text.
+          Example: { "Suggestions": [ { "chartType": "...", "chartDescription": "..." } ] }
+          The output must be pure, parsable JSON.`,
           undefined,
           'json'
         );
@@ -375,6 +455,39 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         const { text, reasoning } = response;
         const textString =
           typeof text === 'string' ? text : text ? String(text) : '';
+
+        if (!textString || textString.trim() === '') {
+          throw new Error(
+            'The AI Assistant failed to generate a response. Please try again.'
+          );
+        }
+
+        const jsonMatch = textString.match(/\{[\s\S]*\}/);
+        let isValidJson = false;
+
+        if (jsonMatch) {
+          try {
+            const parsedData = JSON.parse(jsonMatch[0]);
+            if (parsedData.Suggestions) {
+              isValidJson = true;
+            }
+          } catch (e) {
+            // Parsing failed
+          }
+        }
+
+        if (
+          !isValidJson &&
+          (textString.includes('return config;') ||
+            textString.match(/```(?:javascript|js)/i))
+        ) {
+          // Fallback to chart generation if the LLM output code instead of JSON.
+          setStreamingText('');
+          setLoading(false);
+          setPrompt('');
+          generateChartSilently('requested chart');
+          return;
+        }
 
         setStreamingText('');
         setMessages((prev) => [
@@ -400,6 +513,11 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
     const wantsDetailed = intent.wantsDetailed;
     const wantsChart = intent.wantsChart;
 
+    const dataSample =
+      Array.isArray(questionData) && questionData.length > 0
+        ? JSON.stringify(questionData[0])
+        : '[]';
+
     try {
       const response = await generateWithProvider(
         `${generateSystemContext()}
@@ -409,8 +527,14 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         ${
           wantsChart
             ? `Additionally, generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
-        1. Put ALL chart-related code (canvas and Chart.js initialization script) inside a single <div class="chart-code"> tag.
-        2. You MUST inline all data and options directly inside the new Chart(ctx, { ... }) configuration object. Do NOT declare separate variables like const data = ... or const options = ... outside the Chart object.
+        1. Based on the user's question and the provided data, generate a JavaScript function body that processes the data and returns a chart configuration object (compatible with our charting library).
+        
+        IMPORTANT: The 'inputData' array contains objects with this exact structure:
+        ${dataSample}
+        
+        Do not guess property names. Use ONLY the keys provided in the structure above.
+        
+        2. Do not return HTML, <canvas>, or <script> tags. Return ONLY the JavaScript code inside a Markdown code block (\`\`\`javascript ... \`\`\`). The code must conclude by returning the configuration object.
         3. Choose the most appropriate chart type based on the data and what you want to show:
            - Use 'line' for trends over time
            - Use 'bar' for comparing quantities across categories
@@ -418,40 +542,36 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
            - Use 'scatter' for showing relationships between variables
            - Use 'radar' for comparing multiple variables
            - If a Heatmap is requested or appropriate, use type: 'matrix'. Format dataset data as [{x: 1, y: 1, v: 10}] where 'v' is the value.
-           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Format dataset data as an array of raw numbers (e.g. data: [1, 2, 3, 4, 5]).
-        3. The chart code should be complete and self-contained
-        4. Use proper indentation and formatting
+           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Note: If generating a 'boxplot', the 'data' property for each dataset MUST be an array of arrays containing strict NUMBERS, not strings (e.g., data: [ [2016, 2018, 2019] ]). Do not quote the numbers. You must also provide an overarching label in data.labels.
+        4. The code will have access to an 'inputData' variable containing the data.
         5. Make the chart responsive and use appropriate colors
         6. Include proper axis labels and title
-        7. Format the chart code like this example:
-        <div class="chart-code">
-          <canvas id="myChart"></canvas>
-          <script>
-            const ctx = document.getElementById('myChart').getContext('2d');
-            new Chart(ctx, {
-              type: //choose the most appropriate type (e.g. 'bar', 'matrix', 'boxplot')
-              data: {
-                labels: ['Category 1', 'Category 2'],
-                datasets: [{
-                  label: 'Dataset',
-                  data: [10, 20],
-                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                  borderColor: 'rgba(75, 192, 192, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Chart Title'
-                  }
-                }
+        7. Format the JavaScript code like this example:
+        \`\`\`javascript
+        const config = {
+          type: 'bar',
+          data: {
+            labels: ['Category 1', 'Category 2'],
+            datasets: [{
+              label: 'Dataset',
+              data: [10, 20],
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Chart Title'
               }
-            });
-          </script>
-        </div>`
+            }
+          }
+        };
+        return config;
+        \`\`\``
             : ''
         }
         
@@ -466,6 +586,30 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         8. Answer based on the data and analysis provided above
         ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
         ${wantsChart ? '10. The chart width should be 100%' : ''}
+
+        CRITICAL JAVASCRIPT SYNTAX RULES:
+        1. If you hardcode object keys that contain spaces or special characters, you MUST wrap them in quotes (e.g., {'case study': [], 'secondary research': []}). Never write case study: [] without quotes.
+        2. Prefer dynamically building objects (e.g., if (!obj[method]) obj[method] = [];) rather than hardcoding specific string keys.
+        3. Ensure all code is valid, compilable JavaScript. Do not include trailing commas or syntax errors.
+        4. DEFENSIVE PROGRAMMING: When grouping data into nested objects or arrays, you MUST initialize the nested properties before pushing to them.
+        Use this exact safe pattern:
+        \`\`\`javascript
+        if (!myObject[key]) myObject[key] = {};
+        if (!myObject[key][subKey]) myObject[key][subKey] = [];
+        myObject[key][subKey].push(value);
+        \`\`\`
+        Never assume a nested array exists. Always filter out undefined, null, or empty keys before grouping.
+        
+        CRITICAL BOXPLOT DATA RULES:
+        A boxplot requires continuous, varying numerical data to calculate quartiles.
+        If you are grouping data by category (e.g., 'method'), the array for each category MUST contain varying numbers — such as the specific year of each item (e.g., data: [[2016, 2018, 2021, 2015]]).
+        NEVER fill the array with identical constants (like [1, 1, 1]). If the data has no variance, the boxplot will render as an invisible flat line.
+
+        CRITICAL HEATMAP (MATRIX) RULES:
+        If the user wants a heatmap, you MUST set type: 'matrix'.
+        The data array for the dataset MUST be a single, flat array of objects containing x, y, and v keys.
+        x is the column category (e.g., Year), y is the row category (e.g., Method), and v is the numerical value (count/frequency).
+        Example: data: [{ x: '2016', y: 'Survey', v: 15 }, { x: '2017', y: 'Experiment', v: 8 }]
         `
       );
 
@@ -473,24 +617,36 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
 
       const cleanedText = cleanAiHtmlResponse(text);
 
-      let chartHtml: string | undefined = undefined;
+      const chartConfigs: Record<string, unknown>[] = [];
       let textWithoutChart = cleanedText;
 
       if (wantsChart) {
-        const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
-        if (chartMatch) {
-          chartHtml = chartMatch[1];
-          textWithoutChart = cleanedText.replace(chartHtml, '').trim();
-
-          textWithoutChart = textWithoutChart
-            .replace(/<div class="chart-code">/gi, '')
-            .replace(/<\/div>/gi, '')
-            .trim();
-
-          chartHtml = chartHtml
-            .replace(/<div class="chart-code">/gi, '')
-            .replace(/<\/div>/gi, '')
-            .trim();
+        const codeMatches = Array.from(
+          cleanedText.matchAll(/```(?:javascript|js)\n([\s\S]*?)```/gi)
+        );
+        if (codeMatches.length > 0) {
+          codeMatches.forEach((match) => {
+            try {
+              const generateChartConfig = new Function('inputData', match[1]);
+              const chartConfig = generateChartConfig(questionData);
+              if (chartConfig) {
+                chartConfigs.push(chartConfig);
+              }
+            } catch (error) {
+              console.error(
+                'AI generated invalid JavaScript configuration:',
+                error
+              );
+              throw new Error(
+                'The AI generated invalid chart logic. Please rephrase your question to retry.'
+              );
+            }
+          });
+          if (!textWithoutChart.startsWith('I apologize')) {
+            textWithoutChart = cleanedText
+              .replace(/```(?:javascript|js)\n[\s\S]*?```/gi, '')
+              .trim();
+          }
         }
       }
 
@@ -501,7 +657,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
           content: textWithoutChart,
           isUser: false,
           reasoning,
-          chartHtml,
+          chartConfigs,
         },
       ]);
 
@@ -529,33 +685,256 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
 
     const hiddenPrompt = `generate a ${chartType} chart using the dataset provided in the system context.`;
 
+    const dataSample =
+      Array.isArray(questionData) && questionData.length > 0
+        ? JSON.stringify(questionData[0])
+        : '[]';
+
     try {
       const response = await generateWithProvider(
         `${generateSystemContext()}
         User Question: ${hiddenPrompt}
+        
+        IMPORTANT: The 'inputData' array contains objects with this exact structure:
+        ${dataSample}
+        Do not guess property names. Use ONLY the keys provided in the structure above.
+
 ${SILENT_CHART_GENERATION_PROMPT(chartType)}`
       );
 
       const { text, reasoning } = response;
       const cleanedText = cleanAiHtmlResponse(text);
 
-      let chartHtml: string | undefined = undefined;
+      const chartConfigs: Record<string, unknown>[] = [];
       let textWithoutChart = cleanedText;
 
-      const chartMatch = cleanedText.match(/(<canvas[\s\S]*<\/script>)/i);
-      if (chartMatch) {
-        chartHtml = chartMatch[1];
-        textWithoutChart = cleanedText.replace(chartHtml, '').trim();
+      let rawCode = cleanedText;
+      const codeMatch = cleanedText.match(/```[a-zA-Z]*\n?([\s\S]*?)```/i);
 
-        textWithoutChart = textWithoutChart
-          .replace(/<div class="chart-code">/gi, '')
-          .replace(/<\/div>/gi, '')
+      if (codeMatch) {
+        rawCode = codeMatch[1];
+        textWithoutChart = cleanedText
+          .replace(/```[a-zA-Z]*\n?[\s\S]*?```/i, '')
           .trim();
+      } else {
+        rawCode = rawCode.replace(/^(?:javascript|js)\s*\n/i, '');
+        if (rawCode.includes('return')) {
+          textWithoutChart = '';
+        }
+      }
 
-        chartHtml = chartHtml
-          .replace(/<div class="chart-code">/gi, '')
-          .replace(/<\/div>/gi, '')
-          .trim();
+      rawCode = rawCode.trim();
+
+      if (rawCode && rawCode.includes('return')) {
+        try {
+          const generateChartConfig = new Function('inputData', rawCode);
+          const chartConfig = generateChartConfig(questionData);
+          if (chartConfig) {
+            if (!chartConfig.options) {
+              chartConfig.options = {};
+            }
+            chartConfig.options.responsive = true;
+            chartConfig.options.maintainAspectRatio = false;
+
+            if (chartConfig.type === 'boxplot') {
+              const originalDatasets = chartConfig.data?.datasets || [];
+
+              // Pivot multi-dataset responses from LLMs into a single dataset required by Chart.js boxplots
+              if (originalDatasets.length > 1) {
+                const pivotedLabels: string[] = [];
+                const pivotedData: any[] = [];
+                const backgroundColors: string[] = [];
+                const borderColors: string[] = [];
+
+                originalDatasets.forEach((ds: any) => {
+                  let rawArr = Array.isArray(ds.data[0]) ? ds.data[0] : ds.data;
+                  let numbers = rawArr
+                    .map(Number)
+                    .filter((n: number) => !isNaN(n));
+
+                  console.log(
+                    `📊 DEBUG: First 5 values for '${ds.label || 'Category'}':`,
+                    numbers.slice(0, 5)
+                  );
+
+                  // Skip empty data arrays to prevent rendering crashes
+                  if (numbers.length > 0) {
+                    pivotedLabels.push(ds.label || 'Unknown Category');
+                    pivotedData.push(numbers);
+                    backgroundColors.push(
+                      ds.backgroundColor || 'rgba(54, 162, 235, 0.5)'
+                    );
+                    borderColors.push(
+                      ds.borderColor || 'rgba(54, 162, 235, 1)'
+                    );
+                  }
+                });
+
+                chartConfig.data.labels = pivotedLabels;
+                chartConfig.data.datasets = [
+                  {
+                    label: 'Data Distribution',
+                    data: pivotedData,
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1,
+                    outlierBackgroundColor: '#000',
+                  },
+                ];
+              } else if (originalDatasets.length === 1) {
+                const ds = originalDatasets[0];
+                ds.data = ds.data.map((innerArr: any) => {
+                  const arr = Array.isArray(innerArr) ? innerArr : [innerArr];
+                  return arr.map(Number).filter((n: number) => !isNaN(n));
+                });
+
+                if (
+                  !chartConfig.data.labels ||
+                  chartConfig.data.labels.length === 0
+                ) {
+                  chartConfig.data.labels = ds.data.map(
+                    (_: any, i: number) => `Category ${i + 1}`
+                  );
+                }
+              }
+            }
+
+            if (chartConfig.type === 'heatmap') chartConfig.type = 'matrix';
+
+            if (chartConfig.type === 'matrix') {
+              let rawData: any[] = [];
+
+              chartConfig.data.datasets.forEach((ds: any) => {
+                if (Array.isArray(ds.data)) {
+                  rawData = rawData.concat(ds.data);
+                }
+              });
+
+              // Aggregate overlapping values for the same (x, y) coordinate
+              const aggregatedMap = new Map<string, any>();
+
+              rawData.forEach((item: any, index: number) => {
+                const x = String(item.x || `Col ${index % 10}`);
+                const y = String(
+                  item.y || chartConfig.data.datasets[0]?.label || 'Category'
+                );
+                const v = Number(item.v || 1);
+
+                const key = `${x}___${y}`;
+                if (aggregatedMap.has(key)) {
+                  aggregatedMap.get(key).v += v;
+                } else {
+                  aggregatedMap.set(key, { x, y, v });
+                }
+              });
+
+              const aggregatedData = Array.from(aggregatedMap.values());
+
+              const uniqueX = Array.from(
+                new Set(aggregatedData.map((d) => d.x))
+              ).sort((a: any, b: any) =>
+                isNaN(Number(a)) ? a.localeCompare(b) : Number(a) - Number(b)
+              );
+              const uniqueY = Array.from(
+                new Set(aggregatedData.map((d) => d.y))
+              ).sort((a: any, b: any) =>
+                isNaN(Number(a)) ? a.localeCompare(b) : Number(a) - Number(b)
+              );
+
+              chartConfig.data.labels = uniqueX;
+              chartConfig.data.datasets = [
+                {
+                  label: 'Heatmap Density',
+                  data: aggregatedData,
+                },
+              ];
+
+              const ds = chartConfig.data.datasets[0];
+
+              if (!chartConfig.options.scales) chartConfig.options.scales = {};
+              chartConfig.options.scales.x = {
+                type: 'category',
+                labels: uniqueX,
+                offset: true,
+                grid: { display: false },
+              };
+              chartConfig.options.scales.y = {
+                type: 'category',
+                labels: uniqueY,
+                offset: true,
+                grid: { display: false },
+              };
+
+              const maxV = Math.max(...aggregatedData.map((d: any) => d.v), 1);
+
+              // Map intensity based on value relative to max to ensure low values remain visible
+              ds.backgroundColor = (context: any) => {
+                const rawValue =
+                  context.dataset.data[context.dataIndex]?.v || 0;
+                const alpha = maxV > 0 ? 0.15 + 0.85 * (rawValue / maxV) : 0.5;
+                return `rgba(54, 162, 235, ${alpha})`;
+              };
+
+              // Prevent overlapping lines in visual rendering
+              ds.borderColor = 'transparent';
+              ds.borderWidth = 0;
+              ds.borderRadius = 2;
+
+              ds.width = (context: any) => {
+                const chartArea = context.chart?.chartArea;
+                if (!chartArea || chartArea.right === undefined) return 30;
+                return (
+                  (chartArea.right - chartArea.left) /
+                    Math.max(1, uniqueX.length) -
+                  2
+                );
+              };
+              ds.height = (context: any) => {
+                const chartArea = context.chart?.chartArea;
+                if (!chartArea || chartArea.bottom === undefined) return 30;
+                return (
+                  (chartArea.bottom - chartArea.top) /
+                    Math.max(1, uniqueY.length) -
+                  2
+                );
+              };
+            }
+
+            if (!chartConfig.options.scales) chartConfig.options.scales = {};
+            if (!chartConfig.options.scales.y)
+              chartConfig.options.scales.y = {};
+
+            // Force Y-axis to 0 to prevent hallucinated scales unless it squashes a boxplot
+            if (chartConfig.type !== 'boxplot') {
+              chartConfig.options.scales.y.beginAtZero = true;
+            } else {
+              chartConfig.options.scales.y.beginAtZero = false;
+            }
+
+            console.log(
+              '📊 DEBUG: Generated Chart Config Structure:',
+              chartConfig
+            );
+            chartConfig.data?.datasets?.forEach(
+              (dataset: any, index: number) => {
+                console.log(
+                  `Dataset ${index} (${dataset.label}) raw data:`,
+                  dataset.data
+                );
+              }
+            );
+
+            chartConfigs.push(chartConfig);
+          }
+        } catch (error) {
+          console.error(
+            'AI generated invalid JavaScript configuration:',
+            error
+          );
+          throw new Error(
+            'The AI generated invalid chart logic. Please click the chart option again to retry.'
+          );
+        }
       }
 
       setStreamingText('');
@@ -565,7 +944,7 @@ ${SILENT_CHART_GENERATION_PROMPT(chartType)}`
           content: textWithoutChart,
           isUser: false,
           reasoning,
-          chartHtml,
+          chartConfigs,
         },
       ]);
     } catch (err) {

@@ -474,6 +474,7 @@ const AIAssistant: React.FC<AIAssistantProps> = ({ query, questionData }) => {
               reasoning={message.reasoning}
               showReasoning={showReasoning}
               chartHtml={message.chartHtml}
+              chartConfigs={message.chartConfigs}
               showChart={showChart}
               onSuggestionClick={generateChartSilently}
               disabledSuggestions={loading}
