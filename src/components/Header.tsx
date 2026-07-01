@@ -455,7 +455,13 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
             <InputLabel id="header-templates-select-label">Theme</InputLabel>
             <Select
               labelId="header-templates-select-label"
-              value={selectedTemplate}
+              value={
+                templates.some((t) => t.id === selectedTemplate)
+                  ? selectedTemplate
+                  : templates.length > 0
+                    ? (templates[0].id ?? '')
+                    : ''
+              }
               label="Theme"
               onChange={handleTemplateChange}
               size="small"

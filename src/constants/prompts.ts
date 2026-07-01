@@ -16,58 +16,79 @@ export const CHART_GENERATION_SUGGESTION_PROMPT = `
           }`;
 
 export const SILENT_CHART_GENERATION_PROMPT = (chartType: string) => `
-        Please generate a chart using Chart.js to visualize the relevant data. Follow these specific instructions for the chart:
-        1. Put ALL chart-related code (canvas and Chart.js initialization script) inside a single <div class="chart-code"> tag.
-        2. You MUST inline all data and options directly inside the new Chart(ctx, { ... }) configuration object. Do NOT declare separate variables like const data = ... or const options = ... outside the Chart object.
-        3. Choose the most appropriate chart type to visually represent a ${chartType}:
+        Based on the user's question and the provided data, generate a JavaScript function body that processes the data and returns a chart configuration object (compatible with our charting library). Do not return HTML, <canvas>, or <script> tags. Return ONLY the JavaScript code inside a Markdown code block (\`\`\`javascript ... \`\`\`). The code must conclude by returning the configuration object.
+
+        Follow these specific instructions for the chart:
+        1. Choose the most appropriate chart type to visually represent a ${chartType}:
            - Use 'line' for trends over time
            - Use 'bar' for comparing quantities across categories
            - Use 'pie' or 'doughnut' for showing proportions
            - Use 'scatter' for showing relationships between variables
            - Use 'radar' for comparing multiple variables
            - If a Heatmap is requested or appropriate, use type: 'matrix'. Format dataset data as [{x: 1, y: 1, v: 10}] where 'v' is the value.
-           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Format dataset data as an array of raw numbers (e.g. data: [1, 2, 3, 4, 5]).
-        3. The chart code should be complete and self-contained
-        4. Use proper indentation and formatting
-        5. Make the chart responsive and use appropriate colors
-        6. Include proper axis labels and title
-        7. Format the chart code like this example:
-        <div class="chart-code">
-          <canvas id="myChart"></canvas>
-          <script>
-            const ctx = document.getElementById('myChart').getContext('2d');
-            new Chart(ctx, {
-              type: //choose the most appropriate type (e.g. 'bar', 'matrix', 'boxplot')
-              data: {
-                labels: ['Category 1', 'Category 2'],
-                datasets: [{
-                  label: 'Dataset',
-                  data: [10, 20],
-                  backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                  borderColor: 'rgba(75, 192, 192, 1)',
-                  borderWidth: 1
-                }]
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  title: {
-                    display: true,
-                    text: 'Chart Title'
-                  }
-                }
+           - If a Box Plot is requested or appropriate, use type: 'boxplot'. Note: If generating a 'boxplot', the 'data' property for each dataset MUST be an array of arrays containing strict NUMBERS, not strings (e.g., data: [ [2016, 2018, 2019] ]). Do not quote the numbers. You must also provide an overarching label in data.labels.
+        2. The JavaScript code should assume 'inputData' is available as a variable containing the data.
+        3. Make the chart responsive and use appropriate colors
+        4. Include proper axis labels and title
+        5. Format the JavaScript code like this example:
+        \`\`\`javascript
+        // You have access to 'inputData' array
+        const labels = inputData.map(item => item.category || 'Category');
+        const data = inputData.map(item => item.value || 0);
+
+        const config = {
+          type: 'bar', // or 'matrix', 'boxplot', etc.
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Dataset',
+              data: data,
+              backgroundColor: 'rgba(75, 192, 192, 0.2)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: 'Chart Title'
               }
-            });
-          </script>
-        </div>
+            }
+          }
+        };
+        
+        return config;
+        \`\`\`
 
         Important instructions:
-        1. Keep your response under 300 words and maximum 2 paragraphs
-        2. Base your answer ONLY on the data and analysis provided above
-        3. Do not make assumptions or include information not present in the data
-        4. Focus on the most relevant findings from the data
-        5. Use clear and direct language
-        6. Format your response using HTML tags (<p>, <ul>, <li>) to structure your response
-        7. Do not include any markdown code blocks or backticks in your response
-        8. Answer based on the data and analysis provided above
-        9. The chart width should be 100%`;
+        1. Keep your response purely to the code block.
+        2. Do not write explanations unless absolutely necessary.
+        3. Base your answer ONLY on the data and analysis provided above
+        4. Do not make assumptions or include information not present in the data
+        5. The chart width should be 100%
+        
+        CRITICAL JAVASCRIPT SYNTAX RULES:
+        1. If you hardcode object keys that contain spaces or special characters, you MUST wrap them in quotes (e.g., {'case study': [], 'secondary research': []}). Never write case study: [] without quotes.
+        2. Prefer dynamically building objects (e.g., if (!obj[method]) obj[method] = [];) rather than hardcoding specific string keys.
+        3. Ensure all code is valid, compilable JavaScript. Do not include trailing commas or syntax errors.
+        4. DEFENSIVE PROGRAMMING: When grouping data into nested objects or arrays, you MUST initialize the nested properties before pushing to them.
+        Use this exact safe pattern:
+        \`\`\`javascript
+        if (!myObject[key]) myObject[key] = {};
+        if (!myObject[key][subKey]) myObject[key][subKey] = [];
+        myObject[key][subKey].push(value);
+        \`\`\`
+        Never assume a nested array exists. Always filter out undefined, null, or empty keys before grouping.
+        
+        CRITICAL BOXPLOT DATA RULES:
+        A boxplot requires continuous, varying numerical data to calculate quartiles.
+        If you are grouping data by category (e.g., 'method'), the array for each category MUST contain varying numbers — such as the specific year of each item (e.g., data: [[2016, 2018, 2021, 2015]]).
+        NEVER fill the array with identical constants (like [1, 1, 1]). If the data has no variance, the boxplot will render as an invisible flat line.
+        
+        CRITICAL HEATMAP (MATRIX) RULES:
+        If the user wants a heatmap, you MUST set type: 'matrix'.
+        The data array for the dataset MUST be a single, flat array of objects containing x, y, and v keys.
+        x is the column category (e.g., Year), y is the row category (e.g., Method), and v is the numerical value (count/frequency).
+        Example: data: [{ x: '2016', y: 'Survey', v: 15 }, { x: '2017', y: 'Experiment', v: 8 }]`;
