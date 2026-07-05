@@ -27,7 +27,6 @@ import { PREFIXES } from '../../api/SPARQL_QUERIES';
 import { PredicatesMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
 import AiEvaluationWidget from './AiEvaluationWidget';
-import { updateTemplate, apiRequest } from '../../services/backendApi';
 import { useAuthData } from '../../auth/useAuthData';
 import TemplateHierarchyPanel from './TemplateHierarchyPanel';
 import { extractOrkgPredicateIds } from '../../utils/sparqlPredicateIds';
