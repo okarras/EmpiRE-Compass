@@ -26,6 +26,8 @@ import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 import { PREFIXES } from '../../api/SPARQL_QUERIES';
 import { PredicatesMapping } from '../Graph/types';
 import { getTemplate } from '../../api/get_template_data';
+import AiEvaluationWidget from './AiEvaluationWidget';
+import { updateTemplate, apiRequest } from '../../services/backendApi';
 import { useAuthData } from '../../auth/useAuthData';
 import TemplateHierarchyPanel from './TemplateHierarchyPanel';
 import { extractOrkgPredicateIds } from '../../utils/sparqlPredicateIds';
@@ -1299,8 +1301,15 @@ Modified SPARQL Query:`;
         setAiPrompt={setAiPrompt}
         isAIModifying={isAIModifying}
         handleAIModify={handleAIModify}
+        evaluationWidget={
+          <AiEvaluationWidget
+            targetType="sparql"
+            targetId={question || 'unknown-question'}
+          />
+        }
       />
 
+      {/* History Dialog */}
       <SparqlHistoryDialog
         open={historyDialogOpen}
         onClose={() => setHistoryDialogOpen(false)}
