@@ -30,6 +30,7 @@ const AdminTeam = lazy(() => import('./pages/AdminTeam'));
 const CommunityQuestionDetailsPage = lazy(
   () => import('./pages/CommunityQuestionDetailsPage')
 );
+const ScidQuestPage = lazy(() => import('./pages/ScidQuestPage'));
 
 const Router = () => {
   return (
@@ -90,6 +91,11 @@ const Router = () => {
             <Route
               path="community-questions/:id"
               element={<CommunityQuestionDetailsPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="scid-quest"
+              element={<ScidQuestPage />}
               errorElement={<ErrorFallback />}
             />
             <Route

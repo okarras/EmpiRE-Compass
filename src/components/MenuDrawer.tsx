@@ -458,7 +458,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
         {questions.map((question, index) => (
           <QuestionNavItem
-            key={question.id}
+            key={`${question.id}-${index}`}
             question={question}
             index={index}
             isCurrentPath={isCurrentPath}
