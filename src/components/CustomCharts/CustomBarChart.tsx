@@ -66,8 +66,18 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
           mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
           item.seriesId;
 
+        // Papers are stored under absolute keys, map normalized keys back to retrieve them.
+        const absoluteKey =
+          typeof seriesKey === 'string' && seriesKey.startsWith('normalized_')
+            ? seriesKey.replace('normalized_', '')
+            : seriesKey === 'normalizedRatio'
+              ? 'count'
+              : seriesKey;
+
         if (itemsBySeries[seriesKey as string]) {
           itemsToUse = itemsBySeries[seriesKey as string];
+        } else if (itemsBySeries[absoluteKey as string]) {
+          itemsToUse = itemsBySeries[absoluteKey as string];
         }
       }
 
