@@ -31,7 +31,6 @@ export const Query1DataProcessingFunction = (
       itemsInGroup: yearRawData,
       itemsBySeries: {
         count: yearFilteredData,
-        rawCount: yearRawData,
       },
     };
   });
@@ -286,7 +285,6 @@ export const Query3DataProcessingFunction = (
       itemsInGroup: yearRawData,
       itemsBySeries: {
         count: yearFilteredData,
-        rawCount: yearRawData,
       },
     };
   });
@@ -626,7 +624,6 @@ export const Query8DataProcessingFunction = (rawData: RawDataItem[]) => {
       itemsInGroup: yearPapers,
       itemsBySeries: {
         count: threatYearPapers,
-        numberOfAllPapers: yearPapers,
       },
     };
   });
@@ -734,7 +731,6 @@ export const Query11DataProcessingFunction = (rawData: RawDataItem[]) => {
         itemsInGroup: yearPapers,
         itemsBySeries: {
           count: yearPapers.filter((p) => p.url),
-          numberOfAllPapers: yearPapers, // Assuming this is used like Query 8
         },
       };
     });
