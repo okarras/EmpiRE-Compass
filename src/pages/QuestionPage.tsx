@@ -23,7 +23,24 @@ const QuestionPage = () => {
   );
 
   const queries = getTemplateConfig(templateId).queries;
-  const targetQuery = queries?.find((query) => query.id === Number(id));
+  let targetQuery = queries?.find(
+    (query) =>
+      query.id === Number(id) || String(query.id) === id || query.uid === id
+  );
+
+  if (!targetQuery) {
+    const fbq = Object.values(firebaseQuestions).find(
+      (q) => q.id === Number(id) || String(q.id) === id || q.uid === id
+    );
+
+    if (fbq) {
+      targetQuery = {
+        ...fbq,
+        id: fbq.id || Number(id) || undefined,
+        uid: fbq.uid || String(fbq.id) || id,
+      } as any;
+    }
+  }
 
   useEffect(() => {
     if (!targetQuery) {

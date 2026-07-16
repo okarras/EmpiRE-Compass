@@ -161,8 +161,28 @@ const questionSlice = createSlice({
     setCurrentQuestion: (state, action) => {
       const { questionId, templateId } = action.payload;
       const { queries } = getTemplateResources(templateId);
-      const targetQuery = queries.find((q) => q.id === questionId);
-      if (!targetQuery) return;
+      const targetQuery = queries.find(
+        (q) =>
+          q.id === questionId ||
+          String(q.id) === String(questionId) ||
+          q.uid === questionId
+      );
+
+      if (!targetQuery) {
+        // Fallback to Firebase questions for dynamically added/curated questions
+        const fbq = Object.values(
+          state.firebaseQuestions as Record<string, any>
+        ).find(
+          (q) =>
+            q.id === questionId ||
+            String(q.id) === String(questionId) ||
+            q.uid === questionId
+        );
+        if (fbq) {
+          state.currentQuestion = fbq as Query;
+        }
+        return;
+      }
 
       const firebaseData = state.firebaseQuestions[targetQuery.uid];
       if (firebaseData) {
