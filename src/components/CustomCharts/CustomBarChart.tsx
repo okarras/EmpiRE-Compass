@@ -5,6 +5,12 @@ import type { BarItemIdentifier } from '@mui/x-charts/models';
 import { createLabelFormatter } from '../../utils/chartUtils';
 import BarChartPapersDialog from './BarChartPapersDialog';
 
+interface ChartDatasetRow {
+  itemsInGroup?: Record<string, unknown>[];
+  itemsBySeries?: Record<string, Record<string, unknown>[]>;
+  [key: string]: unknown;
+}
+
 interface CustomBarChartInterface {
   dataset: any[];
   chartSetting: any;
@@ -45,14 +51,17 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       _event: React.MouseEvent<SVGElement, MouseEvent>,
       item: BarItemIdentifier
     ) => {
-      const row = dataset?.[item.dataIndex] as Record<string, any>;
+      const row = dataset?.[item.dataIndex] as ChartDatasetRow;
       if (!row || typeof row !== 'object') return;
 
       let itemsToUse = row.itemsInGroup;
 
       // try using series specific items if they exist
       if (row.itemsBySeries && typeof row.itemsBySeries === 'object') {
-        const itemsBySeries = row.itemsBySeries as Record<string, any[]>;
+        const itemsBySeries = row.itemsBySeries as Record<
+          string,
+          Record<string, unknown>[]
+        >;
         const seriesKey =
           mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
           item.seriesId;
