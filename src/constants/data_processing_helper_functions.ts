@@ -80,15 +80,18 @@ export const Query2DataProcessingFunctionForDataCollection = (
   const result = Object.entries(aggregatedData)
     .sort(([a], [b]) => parseInt(a) - parseInt(b))
     .map(([year, methods]) => {
-      // Number of unique papers for this year
-      const uniquePaperCount = uniquePapersPerYear[year]?.size || 0;
+      // Calculate sum of all absolute values across all categories for this year
+      const totalMethodsCount = Object.values(methods).reduce(
+        (sum, count) => sum + count,
+        0
+      );
 
-      // For each method, compute normalized = count / uniquePaperCount
+      // For each method, compute normalized = count / totalMethodsCount
       const normalizedFields = Object.fromEntries(
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
-          uniquePaperCount > 0
-            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
+          totalMethodsCount > 0
+            ? Number(((count / totalMethodsCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -155,7 +158,6 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
 
   for (const year of uniqueYears) {
     const yearData = uniqueData.filter((item) => item.year === year);
-    const total = yearData.length;
 
     // Step 3: count each type
     let descriptive = 0,
@@ -236,22 +238,38 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       }
     });
 
+    const totalMethodsCount =
+      descriptive + inferential + machineLearning + method + others;
+
     processedData.push({
       year: Number(year),
       itemsInGroup: yearRawData,
       itemsBySeries,
       descriptive,
-      normalized_descriptive: +((descriptive * 100) / total).toFixed(2),
+      normalized_descriptive:
+        totalMethodsCount > 0
+          ? +((descriptive * 100) / totalMethodsCount).toFixed(2)
+          : 0,
       inferential,
-      normalized_inferential: +((inferential * 100) / total).toFixed(2),
+      normalized_inferential:
+        totalMethodsCount > 0
+          ? +((inferential * 100) / totalMethodsCount).toFixed(2)
+          : 0,
       machine_learning: machineLearning,
-      normalized_machine_learning: +((machineLearning * 100) / total).toFixed(
-        2
-      ),
+      normalized_machine_learning:
+        totalMethodsCount > 0
+          ? +((machineLearning * 100) / totalMethodsCount).toFixed(2)
+          : 0,
       method,
-      normalized_method: +((method * 100) / total).toFixed(2),
+      normalized_method:
+        totalMethodsCount > 0
+          ? +((method * 100) / totalMethodsCount).toFixed(2)
+          : 0,
       others,
-      normalized_others: +((others * 100) / total).toFixed(2),
+      normalized_others:
+        totalMethodsCount > 0
+          ? +((others * 100) / totalMethodsCount).toFixed(2)
+          : 0,
     });
   }
 
@@ -889,13 +907,17 @@ export const Query14DataProcessingFunction = (
   const result = Object.entries(methodCounts)
     .map(([year, methods]) => {
       const normalizedRatio: Record<string, number> = {};
-      const totalPapers = papersPerYear[Number(year)];
+      const totalMethodsCount = Object.values(methods).reduce(
+        (sum, count) => sum + count,
+        0
+      );
 
       Object.entries(methods).forEach(([method, count]) => {
         normalizedRatio[method] = count;
-        normalizedRatio[`normalized_${method}`] = parseFloat(
-          ((count / totalPapers) * 100).toFixed(2)
-        );
+        normalizedRatio[`normalized_${method}`] =
+          totalMethodsCount > 0
+            ? parseFloat(((count / totalMethodsCount) * 100).toFixed(2))
+            : 0;
       });
 
       return {

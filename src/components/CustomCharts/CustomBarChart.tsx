@@ -2,7 +2,10 @@
 import React, { useState, useCallback } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import type { BarItemIdentifier } from '@mui/x-charts/models';
-import { createLabelFormatter } from '../../utils/chartUtils';
+import {
+  createLabelFormatter,
+  calculateDynamicNormalizedDataset,
+} from '../../utils/chartUtils';
 import BarChartPapersDialog from './BarChartPapersDialog';
 
 interface ChartDatasetRow {
@@ -46,12 +49,20 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     }));
   }, [chartSetting.series, normalized, hasMultipleSubCharts, isSubChart]);
 
+  const computedDataset = React.useMemo(() => {
+    return calculateDynamicNormalizedDataset(
+      dataset,
+      chartSetting.series,
+      normalized
+    );
+  }, [dataset, chartSetting.series, normalized]);
+
   const handleBarItemClick = useCallback(
     (
       _event: React.MouseEvent<SVGElement, MouseEvent>,
       item: BarItemIdentifier
     ) => {
-      const row = dataset?.[item.dataIndex] as ChartDatasetRow;
+      const row = computedDataset?.[item.dataIndex] as ChartDatasetRow;
       if (!row || typeof row !== 'object') return;
 
       let itemsToUse = row.itemsInGroup;
@@ -169,7 +180,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         </h4>
       )}
       <BarChart
-        dataset={dataset}
+        dataset={computedDataset}
         {...chartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
