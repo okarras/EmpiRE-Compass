@@ -21,6 +21,7 @@ interface CustomBarChartInterface {
   normalized: boolean;
   loading: boolean;
   isSubChart?: boolean;
+  normalizationType?: 'per-year' | 'across-years';
 }
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
@@ -31,6 +32,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     loading,
     normalized,
     isSubChart = false,
+    normalizationType = 'per-year',
   } = props;
   const hasMultipleSubCharts = chartSetting.series.length > 1;
 
@@ -53,9 +55,10 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     return calculateDynamicNormalizedDataset(
       dataset,
       chartSetting.series,
-      normalized
+      normalized,
+      normalizationType
     );
-  }, [dataset, chartSetting.series, normalized]);
+  }, [dataset, chartSetting.series, normalized, normalizationType]);
 
   const handleBarItemClick = useCallback(
     (
