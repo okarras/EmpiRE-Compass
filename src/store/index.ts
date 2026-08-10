@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import questionReducer from './slices/questionSlice';
 import aiReducer from './slices/aiSlice';
+import scidQuestReducer from './slices/scidQuestSlice';
 
 export const store = configureStore({
   reducer: {
     questions: questionReducer,
     ai: aiReducer,
+    scidQuest: scidQuestReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

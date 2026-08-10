@@ -1,30 +1,54 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { ResearchQuestionnaireApp } from '@orkg/scidquest';
 import { ScidQuestProviders } from '../components/ScidQuest/ScidQuestProviders';
 import { ensureReactPdfWorkerConfigured } from '../utils/pdfWorker';
-import { QuestionnaireForm } from '../components/ScidQuest/QuestionnaireForm';
 import { ErrorBoundary } from '../components/ScidQuest/ErrorBoundary';
 import '@orkg/scidquest/dist/scidquest.css';
 
+import { getTemplate } from '../services/backendApi/templates';
+import { useAppDispatch } from '../store/hooks';
+import { setScidQuestAnswers } from '../store/slices/scidQuestSlice';
+
 export default function ScidQuestPage() {
+  const { templateId } = useParams<{ templateId: string }>();
+  const dispatch = useAppDispatch();
+
   const [isWorkerReady, setIsWorkerReady] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [templateSpec, setTemplateSpec] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     ensureReactPdfWorkerConfigured()
-      .then(() => {
-        setIsWorkerReady(true);
-      })
+      .then(() => setIsWorkerReady(true))
       .catch((err) => {
         console.error('Failed to configure PDF worker:', err);
         setIsWorkerReady(true);
       });
   }, []);
 
-  const renderQuestionnaireSlot = useCallback(() => {
-    return <QuestionnaireForm answers={answers} setAnswers={setAnswers} />;
-  }, [answers]);
+  useEffect(() => {
+    if (templateId) {
+      getTemplate(templateId)
+        .then((res) => {
+          setTemplateSpec(res);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch template:', err);
+          setError('Failed to fetch template data.');
+        });
+    } else {
+      setError('No template ID provided in route.');
+    }
+  }, [templateId]);
+
+  const handleAnswersChange = (newAnswers: Record<string, string>) => {
+    setAnswers(newAnswers);
+    dispatch(setScidQuestAnswers(newAnswers));
+  };
 
   const mockPdfTextExtractor = {
     extractFullText: async (url: string) => {
@@ -33,14 +57,15 @@ export default function ScidQuestPage() {
     },
   };
 
-  const mockTemplateSpec = {
-    version: '1.0',
-    template: 'scidquest',
-    template_id: 'test',
-    sections: [],
-  };
+  if (error) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
-  if (!isWorkerReady) {
+  if (!isWorkerReady || !templateSpec) {
     return (
       <Box
         sx={{
@@ -67,11 +92,10 @@ export default function ScidQuestPage() {
       <ErrorBoundary>
         <ScidQuestProviders>
           <ResearchQuestionnaireApp
-            templateSpec={mockTemplateSpec}
+            templateSpec={templateSpec}
             answers={answers}
-            setAnswers={setAnswers}
+            setAnswers={handleAnswersChange}
             pdfTextExtractor={mockPdfTextExtractor}
-            questionnaireSlot={renderQuestionnaireSlot}
           />
         </ScidQuestProviders>
       </ErrorBoundary>
