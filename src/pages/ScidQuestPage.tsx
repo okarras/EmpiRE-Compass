@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Button,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 import { ResearchQuestionnaireApp } from '@orkg/scidquest';
 import { ScidQuestProviders } from '../components/ScidQuest/ScidQuestProviders';
 import { ensureReactPdfWorkerConfigured } from '../utils/pdfWorker';
@@ -19,7 +26,10 @@ export default function ScidQuestPage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [templateSpec, setTemplateSpec] = useState<any>(null);
+  const [templateSource, setTemplateSource] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     ensureReactPdfWorkerConfigured()
@@ -35,15 +45,62 @@ export default function ScidQuestPage() {
       getTemplate(templateId)
         .then((res) => {
           setTemplateSpec(res);
+          setTemplateSource(`${templateId} (ORKG API)`);
         })
         .catch((err) => {
           console.error('Failed to fetch template:', err);
           setError('Failed to fetch template data.');
+          setTemplateSpec(null);
         });
-    } else {
-      setError('No template ID provided in route.');
     }
   }, [templateId]);
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const result = e.target?.result;
+        if (typeof result === 'string') {
+          const parsed = JSON.parse(result);
+          console.log('Uploaded Template Spec:', parsed);
+
+          // The @orkg/scidquest library actually expects a `QuestionnaireTemplate`
+          // which uses `template_id` and `sections`. We allow both here so we don't block
+          // you, but the UI will render blank if it lacks `sections`.
+          const isOrkgTemplate = !!(parsed.id || parsed.properties);
+          const isScidQuestTemplate = !!(parsed.template_id || parsed.sections);
+
+          if (!isOrkgTemplate && !isScidQuestTemplate) {
+            setFileError(
+              'Invalid JSON file. Please upload a valid template schema.'
+            );
+            setTemplateSpec(null);
+            return;
+          }
+
+          setTemplateSpec(parsed);
+          setTemplateSource(`${file.name} (Local)`);
+        }
+      } catch (err) {
+        console.error('Failed to parse JSON file:', err);
+        setFileError('Invalid JSON file. Please upload a valid template.');
+        setTemplateSpec(null);
+      }
+    };
+    reader.onerror = () => {
+      setFileError('Failed to read the uploaded file.');
+      setTemplateSpec(null);
+    };
+    reader.readAsText(file);
+
+    // Reset input so the same file can be uploaded again if needed
+    if (event.target) {
+      event.target.value = '';
+    }
+  };
 
   const handleAnswersChange = (newAnswers: Record<string, string>) => {
     setAnswers(newAnswers);
@@ -65,7 +122,7 @@ export default function ScidQuestPage() {
     );
   }
 
-  if (!isWorkerReady || !templateSpec) {
+  if (!isWorkerReady) {
     return (
       <Box
         sx={{
@@ -80,6 +137,57 @@ export default function ScidQuestPage() {
     );
   }
 
+  // Shared hidden file input and snackbar for both states
+  const fileUploadComponents = (
+    <>
+      <input
+        type="file"
+        accept=".json"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileUpload}
+      />
+      <Snackbar
+        open={!!fileError}
+        autoHideDuration={6000}
+        onClose={() => setFileError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setFileError(null)}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {fileError}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+
+  if (!templateSpec || Object.keys(templateSpec).length === 0) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh',
+          gap: 2,
+        }}
+      >
+        <Typography variant="h6">Upload JSON Template</Typography>
+        {fileUploadComponents}
+        <Button
+          variant="contained"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Upload Template
+        </Button>
+      </Box>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -89,16 +197,40 @@ export default function ScidQuestPage() {
         flexDirection: 'column',
       }}
     >
-      <ErrorBoundary>
-        <ScidQuestProviders>
-          <ResearchQuestionnaireApp
-            templateSpec={templateSpec}
-            answers={answers}
-            setAnswers={handleAnswersChange}
-            pdfTextExtractor={mockPdfTextExtractor}
-          />
-        </ScidQuestProviders>
-      </ErrorBoundary>
+      {fileUploadComponents}
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #ddd',
+        }}
+      >
+        <Typography variant="body1" fontWeight="bold">
+          Active Template: {templateSource || 'Unknown'}
+        </Typography>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          Switch / Upload Template
+        </Button>
+      </Box>
+
+      <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+        <ErrorBoundary>
+          <ScidQuestProviders>
+            <ResearchQuestionnaireApp
+              templateSpec={templateSpec}
+              answers={answers}
+              setAnswers={handleAnswersChange}
+              pdfTextExtractor={mockPdfTextExtractor}
+            />
+          </ScidQuestProviders>
+        </ErrorBoundary>
+      </Box>
     </Box>
   );
 }
