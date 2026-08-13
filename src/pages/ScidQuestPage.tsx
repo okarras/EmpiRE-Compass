@@ -17,6 +17,7 @@ import '@orkg/scidquest/dist/scidquest.css';
 import { getTemplate } from '../services/backendApi/templates';
 import { useAppDispatch } from '../store/hooks';
 import { setScidQuestAnswers } from '../store/slices/scidQuestSlice';
+import AIConfigurationButton from '../components/AI/AIConfigurationButton';
 
 // Helper to convert an ORKG template format to the ScidQuest QuestionnaireTemplate format
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -234,13 +235,16 @@ export default function ScidQuestPage() {
         <Typography variant="body1" fontWeight="bold">
           Active Template: {templateSource || 'Unknown'}
         </Typography>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => fileInputRef.current?.click()}
-        >
-          Switch / Upload Template
-        </Button>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <AIConfigurationButton />
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Switch / Upload Template
+          </Button>
+        </Box>
       </Box>
 
       <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
