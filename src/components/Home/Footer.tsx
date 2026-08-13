@@ -3,6 +3,7 @@ import { Box, Typography, Divider } from '@mui/material';
 const Footer = () => {
   return (
     <Box
+      component="footer"
       sx={{
         mt: { xs: 6, sm: 8, md: 10 },
         pt: { xs: 3, sm: 4 },
