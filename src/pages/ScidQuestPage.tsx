@@ -107,13 +107,6 @@ export default function ScidQuestPage() {
     dispatch(setScidQuestAnswers(newAnswers));
   };
 
-  const mockPdfTextExtractor = {
-    extractFullText: async (url: string) => {
-      console.log('Extracting text from:', url);
-      return 'Sample extracted text from PDF... Integration with an actual backend extractor goes here.';
-    },
-  };
-
   if (error) {
     return (
       <Box sx={{ p: 4 }}>
@@ -226,7 +219,6 @@ export default function ScidQuestPage() {
               templateSpec={templateSpec}
               answers={answers}
               setAnswers={handleAnswersChange}
-              pdfTextExtractor={mockPdfTextExtractor}
             />
           </ScidQuestProviders>
         </ErrorBoundary>
