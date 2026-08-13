@@ -25,6 +25,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 const AdminPapers = lazy(() => import('./pages/AdminPapers'));
+const AdminContributions = lazy(() => import('./pages/AdminContributions'));
 const AdminTeam = lazy(() => import('./pages/AdminTeam'));
 
 const CommunityQuestionDetailsPage = lazy(
@@ -175,6 +176,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminTeam />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/contributions"
+              element={
+                <AdminGuard>
+                  <AdminContributions />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}
