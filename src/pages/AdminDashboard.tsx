@@ -48,6 +48,7 @@ import {
   PersonRemove,
   Article,
   MenuBook,
+  FactCheck,
 } from '@mui/icons-material';
 import StatisticsUpdateSection from '../components/Admin/StatisticsUpdateSection';
 import {
@@ -691,6 +692,26 @@ const AdminDashboard = () => {
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     Manage published papers on Team page
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <Card
+              sx={{ cursor: 'pointer', '&:hover': { boxShadow: 4 } }}
+              onClick={() => navigate(`/${templateId}/admin/contributions`)}
+            >
+              <CardContent
+                sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+              >
+                <FactCheck sx={{ color: '#e86161' }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    Contributions
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Review and accept questionnaire submissions
                   </Typography>
                 </Box>
               </CardContent>

@@ -496,12 +496,24 @@ router.post(
             .json({ error: 'Rate limit exceeded. Please try again later.' });
         }
 
+        // Providers word a rejected credential differently — OpenRouter answers
+        // "User not found." for a revoked key — so match on the upstream status
+        // as well as the message, and quote the provider verbatim. Without this
+        // a dead key surfaced only as the generic "Failed to generate text".
+        const upstreamStatus =
+          (error as { statusCode?: number }).statusCode ??
+          (error as { status?: number }).status;
+
         if (
+          upstreamStatus === 401 ||
+          upstreamStatus === 403 ||
           errorMessage.includes('invalid api key') ||
-          errorMessage.includes('authentication')
+          errorMessage.includes('authentication') ||
+          errorMessage.includes('unauthorized') ||
+          errorMessage.includes('user not found')
         ) {
           return res.status(500).json({
-            error: 'Invalid API key. Please check backend configuration.',
+            error: `The AI provider (${req.body?.provider ?? 'configured provider'}) rejected the API key: ${error.message} Update the backend key, or enter your own in the AI configuration dialog.`,
           });
         }
 
