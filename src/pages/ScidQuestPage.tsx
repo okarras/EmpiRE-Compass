@@ -18,6 +18,37 @@ import { getTemplate } from '../services/backendApi/templates';
 import { useAppDispatch } from '../store/hooks';
 import { setScidQuestAnswers } from '../store/slices/scidQuestSlice';
 
+// Helper to convert an ORKG template format to the ScidQuest QuestionnaireTemplate format
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const convertOrkgToScidQuest = (orkgTemplate: any) => {
+  if (orkgTemplate.sections || orkgTemplate.template_id) {
+    return orkgTemplate; // Already in ScidQuest format
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const questions = (orkgTemplate.properties || []).map((prop: any) => {
+    return {
+      id: prop.path?.id || prop.id,
+      label: prop.description || prop.path?.label || prop.label || 'Question',
+      type: 'text', // Default to text for all ORKG properties
+      required: prop.min_count > 0,
+    };
+  });
+
+  return {
+    version: '1',
+    template: orkgTemplate.label || 'Extracted Information',
+    template_id: orkgTemplate.id || 'unknown_template',
+    sections: [
+      {
+        id: `sec-${orkgTemplate.id || 'default'}`,
+        title: orkgTemplate.label || 'Template Sections',
+        questions: questions,
+      },
+    ],
+  };
+};
+
 export default function ScidQuestPage() {
   const { templateId } = useParams<{ templateId: string }>();
   const dispatch = useAppDispatch();
@@ -44,7 +75,7 @@ export default function ScidQuestPage() {
     if (templateId) {
       getTemplate(templateId)
         .then((res) => {
-          setTemplateSpec(res);
+          setTemplateSpec(convertOrkgToScidQuest(res));
           setTemplateSource(`${templateId} (ORKG API)`);
         })
         .catch((err) => {
@@ -81,7 +112,7 @@ export default function ScidQuestPage() {
             return;
           }
 
-          setTemplateSpec(parsed);
+          setTemplateSpec(convertOrkgToScidQuest(parsed));
           setTemplateSource(`${file.name} (Local)`);
         }
       } catch (err) {
