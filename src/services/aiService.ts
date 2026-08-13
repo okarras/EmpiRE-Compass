@@ -127,6 +127,7 @@ export class AIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      signal?: AbortSignal;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
@@ -137,6 +138,7 @@ export class AIService {
       prompt,
       system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
+      abortSignal: options?.signal,
       // omit maxTokens to match SDK typings
     });
 
