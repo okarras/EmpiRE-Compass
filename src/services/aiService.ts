@@ -139,7 +139,11 @@ export class AIService {
       system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
       abortSignal: options?.signal,
-      // omit maxTokens to match SDK typings
+      // v5 names this `maxOutputTokens`; without it generation is uncapped and a
+      // single suggestion can run for minutes.
+      ...(options?.maxTokens && options.maxTokens > 0
+        ? { maxOutputTokens: options.maxTokens }
+        : {}),
     });
 
     // Normalize text to string (handle different response formats)
