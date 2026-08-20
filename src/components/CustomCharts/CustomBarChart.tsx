@@ -2,8 +2,17 @@
 import React, { useState, useCallback } from 'react';
 import { BarChart } from '@mui/x-charts/BarChart';
 import type { BarItemIdentifier } from '@mui/x-charts/models';
-import { createLabelFormatter } from '../../utils/chartUtils';
+import {
+  createLabelFormatter,
+  calculateDynamicNormalizedDataset,
+} from '../../utils/chartUtils';
 import BarChartPapersDialog from './BarChartPapersDialog';
+
+interface ChartDatasetRow {
+  itemsInGroup?: Record<string, unknown>[];
+  itemsBySeries?: Record<string, Record<string, unknown>[]>;
+  [key: string]: unknown;
+}
 
 interface CustomBarChartInterface {
   dataset: any[];
@@ -12,6 +21,7 @@ interface CustomBarChartInterface {
   normalized: boolean;
   loading: boolean;
   isSubChart?: boolean;
+  normalizationType?: 'per-year' | 'across-years';
 }
 
 const CustomBarChart = (props: CustomBarChartInterface) => {
@@ -22,6 +32,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     loading,
     normalized,
     isSubChart = false,
+    normalizationType = 'per-year',
   } = props;
   const hasMultipleSubCharts = chartSetting.series.length > 1;
 
@@ -31,27 +42,72 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     barTitle: string;
   }>({ open: false, itemsInGroup: [], barTitle: '' });
 
+  const mappedSeries = React.useMemo(() => {
+    return chartSetting.series.map((s: any, index: number) => ({
+      ...s,
+      id: s.id ?? `series-${index}`,
+      dataKey:
+        normalized || hasMultipleSubCharts || isSubChart ? s.dataKey : 'count',
+    }));
+  }, [chartSetting.series, normalized, hasMultipleSubCharts, isSubChart]);
+
+  const computedDataset = React.useMemo(() => {
+    return calculateDynamicNormalizedDataset(
+      dataset,
+      chartSetting.series,
+      normalized,
+      normalizationType
+    );
+  }, [dataset, chartSetting.series, normalized, normalizationType]);
+
   const handleBarItemClick = useCallback(
     (
       _event: React.MouseEvent<SVGElement, MouseEvent>,
       item: BarItemIdentifier
     ) => {
-      const row = dataset?.[item.dataIndex];
+      const row = computedDataset?.[item.dataIndex] as ChartDatasetRow;
       if (!row || typeof row !== 'object') return;
-      const itemsInGroup = (row as Record<string, unknown>).itemsInGroup;
-      if (!Array.isArray(itemsInGroup) || itemsInGroup.length === 0) return;
+
+      let itemsToUse = row.itemsInGroup;
+
+      // try using series specific items if they exist
+      if (row.itemsBySeries && typeof row.itemsBySeries === 'object') {
+        const itemsBySeries = row.itemsBySeries as Record<
+          string,
+          Record<string, unknown>[]
+        >;
+        const seriesKey =
+          mappedSeries.find((s: any) => s.id === item.seriesId)?.dataKey ||
+          item.seriesId;
+
+        // Papers are stored under absolute keys, map normalized keys back to retrieve them.
+        const absoluteKey =
+          typeof seriesKey === 'string' && seriesKey.startsWith('normalized_')
+            ? seriesKey.replace('normalized_', '')
+            : seriesKey === 'normalizedRatio'
+              ? 'count'
+              : seriesKey;
+
+        if (itemsBySeries[seriesKey as string]) {
+          itemsToUse = itemsBySeries[seriesKey as string];
+        } else if (itemsBySeries[absoluteKey as string]) {
+          itemsToUse = itemsBySeries[absoluteKey as string];
+        }
+      }
+
+      if (!Array.isArray(itemsToUse) || itemsToUse.length === 0) return;
+
       const xKey = chartSetting.xAxis?.[0]?.dataKey ?? 'year';
       const barTitle =
-        (row as Record<string, unknown>)[xKey] != null
-          ? String((row as Record<string, unknown>)[xKey])
-          : `Item ${item.dataIndex}`;
+        row[xKey] != null ? String(row[xKey]) : `Item ${item.dataIndex}`;
+
       setPapersDialog({
         open: true,
-        itemsInGroup: itemsInGroup as Record<string, unknown>[],
+        itemsInGroup: itemsToUse as Record<string, unknown>[],
         barTitle,
       });
     },
-    [dataset, chartSetting.xAxis]
+    [dataset, chartSetting.xAxis, mappedSeries]
   );
 
   const closePapersDialog = useCallback(() => {
@@ -127,17 +183,11 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         </h4>
       )}
       <BarChart
-        dataset={dataset}
+        dataset={computedDataset}
         {...chartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
-        series={chartSetting.series.map((s: Record<string, unknown>) => ({
-          ...s,
-          dataKey:
-            normalized || hasMultipleSubCharts || isSubChart
-              ? s.dataKey
-              : 'count',
-        }))}
+        series={mappedSeries}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
         onItemClick={handleBarItemClick}
