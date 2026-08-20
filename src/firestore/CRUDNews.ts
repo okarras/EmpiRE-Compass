@@ -11,6 +11,7 @@ import {
   deleteNewsItem as deleteNewsItemApi,
   NewsItem as ApiNewsItem,
 } from '../services/backendApi';
+import type { NewsItemUpdate as ApiNewsItemUpdate } from '../services/backendApi/news';
 import { getKeycloakToken } from '../auth/keycloakStore';
 
 export interface NewsItem {
@@ -204,6 +205,17 @@ export const createNewsItem = async (
 };
 
 /**
+ * Partial update payload. A field set to `null` is cleared on the stored item;
+ * omitting it (or passing `undefined`) leaves the previous value untouched.
+ */
+export type NewsItemUpdate = Partial<
+  Omit<NewsItem, 'id' | 'createdAt' | 'tags' | 'imageUrl'>
+> & {
+  tags?: string[] | null;
+  imageUrl?: string | null;
+};
+
+/**
  * Update an existing news item via backend API
  * @param newsId - The ID of the news item to update
  * @param updates - Partial news item data to update
@@ -213,7 +225,7 @@ export const createNewsItem = async (
  */
 export const updateNewsItem = async (
   newsId: string,
-  updates: Partial<Omit<NewsItem, 'id' | 'createdAt'>>,
+  updates: NewsItemUpdate,
   userId?: string,
   userEmail?: string,
   keycloakToken?: string
@@ -224,7 +236,7 @@ export const updateNewsItem = async (
 
   try {
     const { token } = getAuthInfo();
-    const updateData: Partial<Omit<ApiNewsItem, 'id' | 'createdAt'>> = {
+    const updateData: ApiNewsItemUpdate = {
       ...updates,
       updatedAt: updates.updatedAt
         ? typeof updates.updatedAt === 'string'

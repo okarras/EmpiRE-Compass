@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { FieldValue } from 'firebase-admin/firestore';
 import { db } from '../config/firebase.js';
 import {
   validateKeycloakToken,
@@ -15,6 +16,22 @@ function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
   return Object.fromEntries(
     Object.entries(obj).filter(([, v]) => v !== undefined && v !== null)
   ) as T;
+}
+
+/**
+ * Build a partial-update payload. `undefined` is dropped (Firestore rejects it), while an
+ * explicit `null` means "clear this field" and becomes a delete sentinel -- without this a
+ * cleared optional field (e.g. imageUrl) would simply be missing from the merge and keep
+ * its previous value.
+ */
+function buildUpdatePayload(
+  obj: Record<string, unknown>
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, v === null ? FieldValue.delete() : v])
+  );
 }
 
 /**
@@ -399,10 +416,17 @@ router.put(
           }),
       };
 
-      // Remove id and undefined values (Firestore rejects undefined)
+      // Drop id/undefined; `null` clears the field instead of leaving the old value in place.
       const { id: _id, ...rest } = updateData;
-      const docData = stripUndefined(rest as Record<string, unknown>);
+      const docData = buildUpdatePayload(rest as Record<string, unknown>);
       await newsRef.set(docData, { merge: true });
+
+      // Delete sentinels are not serialisable, so log the cleared fields as null.
+      const loggedData = Object.fromEntries(
+        Object.entries(rest as Record<string, unknown>).filter(
+          ([, v]) => v !== undefined
+        )
+      );
 
       // Invalidate Cache
       newsCache = null;
@@ -416,7 +440,7 @@ router.put(
         req.userEmail,
         undefined,
         { method: 'PUT' },
-        docData
+        loggedData
       );
 
       const updatedDoc = await newsRef.get();

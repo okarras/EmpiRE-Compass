@@ -96,7 +96,11 @@ const Router = () => {
             />
             <Route
               path="scid-quest"
-              element={<ScidQuestPage />}
+              element={
+                <AdminGuard>
+                  <ScidQuestPage />
+                </AdminGuard>
+              }
               errorElement={<ErrorFallback />}
             />
             <Route

@@ -304,10 +304,14 @@ router.get(
  *         description: Invalid submission
  *       '401':
  *         description: Authentication required
+ *       '403':
+ *         description: Admin access required
  */
+// SciD-QuESt is admin-only for now, so submitting is gated the same way review is.
 router.post(
   '/',
   validateKeycloakToken,
+  requireAdmin,
   validateRequiredFields(['paper', 'answers']),
   async (req: AuthenticatedRequest, res) => {
     try {
