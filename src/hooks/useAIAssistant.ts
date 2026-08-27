@@ -445,12 +445,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         const response = await generateWithProvider(
           `${generateSystemContext()}
           User Question: ${prompt}
-
-          CRITICAL INSTRUCTION:
-          Suggest at least 5 alternative ways to visualize this data.
-          Respond ONLY with a raw JSON object containing a 'Suggestions' array. Do not include markdown code blocks, backticks, or any conversational text.
-          Example: { "Suggestions": [ { "chartType": "...", "chartDescription": "..." } ] }
-          The output must be pure, parsable JSON.`,
+${CHART_GENERATION_SUGGESTION_PROMPT}`,
           undefined,
           'json'
         );
