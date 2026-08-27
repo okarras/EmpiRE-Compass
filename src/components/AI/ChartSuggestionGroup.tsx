@@ -8,9 +8,10 @@ import {
   Radar as RadarIcon,
   InsertChartOutlined as DefaultChartIcon,
 } from '@mui/icons-material';
+import { AllowedChartType } from '../../constants/prompts';
 
-interface ChartSuggestion {
-  chartType: string;
+export interface ChartSuggestion {
+  chartType: AllowedChartType | string;
   chartDescription: string;
 }
 

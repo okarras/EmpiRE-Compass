@@ -1,6 +1,20 @@
+export const ALLOWED_CHART_TYPES = [
+  'Line chart',
+  'Bar chart',
+  'Area chart',
+  'Heatmap',
+  'Column chart',
+  'Pie chart',
+] as const;
+
+export type AllowedChartType = (typeof ALLOWED_CHART_TYPES)[number];
+
 export const CHART_GENERATION_SUGGESTION_PROMPT = `
           CRITICAL INSTRUCTION:
           Suggest at least 5 alternative ways to visualize this data.
+          You MUST select "chartType" ONLY from this exact list: ${ALLOWED_CHART_TYPES.join(', ')}.
+          Do NOT suggest any other chart types.
+
           You MUST respond ONLY with a single JSON object matching the schema below.
           Do NOT include any markdown code blocks, backticks, comments, or surrounding text.
           The output must be pure, parsable JSON.
@@ -9,7 +23,7 @@ export const CHART_GENERATION_SUGGESTION_PROMPT = `
           {
             "Suggestions": [
               {
-                "chartType": "Bar chart",
+                "chartType": "Bar chart", // MUST be one of the allowed chart types
                 "chartDescription": "Explanation of why this fits the data."
               }
             ]
