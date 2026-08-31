@@ -17,8 +17,9 @@ import {
   Stack,
   Grid,
   Divider,
+  IconButton,
 } from '@mui/material';
-import { AutoFixHigh, Info } from '@mui/icons-material';
+import { AutoFixHigh, Info, Edit, Save, Cancel } from '@mui/icons-material';
 
 import { useHistoryManager } from './HistoryManager';
 import { useAIService } from '../../services/backendAIService';
@@ -369,13 +370,49 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
 
     const isAdmin = user?.is_admin === true;
 
+    const htmlSx = {
+      '& p': { margin: 0, mb: 0.5, '&:last-child': { mb: 0 } },
+      '& strong': { fontWeight: 600 },
+      '& a': { color: 'inherit' },
+    };
+
+    const handleIntroSave = async () => {
+      setIntroSaving(true);
+      setIntroSaveError(null);
+      try {
+        await saveTemplateIntroText(
+          activeTemplateId || DEFAULT_TEMPLATE_ID,
+          introEditText,
+          user?.id || '',
+          user?.email || ''
+        );
+        setIntroCustomText(introEditText.trim());
+        setIntroEditOpen(false);
+      } catch (err) {
+        setIntroSaveError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to save. Please try again.'
+        );
+      } finally {
+        setIntroSaving(false);
+      }
+    };
+
     if (introEditOpen && isAdmin) {
       return (
-        <Box sx={{ mb: 2 }}>
+        <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ mb: 1, display: 'block' }}
+          >
+            Editing: Introductory text
+          </Typography>
           <TextField
             fullWidth
             multiline
-            rows={4}
+            minRows={3}
             value={introEditText}
             onChange={(e) => {
               setIntroEditText(e.target.value);
@@ -383,13 +420,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
             }}
             disabled={introSaving}
             autoFocus
-            variant="outlined"
-            sx={{
-              mb: 1,
-              '& .MuiOutlinedInput-root': {
-                '&.Mui-focused > fieldset': { borderColor: '#e86161' },
-              },
-            }}
+            sx={{ mb: 2 }}
           />
           {introSaveError && (
             <Alert severity="error" sx={{ mb: 1 }}>
@@ -399,6 +430,7 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
             <Button
               size="small"
+              startIcon={<Cancel />}
               onClick={() => {
                 setIntroEditOpen(false);
                 setIntroSaveError(null);
@@ -412,85 +444,67 @@ const SPARQLQuerySection: React.FC<SPARQLQuerySectionProps> = ({
               variant="contained"
               disabled={introSaving || !introEditText.trim()}
               startIcon={
-                introSaving ? (
-                  <CircularProgress size={14} color="inherit" />
-                ) : null
+                introSaving ? <CircularProgress size={16} /> : <Save />
               }
-              onClick={async () => {
-                setIntroSaving(true);
-                setIntroSaveError(null);
-                try {
-                  await saveTemplateIntroText(
-                    activeTemplateId || DEFAULT_TEMPLATE_ID,
-                    introEditText,
-                    user?.id || '',
-                    user?.email || ''
-                  );
-                  setIntroCustomText(introEditText.trim());
-                  setIntroEditOpen(false);
-                } catch (err) {
-                  setIntroSaveError(
-                    err instanceof Error
-                      ? err.message
-                      : 'Failed to save. Please try again.'
-                  );
-                } finally {
-                  setIntroSaving(false);
-                }
-              }}
+              onClick={handleIntroSave}
               sx={{
                 backgroundColor: '#e86161',
                 '&:hover': { backgroundColor: '#d45151' },
               }}
             >
-              {introSaving ? 'Saving...' : 'Save'}
+              Save
             </Button>
           </Box>
+        </Paper>
+      );
+    }
+
+    if (isAdmin) {
+      return (
+        <Box
+          sx={{
+            position: 'relative',
+            border: '1px dashed #ccc',
+            p: 1,
+            borderRadius: 1,
+            mb: 2,
+            '&:hover .edit-btn': { opacity: 1 },
+          }}
+        >
+          <Box dangerouslySetInnerHTML={{ __html: rawHtml }} sx={htmlSx} />
+          <Tooltip title="Edit Introductory text">
+            <IconButton
+              className="edit-btn"
+              size="small"
+              onClick={() => {
+                setIntroEditText(introCustomText || KG_EMPIRE_DEFAULT_HTML);
+                setIntroEditOpen(true);
+              }}
+              sx={{
+                position: 'absolute',
+                top: 5,
+                right: 5,
+                opacity: 0.3,
+                backgroundColor: 'rgba(255,255,255,0.8)',
+              }}
+            >
+              <Edit fontSize="small" />
+            </IconButton>
+          </Tooltip>
         </Box>
       );
     }
 
     return (
-      <Box
-        sx={{ mb: 2, cursor: isAdmin ? 'text' : 'default' }}
-        onClick={() => {
-          if (!isAdmin) return;
-          setIntroEditText(introCustomText || KG_EMPIRE_DEFAULT_HTML);
-          setIntroEditOpen(true);
-        }}
-      >
+      <Box sx={{ mb: 2 }}>
         <Alert
           severity="info"
           sx={{
             backgroundColor: 'rgba(232, 97, 97, 0.04)',
             borderLeft: '4px solid #e86161',
-            cursor: isAdmin ? 'text' : 'default',
-            ...(isAdmin && {
-              '&:hover': { backgroundColor: 'rgba(232, 97, 97, 0.08)' },
-              transition: 'background-color 0.2s',
-            }),
           }}
         >
-          <Box
-            dangerouslySetInnerHTML={{ __html: rawHtml }}
-            sx={{
-              '& p': { margin: 0, mb: 0.5, '&:last-child': { mb: 0 } },
-              '& strong': { fontWeight: 600 },
-              '& a': {
-                color: 'inherit',
-                pointerEvents: isAdmin ? 'none' : 'auto',
-              },
-            }}
-          />
-          {isAdmin && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ mt: 1, display: 'block', opacity: 0.6 }}
-            >
-              Click to edit
-            </Typography>
-          )}
+          <Box dangerouslySetInnerHTML={{ __html: rawHtml }} sx={htmlSx} />
         </Alert>
       </Box>
     );

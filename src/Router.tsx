@@ -32,6 +32,7 @@ const CommunityQuestionDetailsPage = lazy(
   () => import('./pages/CommunityQuestionDetailsPage')
 );
 const ScidQuestPage = lazy(() => import('./pages/ScidQuestPage'));
+const PaperVerificationPage = lazy(() => import('./pages/PaperVerificationPage'));
 
 const Router = () => {
   return (
@@ -101,6 +102,11 @@ const Router = () => {
                   <ScidQuestPage />
                 </AdminGuard>
               }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="verify/:token"
+              element={<PaperVerificationPage />}
               errorElement={<ErrorFallback />}
             />
             <Route
