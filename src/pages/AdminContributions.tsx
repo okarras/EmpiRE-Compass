@@ -30,8 +30,10 @@ import {
 import {
   CheckCircle,
   Cancel,
+  ContentCopy,
   Delete,
   OpenInNew,
+  PersonAddAlt,
   Refresh,
   Visibility,
 } from '@mui/icons-material';
@@ -47,6 +49,10 @@ import {
   type Contribution,
   type ContributionStatus,
 } from '../services/backendApi/contributions';
+import {
+  createVerification,
+  type CreateVerificationResult,
+} from '../services/backendApi/verifications';
 import empireQuestionnaire from '../templates/empire_questionnaire.json';
 
 const TEMPLATE_SPEC = empireQuestionnaire as unknown as QuestionnaireTemplate;
@@ -106,6 +112,14 @@ const AdminContributions = () => {
   const [reviewing, setReviewing] = useState<Contribution | null>(null);
   const [reviewNote, setReviewNote] = useState('');
   const [savingId, setSavingId] = useState<string | null>(null);
+
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [invitePaperId, setInvitePaperId] = useState('');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteResult, setInviteResult] = useState<CreateVerificationResult | null>(
+    null
+  );
 
   // Question labels live in the template, not in the stored answers, so the
   // reviewer sees the same wording the submitter answered.
@@ -206,6 +220,50 @@ const AdminContributions = () => {
     setReviewNote(contribution.reviewNote ?? '');
   };
 
+  const openInviteDialog = () => {
+    setInvitePaperId('');
+    setInviteError(null);
+    setInviteResult(null);
+    setInviteDialogOpen(true);
+  };
+
+  const handleCreateInvite = async () => {
+    if (!user?.id || !user?.email) {
+      setInviteError('User authentication required');
+      return;
+    }
+    const paperId = invitePaperId.trim();
+    if (!paperId) {
+      setInviteError('Enter an ORKG paper id (e.g. R742443).');
+      return;
+    }
+
+    setInviteLoading(true);
+    setInviteError(null);
+    try {
+      const result = await createVerification(paperId, user.id, user.email);
+      setInviteResult(result);
+    } catch (err) {
+      console.error('Error creating verification invite:', err);
+      setInviteError(
+        err instanceof Error ? err.message : 'Failed to create invite.'
+      );
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteResult) return;
+    try {
+      await navigator.clipboard.writeText(inviteResult.link);
+      setSuccess('Link copied to clipboard');
+      setTimeout(() => setSuccess(null), 4000);
+    } catch {
+      setError('Could not copy link to clipboard');
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box
@@ -224,13 +282,22 @@ const AdminContributions = () => {
             Questionnaire submissions awaiting review.
           </Typography>
         </Box>
-        <Button
-          startIcon={<Refresh />}
-          onClick={fetchContributions}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<PersonAddAlt />}
+            onClick={openInviteDialog}
+          >
+            Invite author to verify
+          </Button>
+          <Button
+            startIcon={<Refresh />}
+            onClick={fetchContributions}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        </Stack>
       </Box>
 
       {error && (
@@ -297,9 +364,19 @@ const AdminContributions = () => {
                 return (
                   <TableRow key={contribution.id} hover>
                     <TableCell>
-                      <Typography variant="body2" fontWeight="bold">
-                        {contribution.paper?.title || 'Untitled'}
-                      </Typography>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography variant="body2" fontWeight="bold">
+                          {contribution.paper?.title || 'Untitled'}
+                        </Typography>
+                        {contribution.origin === 'author_verification' && (
+                          <Chip
+                            size="small"
+                            variant="outlined"
+                            color="info"
+                            label="Author verification"
+                          />
+                        )}
+                      </Stack>
                       <Typography variant="caption" color="text.secondary">
                         {[
                           contribution.paper?.authors,
@@ -330,8 +407,16 @@ const AdminContributions = () => {
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
-                        {contribution.submittedByEmail || '—'}
+                        {contribution.submittedByName ||
+                          contribution.submittedByEmail ||
+                          '—'}
                       </Typography>
+                      {contribution.submittedByName &&
+                        contribution.submittedByEmail && (
+                          <Typography variant="caption" color="text.secondary">
+                            {contribution.submittedByEmail}
+                          </Typography>
+                        )}
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2">
@@ -417,22 +502,37 @@ const AdminContributions = () => {
         <DialogTitle>{reviewing?.paper?.title || 'Contribution'}</DialogTitle>
         <DialogContent dividers>
           <Typography variant="caption" color="text.secondary">
-            Submitted by {reviewing?.submittedByEmail || 'unknown'} on{' '}
-            {formatDate(reviewing?.submittedAt)} · template{' '}
+            {reviewing?.origin === 'author_verification'
+              ? 'Submitted by the paper author'
+              : 'Submitted'}{' '}
+            {(reviewing?.submittedByName || reviewing?.submittedByEmail) &&
+              `(${[reviewing?.submittedByName, reviewing?.submittedByEmail]
+                .filter(Boolean)
+                .join(' · ')}) `}
+            on {formatDate(reviewing?.submittedAt)} · template{' '}
             {reviewing?.templateId ?? '—'} v{reviewing?.templateVersion ?? '—'}
           </Typography>
 
           {TEMPLATE_SPEC.sections.map((section) => {
+            const hasOriginal = !!reviewing?.originalAnswers;
             const rows = section.questions
-              .map((question) => ({
-                id: question.id,
-                label:
-                  questionDefinitions[question.id]?.label ||
-                  questionDefinitions[question.id]?.title ||
-                  question.id,
-                value: formatAnswer(reviewing?.answers?.[question.id]),
-              }))
-              .filter((row) => row.value.trim().length > 0);
+              .map((question) => {
+                const originalValue = formatAnswer(
+                  reviewing?.originalAnswers?.[question.id]
+                );
+                const value = formatAnswer(reviewing?.answers?.[question.id]);
+                return {
+                  id: question.id,
+                  label:
+                    questionDefinitions[question.id]?.label ||
+                    questionDefinitions[question.id]?.title ||
+                    question.id,
+                  value,
+                  originalValue,
+                  changed: hasOriginal && originalValue !== value,
+                };
+              })
+              .filter((row) => row.value.trim().length > 0 || row.changed);
 
             if (rows.length === 0) return null;
 
@@ -443,12 +543,40 @@ const AdminContributions = () => {
                 </Typography>
                 <Stack spacing={1.5}>
                   {rows.map((row) => (
-                    <Box key={row.id}>
-                      <Typography variant="caption" color="text.secondary">
-                        {row.label}
-                      </Typography>
+                    <Box
+                      key={row.id}
+                      sx={
+                        row.changed
+                          ? {
+                              pl: 1.5,
+                              borderLeft: '3px solid',
+                              borderColor: 'warning.main',
+                            }
+                          : undefined
+                      }
+                    >
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Typography variant="caption" color="text.secondary">
+                          {row.label}
+                        </Typography>
+                        {row.changed && (
+                          <Chip size="small" color="warning" label="Changed by author" />
+                        )}
+                      </Stack>
+                      {row.changed && row.originalValue && (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            whiteSpace: 'pre-wrap',
+                            color: 'text.disabled',
+                            textDecoration: 'line-through',
+                          }}
+                        >
+                          {row.originalValue}
+                        </Typography>
+                      )}
                       <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                        {row.value}
+                        {row.value || '—'}
                       </Typography>
                     </Box>
                   ))}
@@ -492,6 +620,106 @@ const AdminContributions = () => {
           >
             Accept
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={inviteDialogOpen}
+        onClose={() => !inviteLoading && setInviteDialogOpen(false)}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Invite author to verify a paper</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Pre-fills the questionnaire from what's already recorded live in
+            ORKG for this paper and generates a one-time link you can email
+            to the paper's authors.
+          </Typography>
+
+          <TextField
+            label="ORKG paper id"
+            placeholder="e.g. R742443"
+            fullWidth
+            autoFocus
+            disabled={inviteLoading || !!inviteResult}
+            value={invitePaperId}
+            onChange={(e) => setInvitePaperId(e.target.value)}
+          />
+
+          {inviteError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {inviteError}
+            </Alert>
+          )}
+
+          {inviteResult && (
+            <Box sx={{ mt: 2 }}>
+              <Alert severity="success" sx={{ mb: 2 }}>
+                Link generated for "{inviteResult.paper.title}". It expires{' '}
+                {formatDate(inviteResult.expiresAt)}.
+              </Alert>
+
+              <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={inviteResult.link}
+                  slotProps={{ input: { readOnly: true } }}
+                />
+                <Tooltip title="Copy link">
+                  <IconButton onClick={handleCopyInviteLink}>
+                    <ContentCopy />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                href={`mailto:?subject=${encodeURIComponent(
+                  `Please verify our paper's data on EmpiRE-Compass`
+                )}&body=${encodeURIComponent(
+                  `Hi,\n\nWe've recorded some data about your paper "${inviteResult.paper.title}" as part of the EmpiRE-Compass project. Could you take a moment to check it's correct (and fix anything that's not) using this link?\n\n${inviteResult.link}\n\nThank you!`
+                )}`}
+              >
+                Open in email client
+              </Button>
+
+              {inviteResult.unmappedNotes.length > 0 && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    Some fields couldn't be filled in automatically — the
+                    author will see these blank:
+                  </Typography>
+                  <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                    {inviteResult.unmappedNotes.map((note, i) => (
+                      <li key={i}>
+                        <Typography variant="body2">{note}</Typography>
+                      </li>
+                    ))}
+                  </Box>
+                </Alert>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setInviteDialogOpen(false)}
+            disabled={inviteLoading}
+          >
+            Close
+          </Button>
+          {!inviteResult && (
+            <Button
+              variant="contained"
+              onClick={handleCreateInvite}
+              disabled={inviteLoading || !invitePaperId.trim()}
+            >
+              {inviteLoading ? 'Generating…' : 'Generate link'}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Container>

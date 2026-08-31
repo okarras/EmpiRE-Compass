@@ -18,8 +18,13 @@ export interface Contribution {
   paper: ContributionPaper;
   /** Raw ScidQuest answers, keyed by questionnaire question id. */
   answers: Record<string, unknown>;
+  /** Where this contribution came from; absent means a curator submission via SciD-QuESt. */
+  origin?: 'submission' | 'author_verification';
+  /** The pre-filled answers an author was shown, for diffing against their edits. */
+  originalAnswers?: Record<string, unknown>;
   submittedByUserId?: string;
   submittedByEmail?: string;
+  submittedByName?: string;
   submittedAt?: string;
   reviewedByUserId?: string;
   reviewedByEmail?: string;

@@ -11,7 +11,7 @@ import { logRequest } from '../services/requestLogger.js';
 
 const router = Router();
 
-const COLLECTION = 'Contributions';
+export const COLLECTION = 'Contributions';
 
 /**
  * @swagger
@@ -87,8 +87,14 @@ export interface Contribution {
   templateVersion?: string;
   paper: ContributionPaper;
   answers: Record<string, unknown>;
+  /** Where this contribution came from; absent means a curator submission via SciD-QuESt. */
+  origin?: 'submission' | 'author_verification';
+  /** The pre-filled answers an author was shown, kept for diffing against their edits in review. */
+  originalAnswers?: Record<string, unknown>;
   submittedByUserId?: string;
   submittedByEmail?: string;
+  /** Free-text name the submitter gave; only ever set for author-verification submissions (no login to derive it from). */
+  submittedByName?: string;
   submittedAt?: string;
   reviewedByUserId?: string;
   reviewedByEmail?: string;
