@@ -128,6 +128,7 @@ export class AIService {
       model?: string;
       systemContext?: string;
       responseFormat?: 'text' | 'json';
+      signal?: AbortSignal;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
@@ -141,7 +142,12 @@ export class AIService {
       ...(options?.responseFormat
         ? { responseFormat: options.responseFormat }
         : {}),
-      // omit maxTokens to match SDK typings
+      abortSignal: options?.signal,
+      // v5 names this `maxOutputTokens`; without it generation is uncapped and a
+      // single suggestion can run for minutes.
+      ...(options?.maxTokens && options.maxTokens > 0
+        ? { maxOutputTokens: options.maxTokens }
+        : {}),
     });
 
     // Normalize text to string (handle different response formats)

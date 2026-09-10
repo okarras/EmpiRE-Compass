@@ -33,8 +33,11 @@ const NewsDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(-1);
+  // Hide the image entirely if the URL cannot be rendered (e.g. a PDF link).
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => {
+    setImageFailed(false);
     fetchNewsItem();
     fetchAllNews();
   }, [newsId]);
@@ -231,11 +234,12 @@ const NewsDetail = () => {
           <Divider sx={{ my: 3 }} />
 
           {/* Image */}
-          {newsItem.imageUrl && (
+          {newsItem.imageUrl && !imageFailed && (
             <Box sx={{ mb: 3 }}>
               <img
                 src={newsItem.imageUrl}
                 alt={newsItem.title}
+                onError={() => setImageFailed(true)}
                 style={{
                   width: '100%',
                   height: 'auto',
