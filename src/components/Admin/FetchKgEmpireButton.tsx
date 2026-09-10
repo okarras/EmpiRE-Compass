@@ -2,9 +2,10 @@
  * FetchKgEmpireButton
  *
  * 1. Runs the SPARQL query in the browser
- * 2. Sends results to the backend in small batches (50 rows at a time)
- *    with a 500ms delay between each batch to stay under Vercel's 4.5MB limit
- * 3. Shows live progress while storing
+ * 2. Groups rows by publication year and stores one Firestore document per year
+ * 3. Sends each year in small HTTP batches (50 rows) with a 500ms delay
+ *    to stay under Vercel's request body limit
+ * 4. Shows live progress while storing
  */
 
 import {
@@ -199,6 +200,29 @@ ORDER BY ?year ?paper
 //Helpers
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const YEAR_PATTERN = /(19|20)\d{2}/;
+
+const yearFromRow = (row: Record<string, string>): string => {
+  const match = (row.year ?? '').match(YEAR_PATTERN);
+  return match ? match[0] : 'unknown';
+};
+
+const groupRowsByYear = (
+  rows: Record<string, string>[]
+): Map<string, Record<string, string>[]> => {
+  const groups = new Map<string, Record<string, string>[]>();
+  for (const row of rows) {
+    const year = yearFromRow(row);
+    const list = groups.get(year);
+    if (list) {
+      list.push(row);
+    } else {
+      groups.set(year, [row]);
+    }
+  }
+  return groups;
+};
+
 interface FetchKgEmpireButtonProps {
   disabled?: boolean;
 }
@@ -234,8 +258,10 @@ const FetchKgEmpireButton = ({
         await fetchSPARQLData(KG_EMPIRE_QUERY);
       const total = rows.length;
       const storedAt = new Date().toISOString();
+      const yearGroups = groupRowsByYear(rows);
+      const years = [...yearGroups.keys()].sort();
 
-      // send metadata document
+      // send metadata document (also deletes old _chunk_* docs)
       await apiRequest(
         `/api/templates/${TEMPLATE_ID}/kg-empire-query-results/metadata`,
         {
@@ -244,6 +270,7 @@ const FetchKgEmpireButton = ({
             id: FIRESTORE_DOC_ID,
             rowCount: total,
             storedAt,
+            years,
           }),
           userId: user.id,
           userEmail: user.email,
@@ -252,40 +279,43 @@ const FetchKgEmpireButton = ({
         }
       );
 
-      // send rows in batches with delay
       let stored = 0;
-      const batches: Record<string, string>[][] = [];
-      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
-        batches.push(rows.slice(i, i + BATCH_SIZE));
-      }
+      for (let y = 0; y < years.length; y++) {
+        const year = years[y];
+        const yearRows = yearGroups.get(year) ?? [];
 
-      for (let i = 0; i < batches.length; i++) {
-        await apiRequest(
-          `/api/templates/${TEMPLATE_ID}/kg-empire-query-results/rows`,
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              id: FIRESTORE_DOC_ID,
-              batchIndex: i,
-              rows: batches[i],
-            }),
-            userId: user.id,
-            userEmail: user.email,
-            requiresAdmin: true,
-            keycloakToken: keycloak?.token,
+        for (let i = 0; i < yearRows.length; i += BATCH_SIZE) {
+          const batch = yearRows.slice(i, i + BATCH_SIZE);
+          await apiRequest(
+            `/api/templates/${TEMPLATE_ID}/kg-empire-query-results/rows`,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                id: FIRESTORE_DOC_ID,
+                year,
+                rows: batch,
+              }),
+              userId: user.id,
+              userEmail: user.email,
+              requiresAdmin: true,
+              keycloakToken: keycloak?.token,
+            }
+          );
+
+          stored += batch.length;
+          setProgress({ stored, total });
+
+          const isLast =
+            y === years.length - 1 && i + BATCH_SIZE >= yearRows.length;
+          if (!isLast) {
+            await delay(BATCH_DELAY_MS);
           }
-        );
-
-        stored += batches[i].length;
-        setProgress({ stored, total });
-
-        // delay
-        if (i < batches.length - 1) {
-          await delay(BATCH_DELAY_MS);
         }
       }
 
-      setSuccess(`Done — ${total} row(s) stored in Firestore.`);
+      setSuccess(
+        `Done — ${total} row(s) stored by year (${years.join(', ')}).`
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Query failed.');
     } finally {

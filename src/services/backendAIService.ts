@@ -242,6 +242,7 @@ export class BackendAIService {
       model?: string;
       systemContext?: string;
       responseFormat?: 'text' | 'json';
+      signal?: AbortSignal;
     }
   ): Promise<{
     text: string;
@@ -280,6 +281,7 @@ export class BackendAIService {
         method: 'POST',
         body: JSON.stringify(request),
         headers: extraHeaders,
+        signal: options?.signal,
       }
     );
 
@@ -475,6 +477,7 @@ export class UnifiedAIService {
       model?: string;
       systemContext?: string;
       responseFormat?: 'text' | 'json';
+      signal?: AbortSignal;
     }
   ): Promise<{
     text: string;
@@ -492,6 +495,7 @@ export class UnifiedAIService {
         model: options?.model,
         systemContext: options?.systemContext,
         responseFormat: options?.responseFormat,
+        signal: options?.signal,
       });
     }
 

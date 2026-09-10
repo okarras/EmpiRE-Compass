@@ -61,9 +61,20 @@ export const createNewsItem = async (
   });
 };
 
+/**
+ * Partial update payload. A field set to `null` is removed from the stored item --
+ * omitting it (or passing `undefined`) leaves the previous value untouched.
+ */
+export type NewsItemUpdate = Partial<
+  Omit<NewsItem, 'id' | 'createdAt' | 'tags' | 'imageUrl'>
+> & {
+  tags?: string[] | null;
+  imageUrl?: string | null;
+};
+
 export const updateNewsItem = async (
   newsId: string,
-  updates: Partial<Omit<NewsItem, 'id' | 'createdAt'>>,
+  updates: NewsItemUpdate,
   userId: string,
   userEmail: string,
   keycloakToken?: string

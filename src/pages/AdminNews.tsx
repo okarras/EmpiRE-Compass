@@ -30,6 +30,7 @@ import {
   InputLabel,
   DialogContentText,
   Divider,
+  InputAdornment,
 } from '@mui/material';
 import {
   Add,
@@ -40,6 +41,7 @@ import {
   Visibility,
   VisibilityOff,
   Pageview,
+  Clear as ClearIcon,
 } from '@mui/icons-material';
 import CRUDNews, { NewsItem } from '../firestore/CRUDNews';
 import { useAuth } from '../auth/useAuth';
@@ -59,6 +61,7 @@ const AdminNews = () => {
   const [deletingNews, setDeletingNews] = useState<NewsItem | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImageFailed, setPreviewImageFailed] = useState(false);
   const [previewData, setPreviewData] = useState<{
     title: string;
     content: string;
@@ -157,20 +160,22 @@ const AdminNews = () => {
         .split(',')
         .map((tag) => tag.trim())
         .filter((tag) => tag.length > 0);
+      const trimmedImageUrl = formData.imageUrl.trim();
       const basePayload = {
         title: formData.title.trim(),
         content: formData.content.trim(),
-        tags: tagsArray.length > 0 ? tagsArray : undefined,
         priority: formData.priority,
-        imageUrl: formData.imageUrl.trim() || undefined,
       };
 
       if (editingNews) {
-        // Update existing news
+        // Update existing news. Emptied optional fields are sent as `null` so the
+        // backend clears them -- `undefined` would be dropped and keep the old value.
         await CRUDNews.updateNewsItem(
           editingNews.id,
           {
             ...basePayload,
+            tags: tagsArray.length > 0 ? tagsArray : null,
+            imageUrl: trimmedImageUrl || null,
             published: formData.published,
             showOnHome: formData.published ? formData.showOnHome : false,
           },
@@ -184,6 +189,8 @@ const AdminNews = () => {
         await CRUDNews.createNewsItem(
           {
             ...basePayload,
+            tags: tagsArray.length > 0 ? tagsArray : undefined,
+            imageUrl: trimmedImageUrl || undefined,
             published: formData.published,
             ...(formData.published
               ? {
@@ -277,6 +284,7 @@ const AdminNews = () => {
   };
 
   const openPreviewFromItem = (news: NewsItem) => {
+    setPreviewImageFailed(false);
     setPreviewData({
       title: news.title,
       content: news.content,
@@ -290,6 +298,7 @@ const AdminNews = () => {
   };
 
   const openPreviewFromForm = () => {
+    setPreviewImageFailed(false);
     setPreviewData({
       title: formData.title || 'Untitled',
       content: formData.content || '',
@@ -657,6 +666,25 @@ const AdminNews = () => {
                 setFormData({ ...formData, imageUrl: e.target.value })
               }
               placeholder="https://example.com/image.jpg"
+              helperText="Leave empty to remove the image. Only direct image links are shown (PDFs and other file types cannot be rendered)."
+              InputProps={{
+                endAdornment: formData.imageUrl ? (
+                  <InputAdornment position="end">
+                    <Tooltip title="Remove image">
+                      <IconButton
+                        aria-label="Remove image"
+                        edge="end"
+                        size="small"
+                        onClick={() =>
+                          setFormData({ ...formData, imageUrl: '' })
+                        }
+                      >
+                        <ClearIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </InputAdornment>
+                ) : null,
+              }}
             />
             <TextField
               label="Tags (comma-separated)"
@@ -851,11 +879,12 @@ const AdminNews = () => {
                 </Typography>
               </Box>
               <Divider sx={{ my: 2 }} />
-              {previewData.imageUrl && (
+              {previewData.imageUrl && !previewImageFailed && (
                 <Box sx={{ mb: 2 }}>
                   <img
                     src={previewData.imageUrl}
                     alt={previewData.title}
+                    onError={() => setPreviewImageFailed(true)}
                     style={{
                       width: '100%',
                       height: 'auto',
@@ -865,6 +894,13 @@ const AdminNews = () => {
                     }}
                   />
                 </Box>
+              )}
+              {previewData.imageUrl && previewImageFailed && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  This image URL cannot be displayed. Use a direct link to an
+                  image file (PNG, JPG, SVG, ...) or clear the field to remove
+                  the image.
+                </Alert>
               )}
               <Box
                 sx={{

@@ -54,7 +54,32 @@ export async function getAllTemplates(): Promise<Record<string, TemplateData>> {
 
 export async function getTemplateById(
   templateId: string
-): Promise<TemplateData | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): Promise<TemplateData | any | null> {
+  // Check if it's an ORKG ID, starts with R followed by numbers
+  if (/^R\d+$/.test(templateId)) {
+    try {
+      const response = await fetch(
+        `https://orkg.org/api/templates/${templateId}`,
+        {
+          headers: {
+            Accept: 'application/vnd.orkg.template.v1+json, application/json',
+          },
+        }
+      );
+
+      if (response.ok) {
+        return await response.json();
+      }
+      console.warn(
+        `Failed to fetch template ${templateId} from ORKG, status: ${response.status}`
+      );
+    } catch (error) {
+      console.error(`Error fetching template ${templateId} from ORKG:`, error);
+    }
+    // Fallback to Firebase on failure or 404
+  }
+
   const templateDoc = await db.collection('Templates').doc(templateId).get();
 
   if (!templateDoc.exists) {
