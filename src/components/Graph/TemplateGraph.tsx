@@ -1,4 +1,12 @@
-import React, { useMemo, useRef, useCallback, useEffect } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useCallback,
+  useEffect,
+  useState,
+  lazy,
+  Suspense,
+} from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -21,6 +29,11 @@ import { TemplateNode } from './TemplateNode';
 
 const nodeTypes = { templateNode: TemplateNode } as const;
 
+// Lazy so Monaco only loads when someone actually opens the editor
+const SchemaVisualEditor = lazy(
+  () => import('./VisualEditor/SchemaVisualEditor')
+);
+
 export const TemplateGraph: React.FC<TemplateGraphProps> = ({
   data,
   loading = false,
@@ -33,6 +46,7 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
   );
 
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
+  const [isVisualEditorMode, setIsVisualEditorMode] = useState(false);
 
   // Map target_class.id -> template for quick lookup when creating edges
   const targetClassIdToTemplate = useMemo(() => {
@@ -506,6 +520,23 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
     );
   }
 
+  if (isVisualEditorMode) {
+    return (
+      <Suspense
+        fallback={
+          <div style={{ padding: 24, color: '#9ca3af' }}>
+            Loading visual editor...
+          </div>
+        }
+      >
+        <SchemaVisualEditor
+          templates={templates}
+          onClose={() => setIsVisualEditorMode(false)}
+        />
+      </Suspense>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
@@ -568,6 +599,21 @@ export const TemplateGraph: React.FC<TemplateGraphProps> = ({
           }}
         >
           Download as JSON
+        </button>
+        <button
+          id="toggle-visual-editor-button"
+          data-html2image-exclude
+          onClick={() => setIsVisualEditorMode(true)}
+          style={{
+            padding: '8px 12px',
+            borderRadius: 6,
+            border: '1px solid #A8A8AF',
+            background: '#1e88e5',
+            color: '#e5e7eb',
+            cursor: 'pointer',
+          }}
+        >
+          Toggle Visual Editor
         </button>
       </div>
     </div>
