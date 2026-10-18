@@ -1,5 +1,5 @@
 import QuestionAccordion from './QuestionAccordion';
-import { Box, Paper, Typography, Chip } from '@mui/material';
+import { Box, Paper, Typography, Chip, Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
@@ -10,6 +10,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 import { useBackupChange } from '../hooks/useBackupChange';
+import DownloadIcon from '@mui/icons-material/Download';
+import QuestionExportDialog from './QuestionExportDialog';
 
 //* Dashboard component that displays the questions for a given template
 const Dashboard = () => {
@@ -17,6 +19,7 @@ const Dashboard = () => {
   const templateId = params.templateId;
   const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
   const backupVersion = useBackupChange(); // Listen for backup changes
+  const [exportOpen, setExportOpen] = useState(false);
 
   const firebaseQuestions = useSelector<
     RootState,
@@ -72,6 +75,29 @@ const Dashboard = () => {
         py: { xs: 3, md: 6 },
       }}
     >
+      <Box
+        sx={{
+          width: '100%',
+          maxWidth: '1000px',
+          display: 'flex',
+          justifyContent: 'flex-end',
+          mb: 2,
+        }}
+      >
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => setExportOpen(true)}
+        >
+          Export
+        </Button>
+      </Box>
+
+      <QuestionExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export all questions"
+      />
       {/* Template Info Box */}
       <Box
         sx={{

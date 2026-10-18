@@ -13,7 +13,10 @@ import {
   FormControlLabel,
   Switch,
   Chip,
+  Button,
 } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import QuestionExportDialog from './QuestionExportDialog';
 
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
@@ -50,6 +53,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
 
   // Tabs state
   const [tab, setTab] = useState(0);
+  const [exportOpen, setExportOpen] = useState(false);
   const { setContext } = useAIAssistantContext();
   const { templateId } = useParams();
   const backupVersion = useBackupChange(); // Listen for backup changes
@@ -268,6 +272,20 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
 
   return (
     <Box sx={{ width: '100%' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => setExportOpen(true)}
+        >
+          Export
+        </Button>
+      </Box>
+
+      <QuestionExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+      />
       {/* Admin Toolbar */}
       {isAdmin && (
         <Fade in={isAdmin}>
