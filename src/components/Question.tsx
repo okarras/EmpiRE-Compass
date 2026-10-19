@@ -30,6 +30,8 @@ import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
+import { exportQuestion } from '../utils/exportQuestion';
+import { toast } from 'react-hot-toast';
 
 interface QuestionProps {
   query: Query;
@@ -285,6 +287,25 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       <QuestionExportDialog
         open={exportOpen}
         onClose={() => setExportOpen(false)}
+        onExport={
+          templateId
+            ? async (sections, format) => {
+                try {
+                  await exportQuestion(
+                    query,
+                    templateId,
+                    tab,
+                    sections,
+                    format
+                  );
+                  setExportOpen(false);
+                } catch (error) {
+                  console.error('Question export failed:', error);
+                  toast.error('Export failed. Please try again.');
+                }
+              }
+            : undefined
+        }
       />
       {/* Admin Toolbar */}
       {isAdmin && (
