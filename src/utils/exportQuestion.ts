@@ -2,7 +2,13 @@ import DOMPurify from 'dompurify';
 import type { Query } from '../constants/queries_chart_info';
 import { getTemplateConfig } from '../constants/template_config';
 
-import type { ContentText, TDocumentDefinitions } from 'pdfmake/interfaces';
+import type {
+  Content,
+  ContentText,
+  TableCell,
+  TDocumentDefinitions,
+} from 'pdfmake/interfaces';
+import type { ParagraphChild } from 'docx';
 
 export type ExportFormat = 'html' | 'txt' | 'pdf' | 'docx';
 
@@ -69,6 +75,57 @@ function buildReport(
 
 type Report = ReturnType<typeof buildReport>;
 
+function parseReportHtml(html: string): Document {
+  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  parsed.querySelectorAll('style, script, template').forEach((element) => {
+    element.remove();
+  });
+  return parsed;
+}
+
+type HtmlBlock =
+  | { kind: 'text'; html: string }
+  | { kind: 'table'; table: ReturnType<typeof readReportTable> };
+
+function splitHtmlBlocks(html: string): HtmlBlock[] {
+  const parsed = parseReportHtml(html);
+  const blocks: HtmlBlock[] = [];
+  const pending = document.createElement('div');
+
+  const flushText = () => {
+    if (pending.textContent?.trim()) {
+      blocks.push({ kind: 'text', html: pending.innerHTML });
+    }
+    pending.replaceChildren();
+  };
+
+  const visit = (node: Node): void => {
+    if (node instanceof HTMLTableElement) {
+      flushText();
+      const table = readReportTable(node);
+      if (table.rows.length && table.columnCount) {
+        blocks.push({ kind: 'table', table });
+      }
+    } else if (node instanceof Element && node.querySelector('table')) {
+      node.childNodes.forEach(visit);
+    } else {
+      pending.append(node.cloneNode(true));
+    }
+  };
+
+  parsed.body.childNodes.forEach(visit);
+  flushText();
+  return blocks;
+}
+
+function hasWideTable(report: Report): boolean {
+  return report.sections.some((section) =>
+    Array.from(parseReportHtml(section.content).querySelectorAll('table')).some(
+      (table) => readReportTable(table).columnCount > 8
+    )
+  );
+}
+
 function escapeHtml(text: string): string {
   const element = document.createElement('span');
   element.textContent = text;
@@ -124,7 +181,13 @@ function exportHtml(report: Report): string {
 
 // Convert formatted text to plain text and retain link destinations.
 function htmlToText(html: string, sourceUrl: string): string {
-  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  const parsed = parseReportHtml(html);
+
+  parsed.body.querySelectorAll('table').forEach((table) => {
+    table.replaceWith(
+      parsed.createTextNode(`\n\n${tableToText(table, sourceUrl)}\n\n`)
+    );
+  });
 
   parsed.body.querySelectorAll('a[href]').forEach((anchor) => {
     const href = anchor.getAttribute('href');
@@ -138,10 +201,6 @@ function htmlToText(html: string, sourceUrl: string): string {
 
   parsed.body.querySelectorAll('br').forEach((element) => {
     element.replaceWith('\n');
-  });
-
-  parsed.body.querySelectorAll('th, td').forEach((element) => {
-    element.append('\t');
   });
 
   parsed.body
@@ -175,7 +234,7 @@ function exportTxt(report: Report): string {
 
 // Preserve text and links from the existing HTML sections.
 function htmlToLinkedText(html: string, sourceUrl: string): ContentText[] {
-  const parsed = new DOMParser().parseFromString(html, 'text/html');
+  const parsed = parseReportHtml(html);
   const content: ContentText[] = [];
 
   const visit = (node: Node): void => {
@@ -218,6 +277,176 @@ function htmlToLinkedText(html: string, sourceUrl: string): ContentText[] {
   return content;
 }
 
+interface ReportTableCell {
+  html: string;
+  header: boolean;
+  rowSpan: number;
+  colSpan: number;
+}
+
+function readReportTable(table: HTMLTableElement) {
+  const htmlRows = Array.from(table.rows);
+  const rows: (ReportTableCell | null)[][] = htmlRows.map(() => []);
+
+  htmlRows.forEach((row, rowIndex) => {
+    let column = 0;
+
+    Array.from(row.cells).forEach((cell) => {
+      // Skip positions occupied by cells from previous rows.
+      while (rows[rowIndex][column] !== undefined) {
+        column += 1;
+      }
+
+      const groupRows = Array.from(row.parentElement?.children ?? []);
+      const remainingGroupRows = groupRows.length - groupRows.indexOf(row);
+
+      const rowSpan = Math.min(
+        cell.rowSpan === 0 ? remainingGroupRows : cell.rowSpan,
+        htmlRows.length - rowIndex
+      );
+      const colSpan = cell.colSpan;
+
+      // Reserve all positions covered by the merged cell.
+      for (let r = 0; r < rowSpan; r += 1) {
+        for (let c = 0; c < colSpan; c += 1) {
+          rows[rowIndex + r][column + c] = null;
+        }
+      }
+
+      rows[rowIndex][column] = {
+        html: cell.innerHTML,
+        header: cell.tagName === 'TH',
+        rowSpan,
+        colSpan,
+      };
+
+      column += colSpan;
+    });
+  });
+
+  const columnCount = Math.max(0, ...rows.map((row) => row.length));
+
+  // Keep every row rectangular, including empty positions.
+  for (const row of rows) {
+    for (let column = 0; column < columnCount; column += 1) {
+      if (row[column] === undefined) {
+        row[column] = {
+          html: '',
+          header: false,
+          rowSpan: 1,
+          colSpan: 1,
+        };
+      }
+    }
+  }
+
+  return {
+    rows,
+    columnCount,
+    headerRows: table.tHead?.rows.length ?? 0,
+  };
+}
+
+function tableToText(element: HTMLTableElement, sourceUrl: string): string {
+  const table = readReportTable(element);
+  if (!table.rows.length || !table.columnCount) return '';
+
+  const expanded: string[][] = table.rows.map(() =>
+    Array<string>(table.columnCount).fill('')
+  );
+
+  // Repeat merged cell content in every position it covers.
+  table.rows.forEach((row, rowIndex) => {
+    row.forEach((cell, columnIndex) => {
+      if (cell === null) return;
+
+      const text = htmlToText(cell.html, sourceUrl).replace(/\s+/g, ' ').trim();
+
+      for (let r = 0; r < cell.rowSpan; r += 1) {
+        for (let c = 0; c < cell.colSpan; c += 1) {
+          expanded[rowIndex + r][columnIndex + c] = text;
+        }
+      }
+    });
+  });
+
+  let headerRows = table.headerRows;
+
+  // Also recognize leading TH rows when THEAD is missing.
+  if (headerRows === 0) {
+    while (
+      headerRows < table.rows.length &&
+      table.rows[headerRows].every((cell) => cell === null || cell.header)
+    ) {
+      headerRows += 1;
+    }
+  }
+
+  const headers = Array.from(
+    { length: table.columnCount },
+    (_, columnIndex) => {
+      const labels = expanded
+        .slice(0, headerRows)
+        .map((row) => row[columnIndex])
+        .filter((label) => label !== '');
+
+      return [...new Set(labels)].join(' / ') || `Column ${columnIndex + 1}`;
+    }
+  );
+
+  const dataRows = expanded.slice(headerRows);
+
+  if (dataRows.length === 0) {
+    return headers.join('\n');
+  }
+
+  return dataRows
+    .map((row) =>
+      row
+        .map((value, columnIndex) => `${headers[columnIndex]}: ${value}`)
+        .join('\n')
+    )
+    .join('\n\n');
+}
+
+function htmlToPdfBlocks(html: string, sourceUrl: string): Content[] {
+  return splitHtmlBlocks(html).map<Content>((block) => {
+    if (block.kind === 'text') {
+      return {
+        text: htmlToLinkedText(block.html, sourceUrl),
+        margin: [0, 0, 0, 8],
+      };
+    }
+
+    const { table } = block;
+    const body: TableCell[][] = table.rows.map((row) =>
+      row.map(
+        (cell): TableCell =>
+          cell === null
+            ? {}
+            : {
+                text: htmlToLinkedText(cell.html, sourceUrl),
+                rowSpan: cell.rowSpan,
+                colSpan: cell.colSpan,
+                bold: cell.header,
+                fillColor: cell.header ? '#eeeeee' : undefined,
+              }
+      )
+    );
+
+    return {
+      table: {
+        headerRows: table.headerRows,
+        widths: Array(table.columnCount).fill('*'),
+        body,
+      },
+      fontSize: table.columnCount > 8 ? 8 : 10,
+      lineHeight: 1,
+      margin: [0, 8, 0, 12],
+    };
+  });
+}
+
 async function exportPdf(report: Report): Promise<Blob> {
   // Load the PDF library and embedded fonts only when PDF is requested.
   const [{ default: pdfMake }, { default: fonts }] = await Promise.all([
@@ -227,7 +456,10 @@ async function exportPdf(report: Report): Promise<Blob> {
 
   pdfMake.addVirtualFileSystem(fonts);
 
+  const landscape = hasWideTable(report);
+
   const definition: TDocumentDefinitions = {
+    pageOrientation: landscape ? 'landscape' : 'portrait',
     pageSize: 'A4',
     pageMargins: [40, 40, 40, 40],
     defaultStyle: {
@@ -269,19 +501,16 @@ async function exportPdf(report: Report): Promise<Blob> {
         ],
         margin: [0, 0, 0, 16],
       },
-      ...report.sections.flatMap((section) => [
+      ...report.sections.flatMap((section): Content[] => [
         {
           text: section.title,
           fontSize: 14,
           bold: true,
           color: '#b84040',
-          margin: [0, 12, 0, 6] as [number, number, number, number],
+          margin: [0, 12, 0, 6],
           headlineLevel: 1,
         },
-        {
-          text: htmlToLinkedText(section.content, report.sourceUrl),
-          margin: [0, 0, 0, 8] as [number, number, number, number],
-        },
+        ...htmlToPdfBlocks(section.content, report.sourceUrl),
       ]),
     ],
     pageBreakBefore: (currentNode, nodeContainer) =>
@@ -300,7 +529,15 @@ async function exportDocx(report: Report): Promise<Blob> {
     ExternalHyperlink,
     HeadingLevel,
     Packer,
+    Table,
+    TableRow,
+    TableCell,
+    WidthType,
+    TableLayoutType,
+    PageOrientation,
   } = await import('docx');
+
+  const landscape = hasWideTable(report);
 
   const createLink = (label: string, url: string) =>
     new ExternalHyperlink({
@@ -313,6 +550,91 @@ async function exportDocx(report: Report): Promise<Blob> {
       ],
     });
 
+  const createParagraph = (html: string, fontSize = 22, bold = false) =>
+    new Paragraph({
+      spacing: { after: 80 },
+      children: htmlToLinkedText(
+        html,
+        report.sourceUrl
+      ).flatMap<ParagraphChild>((part) => {
+        const text = typeof part.text === 'string' ? part.text : '';
+
+        const runs = text.split('\n').map(
+          (line, index) =>
+            new TextRun({
+              text: line,
+              break: index > 0 ? 1 : 0,
+              size: fontSize,
+              bold,
+              ...(part.link ? { style: 'Hyperlink' } : {}),
+            })
+        );
+
+        return part.link
+          ? [
+              new ExternalHyperlink({
+                link: part.link,
+                children: runs,
+              }),
+            ]
+          : runs;
+      }),
+    });
+
+  const createContent = (html: string) =>
+    splitHtmlBlocks(html).flatMap<
+      InstanceType<typeof Paragraph> | InstanceType<typeof Table>
+    >((block) => {
+      if (block.kind === 'text') {
+        return [createParagraph(block.html)];
+      }
+
+      const { table } = block;
+      const availableWidth = (landscape ? 16838 : 11906) - 1600;
+      return [
+        new Table({
+          width: {
+            size: 100,
+            type: WidthType.PERCENTAGE,
+          },
+          layout: TableLayoutType.FIXED,
+          columnWidths: Array(table.columnCount).fill(
+            Math.floor(availableWidth / table.columnCount)
+          ),
+          margins: {
+            top: 60,
+            bottom: 60,
+            left: 60,
+            right: 60,
+          },
+          rows: table.rows.map(
+            (row, rowIndex) =>
+              new TableRow({
+                tableHeader: rowIndex < table.headerRows,
+                children: row
+                  .filter((cell) => cell !== null)
+                  .map(
+                    (cell) =>
+                      new TableCell({
+                        columnSpan: cell.colSpan,
+                        rowSpan: cell.rowSpan,
+                        shading: cell.header ? { fill: 'EEEEEE' } : undefined,
+                        children: [
+                          createParagraph(
+                            cell.html,
+                            table.columnCount > 8 ? 16 : 20,
+                            cell.header
+                          ),
+                        ],
+                      })
+                  ),
+              })
+          ),
+        }),
+        new Paragraph({ text: '' }),
+      ];
+    });
+
   const sections = report.sections.flatMap((section) => [
     new Paragraph({
       text: section.title,
@@ -320,30 +642,7 @@ async function exportDocx(report: Report): Promise<Blob> {
       keepNext: true,
       spacing: { before: 240, after: 120 },
     }),
-    new Paragraph({
-      spacing: { after: 160 },
-      children: htmlToLinkedText(section.content, report.sourceUrl)
-        .map((part) => {
-          const text = typeof part.text === 'string' ? part.text : '';
-
-          const runs = text.split('\n').map(
-            (line, index) =>
-              new TextRun({
-                text: line,
-                break: index > 0 ? 1 : 0,
-                ...(part.link ? { style: 'Hyperlink' } : {}),
-              })
-          );
-
-          return part.link
-            ? new ExternalHyperlink({
-                link: part.link,
-                children: runs,
-              })
-            : runs;
-        })
-        .flat(),
-    }),
+    ...createContent(section.content),
   ]);
 
   const document = new Document({
@@ -362,6 +661,23 @@ async function exportDocx(report: Report): Promise<Blob> {
     },
     sections: [
       {
+        properties: {
+          page: {
+            size: {
+              width: 11906,
+              height: 16838,
+              orientation: landscape
+                ? PageOrientation.LANDSCAPE
+                : PageOrientation.PORTRAIT,
+            },
+            margin: {
+              top: 800,
+              bottom: 800,
+              left: 800,
+              right: 800,
+            },
+          },
+        },
         children: [
           new Paragraph({
             text: report.title,
