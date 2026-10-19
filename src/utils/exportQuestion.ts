@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { prepareQueryForExecution } from '../helpers/fetch_query';
 import type { Query } from '../constants/queries_chart_info';
 import { getTemplateConfig } from '../constants/template_config';
 
@@ -54,6 +55,26 @@ function buildReport(
       content: getContent(info.dataInterpretation),
     },
   ];
+
+  if (selected.sparql) {
+    const queries = (
+      tabIndex === 1 && query.uid_2
+        ? [query.sparqlQuery2]
+        : [
+            query.sparqlQuery,
+            ...(query.uid_2_merge ? [query.sparqlQuery2] : []),
+          ]
+    ).filter((sparql): sparql is string => Boolean(sparql?.trim()));
+
+    queries.forEach((sparql, index) => {
+      sections.push({
+        enabled: true,
+        title:
+          queries.length > 1 ? `SPARQL query ${index + 1}` : 'SPARQL query',
+        content: `<pre><code>${escapeHtml(prepareQueryForExecution(sparql))}</code></pre>`,
+      });
+    });
+  }
 
   return {
     title: `${query.id}. ${info.question}`,
@@ -162,6 +183,7 @@ function exportHtml(report: Report): string {
     h1, h2 { color: #b84040; }
     a { overflow-wrap: anywhere; }
     img { max-width: 100%; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
     table { border-collapse: collapse; max-width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; }
   </style>
@@ -182,6 +204,12 @@ function exportHtml(report: Report): string {
 // Convert formatted text to plain text and retain link destinations.
 function htmlToText(html: string, sourceUrl: string): string {
   const parsed = parseReportHtml(html);
+  if (
+    parsed.body.children.length === 1 &&
+    parsed.body.firstElementChild?.tagName === 'PRE'
+  ) {
+    return parsed.body.firstElementChild.textContent ?? '';
+  }
 
   parsed.body.querySelectorAll('table').forEach((table) => {
     table.replaceWith(
@@ -244,6 +272,15 @@ function htmlToLinkedText(html: string, sourceUrl: string): ContentText[] {
     }
 
     if (!(node instanceof Element)) return;
+
+    if (node.tagName === 'PRE') {
+      content.push({
+        text: node.textContent ?? '',
+        fontSize: 9,
+        preserveLeadingSpaces: true,
+      });
+      return;
+    }
 
     if (node.tagName === 'BR') {
       content.push({ text: '\n' });
@@ -564,7 +601,7 @@ async function exportDocx(report: Report): Promise<Blob> {
             new TextRun({
               text: line,
               break: index > 0 ? 1 : 0,
-              size: fontSize,
+              size: part.fontSize ? part.fontSize * 2 : fontSize,
               bold,
               ...(part.link ? { style: 'Hyperlink' } : {}),
             })
@@ -734,8 +771,8 @@ export async function exportQuestion(
   sections: ExportSections,
   format: ExportFormat
 ): Promise<void> {
-  if (sections.sparql || (format !== 'txt' && sections.charts)) {
-    throw new Error('Charts and SPARQL export are not implemented yet.');
+  if (format !== 'txt' && sections.charts) {
+    throw new Error('Chart export is not implemented yet.');
   }
 
   const report = buildReport(query, templateId, tabIndex, sections);

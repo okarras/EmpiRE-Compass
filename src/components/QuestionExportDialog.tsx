@@ -121,7 +121,7 @@ const QuestionExportDialog = ({
         </Accordion>
         <DialogContentText>
           {onExport
-            ? 'Available: HTML, TXT, PDF and Word text reports for the current tab. Deselect SPARQL queries and, except for TXT, Charts.'
+            ? 'Available: HTML, TXT, PDF and Word reports for the current tab. For HTML, PDF and Word, deselect Charts.'
             : 'Exporting all questions is not available yet.'}
         </DialogContentText>
       </DialogContent>
@@ -129,11 +129,7 @@ const QuestionExportDialog = ({
       <DialogActions>
         <Button
           variant="contained"
-          disabled={
-            !onExport ||
-            (format !== 'txt' && sections.charts) ||
-            sections.sparql
-          }
+          disabled={!onExport || (format !== 'txt' && sections.charts)}
           onClick={() => {
             if (
               format === 'html' ||
