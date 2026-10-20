@@ -121,7 +121,7 @@ const QuestionExportDialog = ({
         </Accordion>
         <DialogContentText>
           {onExport
-            ? 'Available: HTML, TXT, PDF and Word reports for the current tab. HTML includes the current main and detailed charts. For PDF and Word, deselect Charts.'
+            ? 'Available: HTML, TXT, PDF and Word reports for the current tab. HTML and PDF include the current main and detailed charts.'
             : 'Exporting all questions is not available yet.'}
         </DialogContentText>
       </DialogContent>
@@ -129,10 +129,7 @@ const QuestionExportDialog = ({
       <DialogActions>
         <Button
           variant="contained"
-          disabled={
-            !onExport ||
-            ((format === 'pdf' || format === 'docx') && sections.charts)
-          }
+          disabled={!onExport}
           onClick={() => {
             if (
               format === 'html' ||
