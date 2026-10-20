@@ -54,6 +54,7 @@
     "dompurify": "^3.2.6",
     "firebase": "^11.6.0",
     "html-to-image": "1.11.13",
+    "jszip": "3.10.1",
     "keycloak-js": "^26.2.0",
     "monaco-editor": "^0.53.0",
     "pdfjs-dist": "^5.4.296",
