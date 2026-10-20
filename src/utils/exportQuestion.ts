@@ -154,7 +154,7 @@ function escapeHtml(text: string): string {
 }
 
 // Generate HTML while preserving formatted section content.
-function exportHtml(report: Report): string {
+function exportHtml(report: Report, chartSvg?: string): string {
   const sections = report.sections
     .map(
       (section) =>
@@ -186,6 +186,28 @@ function exportHtml(report: Report): string {
     pre { white-space: pre-wrap; overflow-wrap: anywhere; }
     table { border-collapse: collapse; max-width: 100%; }
     th, td { border: 1px solid #ccc; padding: 8px; }
+    .export-chart { overflow-x: auto; }
+    .export-chart svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .report-chart {
+      margin: 24px 0;
+    }
+
+    .chart-controls:not([hidden]) {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .chart-controls button {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -197,6 +219,60 @@ function exportHtml(report: Report): string {
     <a href="${report.templateUrl}">ORKG template</a>
   </p>
   ${sections}
+  ${
+    chartSvg
+      ? `
+  <section class="export-chart">
+    <h2>Chart</h2>
+    ${chartSvg}
+    <nav class="chart-controls" aria-label="Detailed charts" hidden>
+      <button type="button" data-chart-step="-1" aria-label="Previous chart">
+        ←
+      </button>
+      <span data-chart-counter role="status" aria-live="polite"></span>
+      <button type="button" data-chart-step="1" aria-label="Next chart">
+        →
+      </button>
+    </nav>
+  </section>
+`
+      : ''
+  }
+  ${
+    chartSvg
+      ? `<script>
+  const section = document.querySelector('.export-chart');
+  const charts = Array.from(
+    section.querySelectorAll('[data-chart-kind="detail"]')
+  );
+  const controls = section.querySelector('.chart-controls');
+
+  if (charts.length > 1) {
+    let current = 0;
+
+    const showChart = (index) => {
+      current = (index + charts.length) % charts.length;
+
+      charts.forEach((chart, i) => {
+        chart.hidden = i !== current;
+      });
+
+      controls.querySelector('[data-chart-counter]').textContent =
+        (current + 1) + ' / ' + charts.length;
+    };
+
+    controls.querySelectorAll('[data-chart-step]').forEach((button) => {
+      button.addEventListener('click', () => {
+        showChart(current + Number(button.dataset.chartStep));
+      });
+    });
+
+    showChart(0);
+    controls.hidden = false;
+  }
+</script>`
+      : ''
+  }
 </body>
 </html>`;
 }
@@ -769,10 +845,15 @@ export async function exportQuestion(
   templateId: string,
   tabIndex: number,
   sections: ExportSections,
-  format: ExportFormat
+  format: ExportFormat,
+  chartSvg?: string
 ): Promise<void> {
-  if (format !== 'txt' && sections.charts) {
+  if ((format === 'pdf' || format === 'docx') && sections.charts) {
     throw new Error('Chart export is not implemented yet.');
+  }
+
+  if (format === 'html' && sections.charts && !chartSvg) {
+    throw new Error('No chart available for export.');
   }
 
   const report = buildReport(query, templateId, tabIndex, sections);
@@ -781,7 +862,11 @@ export async function exportQuestion(
 
   switch (format) {
     case 'html':
-      downloadFile(exportHtml(report), filename, 'text/html');
+      downloadFile(
+        exportHtml(report, sections.charts ? chartSvg : undefined),
+        filename,
+        'text/html'
+      );
       break;
     case 'txt':
       downloadFile(exportTxt(report), filename, 'text/plain');

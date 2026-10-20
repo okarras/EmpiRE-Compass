@@ -43,6 +43,7 @@ interface QuestionChartViewProps {
   ) => Promise<void>;
   onFetchOverrides?: () => Promise<void>;
   rawChartData?: Record<string, unknown>[];
+  showAllDetailedCharts?: boolean;
 }
 
 const QuestionChartView: React.FC<QuestionChartViewProps> = ({
@@ -63,6 +64,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   onSaveChartSettings,
   onFetchOverrides,
   rawChartData,
+  showAllDetailedCharts = false,
 }) => {
   const [currentChartIndex, setCurrentChartIndex] = useState(0);
   const [chartEditorOpen, setChartEditorOpen] = useState(false);
@@ -127,6 +129,8 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
 
   const chartSettingForWrapper: ChartSetting = {
     ...effectiveChartSettings,
+    skipAnimation:
+      showAllDetailedCharts || effectiveChartSettings.skipAnimation,
     series,
     ...(venueColors ? { colors: venueColors } : {}),
     ...(venueSplit && effectiveChartSettings.yAxis?.[0]
@@ -173,7 +177,7 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
+    <Box id={`question-charts-${queryId}`} sx={{ mt: 2 }}>
       <Box
         sx={{
           display: 'flex',
@@ -291,32 +295,40 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                   mx: 'auto',
                 }}
               >
-                <ChartWrapper
-                  question_id={queryId}
-                  dataset={chartDataset}
-                  chartSetting={{
-                    ...effectiveChartSettings,
-                    series: [series[currentChartIndex]],
-                    heading: effectiveChartSettings.noHeadingInSeries
-                      ? ''
-                      : createHeading(series[currentChartIndex]),
-                    colors: [
-                      effectiveChartSettings.colors?.[currentChartIndex] ??
-                        '#e86161',
-                    ],
-                    yAxis: [
-                      {
-                        label: chartSettings.yAxis?.[0]?.label,
-                        dataKey: series[currentChartIndex].dataKey,
-                      },
-                    ],
-                  }}
-                  normalized={normalized}
-                  loading={false}
-                  defaultChartType={query.chartType ?? 'bar'}
-                  availableCharts={['bar', 'pie']}
-                  isSubChart={true}
-                />
+                {(showAllDetailedCharts
+                  ? series.map((_: unknown, index: number) => index)
+                  : [currentChartIndex]
+                ).map((index: number) => (
+                  <ChartWrapper
+                    key={index}
+                    question_id={queryId}
+                    dataset={chartDataset}
+                    chartSetting={{
+                      ...effectiveChartSettings,
+                      skipAnimation:
+                        showAllDetailedCharts ||
+                        effectiveChartSettings.skipAnimation,
+                      series: [series[index]],
+                      heading: effectiveChartSettings.noHeadingInSeries
+                        ? ''
+                        : createHeading(series[index]),
+                      colors: [
+                        effectiveChartSettings.colors?.[index] ?? '#e86161',
+                      ],
+                      yAxis: [
+                        {
+                          label: chartSettings.yAxis?.[0]?.label,
+                          dataKey: series[index].dataKey,
+                        },
+                      ],
+                    }}
+                    normalized={normalized}
+                    loading={false}
+                    defaultChartType={query.chartType ?? 'bar'}
+                    availableCharts={['bar', 'pie']}
+                    isSubChart={true}
+                  />
+                ))}
                 <Typography
                   variant="body1"
                   sx={{
