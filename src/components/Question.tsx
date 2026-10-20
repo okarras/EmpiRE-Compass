@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Query } from '../constants/queries_chart_info';
 import {
   Box,
@@ -56,6 +57,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
   // Tabs state
   const [tab, setTab] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
+  const [exportingCharts, setExportingCharts] = useState(false);
   const { setContext } = useAIAssistantContext();
   const { templateId } = useParams();
   const backupVersion = useBackupChange(); // Listen for backup changes
@@ -272,6 +274,100 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     return renderErrorState(error1);
   }
 
+  const getCurrentChartSvg = (source?: SVGSVGElement): string | null => {
+    const queryId = tab === 1 ? query.uid_2 : query.uid;
+
+    const svg =
+      source ??
+      document.getElementById(`chart-${queryId}`)?.querySelector('svg');
+
+    if (!svg) {
+      toast.error('No chart found.');
+      return null;
+    }
+
+    const copy = svg.cloneNode(true) as SVGSVGElement;
+    const originals = [svg, ...svg.querySelectorAll('*')];
+    const copies = [copy, ...copy.querySelectorAll('*')];
+
+    originals.forEach((element, index) => {
+      const style = getComputedStyle(element);
+      const target = copies[index] as SVGElement;
+
+      [
+        'fill',
+        'stroke',
+        'font-size',
+        'font-family',
+        'font-weight',
+        'text-anchor',
+        'dominant-baseline',
+        'pointer-events',
+      ].forEach((property) => {
+        target.style.setProperty(property, style.getPropertyValue(property));
+      });
+    });
+
+    const hoverStyle = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'style'
+    );
+
+    hoverStyle.textContent = `
+  .MuiBarElement-root {
+    transition: filter 150ms ease;
+  }
+
+  .MuiBarElement-root:hover {
+    filter: brightness(0.75);
+  }
+`;
+
+    copy.prepend(hoverStyle);
+
+    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    return new XMLSerializer().serializeToString(copy);
+  };
+
+  const getCurrentChartsHtml = (): string | null => {
+    const queryId = tab === 1 ? query.uid_2 : query.uid;
+    const svgs = document
+      .getElementById(`question-charts-${queryId}`)
+      ?.querySelectorAll<SVGSVGElement>('[id^="chart-"] svg');
+
+    if (!svgs?.length) {
+      toast.error('No charts found.');
+      return null;
+    }
+
+    return Array.from(svgs)
+      .map((svg, index) => {
+        const heading = document.createElement('h3');
+        heading.textContent =
+          svg
+            .closest('[id^="chart-"]')
+            ?.querySelector('h4, h6')
+            ?.textContent?.trim() ?? '';
+
+        const content = getCurrentChartSvg(svg);
+        if (!content) {
+          throw new Error('Chart could not be copied.');
+        }
+
+        return `
+  <figure
+    class="report-chart"
+    data-chart-kind="${index === 0 ? 'main' : 'detail'}"
+  >
+    ${heading.textContent ? heading.outerHTML : ''}
+    ${content}
+  </figure>
+`;
+      })
+      .join('\n');
+  };
+
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
@@ -290,18 +386,40 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
         onExport={
           templateId
             ? async (sections, format) => {
+                if (exportingCharts) return;
+
                 try {
+                  let chartSvg: string | undefined;
+
+                  if (format === 'html' && sections.charts) {
+                    flushSync(() => setExportingCharts(true));
+
+                    await new Promise<void>((resolve) => {
+                      requestAnimationFrame(() => {
+                        requestAnimationFrame(() => resolve());
+                      });
+                    });
+
+                    const charts = getCurrentChartsHtml();
+                    if (charts === null) return;
+                    chartSvg = charts;
+                  }
+
                   await exportQuestion(
                     query,
                     templateId,
                     tab,
                     sections,
-                    format
+                    format,
+                    chartSvg
                   );
+
                   setExportOpen(false);
                 } catch (error) {
                   console.error('Question export failed:', error);
                   toast.error('Export failed. Please try again.');
+                } finally {
+                  setExportingCharts(false);
                 }
               }
             : undefined
@@ -416,6 +534,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                 data={dataCollection}
               />
               <QuestionChartView
+                showAllDetailedCharts={exportingCharts}
                 query={query}
                 normalized={normalized}
                 setNormalized={setNormalized}
@@ -514,6 +633,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                       data={dataAnalysis}
                     />
                     <QuestionChartView
+                      showAllDetailedCharts={exportingCharts}
                       query={query}
                       normalized={normalized}
                       setNormalized={setNormalized}
