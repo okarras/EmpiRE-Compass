@@ -294,6 +294,29 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       const style = getComputedStyle(element);
       const target = copies[index] as SVGElement;
 
+      if (element instanceof SVGRectElement) {
+        ['x', 'y', 'width', 'height'].forEach((property) => {
+          const value = Number.parseFloat(style.getPropertyValue(property));
+
+          if (Number.isFinite(value)) {
+            target.setAttribute(property, String(value));
+            target.style.removeProperty(property);
+          }
+        });
+      }
+
+      if (element !== svg && style.transform !== 'none') {
+        const matrix = new DOMMatrixReadOnly(style.transform);
+
+        if (matrix.is2D) {
+          target.setAttribute(
+            'transform',
+            `matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f})`
+          );
+          target.style.removeProperty('transform');
+        }
+      }
+
       [
         'fill',
         'stroke',

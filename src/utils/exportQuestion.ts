@@ -11,7 +11,7 @@ import type {
 } from 'pdfmake/interfaces';
 import type { ParagraphChild } from 'docx';
 
-export type ExportFormat = 'html' | 'txt' | 'pdf' | 'docx';
+export type ExportFormat = 'html' | 'txt' | 'pdf' | 'docx' | 'svg' | 'png';
 
 export interface ExportSections {
   explanation: boolean;
@@ -560,7 +560,7 @@ function htmlToPdfBlocks(html: string, sourceUrl: string): Content[] {
   });
 }
 
-async function chartsToPng(chartHtml: string) {
+async function chartsToPng(chartHtml: string, includeTitle = false) {
   const container = document.createElement('div');
   container.innerHTML = chartHtml;
   const figures = container.querySelectorAll('figure.report-chart');
@@ -587,22 +587,45 @@ async function chartsToPng(chartHtml: string) {
       throw new Error('Chart dimensions are missing.');
     }
 
+    const title = figure.querySelector('h3')?.textContent?.trim() ?? '';
+    const headingHeight = includeTitle && title ? 48 : 0;
+
     const canvas = document.createElement('canvas');
     canvas.width = image.naturalWidth * 2;
-    canvas.height = image.naturalHeight * 2;
+    canvas.height = (image.naturalHeight + headingHeight) * 2;
 
     const context = canvas.getContext('2d');
     if (!context) throw new Error('Canvas is unavailable.');
 
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    if (headingHeight) {
+      context.fillStyle = '#222';
+      context.font = 'bold 36px Arial, sans-serif';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(
+        title,
+        canvas.width / 2,
+        headingHeight,
+        canvas.width - 48
+      );
+    }
+
+    context.drawImage(
+      image,
+      0,
+      headingHeight * 2,
+      image.naturalWidth * 2,
+      image.naturalHeight * 2
+    );
 
     images.push({
       title: figure.querySelector('h3')?.textContent?.trim() ?? '',
       dataUrl: canvas.toDataURL('image/png'),
       width: image.naturalWidth,
-      height: image.naturalHeight,
+      height: image.naturalHeight + headingHeight,
     });
   }
 
@@ -924,6 +947,85 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
   return Packer.toBlob(document);
 }
 
+async function exportChartZip(
+  chartHtml: string,
+  format: 'svg' | 'png'
+): Promise<Blob> {
+  const { default: JSZip } = await import('jszip');
+  const zip = new JSZip();
+
+  if (format === 'png') {
+    const charts = await chartsToPng(chartHtml, true);
+
+    charts.forEach((chart, index) => {
+      zip.file(`chart-${index + 1}.png`, chart.dataUrl.split(',')[1], {
+        base64: true,
+      });
+    });
+  } else {
+    const container = document.createElement('div');
+    container.innerHTML = chartHtml;
+    const figures = container.querySelectorAll('figure.report-chart');
+
+    if (!figures.length) {
+      throw new Error('No charts available for export.');
+    }
+
+    figures.forEach((figure, index) => {
+      const svg = figure.querySelector('svg');
+      if (!svg) throw new Error('Chart SVG is missing.');
+      const namespace = 'http://www.w3.org/2000/svg';
+      const heading = figure.querySelector('h3')?.textContent?.trim() ?? '';
+      const width = svg.viewBox.baseVal.width || svg.width.baseVal.value;
+      const height = svg.viewBox.baseVal.height || svg.height.baseVal.value;
+      const padding = 24;
+      const headingHeight = heading ? 40 : 0;
+
+      const exportSvg = document.createElementNS(namespace, 'svg');
+      exportSvg.setAttribute('xmlns', namespace);
+      exportSvg.setAttribute('width', String(width + padding * 2));
+      exportSvg.setAttribute(
+        'height',
+        String(height + headingHeight + padding * 2)
+      );
+      exportSvg.setAttribute(
+        'viewBox',
+        `0 0 ${width + padding * 2} ${height + headingHeight + padding * 2}`
+      );
+      exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+      exportSvg.style.width = '100vw';
+      exportSvg.style.height = '100vh';
+      exportSvg.style.display = 'block';
+
+      if (heading) {
+        const title = document.createElementNS(namespace, 'text');
+        title.setAttribute('x', String(width / 2 + padding));
+        title.setAttribute('y', String(padding + 20));
+        title.setAttribute('text-anchor', 'middle');
+        title.setAttribute('font-family', 'Arial, sans-serif');
+        title.setAttribute('font-size', '18');
+        title.setAttribute('font-weight', 'bold');
+        title.setAttribute('fill', '#222');
+        title.textContent = heading;
+        exportSvg.append(title);
+      }
+
+      svg.setAttribute('x', String(padding));
+      svg.setAttribute('y', String(padding + headingHeight));
+      svg.setAttribute('width', String(width));
+      svg.setAttribute('height', String(height));
+      exportSvg.append(svg);
+
+      zip.file(
+        `chart-${index + 1}.svg`,
+        new XMLSerializer().serializeToString(exportSvg)
+      );
+    });
+  }
+
+  return zip.generateAsync({ type: 'blob' });
+}
+
 function downloadFile(
   content: string | Blob,
   filename: string,
@@ -954,6 +1056,22 @@ export async function exportQuestion(
   format: ExportFormat,
   chartSvg?: string
 ): Promise<void> {
+  if (format === 'svg' || format === 'png') {
+    if (!chartSvg) {
+      throw new Error('No charts available for export.');
+    }
+
+    const zip = await exportChartZip(chartSvg, format);
+    const date = new Date().toISOString().slice(0, 10);
+
+    downloadFile(
+      zip,
+      `Q${query.id}_tab${tabIndex + 1}_charts_${format}_${date}.zip`,
+      'application/zip'
+    );
+
+    return;
+  }
   if (format !== 'txt' && sections.charts && !chartSvg) {
     throw new Error('No chart available for export.');
   }

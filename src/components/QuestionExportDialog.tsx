@@ -51,7 +51,7 @@ const QuestionExportDialog = ({
     interpretation: true,
     sparql: false,
   });
-
+  const chartsOnly = format === 'svg' || format === 'png';
   return (
     <Dialog
       open={open}
@@ -66,7 +66,7 @@ const QuestionExportDialog = ({
         <TextField
           select
           fullWidth
-          label="Report format"
+          label="Export format"
           value={format}
           onChange={(event) => setFormat(event.target.value)}
           sx={{ mt: 1, mb: 2 }}
@@ -75,50 +75,58 @@ const QuestionExportDialog = ({
           <MenuItem value="pdf">PDF (.pdf)</MenuItem>
           <MenuItem value="txt">Plain text (.txt)</MenuItem>
           <MenuItem value="docx">Word (.docx)</MenuItem>
+          <MenuItem value="svg">Charts – SVG (.zip)</MenuItem>
+          <MenuItem value="png">Charts – PNG (.zip)</MenuItem>
         </TextField>
-        <Accordion disableGutters elevation={0} sx={{ mb: 2 }}>
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            id="export-options-header"
-            aria-controls="export-options-content"
-          >
-            <Typography>Advanced options</Typography>
-          </AccordionSummary>
+        {!chartsOnly && (
+          <Accordion disableGutters elevation={0} sx={{ mb: 2 }}>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              id="export-options-header"
+              aria-controls="export-options-content"
+            >
+              <Typography>Advanced options</Typography>
+            </AccordionSummary>
 
-          <AccordionDetails id="export-options-content">
-            <FormGroup>
-              {Object.entries(exportSections).map(([key, label]) => {
-                const section = key as keyof typeof sections;
-                const disabled = section === 'charts' && format === 'txt';
+            <AccordionDetails id="export-options-content">
+              <FormGroup>
+                {Object.entries(exportSections).map(([key, label]) => {
+                  const section = key as keyof typeof sections;
+                  const disabled = section === 'charts' && format === 'txt';
 
-                return (
-                  <FormControlLabel
-                    key={section}
-                    label={label}
-                    disabled={disabled}
-                    control={
-                      <Checkbox
-                        checked={!disabled && sections[section]}
-                        onChange={(event) =>
-                          setSections((previous) => ({
-                            ...previous,
-                            [section]: event.target.checked,
-                          }))
-                        }
-                      />
-                    }
-                  />
-                );
-              })}
-            </FormGroup>
+                  return (
+                    <FormControlLabel
+                      key={section}
+                      label={label}
+                      disabled={disabled}
+                      control={
+                        <Checkbox
+                          checked={!disabled && sections[section]}
+                          onChange={(event) =>
+                            setSections((previous) => ({
+                              ...previous,
+                              [section]: event.target.checked,
+                            }))
+                          }
+                        />
+                      }
+                    />
+                  );
+                })}
+              </FormGroup>
 
-            {format === 'txt' && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Plain text reports do not include chart images.
-              </Typography>
-            )}
-          </AccordionDetails>
-        </Accordion>
+              {format === 'txt' && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 1 }}
+                >
+                  Plain text reports do not include chart images.
+                </Typography>
+              )}
+            </AccordionDetails>
+          </Accordion>
+        )}
         <DialogContentText>
           {onExport
             ? 'Available: HTML, TXT, PDF and Word reports for the current tab. HTML and PDF include the current main and detailed charts.'
@@ -135,12 +143,14 @@ const QuestionExportDialog = ({
               format === 'html' ||
               format === 'txt' ||
               format === 'pdf' ||
-              format === 'docx'
+              format === 'docx' ||
+              format === 'svg' ||
+              format === 'png'
             ) {
               onExport?.(
                 {
                   ...sections,
-                  charts: format === 'txt' ? false : sections.charts,
+                  charts: chartsOnly || (format !== 'txt' && sections.charts),
                 },
                 format
               );
