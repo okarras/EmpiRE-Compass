@@ -560,7 +560,57 @@ function htmlToPdfBlocks(html: string, sourceUrl: string): Content[] {
   });
 }
 
-async function exportPdf(report: Report): Promise<Blob> {
+async function chartsToPng(chartHtml: string) {
+  const container = document.createElement('div');
+  container.innerHTML = chartHtml;
+  const figures = container.querySelectorAll('figure.report-chart');
+
+  if (!figures.length) {
+    throw new Error('No charts available for export.');
+  }
+
+  const images = [];
+
+  for (const figure of figures) {
+    const svg = figure.querySelector('svg');
+    if (!svg) throw new Error('Chart SVG is missing.');
+
+    const content = new XMLSerializer().serializeToString(svg);
+    const imageSrc =
+      'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(content);
+
+    const image = new Image();
+    image.src = imageSrc;
+    await image.decode();
+
+    if (!image.naturalWidth || !image.naturalHeight) {
+      throw new Error('Chart dimensions are missing.');
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth * 2;
+    canvas.height = image.naturalHeight * 2;
+
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas is unavailable.');
+
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    images.push({
+      title: figure.querySelector('h3')?.textContent?.trim() ?? '',
+      dataUrl: canvas.toDataURL('image/png'),
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+    });
+  }
+
+  return images;
+}
+
+async function exportPdf(report: Report, chartHtml?: string): Promise<Blob> {
+  const charts = chartHtml ? await chartsToPng(chartHtml) : [];
   // Load the PDF library and embedded fonts only when PDF is requested.
   const [{ default: pdfMake }, { default: fonts }] = await Promise.all([
     import('pdfmake/build/pdfmake'),
@@ -625,6 +675,24 @@ async function exportPdf(report: Report): Promise<Blob> {
         },
         ...htmlToPdfBlocks(section.content, report.sourceUrl),
       ]),
+      ...charts.map(
+        (chart): Content => ({
+          unbreakable: true,
+          stack: [
+            {
+              text: chart.title || 'Chart',
+              fontSize: 14,
+              bold: true,
+              margin: [0, 12, 0, 6],
+            },
+            {
+              image: chart.dataUrl,
+              fit: landscape ? [760, 440] : [515, 650],
+              margin: [0, 0, 0, 12],
+            },
+          ],
+        })
+      ),
     ],
     pageBreakBefore: (currentNode, nodeContainer) =>
       currentNode.headlineLevel === 1 &&
@@ -634,7 +702,7 @@ async function exportPdf(report: Report): Promise<Blob> {
   return pdfMake.createPdf(definition).getBlob();
 }
 
-async function exportDocx(report: Report): Promise<Blob> {
+async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
   const {
     Document,
     Paragraph,
@@ -648,7 +716,9 @@ async function exportDocx(report: Report): Promise<Blob> {
     WidthType,
     TableLayoutType,
     PageOrientation,
+    ImageRun,
   } = await import('docx');
+  const charts = chartHtml ? await chartsToPng(chartHtml) : [];
 
   const landscape = hasWideTable(report);
 
@@ -758,6 +828,41 @@ async function exportDocx(report: Report): Promise<Blob> {
     ...createContent(section.content),
   ]);
 
+  const chartParagraphs = charts.flatMap((chart) => {
+    const scale = Math.min(
+      (landscape ? 1000 : 680) / chart.width,
+      (landscape ? 550 : 850) / chart.height,
+      1
+    );
+
+    const data = Uint8Array.from(
+      atob(chart.dataUrl.split(',')[1]),
+      (character) => character.charCodeAt(0)
+    );
+
+    return [
+      new Paragraph({
+        text: chart.title || 'Chart',
+        heading: HeadingLevel.HEADING_2,
+        keepNext: true,
+      }),
+      new Paragraph({
+        children: [
+          new ImageRun({
+            type: 'png',
+            data,
+            transformation: {
+              width: Math.round(chart.width * scale),
+              height: Math.round(chart.height * scale),
+            },
+          }),
+        ],
+        keepLines: true,
+        spacing: { after: 240 },
+      }),
+    ];
+  });
+
   const document = new Document({
     styles: {
       default: {
@@ -810,6 +915,7 @@ async function exportDocx(report: Report): Promise<Blob> {
             ],
           }),
           ...sections,
+          ...chartParagraphs,
         ],
       },
     ],
@@ -848,11 +954,7 @@ export async function exportQuestion(
   format: ExportFormat,
   chartSvg?: string
 ): Promise<void> {
-  if ((format === 'pdf' || format === 'docx') && sections.charts) {
-    throw new Error('Chart export is not implemented yet.');
-  }
-
-  if (format === 'html' && sections.charts && !chartSvg) {
+  if (format !== 'txt' && sections.charts && !chartSvg) {
     throw new Error('No chart available for export.');
   }
 
@@ -872,12 +974,16 @@ export async function exportQuestion(
       downloadFile(exportTxt(report), filename, 'text/plain');
       break;
     case 'pdf':
-      downloadFile(await exportPdf(report), filename, 'application/pdf');
+      downloadFile(
+        await exportPdf(report, sections.charts ? chartSvg : undefined),
+        filename,
+        'application/pdf'
+      );
       break;
 
     case 'docx':
       downloadFile(
-        await exportDocx(report),
+        await exportDocx(report, sections.charts ? chartSvg : undefined),
         filename,
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
       );

@@ -391,7 +391,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                 try {
                   let chartSvg: string | undefined;
 
-                  if (format === 'html' && sections.charts) {
+                  if (format !== 'txt' && sections.charts) {
                     flushSync(() => setExportingCharts(true));
 
                     await new Promise<void>((resolve) => {
