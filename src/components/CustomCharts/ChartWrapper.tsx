@@ -15,6 +15,7 @@ interface ChartWrapperProps {
   defaultChartType?: 'bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter';
   availableCharts?: ('bar' | 'pie' | 'heatmap' | 'boxplot' | 'scatter')[];
   isSubChart?: boolean;
+  normalizationType?: 'per-year' | 'across-years';
 }
 
 const ChartWrapper = ({
@@ -25,6 +26,7 @@ const ChartWrapper = ({
   loading = false,
   defaultChartType = 'bar',
   isSubChart = false,
+  normalizationType = 'per-year',
 }: ChartWrapperProps) => {
   return (
     <Box sx={{ width: '100%' }}>
@@ -63,6 +65,7 @@ const ChartWrapper = ({
           normalized={normalized}
           loading={loading}
           isSubChart={isSubChart}
+          normalizationType={normalizationType}
         />
       )}
     </Box>
