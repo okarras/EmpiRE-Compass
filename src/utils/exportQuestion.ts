@@ -22,12 +22,21 @@ export interface ExportSections {
   sparql: boolean;
 }
 
+export interface ExportChartGroup {
+  tabIndex: number;
+  normalized: boolean;
+  html: string;
+}
+
 // Select the content once for every format.
 function buildReport(
   query: Query,
   templateId: string,
   tabIndex: number,
-  selected: ExportSections
+  selected: ExportSections,
+  format: ExportFormat,
+  normalized: boolean,
+  exportedAt: Date
 ) {
   const info = query.dataAnalysisInformation;
   const getContent = (value?: string | string[]) =>
@@ -76,13 +85,42 @@ function buildReport(
     });
   }
 
+  const sourceUrl = `https://empire-compass.tib.eu/${encodeURIComponent(templateId)}/questions/${encodeURIComponent(String(query.id))}`;
+  const tabName = (
+    tabIndex === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name
+  )?.trim();
+  const chartSettings =
+    tabIndex === 1 ? query.chartSettings2 : query.chartSettings;
+  const hasCharts =
+    format !== 'txt' && selected.charts && Boolean(chartSettings);
+  const chartDisplay = chartSettings?.doesntHaveNormalization
+    ? 'Absolute'
+    : format === 'html'
+      ? 'Relative / Absolute (switchable)'
+      : normalized
+        ? 'Relative'
+        : 'Absolute';
+
+  const metadata: { label: string; value: string; url?: string }[] = [
+    {
+      label: 'Theme',
+      value: getTemplateConfig(templateId).title,
+      url: `https://orkg.org/template/${encodeURIComponent(templateId)}`,
+    },
+    ...(tabName ? [{ label: 'Analysis', value: tabName }] : []),
+    ...(hasCharts ? [{ label: 'Chart display', value: chartDisplay }] : []),
+    { label: 'Export date', value: exportedAt.toLocaleDateString('en-GB') },
+    {
+      label: 'Source question',
+      value: `Question ${query.id}`,
+      url: sourceUrl,
+    },
+  ];
+
   return {
     title: `${query.id}. ${info.question}`,
-    theme: getTemplateConfig(templateId).title,
-    templateId,
-    tabNumber: tabIndex + 1,
-    sourceUrl: window.location.href,
-    templateUrl: `https://orkg.org/template/${encodeURIComponent(templateId)}`,
+    metadata,
+    sourceUrl,
     sections: sections
       .filter((section) => section.enabled && section.content.trim())
       .map((section) => ({
@@ -127,6 +165,14 @@ function splitHtmlBlocks(html: string): HtmlBlock[] {
       if (table.rows.length && table.columnCount) {
         blocks.push({ kind: 'table', table });
       }
+    } else if (
+      node instanceof Element &&
+      node.matches('p, h1, h2, h3, h4, h5, h6, pre, blockquote') &&
+      !node.querySelector('table')
+    ) {
+      flushText();
+      pending.append(node.cloneNode(true));
+      flushText();
     } else if (node instanceof Element && node.querySelector('table')) {
       node.childNodes.forEach(visit);
     } else {
@@ -154,16 +200,103 @@ function escapeHtml(text: string): string {
 }
 
 // Generate HTML while preserving formatted section content.
-function exportHtml(report: Report, chartSvg?: string): string {
-  const sections = report.sections
-    .map(
-      (section) =>
-        `<section>
+function exportHtml(
+  tabs: { label: string; report: Report; charts?: string }[],
+  activeTab: number
+): string {
+  const report = (tabs[activeTab] ?? tabs[0]).report;
+  const sectionTitles: Record<string, string> = {
+    'Question explanation': 'Explanation of the Competency Question',
+    'Required data': 'Required Data for Analysis',
+    'Analysis method': 'Data Analysis',
+    Interpretation: 'Data Interpretation',
+  };
+
+  const renderTab = (report: Report, chartSvg?: string): string => {
+    const orderedSections = report.sections.map((section) => ({
+      ...section,
+      title: sectionTitles[section.title] ?? section.title,
+    }));
+
+    if (
+      chartSvg &&
+      !orderedSections.some(
+        (section) => section.title === 'Data Interpretation'
+      )
+    ) {
+      const sparqlIndex = orderedSections.findIndex((section) =>
+        section.title.startsWith('SPARQL query')
+      );
+
+      orderedSections.splice(
+        sparqlIndex === -1 ? orderedSections.length : sparqlIndex,
+        0,
+        { title: 'Data Interpretation', content: '' }
+      );
+    }
+
+    const charts = chartSvg
+      ? `
+      ${chartSvg}
+      <nav class="chart-controls" aria-label="Detailed charts" hidden>
+        <button type="button" data-chart-step="-1" aria-label="Previous chart">
+          <
+        </button>
+        <span data-chart-counter role="status" aria-live="polite"></span>
+        <button type="button" data-chart-step="1" aria-label="Next chart">
+          >
+        </button>
+      </nav>
+    `
+      : '';
+
+    const sections = orderedSections
+      .map((section) => {
+        const containsCharts =
+          section.title === 'Data Interpretation' && Boolean(chartSvg);
+
+        const sparql = section.title.startsWith('SPARQL query')
+          ? parseReportHtml(section.content).querySelector('code')?.textContent
+          : null;
+
+        const queryLink = sparql
+          ? `<p>
+        <a
+          class="sparql-link"
+          href="${escapeHtml(`https://orkg.org/sparql#${encodeURIComponent(sparql)}`)}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Open query in ORKG</a>
+      </p>`
+          : '';
+
+        return `
+        <section${containsCharts ? ' class="export-chart"' : ''}>
           <h2>${escapeHtml(section.title)}</h2>
+          ${queryLink}
+          ${containsCharts ? charts : ''}
           ${section.content}
-        </section>`
+        </section>
+      `;
+      })
+      .join('\n');
+
+    return `
+  ${report.metadata
+    .map(
+      (item) => `<p>
+        <strong>${escapeHtml(item.label)}:</strong>
+        ${
+          item.url
+            ? `<a href="${escapeHtml(item.url).replace(/"/g, '&quot;')}">${escapeHtml(item.value)}</a>`
+            : escapeHtml(item.value)
+        }
+      </p>`
     )
-    .join('\n');
+    .join('\n')}
+  ${sections}
+`;
+  };
 
   return `<!doctype html>
 <html lang="en">
@@ -172,107 +305,430 @@ function exportHtml(report: Report, chartSvg?: string): string {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>${escapeHtml(report.title)}</title>
   <style>
-    body {
-      max-width: 900px;
-      margin: 40px auto;
-      padding: 0 24px;
-      font-family: Arial, sans-serif;
-      line-height: 1.6;
-      color: #222;
+    html {
+      background: #f5f5f5;
     }
-    h1, h2 { color: #b84040; }
-    a { overflow-wrap: anywhere; }
-    img { max-width: 100%; }
-    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
-    table { border-collapse: collapse; max-width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; }
-    .export-chart { overflow-x: auto; }
+
+    .sparql-link {
+      display: inline-block;
+      padding: 8px 14px;
+      border: 1px solid #e86161;
+      border-radius: 6px;
+      color: #e86161;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .sparql-link:hover {
+      background: #fff3f3;
+    }
+
+    body {
+      box-sizing: border-box;
+      width: calc(100% - 32px);
+      max-width: 1200px;
+      margin: 40px auto;
+      font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: rgba(0, 0, 0, 0.87);
+    }
+    .report-content {
+      padding: 32px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+    }
+
+    .report-content [data-report-tab] > p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    h1, h2 {
+      color: #e86161;
+      line-height: 1.4;
+    }
+
+    h1 {
+      margin: 0 0 32px;
+      padding-bottom: 12px;
+      border-bottom: 4px solid #e86161;
+      color: #e86161;
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    body > p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: #666;
+    }
+
+    section {
+      margin-top: 24px;
+      overflow-x: auto;
+    }
+
+    section + section {
+      padding-top: 24px;
+      border-top: 1px solid #eee;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    h3 {
+      margin: 24px 0 12px;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+
+    p {
+      margin: 0 0 16px;
+    }
+
+    section > :last-child {
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 16px auto;
+      }
+      .report-content {
+          padding: 20px;
+        }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+
+    a {
+      color: #245a9c;
+      overflow-wrap: anywhere;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    pre {
+      padding: 16px;
+      background: #f5f7f9;
+      border: 1px solid #e1e5e9;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 100%;
+      margin: 20px 0;
+    }
+
+    body table th,
+    body table td,
+    body table.tg th,
+    body table.tg td {
+      padding: 10px 12px;
+      border: 1px solid #d8dee5;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.45;
+      vertical-align: middle;
+    }
+
+    body table th {
+      background: #eef2f6;
+      font-weight: bold;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
     .export-chart svg {
       display: block;
       max-width: 100%;
       height: auto;
+      margin: 0 auto;
+    }
+
+    .report-chart h3 {
+      text-align: center;
     }
 
     .report-chart {
       margin: 24px 0;
     }
 
+    .detail-chart-frame {
+      position: relative;
+      padding: 0 48px 32px;
+    }
+
     .chart-controls:not([hidden]) {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      pointer-events: none;
     }
 
     .chart-controls button {
-      padding: 8px 16px;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid #eee;
+      border-radius: 50%;
+      background: #fff;
+      color: #777;
+      box-shadow: 0 2px 4px #0002;
+      font-size: 30px;
+      line-height: 1;
       cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .chart-controls button:hover {
+      background: #eee;
+      color: #333;
+    }
+
+    .chart-controls button:focus-visible {
+      outline: 2px solid #e86161;
+    }
+
+    .chart-controls [data-chart-counter] {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #777;
+      font-size: 13px;
+    }
+    .chart-options {
+      margin: 20px 0 28px;
+    }
+
+    .chart-options > p {
+      margin: 0 0 12px;
+      color: #666;
+      font-size: 16px;
+    }
+
+    .chart-mode-buttons {
+      display: inline-flex;
+      overflow: hidden;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+    }
+
+    .chart-mode-buttons button {
+      padding: 8px 10px;
+      border: 0;
+      background: #fafafa;
+      color: #999;
+      font: inherit;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .chart-mode-buttons button + button {
+      border-left: 1px solid #ddd;
+    }
+
+    .chart-mode-buttons button:hover {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .chart-mode-buttons button[aria-pressed="true"] {
+      background: #d5d5d5;
+      color: #222;
+      font-weight: 600;
+    }
+
+    .chart-mode-buttons button:focus-visible {
+      outline: 2px solid #e86161;
+      outline-offset: -3px;
+    }
+    .report-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+    }
+
+    .report-tabs button {
+      padding: 12px 16px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: transparent;
+      color: #666;
+      font: inherit;
+      text-transform: uppercase;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .report-tabs button[aria-pressed="true"] {
+      border-bottom-color: #e86161;
+      color: #e86161;
+    }
+
+    .report-tabs button:focus-visible {
+      outline: 2px solid #e86161;
+      outline-offset: -2px;
     }
   </style>
 </head>
 <body>
   <h1>${escapeHtml(report.title)}</h1>
-  <p>${escapeHtml(report.theme)} · Template ID: ${escapeHtml(report.templateId)}</p>
-  <p>Scope: current tab (${report.tabNumber})</p>
-  <p>
-    <a href="${encodeURI(report.sourceUrl).replace(/"/g, '%22').replace(/&/g, '&amp;')}">Source question</a> ·
-    <a href="${report.templateUrl}">ORKG template</a>
-  </p>
-  ${sections}
   ${
-    chartSvg
-      ? `
-  <section class="export-chart">
-    <h2>Chart</h2>
-    ${chartSvg}
-    <nav class="chart-controls" aria-label="Detailed charts" hidden>
-      <button type="button" data-chart-step="-1" aria-label="Previous chart">
-        ←
-      </button>
-      <span data-chart-counter role="status" aria-live="polite"></span>
-      <button type="button" data-chart-step="1" aria-label="Next chart">
-        →
-      </button>
-    </nav>
-  </section>
-`
+    tabs.length > 1
+      ? `<nav class="report-tabs" aria-label="Question analyses">
+        ${tabs.map((tab, index) => `<button type="button" data-report-target="${index}" aria-pressed="${index === activeTab}">${escapeHtml(tab.label)}</button>`).join('\n')}
+      </nav>`
       : ''
   }
-  ${
-    chartSvg
-      ? `<script>
-  const section = document.querySelector('.export-chart');
-  const charts = Array.from(
-    section.querySelectorAll('[data-chart-kind="detail"]')
-  );
+  <main class="report-content">
+  ${tabs
+    .map(
+      (
+        tab,
+        index
+      ) => `<div data-report-tab="${index}"${index === activeTab ? '' : ' hidden'}>
+        ${renderTab(tab.report, tab.charts)}
+      </div>`
+    )
+    .join('\n')}
+  </main>
+  <script>
+const panels = Array.from(document.querySelectorAll('[data-report-tab]'));
+const tabButtons = Array.from(document.querySelectorAll('[data-report-target]'));
+
+tabButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.reportTab !== button.dataset.reportTarget;
+    });
+    tabButtons.forEach((item) => {
+      item.setAttribute('aria-pressed', String(item === button));
+    });
+  });
+});
+
+document.querySelectorAll('.export-chart').forEach((section) => {
   const controls = section.querySelector('.chart-controls');
+  const templates = Array.from(
+    section.querySelectorAll('template[data-chart-mode]')
+  );
 
-  if (charts.length > 1) {
-    let current = 0;
+  let charts = [];
+  let current = 0;
 
-    const showChart = (index) => {
-      current = (index + charts.length) % charts.length;
-
-      charts.forEach((chart, i) => {
-        chart.hidden = i !== current;
-      });
-
-      controls.querySelector('[data-chart-counter]').textContent =
-        (current + 1) + ' / ' + charts.length;
-    };
-
-    controls.querySelectorAll('[data-chart-step]').forEach((button) => {
-      button.addEventListener('click', () => {
-        showChart(current + Number(button.dataset.chartStep));
-      });
+  const showChart = () => {
+    charts.forEach((chart, index) => {
+      chart.hidden = index !== current;
     });
 
-    showChart(0);
-    controls.hidden = false;
+    controls.hidden = charts.length <= 1;
+    controls.querySelector('[data-chart-counter]').textContent =
+      charts.length ? (current + 1) + ' / ' + charts.length : '';
+  };
+
+  const updateCharts = () => {
+    charts = Array.from(
+      section.querySelectorAll('[data-chart-kind="detail"]')
+    );
+
+    if (charts.length) {
+      const frame = document.createElement('div');
+      frame.className = 'detail-chart-frame';
+
+      charts[0].before(frame);
+      charts.forEach((chart) => frame.append(chart));
+      frame.append(controls);
+    }
+
+    current = Math.min(current, Math.max(charts.length - 1, 0));
+    showChart();
+  };
+
+  controls.querySelectorAll('[data-chart-step]').forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!charts.length) return;
+
+      current =
+        (current + Number(button.dataset.chartStep) + charts.length) %
+        charts.length;
+
+      showChart();
+    });
+  });
+
+  if (templates.length) {
+    const options = document.createElement('div');
+    options.className = 'chart-options';
+
+    const heading = document.createElement('p');
+    heading.textContent = 'Chart Options';
+
+    const buttons = document.createElement('div');
+    buttons.className = 'chart-mode-buttons';
+    buttons.setAttribute('role', 'group');
+    buttons.setAttribute('aria-label', 'Chart display');
+
+    const viewer = document.createElement('div');
+
+    const showMode = (template) => {
+      viewer.replaceChildren(template.content.cloneNode(true));
+
+      buttons.querySelectorAll('button').forEach((button) => {
+        button.setAttribute(
+          'aria-pressed',
+          String(button.dataset.mode === template.dataset.chartMode)
+        );
+      });
+
+      updateCharts();
+    };
+
+    ['relative', 'absolute'].forEach((mode) => {
+      const template = templates.find(
+        (item) => item.dataset.chartMode === mode
+      );
+      if (!template) return;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.mode = mode;
+      button.textContent = mode.toUpperCase();
+      button.addEventListener('click', () => showMode(template));
+      buttons.append(button);
+    });
+
+    options.append(heading, buttons);
+    templates[0].before(options, viewer);
+
+    showMode(templates[0]);
+  } else {
+    updateCharts();
   }
-</script>`
-      : ''
-  }
+});
+  </script>
 </body>
 </html>`;
 }
@@ -328,10 +784,10 @@ function exportTxt(report: Report): string {
 
   return [
     report.title,
-    `${report.theme} · Template ID: ${report.templateId}`,
-    `Scope: current tab (${report.tabNumber})`,
-    `Source question: ${report.sourceUrl}`,
-    `ORKG template: ${report.templateUrl}`,
+    ...report.metadata.map(
+      (item) =>
+        `${item.label}: ${item.value}${item.url ? ` (${item.url})` : ''}`
+    ),
     ...sections,
   ].join('\n\n');
 }
@@ -372,6 +828,7 @@ function htmlToLinkedText(html: string, sourceUrl: string): ContentText[] {
           link: new URL(href, sourceUrl).href,
           color: '#245a9c',
           decoration: 'underline',
+          noWrap: true,
         });
         return;
       }
@@ -387,6 +844,17 @@ function htmlToLinkedText(html: string, sourceUrl: string): ContentText[] {
   };
 
   parsed.body.childNodes.forEach(visit);
+
+  while (content.length) {
+    const last = content[content.length - 1];
+
+    if (typeof last.text !== 'string' || last.text.trim()) {
+      break;
+    }
+
+    content.pop();
+  }
+
   return content;
 }
 
@@ -644,10 +1112,41 @@ async function exportPdf(report: Report, chartHtml?: string): Promise<Blob> {
 
   const landscape = hasWideTable(report);
 
+  const sectionTitles: Record<string, string> = {
+    'Question explanation': 'Explanation of the Competency Question',
+    'Required data': 'Required Data for Analysis',
+    'Analysis method': 'Data Analysis',
+    Interpretation: 'Data Interpretation',
+  };
+
+  const pdfSections = [...report.sections];
+
+  if (
+    charts.length &&
+    !pdfSections.some((section) => section.title === 'Interpretation')
+  ) {
+    const sparqlIndex = pdfSections.findIndex((section) =>
+      section.title.startsWith('SPARQL query')
+    );
+
+    pdfSections.splice(
+      sparqlIndex === -1 ? pdfSections.length : sparqlIndex,
+      0,
+      { title: 'Interpretation', content: '' }
+    );
+  }
+
   const definition: TDocumentDefinitions = {
     pageOrientation: landscape ? 'landscape' : 'portrait',
     pageSize: 'A4',
-    pageMargins: [40, 40, 40, 40],
+    pageMargins: [40, 40, 40, 52],
+    footer: (currentPage, pageCount) => ({
+      text: `${currentPage} / ${pageCount}`,
+      alignment: 'center',
+      fontSize: 9,
+      color: '#777777',
+      margin: [0, 16, 0, 0],
+    }),
     defaultStyle: {
       font: 'Roboto',
       fontSize: 11,
@@ -658,68 +1157,107 @@ async function exportPdf(report: Report, chartHtml?: string): Promise<Blob> {
         text: report.title,
         fontSize: 20,
         bold: true,
-        color: '#b84040',
+        color: '#e86161',
         margin: [0, 0, 0, 14],
       },
       {
-        text: `${report.theme} · Template ID: ${report.templateId}`,
-        margin: [0, 0, 0, 6],
-      },
-      {
-        text: `Scope: current tab (${report.tabNumber})`,
-        margin: [0, 0, 0, 6],
-      },
-      {
-        text: [
+        canvas: [
           {
-            text: 'Source question',
-            link: report.sourceUrl,
-            color: '#245a9c',
-            decoration: 'underline',
-          },
-          { text: ' · ' },
-          {
-            text: 'ORKG template',
-            link: report.templateUrl,
-            color: '#245a9c',
-            decoration: 'underline',
+            type: 'line',
+            x1: 0,
+            y1: 0,
+            x2: landscape ? 761.89 : 515.28,
+            y2: 0,
+            lineWidth: 2,
+            lineColor: '#e86161',
           },
         ],
         margin: [0, 0, 0, 16],
       },
-      ...report.sections.flatMap((section): Content[] => [
-        {
-          text: section.title,
-          fontSize: 14,
-          bold: true,
-          color: '#b84040',
-          margin: [0, 12, 0, 6],
-          headlineLevel: 1,
-        },
-        ...htmlToPdfBlocks(section.content, report.sourceUrl),
-      ]),
-      ...charts.map(
-        (chart): Content => ({
-          unbreakable: true,
-          stack: [
+      ...report.metadata.map(
+        (item, index): Content => ({
+          text: [
+            { text: `${item.label}: `, bold: true },
             {
-              text: chart.title || 'Chart',
-              fontSize: 14,
-              bold: true,
-              margin: [0, 12, 0, 6],
-            },
-            {
-              image: chart.dataUrl,
-              fit: landscape ? [760, 440] : [515, 650],
-              margin: [0, 0, 0, 12],
+              text: item.value,
+              ...(item.url
+                ? {
+                    link: item.url,
+                    color: '#245a9c',
+                    decoration: 'underline' as const,
+                    noWrap: true,
+                  }
+                : {}),
             },
           ],
+          fontSize: 10,
+          color: '#666666',
+          margin: [0, 0, 0, index === report.metadata.length - 1 ? 16 : 4],
         })
       ),
+      ...pdfSections.flatMap((section): Content[] => {
+        const sparql = section.title.startsWith('SPARQL query')
+          ? parseReportHtml(section.content).querySelector('code')?.textContent
+          : null;
+
+        return [
+          {
+            text: sectionTitles[section.title] ?? section.title,
+            ...(sparql
+              ? {
+                  link: `https://orkg.org/sparql#${encodeURIComponent(sparql)}`,
+                  decoration: 'underline' as const,
+                  noWrap: true,
+                }
+              : {}),
+            fontSize: 14,
+            bold: true,
+            color: '#e86161',
+            margin: [0, 12, 0, 6],
+            headlineLevel: 1,
+          },
+
+          ...(section.title === 'Interpretation'
+            ? charts.map(
+                (chart): Content => ({
+                  unbreakable: true,
+                  stack: [
+                    {
+                      text: chart.title || 'Chart',
+                      fontSize: 12,
+                      bold: true,
+                      alignment: 'center',
+                      margin: [0, 12, 0, 6],
+                    },
+                    {
+                      image: chart.dataUrl,
+                      fit: landscape ? [760, 440] : [515, 650],
+                      alignment: 'center',
+                      margin: [0, 0, 0, 12],
+                    },
+                  ],
+                })
+              )
+            : []),
+
+          ...htmlToPdfBlocks(section.content, report.sourceUrl),
+        ];
+      }),
     ],
-    pageBreakBefore: (currentNode, nodeContainer) =>
-      currentNode.headlineLevel === 1 &&
-      nodeContainer.getFollowingNodesOnPage().length === 0,
+    pageBreakBefore: (currentNode, nodeContainer) => {
+      if (
+        currentNode.table &&
+        currentNode.pageNumbers.length > 1 &&
+        nodeContainer.getPreviousNodesOnPage().length > 0
+      ) {
+        return true;
+      }
+
+      return (
+        currentNode.headlineLevel === 1 &&
+        nodeContainer.getFollowingNodesOnPage().length === 0
+      );
+    },
   };
 
   return pdfMake.createPdf(definition).getBlob();
@@ -740,6 +1278,10 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
     TableLayoutType,
     PageOrientation,
     ImageRun,
+    Footer,
+    PageNumber,
+    AlignmentType,
+    BorderStyle,
   } = await import('docx');
   const charts = chartHtml ? await chartsToPng(chartHtml) : [];
 
@@ -841,15 +1383,36 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
       ];
     });
 
-  const sections = report.sections.flatMap((section) => [
-    new Paragraph({
+  const sections = report.sections.flatMap((section) => {
+    const sparql = section.title.startsWith('SPARQL query')
+      ? parseReportHtml(section.content).querySelector('code')?.textContent
+      : null;
+
+    const title = new TextRun({
       text: section.title,
-      heading: HeadingLevel.HEADING_1,
-      keepNext: true,
-      spacing: { before: 240, after: 120 },
-    }),
-    ...createContent(section.content),
-  ]);
+      bold: true,
+      color: 'E86161',
+      size: 28,
+      ...(sparql ? { underline: {} } : {}),
+    });
+
+    return [
+      new Paragraph({
+        children: [
+          sparql
+            ? new ExternalHyperlink({
+                link: `https://orkg.org/sparql#${encodeURIComponent(sparql)}`,
+                children: [title],
+              })
+            : title,
+        ],
+        heading: HeadingLevel.HEADING_1,
+        keepNext: true,
+        spacing: { before: 240, after: 120 },
+      }),
+      ...createContent(section.content),
+    ];
+  });
 
   const chartParagraphs = charts.flatMap((chart) => {
     const scale = Math.min(
@@ -889,6 +1452,41 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
   const document = new Document({
     styles: {
       default: {
+        title: {
+          run: {
+            font: 'Arial',
+            size: 40,
+            bold: true,
+            color: 'E86161',
+          },
+          paragraph: {
+            spacing: { after: 240 },
+            border: {
+              bottom: {
+                style: BorderStyle.SINGLE,
+                size: 16,
+                color: 'E86161',
+                space: 8,
+              },
+            },
+          },
+        },
+        heading1: {
+          run: {
+            font: 'Arial',
+            size: 28,
+            bold: true,
+            color: 'E86161',
+          },
+        },
+        heading2: {
+          run: {
+            font: 'Arial',
+            size: 24,
+            bold: true,
+            color: 'E86161',
+          },
+        },
         document: {
           run: {
             font: 'Arial',
@@ -919,24 +1517,52 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
             },
           },
         },
+        footers: {
+          default: new Footer({
+            children: [
+              new Paragraph({
+                alignment: AlignmentType.CENTER,
+                children: [
+                  new TextRun({
+                    children: [
+                      PageNumber.CURRENT,
+                      ' / ',
+                      PageNumber.TOTAL_PAGES,
+                    ],
+                    font: 'Arial',
+                    size: 18,
+                    color: '777777',
+                  }),
+                ],
+              }),
+            ],
+          }),
+        },
         children: [
           new Paragraph({
             text: report.title,
             heading: HeadingLevel.TITLE,
           }),
-          new Paragraph({
-            text: `${report.theme} · Template ID: ${report.templateId}`,
-          }),
-          new Paragraph({
-            text: `Scope: current tab (${report.tabNumber})`,
-          }),
-          new Paragraph({
-            children: [
-              createLink('Source question', report.sourceUrl),
-              new TextRun(' · '),
-              createLink('ORKG template', report.templateUrl),
-            ],
-          }),
+          ...report.metadata.map(
+            (item) =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${item.label}: `,
+                    bold: true,
+                    size: 20,
+                  }),
+                  item.url
+                    ? createLink(item.value, item.url)
+                    : new TextRun({
+                        text: item.value,
+                        size: 20,
+                        color: '666666',
+                      }),
+                ],
+                spacing: { after: 80 },
+              })
+          ),
           ...sections,
           ...chartParagraphs,
         ],
@@ -948,79 +1574,85 @@ async function exportDocx(report: Report, chartHtml?: string): Promise<Blob> {
 }
 
 async function exportChartZip(
-  chartHtml: string,
+  groups: { folder: string; html: string; report: Report }[],
   format: 'svg' | 'png'
 ): Promise<Blob> {
   const { default: JSZip } = await import('jszip');
   const zip = new JSZip();
 
-  if (format === 'png') {
-    const charts = await chartsToPng(chartHtml, true);
+  for (const group of groups) {
+    const folder = zip.folder(group.folder);
+    if (!folder) throw new Error('Chart export folder could not be created.');
+    folder.file('metadata.txt', exportTxt({ ...group.report, sections: [] }));
 
-    charts.forEach((chart, index) => {
-      zip.file(`chart-${index + 1}.png`, chart.dataUrl.split(',')[1], {
-        base64: true,
+    if (format === 'png') {
+      const charts = await chartsToPng(group.html, true);
+
+      charts.forEach((chart, index) => {
+        folder.file(`chart-${index + 1}.png`, chart.dataUrl.split(',')[1], {
+          base64: true,
+        });
       });
-    });
-  } else {
-    const container = document.createElement('div');
-    container.innerHTML = chartHtml;
-    const figures = container.querySelectorAll('figure.report-chart');
+    } else {
+      const container = document.createElement('div');
+      container.innerHTML = group.html;
+      const figures = container.querySelectorAll('figure.report-chart');
 
-    if (!figures.length) {
-      throw new Error('No charts available for export.');
-    }
-
-    figures.forEach((figure, index) => {
-      const svg = figure.querySelector('svg');
-      if (!svg) throw new Error('Chart SVG is missing.');
-      const namespace = 'http://www.w3.org/2000/svg';
-      const heading = figure.querySelector('h3')?.textContent?.trim() ?? '';
-      const width = svg.viewBox.baseVal.width || svg.width.baseVal.value;
-      const height = svg.viewBox.baseVal.height || svg.height.baseVal.value;
-      const padding = 24;
-      const headingHeight = heading ? 40 : 0;
-
-      const exportSvg = document.createElementNS(namespace, 'svg');
-      exportSvg.setAttribute('xmlns', namespace);
-      exportSvg.setAttribute('width', String(width + padding * 2));
-      exportSvg.setAttribute(
-        'height',
-        String(height + headingHeight + padding * 2)
-      );
-      exportSvg.setAttribute(
-        'viewBox',
-        `0 0 ${width + padding * 2} ${height + headingHeight + padding * 2}`
-      );
-      exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      exportSvg.style.width = '100vw';
-      exportSvg.style.height = '100vh';
-      exportSvg.style.display = 'block';
-
-      if (heading) {
-        const title = document.createElementNS(namespace, 'text');
-        title.setAttribute('x', String(width / 2 + padding));
-        title.setAttribute('y', String(padding + 20));
-        title.setAttribute('text-anchor', 'middle');
-        title.setAttribute('font-family', 'Arial, sans-serif');
-        title.setAttribute('font-size', '18');
-        title.setAttribute('font-weight', 'bold');
-        title.setAttribute('fill', '#222');
-        title.textContent = heading;
-        exportSvg.append(title);
+      if (!figures.length) {
+        throw new Error('No charts available for export.');
       }
 
-      svg.setAttribute('x', String(padding));
-      svg.setAttribute('y', String(padding + headingHeight));
-      svg.setAttribute('width', String(width));
-      svg.setAttribute('height', String(height));
-      exportSvg.append(svg);
+      figures.forEach((figure, index) => {
+        const svg = figure.querySelector('svg');
+        if (!svg) throw new Error('Chart SVG is missing.');
+        const namespace = 'http://www.w3.org/2000/svg';
+        const heading = figure.querySelector('h3')?.textContent?.trim() ?? '';
+        const width = svg.viewBox.baseVal.width || svg.width.baseVal.value;
+        const height = svg.viewBox.baseVal.height || svg.height.baseVal.value;
+        const padding = 24;
+        const headingHeight = heading ? 40 : 0;
 
-      zip.file(
-        `chart-${index + 1}.svg`,
-        new XMLSerializer().serializeToString(exportSvg)
-      );
-    });
+        const exportSvg = document.createElementNS(namespace, 'svg');
+        exportSvg.setAttribute('xmlns', namespace);
+        exportSvg.setAttribute('width', String(width + padding * 2));
+        exportSvg.setAttribute(
+          'height',
+          String(height + headingHeight + padding * 2)
+        );
+        exportSvg.setAttribute(
+          'viewBox',
+          `0 0 ${width + padding * 2} ${height + headingHeight + padding * 2}`
+        );
+        exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        exportSvg.style.width = '100vw';
+        exportSvg.style.height = '100vh';
+        exportSvg.style.display = 'block';
+
+        if (heading) {
+          const title = document.createElementNS(namespace, 'text');
+          title.setAttribute('x', String(width / 2 + padding));
+          title.setAttribute('y', String(padding + 20));
+          title.setAttribute('text-anchor', 'middle');
+          title.setAttribute('font-family', 'Arial, sans-serif');
+          title.setAttribute('font-size', '18');
+          title.setAttribute('font-weight', 'bold');
+          title.setAttribute('fill', '#222');
+          title.textContent = heading;
+          exportSvg.append(title);
+        }
+
+        svg.setAttribute('x', String(padding));
+        svg.setAttribute('y', String(padding + headingHeight));
+        svg.setAttribute('width', String(width));
+        svg.setAttribute('height', String(height));
+        exportSvg.append(svg);
+
+        folder.file(
+          `chart-${index + 1}.svg`,
+          new XMLSerializer().serializeToString(exportSvg)
+        );
+      });
+    }
   }
 
   return zip.generateAsync({ type: 'blob' });
@@ -1054,40 +1686,120 @@ export async function exportQuestion(
   tabIndex: number,
   sections: ExportSections,
   format: ExportFormat,
-  chartSvg?: string
+  normalized: boolean,
+  chartSvg?: string,
+  chartGroups?: ExportChartGroup[]
 ): Promise<void> {
+  const exportedAt = new Date();
+  const report = buildReport(
+    query,
+    templateId,
+    tabIndex,
+    sections,
+    format,
+    normalized,
+    exportedAt
+  );
+  const date = exportedAt.toISOString().slice(0, 10);
+
   if (format === 'svg' || format === 'png') {
-    if (!chartSvg) {
+    if (!chartGroups?.length) {
       throw new Error('No charts available for export.');
     }
 
-    const zip = await exportChartZip(chartSvg, format);
-    const date = new Date().toISOString().slice(0, 10);
+    const tabFolders = new Map<number, string>();
+    const groups = chartGroups.map((group) => {
+      if (!tabFolders.has(group.tabIndex)) {
+        const tabName =
+          group.tabIndex === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name;
+        const tabId =
+          (group.tabIndex === 1 ? query.uid_2 : query.uid) ||
+          `tab-${group.tabIndex + 1}`;
+        const name =
+          (tabName?.trim() || tabId)
+            .replace(/[\\/:*?"<>|]/g, '_')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/^[. ]+|[. ]+$/g, '') || `tab-${group.tabIndex + 1}`;
+        const folder = [...tabFolders.values()].includes(name)
+          ? `${name}_tab-${group.tabIndex + 1}`
+          : name;
+        tabFolders.set(group.tabIndex, folder);
+      }
+
+      return {
+        folder: `${tabFolders.get(group.tabIndex)}/${group.normalized ? 'relative' : 'absolute'}`,
+        html: group.html,
+        report: buildReport(
+          query,
+          templateId,
+          group.tabIndex,
+          { ...sections, charts: true },
+          format,
+          group.normalized,
+          exportedAt
+        ),
+      };
+    });
+
+    const zip = await exportChartZip(groups, format);
 
     downloadFile(
       zip,
-      `Q${query.id}_tab${tabIndex + 1}_charts_${format}_${date}.zip`,
+      `Q${query.id}_charts_${format}_${date}.zip`,
       'application/zip'
     );
 
     return;
   }
-  if (format !== 'txt' && sections.charts && !chartSvg) {
+  if (format !== 'txt' && format !== 'html' && sections.charts && !chartSvg) {
     throw new Error('No chart available for export.');
   }
 
-  const report = buildReport(query, templateId, tabIndex, sections);
-  const date = new Date().toISOString().slice(0, 10);
   const filename = `Q${query.id}_${date}.${format}`;
 
   switch (format) {
-    case 'html':
-      downloadFile(
-        exportHtml(report, sections.charts ? chartSvg : undefined),
-        filename,
-        'text/html'
-      );
+    case 'html': {
+      const htmlTabs = [0, ...(query.uid_2 ? [1] : [])].map((index) => {
+        const chartSettings =
+          index === 1 ? query.chartSettings2 : query.chartSettings;
+        const groups = sections.charts
+          ? (chartGroups ?? []).filter((group) => group.tabIndex === index)
+          : [];
+
+        if (sections.charts && chartSettings && !groups.length) {
+          throw new Error('Chart capture is missing for a report tab.');
+        }
+
+        const name =
+          index === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name;
+        const id = index === 1 ? query.uid_2 : query.uid;
+
+        return {
+          label: name?.trim() || id || `Tab ${index + 1}`,
+          report: buildReport(
+            query,
+            templateId,
+            index,
+            sections,
+            format,
+            normalized,
+            exportedAt
+          ),
+          charts: groups.length
+            ? groups
+                .map(
+                  (group) =>
+                    `<template data-chart-mode="${group.normalized ? 'relative' : 'absolute'}">${group.html}</template>`
+                )
+                .join('\n')
+            : undefined,
+        };
+      });
+
+      downloadFile(exportHtml(htmlTabs, tabIndex), filename, 'text/html');
       break;
+    }
     case 'txt':
       downloadFile(exportTxt(report), filename, 'text/plain');
       break;
