@@ -129,7 +129,11 @@ const QuestionExportDialog = ({
         )}
         <DialogContentText>
           {onExport
-            ? 'Available: HTML, TXT, PDF and Word reports for the current tab. HTML and PDF include the current main and detailed charts.'
+            ? format === 'html'
+              ? 'HTML includes all available tabs. Included charts can switch between Relative and Absolute where supported.'
+              : chartsOnly
+                ? 'Download charts from all available tabs as a ZIP, with Absolute and Relative variants where supported.'
+                : 'PDF, Word and plain text reports include the current tab. PDF and Word can include its current main and detailed charts.'
             : 'Exporting all questions is not available yet.'}
         </DialogContentText>
       </DialogContent>

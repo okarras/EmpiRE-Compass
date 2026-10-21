@@ -31,7 +31,7 @@ import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
-import { exportQuestion } from '../utils/exportQuestion';
+import { exportQuestion, type ExportChartGroup } from '../utils/exportQuestion';
 import { toast } from 'react-hot-toast';
 
 interface QuestionProps {
@@ -353,8 +353,8 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     return new XMLSerializer().serializeToString(copy);
   };
 
-  const getCurrentChartsHtml = (): string | null => {
-    const queryId = tab === 1 ? query.uid_2 : query.uid;
+  const getCurrentChartsHtml = (tabIndex = tab): string | null => {
+    const queryId = tabIndex === 1 ? query.uid_2 : query.uid;
     const svgs = document
       .getElementById(`question-charts-${queryId}`)
       ?.querySelectorAll<SVGSVGElement>('[id^="chart-"] svg');
@@ -410,22 +410,78 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
           templateId
             ? async (sections, format) => {
                 if (exportingCharts) return;
+                const originalNormalized = normalized;
+                const originalTab = tab;
 
                 try {
                   let chartSvg: string | undefined;
+                  const chartGroups: ExportChartGroup[] = [];
 
                   if (format !== 'txt' && sections.charts) {
-                    flushSync(() => setExportingCharts(true));
+                    const imageExport = format === 'svg' || format === 'png';
+                    const allTabsExport = imageExport || format === 'html';
+                    const tabs = allTabsExport
+                      ? [0, ...(query.uid_2 ? [1] : [])]
+                      : [originalTab];
 
-                    await new Promise<void>((resolve) => {
-                      requestAnimationFrame(() => {
-                        requestAnimationFrame(() => resolve());
-                      });
+                    for (const tabIndex of tabs) {
+                      const chartSettings =
+                        tabIndex === 1
+                          ? query.chartSettings2
+                          : query.chartSettings;
+
+                      if (allTabsExport && !chartSettings) continue;
+                      if (
+                        allTabsExport &&
+                        (tabIndex === 1
+                          ? loading2 || error2
+                          : loading1 || error1)
+                      ) {
+                        throw new Error(
+                          'Chart data is not ready for all tabs.'
+                        );
+                      }
+
+                      const modes = allTabsExport
+                        ? chartSettings?.doesntHaveNormalization
+                          ? [false]
+                          : imageExport
+                            ? [false, true]
+                            : [originalNormalized, !originalNormalized]
+                        : [originalNormalized];
+
+                      for (const relative of modes) {
+                        flushSync(() => {
+                          setExportingCharts(true);
+                          setTab(tabIndex);
+                          setNormalized(relative);
+                        });
+
+                        await new Promise<void>((resolve) => {
+                          requestAnimationFrame(() => {
+                            requestAnimationFrame(() => resolve());
+                          });
+                        });
+
+                        const charts = getCurrentChartsHtml(tabIndex);
+                        if (charts === null) return;
+
+                        if (allTabsExport) {
+                          chartGroups.push({
+                            tabIndex,
+                            normalized: relative,
+                            html: charts,
+                          });
+                        } else {
+                          chartSvg = charts;
+                        }
+                      }
+                    }
+
+                    flushSync(() => {
+                      setTab(originalTab);
+                      setNormalized(originalNormalized);
                     });
-
-                    const charts = getCurrentChartsHtml();
-                    if (charts === null) return;
-                    chartSvg = charts;
                   }
 
                   await exportQuestion(
@@ -434,7 +490,9 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                     tab,
                     sections,
                     format,
-                    chartSvg
+                    originalNormalized,
+                    chartSvg,
+                    chartGroups
                   );
 
                   setExportOpen(false);
@@ -442,6 +500,8 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                   console.error('Question export failed:', error);
                   toast.error('Export failed. Please try again.');
                 } finally {
+                  setTab(originalTab);
+                  setNormalized(originalNormalized);
                   setExportingCharts(false);
                 }
               }
