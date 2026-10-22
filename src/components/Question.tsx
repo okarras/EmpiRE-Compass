@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Query } from '../constants/queries_chart_info';
 import {
@@ -31,17 +31,35 @@ import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
-import { exportQuestion, type ExportChartGroup } from '../utils/exportQuestion';
+import {
+  exportQuestion,
+  type ExportChartGroup,
+  type ExportChartMode,
+  type ExportSections,
+  type ExportFormat,
+  type QuestionHtmlExport,
+} from '../utils/exportQuestion';
 import { toast } from 'react-hot-toast';
 
 interface QuestionProps {
   query: Query;
+  reportExport?: {
+    sections: ExportSections;
+    format?: ExportFormat;
+    chartMode?: ExportChartMode;
+    onComplete: (question: QuestionHtmlExport) => void;
+    onError: (error: unknown) => void;
+  };
 }
 
-const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
+const Question: React.FC<QuestionProps> = ({
+  query: initialQuery,
+  reportExport,
+}) => {
   // Use overrides hook
   const {
     mergedQuery: query,
+    loading: loadingOverrides,
     isAdmin,
     isEditMode,
     setIsEditMode,
@@ -54,10 +72,21 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     handleRestore,
   } = useQuestionOverrides({ query: initialQuery });
 
+  const exportStarted = useRef(false);
+  const chartRoot = useRef<HTMLDivElement>(null);
+
   // Tabs state
   const [tab, setTab] = useState(0);
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportingCharts, setExportingCharts] = useState(false);
+  const [exportingCharts, setExportingCharts] = useState<ExportFormat | null>(
+    null
+  );
+  const textOnlyReport = reportExport?.format === 'txt';
+  const mainChartsOnly =
+    reportExport?.format === 'pdf' ||
+    reportExport?.format === 'docx' ||
+    exportingCharts === 'pdf' ||
+    exportingCharts === 'docx';
   const { setContext } = useAIAssistantContext();
   const { templateId } = useParams();
   const backupVersion = useBackupChange(); // Listen for backup changes
@@ -80,10 +109,10 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
 
   // Update AI Assistant context when data changes
   useEffect(() => {
-    if (!loading1 && !error1) {
+    if (!reportExport && !loading1 && !error1) {
       setContext(query, dataCollection);
     }
-  }, [query, dataCollection, loading1, error1, setContext]);
+  }, [query, dataCollection, loading1, error1, setContext, reportExport]);
 
   useEffect(() => {
     setCategorizeByVenue(
@@ -131,6 +160,11 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     setDataCollection([]);
     setDataAnalysis([]);
 
+    if (textOnlyReport) {
+      setLoading1(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading1(true);
@@ -151,7 +185,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       }
     };
     fetchData();
-  }, [query.uid, templateId, backupVersion, query.sparqlQuery]); // Re-fetch when backup changes
+  }, [query.uid, templateId, backupVersion, query.sparqlQuery, textOnlyReport]); // Re-fetch when backup changes
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -159,6 +193,8 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     setDataAnalysis([]);
     setError2(null);
     setLoading2(false);
+
+    if (textOnlyReport) return;
 
     if (query?.uid_2 && query.sparqlQuery2) {
       const fetchData = async () => {
@@ -200,9 +236,11 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     templateId,
     backupVersion,
     query.sparqlQuery2,
+    textOnlyReport,
   ]); // Re-fetch when backup changes
 
-  const getProcessedChartData = () => {
+  const processedChartDataCollection = useMemo(() => {
+    if (textOnlyReport) return [];
     if (query.uid_2_merge) {
       if (typeof query.dataProcessingFunction2 === 'function') {
         return (
@@ -216,7 +254,17 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       return query.dataProcessingFunction(dataCollection ?? []) ?? [];
     }
     return [];
-  };
+  }, [query, dataCollection, dataAnalysis, textOnlyReport]);
+
+  const processedChartDataAnalysis = useMemo(
+    () =>
+      !textOnlyReport &&
+      query.uid_2 &&
+      typeof query.dataProcessingFunction2 === 'function'
+        ? (query.dataProcessingFunction2(dataAnalysis ?? []) ?? [])
+        : [],
+    [query, dataAnalysis, textOnlyReport]
+  );
 
   const getDataInterpretation = (tabName: string): string => {
     const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
@@ -266,20 +314,14 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     </Paper>
   );
 
-  if (loading1) {
-    return renderLoadingState();
-  }
-
-  if (error1) {
-    return renderErrorState(error1);
-  }
-
   const getCurrentChartSvg = (source?: SVGSVGElement): string | null => {
     const queryId = tab === 1 ? query.uid_2 : query.uid;
 
     const svg =
       source ??
-      document.getElementById(`chart-${queryId}`)?.querySelector('svg');
+      chartRoot.current
+        ?.querySelector(`[id="chart-${queryId}"]`)
+        ?.querySelector('svg');
 
     if (!svg) {
       toast.error('No chart found.');
@@ -308,13 +350,13 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       if (element !== svg && style.transform !== 'none') {
         const matrix = new DOMMatrixReadOnly(style.transform);
 
-        if (matrix.is2D) {
-          target.setAttribute(
-            'transform',
-            `matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f})`
-          );
-          target.style.removeProperty('transform');
-        }
+        // Chart transforms are planar, even when the browser reports matrix3d.
+        // Standalone SVG images need the equivalent SVG matrix attribute.
+        target.setAttribute(
+          'transform',
+          `matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f})`
+        );
+        target.style.removeProperty('transform');
       }
 
       [
@@ -329,6 +371,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       ].forEach((property) => {
         target.style.setProperty(property, style.getPropertyValue(property));
       });
+
+      // Collection charts inherit pointer-events: none from their hidden container.
+      // Exported bars must remain interactive for hover styles and SVG titles.
+      if (element.classList.contains('MuiBarElement-root')) {
+        target.style.setProperty('pointer-events', 'auto');
+      }
     });
 
     const hoverStyle = document.createElementNS(
@@ -353,10 +401,13 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     return new XMLSerializer().serializeToString(copy);
   };
 
-  const getCurrentChartsHtml = (tabIndex = tab): string | null => {
+  const getCurrentChartsHtml = (
+    tabIndex = tab,
+    mainOnly = false
+  ): string | null => {
     const queryId = tabIndex === 1 ? query.uid_2 : query.uid;
-    const svgs = document
-      .getElementById(`question-charts-${queryId}`)
+    const svgs = chartRoot.current
+      ?.querySelector(`[id="question-charts-${queryId}"]`)
       ?.querySelectorAll<SVGSVGElement>('[id^="chart-"] svg');
 
     if (!svgs?.length) {
@@ -365,6 +416,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     }
 
     return Array.from(svgs)
+      .slice(0, mainOnly ? 1 : undefined)
       .map((svg, index) => {
         const heading = document.createElement('h3');
         heading.textContent =
@@ -391,8 +443,178 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       .join('\n');
   };
 
+  const handleExport = async (
+    sections: ExportSections,
+    format: ExportFormat
+  ) => {
+    if (exportingCharts) return;
+    const originalNormalized = normalized;
+    const originalTab = tab;
+
+    try {
+      if (!templateId) throw new Error('No theme selected.');
+      let chartSvg: string | undefined;
+      const chartGroups: ExportChartGroup[] = [];
+
+      if (format !== 'txt' && sections.charts) {
+        const imageExport = format === 'svg' || format === 'png';
+        const allTabsExport = imageExport || format === 'html';
+        const tabs = allTabsExport
+          ? [0, ...(query.uid_2 ? [1] : [])]
+          : [originalTab];
+
+        for (const tabIndex of tabs) {
+          const chartSettings =
+            tabIndex === 1 ? query.chartSettings2 : query.chartSettings;
+
+          if (allTabsExport && !chartSettings) continue;
+          if (
+            allTabsExport &&
+            (tabIndex === 1 ? loading2 || error2 : loading1 || error1)
+          ) {
+            throw new Error('Chart data is not ready for all tabs.');
+          }
+
+          const modes = allTabsExport
+            ? chartSettings?.doesntHaveNormalization
+              ? [false]
+              : imageExport
+                ? [false, true]
+                : reportExport?.chartMode === 'relative'
+                  ? [true]
+                  : reportExport?.chartMode === 'absolute'
+                    ? [false]
+                    : [originalNormalized, !originalNormalized]
+            : [originalNormalized];
+
+          for (const relative of modes) {
+            flushSync(() => {
+              setExportingCharts(format);
+              setTab(tabIndex);
+              setNormalized(relative);
+            });
+
+            // A newly visible tab first reports its size through ResizeObserver.
+            // React Spring applies the final bar geometry in subsequent frames.
+            let previousGeometry = '';
+            let stableFrames = 0;
+            for (let frame = 0; frame < 30; frame += 1) {
+              await new Promise<void>((resolve) => {
+                requestAnimationFrame(() => resolve());
+              });
+              const queryId = tabIndex === 1 ? query.uid_2 : query.uid;
+              const bars = chartRoot.current?.querySelectorAll<SVGRectElement>(
+                `[id="question-charts-${queryId}"] .MuiBarElement-root`
+              );
+              const sizes = Array.from(bars ?? [], (bar) => {
+                const style = getComputedStyle(bar);
+                return [style.width, style.height, style.transform];
+              });
+              const geometry = JSON.stringify(sizes);
+              stableFrames =
+                geometry === previousGeometry ? stableFrames + 1 : 0;
+              previousGeometry = geometry;
+              if (
+                frame >= 2 &&
+                stableFrames >= 2 &&
+                (!sizes.length ||
+                  sizes.some(
+                    ([width, height]) =>
+                      Number.parseFloat(width) > 0 &&
+                      Number.parseFloat(height) > 0
+                  ))
+              )
+                break;
+            }
+
+            const charts = getCurrentChartsHtml(
+              tabIndex,
+              format === 'pdf' ||
+                format === 'docx' ||
+                reportExport?.format === 'pdf' ||
+                reportExport?.format === 'docx'
+            );
+            if (charts === null) throw new Error('Chart capture failed.');
+
+            if (allTabsExport) {
+              chartGroups.push({
+                tabIndex,
+                normalized: relative,
+                html: charts,
+              });
+            } else {
+              chartSvg = charts;
+            }
+          }
+        }
+
+        flushSync(() => {
+          setTab(originalTab);
+          setNormalized(originalNormalized);
+        });
+      }
+
+      if (reportExport) {
+        reportExport.onComplete({ query, chartGroups });
+      } else {
+        await exportQuestion(
+          query,
+          templateId,
+          tab,
+          sections,
+          format,
+          originalNormalized,
+          chartSvg,
+          chartGroups
+        );
+      }
+      setExportOpen(false);
+    } catch (error) {
+      console.error('Question export failed:', error);
+      if (reportExport) reportExport.onError(error);
+      else toast.error('Export failed. Please try again.');
+    } finally {
+      setTab(originalTab);
+      setNormalized(originalNormalized);
+      setExportingCharts(null);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !reportExport ||
+      exportStarted.current ||
+      loadingOverrides ||
+      loading1 ||
+      loading2
+    )
+      return;
+    exportStarted.current = true;
+    if (reportExport.sections.charts && (error1 || error2)) {
+      reportExport.onError(
+        new Error(error1 || error2 || 'Chart data could not be loaded.')
+      );
+    } else {
+      requestAnimationFrame(() => {
+        void handleExport(
+          reportExport.sections,
+          reportExport.format === 'svg' || reportExport.format === 'png'
+            ? reportExport.format
+            : textOnlyReport
+              ? 'txt'
+              : 'html'
+        );
+      });
+    }
+  });
+
+  if (textOnlyReport || (reportExport && !reportExport.sections.charts))
+    return null;
+  if (loading1) return renderLoadingState();
+  if (error1 && !reportExport) return renderErrorState(error1);
+
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box ref={chartRoot} sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Button
           variant="outlined"
@@ -406,107 +628,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       <QuestionExportDialog
         open={exportOpen}
         onClose={() => setExportOpen(false)}
-        onExport={
-          templateId
-            ? async (sections, format) => {
-                if (exportingCharts) return;
-                const originalNormalized = normalized;
-                const originalTab = tab;
-
-                try {
-                  let chartSvg: string | undefined;
-                  const chartGroups: ExportChartGroup[] = [];
-
-                  if (format !== 'txt' && sections.charts) {
-                    const imageExport = format === 'svg' || format === 'png';
-                    const allTabsExport = imageExport || format === 'html';
-                    const tabs = allTabsExport
-                      ? [0, ...(query.uid_2 ? [1] : [])]
-                      : [originalTab];
-
-                    for (const tabIndex of tabs) {
-                      const chartSettings =
-                        tabIndex === 1
-                          ? query.chartSettings2
-                          : query.chartSettings;
-
-                      if (allTabsExport && !chartSettings) continue;
-                      if (
-                        allTabsExport &&
-                        (tabIndex === 1
-                          ? loading2 || error2
-                          : loading1 || error1)
-                      ) {
-                        throw new Error(
-                          'Chart data is not ready for all tabs.'
-                        );
-                      }
-
-                      const modes = allTabsExport
-                        ? chartSettings?.doesntHaveNormalization
-                          ? [false]
-                          : imageExport
-                            ? [false, true]
-                            : [originalNormalized, !originalNormalized]
-                        : [originalNormalized];
-
-                      for (const relative of modes) {
-                        flushSync(() => {
-                          setExportingCharts(true);
-                          setTab(tabIndex);
-                          setNormalized(relative);
-                        });
-
-                        await new Promise<void>((resolve) => {
-                          requestAnimationFrame(() => {
-                            requestAnimationFrame(() => resolve());
-                          });
-                        });
-
-                        const charts = getCurrentChartsHtml(tabIndex);
-                        if (charts === null) return;
-
-                        if (allTabsExport) {
-                          chartGroups.push({
-                            tabIndex,
-                            normalized: relative,
-                            html: charts,
-                          });
-                        } else {
-                          chartSvg = charts;
-                        }
-                      }
-                    }
-
-                    flushSync(() => {
-                      setTab(originalTab);
-                      setNormalized(originalNormalized);
-                    });
-                  }
-
-                  await exportQuestion(
-                    query,
-                    templateId,
-                    tab,
-                    sections,
-                    format,
-                    originalNormalized,
-                    chartSvg,
-                    chartGroups
-                  );
-
-                  setExportOpen(false);
-                } catch (error) {
-                  console.error('Question export failed:', error);
-                  toast.error('Export failed. Please try again.');
-                } finally {
-                  setTab(originalTab);
-                  setNormalized(originalNormalized);
-                  setExportingCharts(false);
-                }
-              }
-            : undefined
-        }
+        onExport={templateId ? handleExport : undefined}
       />
       {/* Admin Toolbar */}
       {isAdmin && (
@@ -617,7 +739,9 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                 data={dataCollection}
               />
               <QuestionChartView
-                showAllDetailedCharts={exportingCharts}
+                showAllDetailedCharts={
+                  Boolean(exportingCharts) && (!reportExport || tab === 0)
+                }
                 query={query}
                 normalized={normalized}
                 setNormalized={setNormalized}
@@ -627,8 +751,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                   hasVenueInCollectionData && query.venue !== false
                 }
                 queryId={query.uid}
-                chartSettings={query.chartSettings}
-                processedChartDataset={getProcessedChartData()}
+                chartSettings={
+                  mainChartsOnly
+                    ? { ...query.chartSettings, hideDetailedCharts: true }
+                    : query.chartSettings
+                }
+                processedChartDataset={processedChartDataCollection}
                 rawChartData={rawChartDataCollection}
                 dataInterpretation={getDataInterpretation('dataCollection')}
                 type="dataCollection"
@@ -692,10 +820,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
             query={query}
             data={dataCollection}
           />
-          <QuestionDataGridView
-            questionData={dataCollection}
-            gridOptions={query.gridOptions}
-          />
+          {!reportExport && (
+            <QuestionDataGridView
+              questionData={dataCollection}
+              gridOptions={query.gridOptions}
+            />
+          )}
         </Box>
 
         {/* Data Analysis View */}
@@ -716,7 +846,9 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                       data={dataAnalysis}
                     />
                     <QuestionChartView
-                      showAllDetailedCharts={exportingCharts}
+                      showAllDetailedCharts={
+                        Boolean(exportingCharts) && (!reportExport || tab === 1)
+                      }
                       query={query}
                       normalized={normalized}
                       setNormalized={setNormalized}
@@ -726,14 +858,15 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                         hasVenueInAnalysisData && query.venue !== false
                       }
                       queryId={query.uid_2}
-                      chartSettings={query.chartSettings2}
-                      processedChartDataset={
-                        typeof query.dataProcessingFunction2 === 'function'
-                          ? (query.dataProcessingFunction2(
-                              dataAnalysis ?? []
-                            ) ?? [])
-                          : []
+                      chartSettings={
+                        mainChartsOnly
+                          ? {
+                              ...query.chartSettings2,
+                              hideDetailedCharts: true,
+                            }
+                          : query.chartSettings2
                       }
+                      processedChartDataset={processedChartDataAnalysis}
                       rawChartData={dataAnalysis}
                       dataInterpretation={getDataInterpretation('dataAnalysis')}
                       type="dataAnalysis"
@@ -803,10 +936,12 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
                   query={query}
                   data={dataAnalysis}
                 />
-                <QuestionDataGridView
-                  questionData={dataAnalysis}
-                  gridOptions={query.gridOptions}
-                />
+                {!reportExport && (
+                  <QuestionDataGridView
+                    questionData={dataAnalysis}
+                    gridOptions={query.gridOptions}
+                  />
+                )}
               </>
             )}
           </Box>

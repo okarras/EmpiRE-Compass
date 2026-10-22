@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Button,
   Dialog,
@@ -18,7 +18,11 @@ import {
 } from '@mui/material';
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import type { ExportFormat, ExportSections } from '../utils/exportQuestion';
+import type {
+  ExportChartMode,
+  ExportFormat,
+  ExportSections,
+} from '../utils/exportQuestion';
 
 const exportSections = {
   explanation: 'Question explanation',
@@ -33,16 +37,26 @@ interface QuestionExportDialogProps {
   open: boolean;
   onClose: () => void;
   title?: string;
-  onExport?: (sections: ExportSections, format: ExportFormat) => void;
+  questions?: { id: number; title: string }[];
+  progress?: string;
+  onExport?: (
+    sections: ExportSections,
+    format: ExportFormat,
+    questionIds?: number[],
+    chartMode?: ExportChartMode
+  ) => void;
 }
 
 const QuestionExportDialog = ({
   open,
   onClose,
   title = 'Export question',
+  questions,
+  progress,
   onExport,
 }: QuestionExportDialogProps) => {
   const [format, setFormat] = useState('html');
+  const [chartMode, setChartMode] = useState<ExportChartMode>('relative');
   const [sections, setSections] = useState<ExportSections>({
     explanation: true,
     requiredData: true,
@@ -51,11 +65,28 @@ const QuestionExportDialog = ({
     interpretation: true,
     sparql: false,
   });
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<
+    number[] | null
+  >(null);
+  const collectionExport = questions !== undefined;
+  const questionIds = (questions ?? []).map((question) => question.id);
+  const selectedIds =
+    selectedQuestionIds === null
+      ? questionIds
+      : questionIds.filter((id) => selectedQuestionIds.includes(id));
+
+  useEffect(() => {
+    if (open && collectionExport) {
+      setSelectedQuestionIds(null);
+      setFormat('html');
+    }
+  }, [open, collectionExport]);
+
   const chartsOnly = format === 'svg' || format === 'png';
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={progress ? undefined : onClose}
       fullWidth
       maxWidth="sm"
       aria-labelledby="question-export-title"
@@ -67,6 +98,7 @@ const QuestionExportDialog = ({
           select
           fullWidth
           label="Export format"
+          disabled={Boolean(progress)}
           value={format}
           onChange={(event) => setFormat(event.target.value)}
           sx={{ mt: 1, mb: 2 }}
@@ -78,6 +110,79 @@ const QuestionExportDialog = ({
           <MenuItem value="svg">Charts – SVG (.zip)</MenuItem>
           <MenuItem value="png">Charts – PNG (.zip)</MenuItem>
         </TextField>
+        {collectionExport &&
+          (format === 'pdf' || format === 'docx') &&
+          sections.charts && (
+            <TextField
+              select
+              fullWidth
+              label="Chart display"
+              value={chartMode}
+              disabled={Boolean(progress)}
+              onChange={(event) =>
+                setChartMode(event.target.value as ExportChartMode)
+              }
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="relative">Relative</MenuItem>
+              <MenuItem value="absolute">Absolute</MenuItem>
+              <MenuItem value="both">Both (Relative and Absolute)</MenuItem>
+            </TextField>
+          )}
+        {questions && (
+          <>
+            <Typography variant="subtitle2" component="h3">
+              Questions to include
+            </Typography>
+            <FormControlLabel
+              label="Select all questions"
+              disabled={Boolean(progress) || !questionIds.length}
+              control={
+                <Checkbox
+                  checked={
+                    questionIds.length > 0 &&
+                    selectedIds.length === questionIds.length
+                  }
+                  indeterminate={
+                    selectedIds.length > 0 &&
+                    selectedIds.length < questionIds.length
+                  }
+                  disabled={Boolean(progress) || !questionIds.length}
+                  onChange={(event) =>
+                    setSelectedQuestionIds(event.target.checked ? null : [])
+                  }
+                />
+              }
+            />
+            <FormGroup
+              aria-label="Questions to include"
+              sx={{ maxHeight: 280, overflowY: 'auto', mb: 1 }}
+            >
+              {questions.map((question) => (
+                <FormControlLabel
+                  key={question.id}
+                  label={`${question.id}. ${question.title}`}
+                  disabled={Boolean(progress)}
+                  control={
+                    <Checkbox
+                      checked={selectedIds.includes(question.id)}
+                      onChange={(event) =>
+                        setSelectedQuestionIds(
+                          event.target.checked
+                            ? [...selectedIds, question.id]
+                            : selectedIds.filter((id) => id !== question.id)
+                        )
+                      }
+                    />
+                  }
+                />
+              ))}
+            </FormGroup>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {selectedIds.length} of {questions.length} questions selected
+            </Typography>
+          </>
+        )}
         {!chartsOnly && (
           <Accordion disableGutters elevation={0} sx={{ mb: 2 }}>
             <AccordionSummary
@@ -92,16 +197,26 @@ const QuestionExportDialog = ({
               <FormGroup>
                 {Object.entries(exportSections).map(([key, label]) => {
                   const section = key as keyof typeof sections;
-                  const disabled = section === 'charts' && format === 'txt';
+                  const disabled =
+                    Boolean(progress) ||
+                    (section === 'charts' && format === 'txt');
 
                   return (
                     <FormControlLabel
                       key={section}
-                      label={label}
+                      label={
+                        section === 'charts' &&
+                        (format === 'pdf' || format === 'docx')
+                          ? 'Main charts'
+                          : label
+                      }
                       disabled={disabled}
                       control={
                         <Checkbox
-                          checked={!disabled && sections[section]}
+                          checked={
+                            !(section === 'charts' && format === 'txt') &&
+                            sections[section]
+                          }
                           onChange={(event) =>
                             setSections((previous) => ({
                               ...previous,
@@ -127,21 +242,34 @@ const QuestionExportDialog = ({
             </AccordionDetails>
           </Accordion>
         )}
-        <DialogContentText>
-          {onExport
-            ? format === 'html'
-              ? 'HTML includes all available tabs. Included charts can switch between Relative and Absolute where supported.'
-              : chartsOnly
-                ? 'Download charts from all available tabs as a ZIP, with Absolute and Relative variants where supported.'
-                : 'PDF, Word and plain text reports include the current tab. PDF and Word can include its current main and detailed charts.'
-            : 'Exporting all questions is not available yet.'}
+        <DialogContentText role={progress ? 'status' : undefined}>
+          {progress ??
+            (onExport
+              ? format === 'pdf' || format === 'docx'
+                ? collectionExport
+                  ? `${format === 'pdf' ? 'PDF' : 'Word'} includes all tabs and their main charts. Detailed charts are available in the SVG/PNG ZIP export.`
+                  : `${format === 'pdf' ? 'PDF' : 'Word'} includes the current tab’s main chart. Download detailed charts separately with Charts – SVG or PNG.`
+                : format === 'html'
+                  ? 'HTML includes all available tabs. Included charts can switch between Relative and Absolute where supported.'
+                  : chartsOnly
+                    ? collectionExport
+                      ? 'Download all charts of the selected questions as a ZIP: question, named tab (if available), then Absolute and Relative where supported.'
+                      : 'Download charts from all available tabs as a ZIP, with Absolute and Relative variants where supported.'
+                    : collectionExport
+                      ? 'Plain text includes all tabs and a contents list. Charts are not included.'
+                      : 'Plain text reports include the current tab.'
+              : 'Exporting all questions is not available yet.')}
         </DialogContentText>
       </DialogContent>
 
       <DialogActions>
         <Button
           variant="contained"
-          disabled={!onExport}
+          disabled={
+            Boolean(progress) ||
+            !onExport ||
+            (collectionExport && selectedIds.length === 0)
+          }
           onClick={() => {
             if (
               format === 'html' ||
@@ -156,7 +284,11 @@ const QuestionExportDialog = ({
                   ...sections,
                   charts: chartsOnly || (format !== 'txt' && sections.charts),
                 },
-                format
+                format,
+                collectionExport ? selectedIds : undefined,
+                collectionExport && (format === 'pdf' || format === 'docx')
+                  ? chartMode
+                  : undefined
               );
             }
           }}
