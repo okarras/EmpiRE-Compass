@@ -33,6 +33,7 @@ import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
 import {
   exportQuestion,
+  getExportChartModes,
   type ExportChartGroup,
   type ExportChartMode,
   type ExportSections,
@@ -196,23 +197,7 @@ const Question: React.FC<QuestionProps> = ({
 
     if (textOnlyReport) return;
 
-    if (query?.uid_2 && query.sparqlQuery2) {
-      const fetchData = async () => {
-        try {
-          setLoading2(true);
-          setError2(null);
-
-          const data = await fetchSPARQLData(query.sparqlQuery2!);
-          setDataAnalysis(data);
-        } catch (err) {
-          setError2('Failed to load secondary data');
-          console.error('Error fetching secondary data:', err);
-        } finally {
-          setLoading2(false);
-        }
-      };
-      fetchData();
-    } else if (query?.uid_2_merge && query.sparqlQuery2) {
+    if ((query.uid_2 || query.uid_2_merge) && query.sparqlQuery2) {
       const fetchData = async () => {
         try {
           setLoading2(true);
@@ -476,15 +461,12 @@ const Question: React.FC<QuestionProps> = ({
           }
 
           const modes = allTabsExport
-            ? chartSettings?.doesntHaveNormalization
-              ? [false]
-              : imageExport
-                ? [false, true]
-                : reportExport?.chartMode === 'relative'
-                  ? [true]
-                  : reportExport?.chartMode === 'absolute'
-                    ? [false]
-                    : [originalNormalized, !originalNormalized]
+            ? getExportChartModes(
+                query,
+                tabIndex,
+                imageExport ? 'both' : (reportExport?.chartMode ?? 'both'),
+                imageExport ? false : originalNormalized
+              )
             : [originalNormalized];
 
           for (const relative of modes) {
@@ -608,6 +590,125 @@ const Question: React.FC<QuestionProps> = ({
     }
   });
 
+  const renderQuestionTab = (index: 0 | 1) => {
+    const collection = index === 0;
+    const data = collection ? dataCollection : dataAnalysis;
+    const chartSettings = collection
+      ? query.chartSettings
+      : query.chartSettings2;
+    const type = collection ? 'dataCollection' : 'dataAnalysis';
+    const label = collection ? 'Data Collection' : 'Data Analysis';
+    const saveInterpretation = async (newContent: string) => {
+      await saveVersion(
+        'dataAnalysisInformation.dataInterpretation',
+        collection
+          ? [newContent, getDataInterpretation('dataAnalysis')]
+          : [getDataInterpretation('dataCollection'), newContent]
+      );
+    };
+
+    return (
+      <Box key={index} hidden={tab !== index}>
+        {!collection && loading2 ? (
+          renderLoadingState()
+        ) : !collection && error2 ? (
+          renderErrorState(error2)
+        ) : (
+          <>
+            {chartSettings ? (
+              <>
+                {collection && <Divider sx={{ my: 3 }} />}
+                <SectionSelector
+                  sectionType="chart"
+                  sectionTitle={
+                    collection ? 'Chart Visualization' : 'Data Analysis Chart'
+                  }
+                  query={query}
+                  data={data}
+                />
+                <QuestionChartView
+                  showAllDetailedCharts={
+                    Boolean(exportingCharts) && (!reportExport || tab === index)
+                  }
+                  query={query}
+                  normalized={normalized}
+                  setNormalized={setNormalized}
+                  categorizeByVenue={categorizeByVenue}
+                  setCategorizeByVenue={setCategorizeByVenue}
+                  showVenueCategorization={
+                    (collection
+                      ? hasVenueInCollectionData
+                      : hasVenueInAnalysisData) && query.venue !== false
+                  }
+                  queryId={collection ? query.uid : query.uid_2!}
+                  chartSettings={
+                    mainChartsOnly
+                      ? { ...chartSettings, hideDetailedCharts: true }
+                      : chartSettings
+                  }
+                  processedChartDataset={
+                    collection
+                      ? processedChartDataCollection
+                      : processedChartDataAnalysis
+                  }
+                  rawChartData={
+                    collection ? rawChartDataCollection : dataAnalysis
+                  }
+                  dataInterpretation={getDataInterpretation(type)}
+                  type={type}
+                  isEditMode={isEditMode}
+                  chartKey={collection ? 'chartSettings' : 'chartSettings2'}
+                  onSaveInterpretation={
+                    isEditMode ? saveInterpretation : undefined
+                  }
+                  onSaveChartSettings={
+                    isEditMode
+                      ? async (which, settings, desc) => {
+                          await saveChartSettings(which, settings, desc);
+                        }
+                      : undefined
+                  }
+                  onFetchOverrides={isEditMode ? fetchOverrides : undefined}
+                />
+                <Divider sx={{ my: 3 }} />
+              </>
+            ) : isEditMode ? (
+              <Box sx={{ my: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                  Data Interpretation
+                </Typography>
+                <EditableSection
+                  isEditingInfo={isEditMode}
+                  content={getDataInterpretation(type)}
+                  sectionLabel={`${label} Interpretation`}
+                  onSave={saveInterpretation}
+                />
+              </Box>
+            ) : (
+              <QuestionInformation
+                information={getDataInterpretation(type)}
+                label="Data Interpretation"
+                tabIndex={tab}
+              />
+            )}
+            <SectionSelector
+              sectionType="data"
+              sectionTitle={label}
+              query={query}
+              data={data}
+            />
+            {!reportExport && (
+              <QuestionDataGridView
+                questionData={data}
+                gridOptions={query.gridOptions}
+              />
+            )}
+          </>
+        )}
+      </Box>
+    );
+  };
+
   if (textOnlyReport || (reportExport && !reportExport.sections.charts))
     return null;
   if (loading1) return renderLoadingState();
@@ -727,225 +828,8 @@ const Question: React.FC<QuestionProps> = ({
           onSave={saveVersion}
         />
 
-        {/* Data Collection View */}
-        <Box hidden={tab !== 0}>
-          {query.chartSettings ? (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <SectionSelector
-                sectionType="chart"
-                sectionTitle="Chart Visualization"
-                query={query}
-                data={dataCollection}
-              />
-              <QuestionChartView
-                showAllDetailedCharts={
-                  Boolean(exportingCharts) && (!reportExport || tab === 0)
-                }
-                query={query}
-                normalized={normalized}
-                setNormalized={setNormalized}
-                categorizeByVenue={categorizeByVenue}
-                setCategorizeByVenue={setCategorizeByVenue}
-                showVenueCategorization={
-                  hasVenueInCollectionData && query.venue !== false
-                }
-                queryId={query.uid}
-                chartSettings={
-                  mainChartsOnly
-                    ? { ...query.chartSettings, hideDetailedCharts: true }
-                    : query.chartSettings
-                }
-                processedChartDataset={processedChartDataCollection}
-                rawChartData={rawChartDataCollection}
-                dataInterpretation={getDataInterpretation('dataCollection')}
-                type="dataCollection"
-                isEditMode={isEditMode}
-                chartKey="chartSettings"
-                onSaveInterpretation={
-                  isEditMode
-                    ? async (newContent) => {
-                        await saveVersion(
-                          'dataAnalysisInformation.dataInterpretation',
-                          [newContent, getDataInterpretation('dataAnalysis')]
-                        );
-                      }
-                    : undefined
-                }
-                onSaveChartSettings={
-                  isEditMode
-                    ? async (which, settings, desc) => {
-                        await saveChartSettings(which, settings, desc);
-                      }
-                    : undefined
-                }
-                onFetchOverrides={isEditMode ? fetchOverrides : undefined}
-              />
-              <Divider sx={{ my: 3 }} />
-            </>
-          ) : (
-            <>
-              {isEditMode ? (
-                <Box sx={{ my: 2 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, fontWeight: 600 }}
-                  >
-                    Data Interpretation
-                  </Typography>
-                  <EditableSection
-                    isEditingInfo={isEditMode}
-                    content={getDataInterpretation('dataCollection')}
-                    sectionLabel="Data Collection Interpretation"
-                    onSave={async (newContent) => {
-                      await saveVersion(
-                        'dataAnalysisInformation.dataInterpretation',
-                        [newContent, getDataInterpretation('dataAnalysis')]
-                      );
-                    }}
-                  />
-                </Box>
-              ) : (
-                <QuestionInformation
-                  information={getDataInterpretation('dataCollection')}
-                  label="Data Interpretation"
-                  tabIndex={tab}
-                />
-              )}
-            </>
-          )}
-          <SectionSelector
-            sectionType="data"
-            sectionTitle="Data Collection"
-            query={query}
-            data={dataCollection}
-          />
-          {!reportExport && (
-            <QuestionDataGridView
-              questionData={dataCollection}
-              gridOptions={query.gridOptions}
-            />
-          )}
-        </Box>
-
-        {/* Data Analysis View */}
-        {query.uid_2 && (
-          <Box hidden={tab !== 1}>
-            {loading2 ? (
-              renderLoadingState()
-            ) : error2 ? (
-              renderErrorState(error2)
-            ) : (
-              <>
-                {query.chartSettings2 ? (
-                  <>
-                    <SectionSelector
-                      sectionType="chart"
-                      sectionTitle="Data Analysis Chart"
-                      query={query}
-                      data={dataAnalysis}
-                    />
-                    <QuestionChartView
-                      showAllDetailedCharts={
-                        Boolean(exportingCharts) && (!reportExport || tab === 1)
-                      }
-                      query={query}
-                      normalized={normalized}
-                      setNormalized={setNormalized}
-                      categorizeByVenue={categorizeByVenue}
-                      setCategorizeByVenue={setCategorizeByVenue}
-                      showVenueCategorization={
-                        hasVenueInAnalysisData && query.venue !== false
-                      }
-                      queryId={query.uid_2}
-                      chartSettings={
-                        mainChartsOnly
-                          ? {
-                              ...query.chartSettings2,
-                              hideDetailedCharts: true,
-                            }
-                          : query.chartSettings2
-                      }
-                      processedChartDataset={processedChartDataAnalysis}
-                      rawChartData={dataAnalysis}
-                      dataInterpretation={getDataInterpretation('dataAnalysis')}
-                      type="dataAnalysis"
-                      isEditMode={isEditMode}
-                      chartKey="chartSettings2"
-                      onSaveInterpretation={
-                        isEditMode
-                          ? async (newContent) => {
-                              await saveVersion(
-                                'dataAnalysisInformation.dataInterpretation',
-                                [
-                                  getDataInterpretation('dataCollection'),
-                                  newContent,
-                                ]
-                              );
-                            }
-                          : undefined
-                      }
-                      onSaveChartSettings={
-                        isEditMode
-                          ? async (which, settings, desc) => {
-                              await saveChartSettings(which, settings, desc);
-                            }
-                          : undefined
-                      }
-                      onFetchOverrides={isEditMode ? fetchOverrides : undefined}
-                    />
-                    <Divider sx={{ my: 3 }} />
-                  </>
-                ) : (
-                  <>
-                    {isEditMode ? (
-                      <Box sx={{ my: 2 }}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ mb: 1, fontWeight: 600 }}
-                        >
-                          Data Interpretation
-                        </Typography>
-                        <EditableSection
-                          isEditingInfo={isEditMode}
-                          content={getDataInterpretation('dataAnalysis')}
-                          sectionLabel="Data Analysis Interpretation"
-                          onSave={async (newContent) => {
-                            await saveVersion(
-                              'dataAnalysisInformation.dataInterpretation',
-                              [
-                                getDataInterpretation('dataCollection'),
-                                newContent,
-                              ]
-                            );
-                          }}
-                        />
-                      </Box>
-                    ) : (
-                      <QuestionInformation
-                        information={getDataInterpretation('dataAnalysis')}
-                        label="Data Interpretation"
-                        tabIndex={tab}
-                      />
-                    )}
-                  </>
-                )}
-                <SectionSelector
-                  sectionType="data"
-                  sectionTitle="Data Analysis"
-                  query={query}
-                  data={dataAnalysis}
-                />
-                {!reportExport && (
-                  <QuestionDataGridView
-                    questionData={dataAnalysis}
-                    gridOptions={query.gridOptions}
-                  />
-                )}
-              </>
-            )}
-          </Box>
-        )}
+        {renderQuestionTab(0)}
+        {query.uid_2 && renderQuestionTab(1)}
       </Paper>
     </Box>
   );

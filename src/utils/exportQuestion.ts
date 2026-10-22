@@ -35,6 +35,48 @@ export interface QuestionHtmlExport {
   chartGroups: ExportChartGroup[];
 }
 
+function getExportTab(query: Query, index: number) {
+  const secondary = index === 1;
+  const name = (
+    secondary ? query.tabs?.tab2_name : query.tabs?.tab1_name
+  )?.trim();
+  const chartSettings = secondary ? query.chartSettings2 : query.chartSettings;
+  return {
+    name,
+    label: name || (secondary ? 'Data Analysis' : 'Data Collection'),
+    id: (secondary ? query.uid_2 : query.uid) || `tab-${index + 1}`,
+    chartSettings,
+    supportsNormalization: !chartSettings?.doesntHaveNormalization,
+  };
+}
+
+export function getExportChartModes(
+  query: Query,
+  tabIndex: number,
+  mode: ExportChartMode,
+  firstNormalized = true
+): boolean[] {
+  if (!getExportTab(query, tabIndex).supportsNormalization) return [false];
+  return mode === 'both'
+    ? [firstNormalized, !firstNormalized]
+    : [mode === 'relative'];
+}
+
+function requireChartGroup(
+  groups: ExportChartGroup[],
+  tabIndex: number,
+  normalized?: boolean,
+  message = 'Chart capture is missing for a report tab.'
+): ExportChartGroup {
+  const group = groups.find(
+    (item) =>
+      item.tabIndex === tabIndex &&
+      (normalized === undefined || item.normalized === normalized)
+  );
+  if (!group) throw new Error(message);
+  return group;
+}
+
 // Select the content once for every format.
 function buildReport(
   query: Query,
@@ -85,14 +127,10 @@ function buildReport(
   }
 
   const sourceUrl = `https://empire-compass.tib.eu/${encodeURIComponent(templateId)}/questions/${encodeURIComponent(String(query.id))}`;
-  const tabName = (
-    tabIndex === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name
-  )?.trim();
-  const chartSettings =
-    tabIndex === 1 ? query.chartSettings2 : query.chartSettings;
+  const tab = getExportTab(query, tabIndex);
   const hasCharts =
-    format !== 'txt' && selected.charts && Boolean(chartSettings);
-  const chartDisplay = chartSettings?.doesntHaveNormalization
+    format !== 'txt' && selected.charts && Boolean(tab.chartSettings);
+  const chartDisplay = !tab.supportsNormalization
     ? 'Absolute'
     : format === 'html'
       ? 'Relative / Absolute (switchable)'
@@ -106,7 +144,7 @@ function buildReport(
       value: getTemplateConfig(templateId).title,
       url: `https://orkg.org/template/${encodeURIComponent(templateId)}`,
     },
-    ...(tabName ? [{ label: 'Analysis', value: tabName }] : []),
+    ...(tab.name ? [{ label: 'Analysis', value: tab.name }] : []),
     ...(hasCharts ? [{ label: 'Chart display', value: chartDisplay }] : []),
     { label: 'Export date', value: exportedAt.toLocaleDateString('en-GB') },
     {
@@ -148,6 +186,10 @@ function getReportSections(report: Report, hasCharts: boolean) {
     });
   }
   return sections;
+}
+
+function getSparqlUrl(sparql: string): string {
+  return `https://orkg.org/sparql#${encodeURIComponent(sparql)}`;
 }
 
 function getSectionQuery(section: Report['sections'][number]) {
@@ -257,7 +299,7 @@ function exportHtml(
           ? `<p>
         <a
           class="sparql-link"
-          href="${escapeHtml(`https://orkg.org/sparql#${encodeURIComponent(sparql)}`)}"
+          href="${escapeHtml(getSparqlUrl(sparql))}"
           target="_blank"
           rel="noopener noreferrer"
         >Open query in ORKG</a>
@@ -1190,7 +1232,7 @@ async function chartsToPng(
     );
 
     images.push({
-      title: figure.querySelector('h3')?.textContent?.trim() ?? '',
+      title,
       display: figure.getAttribute('data-chart-display'),
       dataUrl: canvas.toDataURL('image/png'),
       width: image.naturalWidth,
@@ -1203,6 +1245,10 @@ async function chartsToPng(
   }
 
   return images;
+}
+
+async function getMainChartImages(chartHtml?: string) {
+  return chartHtml ? chartsToPng(chartHtml, false, true) : [];
 }
 
 interface ReportChapter {
@@ -1299,7 +1345,7 @@ function pdfReportContent(
         text: sectionTitles[section.title] ?? section.title,
         ...(sparql
           ? {
-              link: `https://orkg.org/sparql#${encodeURIComponent(sparql)}`,
+              link: getSparqlUrl(sparql),
               decoration: 'underline' as const,
               noWrap: true,
             }
@@ -1380,7 +1426,7 @@ async function exportPdf(
   chartHtml?: string,
   chapters?: ReportChapter[]
 ): Promise<Blob> {
-  const charts = chartHtml ? await chartsToPng(chartHtml, false, true) : [];
+  const charts = await getMainChartImages(chartHtml);
   // Load the PDF library and embedded fonts only when PDF is requested.
   const [{ default: pdfMake }, { default: fonts }] = await Promise.all([
     import('pdfmake/build/pdfmake'),
@@ -1446,9 +1492,7 @@ async function exportPdf(
       }
     );
     for (const chapter of chapters) {
-      const images = chapter.chartHtml
-        ? await chartsToPng(chapter.chartHtml, false, true)
-        : [];
+      const images = await getMainChartImages(chapter.chartHtml);
       content.push(...pdfReportContent(chapter.report, images, chapter));
     }
   }
@@ -1515,7 +1559,7 @@ async function exportDocx(
     BorderStyle,
     TableOfContents,
   } = await import('docx');
-  const charts = chartHtml ? await chartsToPng(chartHtml, false, true) : [];
+  const charts = await getMainChartImages(chartHtml);
 
   const createLink = (label: string, url: string) =>
     new ExternalHyperlink({
@@ -1678,7 +1722,7 @@ async function exportDocx(
           children: [
             sparql
               ? new ExternalHyperlink({
-                  link: `https://orkg.org/sparql#${encodeURIComponent(sparql)}`,
+                  link: getSparqlUrl(sparql),
                   children: [title],
                 })
               : title,
@@ -1747,9 +1791,7 @@ async function exportDocx(
     | InstanceType<typeof Table>
   )[] = [];
   for (const chapter of chapters ?? []) {
-    const images = chapter.chartHtml
-      ? await chartsToPng(chapter.chartHtml, false, true)
-      : [];
+    const images = await getMainChartImages(chapter.chartHtml);
     chapterContent.push(
       ...createReportContent(chapter.report, images, chapter)
     );
@@ -1873,19 +1915,15 @@ function buildChartZipGroups(
   const tabFolders = new Map<number, string>();
   return chartGroups.map((group) => {
     if (!tabFolders.has(group.tabIndex)) {
-      const tabName =
-        group.tabIndex === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name;
-      const tabId =
-        (group.tabIndex === 1 ? query.uid_2 : query.uid) ||
-        `tab-${group.tabIndex + 1}`;
+      const { name: tabName, id: tabId } = getExportTab(query, group.tabIndex);
       const name =
-        (tabName?.trim() || tabId)
+        (tabName || tabId)
           .replace(/[\\/:*?"<>|]/g, '_')
           .replace(/\s+/g, ' ')
           .trim()
           .replace(/^[. ]+|[. ]+$/g, '') || `tab-${group.tabIndex + 1}`;
       const folder =
-        namedTabsOnly && !tabName?.trim()
+        namedTabsOnly && !tabName
           ? ''
           : [...tabFolders.values()].includes(name)
             ? `${name}_tab-${group.tabIndex + 1}`
@@ -2006,16 +2044,47 @@ async function exportChartZip(
   return zip.generateAsync({ type: 'blob' });
 }
 
+const exportMimeTypes = {
+  html: 'text/html',
+  txt: 'text/plain',
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  zip: 'application/zip',
+};
+
+async function renderDocument(
+  format: 'pdf' | 'docx' | 'txt',
+  report: Report,
+  chartHtml?: string,
+  chapters?: ReportChapter[]
+): Promise<string | Blob> {
+  if (format === 'pdf') return exportPdf(report, chartHtml, chapters);
+  if (format === 'docx') return exportDocx(report, chartHtml, chapters);
+  if (!chapters) return exportTxt(report);
+  return [
+    exportTxt(report, '='),
+    'Contents\n--------',
+    chapters
+      .map(
+        (chapter) => `${chapter.level === 2 ? '  ' : ''}${chapter.report.title}`
+      )
+      .join('\n'),
+    ...chapters.map((chapter) =>
+      exportTxt(chapter.report, chapter.level === 1 ? '=' : '-')
+    ),
+  ].join('\n\n');
+}
+
 function downloadFile(
   content: string | Blob,
   filename: string,
-  mimeType: string
+  format: keyof typeof exportMimeTypes
 ): void {
   const blob =
     content instanceof Blob
       ? content
       : new Blob([content], {
-          type: `${mimeType};charset=utf-8`,
+          type: `${exportMimeTypes[format]};charset=utf-8`,
         });
 
   const url = URL.createObjectURL(blob);
@@ -2037,20 +2106,15 @@ function buildHtmlTabs(
   chartGroups: ExportChartGroup[] = []
 ) {
   return [0, ...(query.uid_2 ? [1] : [])].map((index) => {
-    const chartSettings =
-      index === 1 ? query.chartSettings2 : query.chartSettings;
+    const { label, chartSettings } = getExportTab(query, index);
     const groups = sections.charts
       ? chartGroups.filter((group) => group.tabIndex === index)
       : [];
 
-    if (sections.charts && chartSettings && !groups.length) {
-      throw new Error('Chart capture is missing for a report tab.');
-    }
+    if (sections.charts && chartSettings) requireChartGroup(groups, index);
 
-    const name = index === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name;
     return {
-      label:
-        name?.trim() || (index === 1 ? 'Data Analysis' : 'Data Collection'),
+      label,
       report: buildReport(
         query,
         templateId,
@@ -2109,7 +2173,7 @@ export function exportQuestionsHtml(
       questions: reports,
     }),
     `questions_${templateId}_${exportedAt.toISOString().slice(0, 10)}.html`,
-    'text/html'
+    'html'
   );
 }
 
@@ -2168,21 +2232,12 @@ export async function exportQuestionsDocument(
       });
     }
     for (const [index, tab] of tabs.entries()) {
-      const settings = index === 1 ? query.chartSettings2 : query.chartSettings;
-      const modes = settings?.doesntHaveNormalization
-        ? [false]
-        : chartMode === 'both'
-          ? [true, false]
-          : [chartMode === 'relative'];
+      const tabInfo = getExportTab(query, index);
+      const modes = getExportChartModes(query, index, chartMode);
       const groups =
-        sections.charts && settings
+        sections.charts && tabInfo.chartSettings
           ? modes.map((normalized) => {
-              const group = chartGroups.find(
-                (item) =>
-                  item.tabIndex === index && item.normalized === normalized
-              );
-              if (!group)
-                throw new Error('Chart capture is missing for a report tab.');
+              const group = requireChartGroup(chartGroups, index, normalized);
               const container = document.createElement('div');
               container.innerHTML = group.html;
               container
@@ -2196,9 +2251,6 @@ export async function exportQuestionsDocument(
               return container.innerHTML;
             })
           : [];
-      const name =
-        (index === 1 ? query.tabs?.tab2_name : query.tabs?.tab1_name)?.trim() ||
-        (index === 1 ? 'Data Analysis' : 'Data Collection');
       chapters.push({
         id:
           tabs.length > 1
@@ -2208,7 +2260,7 @@ export async function exportQuestionsDocument(
         chartHtml: groups.length ? groups.join('\n') : undefined,
         report: {
           ...tab,
-          title: tabs.length > 1 ? name : tab.title,
+          title: tabs.length > 1 ? tabInfo.label : tab.title,
           sections: tab.sections.filter(
             (section) => !shared.some((other) => other.title === section.title)
           ),
@@ -2221,7 +2273,7 @@ export async function exportQuestionsDocument(
             .map((item) =>
               item.label === 'Chart display' &&
               chartMode === 'both' &&
-              !settings?.doesntHaveNormalization
+              tabInfo.supportsNormalization
                 ? { ...item, value: 'Relative / Absolute' }
                 : item
             ),
@@ -2247,29 +2299,9 @@ export async function exportQuestionsDocument(
     sections: [],
   };
   downloadFile(
-    format === 'txt'
-      ? [
-          exportTxt(report, '='),
-          'Contents\n--------',
-          chapters
-            .map(
-              (chapter) =>
-                `${chapter.level === 2 ? '  ' : ''}${chapter.report.title}`
-            )
-            .join('\n'),
-          ...chapters.map((chapter) =>
-            exportTxt(chapter.report, chapter.level === 1 ? '=' : '-')
-          ),
-        ].join('\n\n')
-      : await (format === 'pdf'
-          ? exportPdf(report, undefined, chapters)
-          : exportDocx(report, undefined, chapters)),
+    await renderDocument(format, report, undefined, chapters),
     `questions_${templateId}_${exportedAt.toISOString().slice(0, 10)}.${format}`,
-    format === 'txt'
-      ? 'text/plain'
-      : format === 'pdf'
-        ? 'application/pdf'
-        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    format
   );
 }
 
@@ -2281,22 +2313,14 @@ export async function exportQuestionsCharts(
 ): Promise<void> {
   const exportedAt = new Date();
   const groups = questions.flatMap(({ query, chartGroups }) => {
-    for (const [tabIndex, settings] of [
-      query.chartSettings,
-      query.chartSettings2,
-    ].entries()) {
-      if (!settings) continue;
-      const modes = settings.doesntHaveNormalization ? [false] : [false, true];
-      if (
-        modes.some(
-          (normalized) =>
-            !chartGroups.some(
-              (group) =>
-                group.tabIndex === tabIndex && group.normalized === normalized
-            )
-        )
-      )
-        throw new Error(`Chart variants are missing for question ${query.id}.`);
+    const message = `Chart variants are missing for question ${query.id}.`;
+    for (const tabIndex of [0, 1]) {
+      const tab = getExportTab(query, tabIndex);
+      if (!tab.chartSettings) continue;
+      const modes = getExportChartModes(query, tabIndex, 'both', false);
+      for (const normalized of modes) {
+        requireChartGroup(chartGroups, tabIndex, normalized, message);
+      }
     }
     return buildChartZipGroups(
       query,
@@ -2313,7 +2337,7 @@ export async function exportQuestionsCharts(
   downloadFile(
     zip,
     `questions_${templateId}_charts_${format}_${exportedAt.toISOString().slice(0, 10)}.zip`,
-    'application/zip'
+    'zip'
   );
 }
 
@@ -2355,11 +2379,7 @@ export async function exportQuestion(
 
     const zip = await exportChartZip(groups, format);
 
-    downloadFile(
-      zip,
-      `Q${query.id}_charts_${format}_${date}.zip`,
-      'application/zip'
-    );
+    downloadFile(zip, `Q${query.id}_charts_${format}_${date}.zip`, 'zip');
 
     return;
   }
@@ -2369,37 +2389,25 @@ export async function exportQuestion(
 
   const filename = `Q${query.id}_${date}.${format}`;
 
-  switch (format) {
-    case 'html': {
-      const htmlTabs = buildHtmlTabs(
-        query,
-        templateId,
-        sections,
-        normalized,
-        exportedAt,
-        chartGroups
-      );
-
-      downloadFile(exportHtml(htmlTabs, tabIndex), filename, 'text/html');
-      break;
-    }
-    case 'txt':
-      downloadFile(exportTxt(report), filename, 'text/plain');
-      break;
-    case 'pdf':
-      downloadFile(
-        await exportPdf(report, sections.charts ? chartSvg : undefined),
-        filename,
-        'application/pdf'
-      );
-      break;
-
-    case 'docx':
-      downloadFile(
-        await exportDocx(report, sections.charts ? chartSvg : undefined),
-        filename,
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      );
-      break;
+  if (format === 'html') {
+    const tabs = buildHtmlTabs(
+      query,
+      templateId,
+      sections,
+      normalized,
+      exportedAt,
+      chartGroups
+    );
+    downloadFile(exportHtml(tabs, tabIndex), filename, format);
+  } else {
+    downloadFile(
+      await renderDocument(
+        format,
+        report,
+        sections.charts ? chartSvg : undefined
+      ),
+      filename,
+      format
+    );
   }
 }
