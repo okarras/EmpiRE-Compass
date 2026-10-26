@@ -91,7 +91,12 @@ export default function SubmitContributionDialog({
   };
 
   return (
-    <Dialog open={open} onClose={submitting ? undefined : onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={submitting ? undefined : onClose}
+      fullWidth
+      maxWidth="sm"
+    >
       <DialogTitle>Submit contribution for review</DialogTitle>
       <DialogContent>
         <DialogContentText sx={{ mb: 2 }}>
@@ -158,7 +163,11 @@ export default function SubmitContributionDialog({
         <Button onClick={onClose} disabled={submitting}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={!canSubmit}>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={!canSubmit}
+        >
           {submitting ? 'Submitting…' : 'Submit for review'}
         </Button>
       </DialogActions>

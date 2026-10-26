@@ -32,7 +32,9 @@ const CommunityQuestionDetailsPage = lazy(
   () => import('./pages/CommunityQuestionDetailsPage')
 );
 const ScidQuestPage = lazy(() => import('./pages/ScidQuestPage'));
-const PaperVerificationPage = lazy(() => import('./pages/PaperVerificationPage'));
+const PaperVerificationPage = lazy(
+  () => import('./pages/PaperVerificationPage')
+);
 
 const Router = () => {
   return (
