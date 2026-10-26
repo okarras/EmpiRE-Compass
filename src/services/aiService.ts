@@ -127,6 +127,7 @@ export class AIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      responseFormat?: 'text' | 'json';
       signal?: AbortSignal;
     }
   ) {
@@ -138,6 +139,9 @@ export class AIService {
       prompt,
       system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
+      ...(options?.responseFormat
+        ? { responseFormat: options.responseFormat }
+        : {}),
       abortSignal: options?.signal,
       // v5 names this `maxOutputTokens`; without it generation is uncapped and a
       // single suggestion can run for minutes.

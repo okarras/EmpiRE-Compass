@@ -7,6 +7,7 @@ export interface Message {
   isStreaming?: boolean;
   reasoning?: string;
   chartHtml?: string;
+  chartConfigs?: Record<string, unknown>[];
   timestamp?: number;
 }
 
