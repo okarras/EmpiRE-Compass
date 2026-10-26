@@ -48,5 +48,7 @@ export function ScidQuestProviders({ children }: ScidQuestProvidersProps) {
     []
   );
 
-  return <ScidQuestProvider llmService={llmService}>{children}</ScidQuestProvider>;
+  return (
+    <ScidQuestProvider llmService={llmService}>{children}</ScidQuestProvider>
+  );
 }

@@ -78,7 +78,10 @@ const formatAnswer = (value: unknown): string => {
   if (typeof value === 'string' || typeof value === 'number')
     return String(value);
   if (Array.isArray(value))
-    return value.map((item) => formatAnswer(item)).filter(Boolean).join(', ');
+    return value
+      .map((item) => formatAnswer(item))
+      .filter(Boolean)
+      .join(', ');
   if (typeof value === 'object')
     return Object.entries(value as Record<string, unknown>)
       .map(([key, nested]) => `${key}: ${formatAnswer(nested)}`)
@@ -117,9 +120,8 @@ const AdminContributions = () => {
   const [invitePaperId, setInvitePaperId] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const [inviteResult, setInviteResult] = useState<CreateVerificationResult | null>(
-    null
-  );
+  const [inviteResult, setInviteResult] =
+    useState<CreateVerificationResult | null>(null);
 
   // Question labels live in the template, not in the stored answers, so the
   // reviewer sees the same wording the submitter answered.
@@ -560,7 +562,11 @@ const AdminContributions = () => {
                           {row.label}
                         </Typography>
                         {row.changed && (
-                          <Chip size="small" color="warning" label="Changed by author" />
+                          <Chip
+                            size="small"
+                            color="warning"
+                            label="Changed by author"
+                          />
                         )}
                       </Stack>
                       {row.changed && row.originalValue && (
@@ -575,7 +581,10 @@ const AdminContributions = () => {
                           {row.originalValue}
                         </Typography>
                       )}
-                      <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ whiteSpace: 'pre-wrap' }}
+                      >
                         {row.value || '—'}
                       </Typography>
                     </Box>
@@ -633,8 +642,8 @@ const AdminContributions = () => {
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Pre-fills the questionnaire from what's already recorded live in
-            ORKG for this paper and generates a one-time link you can email
-            to the paper's authors.
+            ORKG for this paper and generates a one-time link you can email to
+            the paper's authors.
           </Typography>
 
           <TextField
@@ -689,8 +698,8 @@ const AdminContributions = () => {
               {inviteResult.unmappedNotes.length > 0 && (
                 <Alert severity="warning" sx={{ mt: 2 }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    Some fields couldn't be filled in automatically — the
-                    author will see these blank:
+                    Some fields couldn't be filled in automatically — the author
+                    will see these blank:
                   </Typography>
                   <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
                     {inviteResult.unmappedNotes.map((note, i) => (

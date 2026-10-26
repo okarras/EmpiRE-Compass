@@ -44,9 +44,9 @@ export default function PaperVerificationPage() {
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
   const [authorName, setAuthorName] = useState('');
   const [authorEmail, setAuthorEmail] = useState('');
-  const [submitting, setSubmitting] = useState<'confirm' | 'corrections' | null>(
-    null
-  );
+  const [submitting, setSubmitting] = useState<
+    'confirm' | 'corrections' | null
+  >(null);
   const [isWorkerReady, setIsWorkerReady] = useState(false);
 
   useEffect(() => {
@@ -159,7 +159,13 @@ export default function PaperVerificationPage() {
 
   return (
     <ThemeProvider theme={scidQuestTheme}>
-      <Box sx={{ display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: 'background.default',
+        }}
+      >
         <Box
           sx={{
             px: 3,
@@ -190,8 +196,8 @@ export default function PaperVerificationPage() {
             </Typography>
             <Typography variant="caption" color="text.secondary">
               We've pre-filled this from what's already recorded in ORKG for
-              this paper. Please check it over and correct anything that's
-              wrong before submitting.
+              this paper. Please check it over and correct anything that's wrong
+              before submitting.
             </Typography>
           </Container>
         </Box>
@@ -230,7 +236,11 @@ export default function PaperVerificationPage() {
             <Typography variant="subtitle2" gutterBottom>
               Your details (optional)
             </Typography>
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              sx={{ mb: 3 }}
+            >
               <TextField
                 label="Your name"
                 fullWidth
