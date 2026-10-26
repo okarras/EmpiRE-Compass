@@ -57,9 +57,12 @@ const QuestionPage = () => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
+              alignItems: { xs: 'flex-start', sm: 'flex-end' },
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 2,
               mb: 4,
+              pb: 1,
+              borderBottom: '4px solid #e86161',
             }}
           >
             <Typography
@@ -69,21 +72,14 @@ const QuestionPage = () => {
                 fontWeight: 700,
                 fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
                 lineHeight: 1.3,
-                position: 'relative',
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -8,
-                  left: 0,
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: '#e86161',
-                  borderRadius: '2px',
-                },
+                flex: 1,
+                minWidth: 0,
+                width: { xs: '100%', sm: 'auto' },
               }}
             >
               {`${finalQuery.id}. ${finalQuery.dataAnalysisInformation.question}`}
             </Typography>
+            <Box id="question-title-export-action" sx={{ flexShrink: 0 }} />
           </Box>
 
           <Question query={finalQuery} />

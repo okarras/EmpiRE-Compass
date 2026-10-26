@@ -12,6 +12,7 @@ import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 import { useBackupChange } from '../hooks/useBackupChange';
 import DownloadIcon from '@mui/icons-material/Download';
 import QuestionExportDialog from './QuestionExportDialog';
+import HeaderExportAction from './HeaderExportAction';
 import Question from './Question';
 import {
   exportQuestionsHtml,
@@ -94,15 +95,7 @@ const Dashboard = () => {
         py: { xs: 3, md: 6 },
       }}
     >
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: '1000px',
-          display: 'flex',
-          justifyContent: 'flex-end',
-          mb: 2,
-        }}
-      >
+      <HeaderExportAction>
         <Button
           variant="outlined"
           startIcon={<DownloadIcon />}
@@ -110,7 +103,7 @@ const Dashboard = () => {
         >
           Export
         </Button>
-      </Box>
+      </HeaderExportAction>
 
       <QuestionExportDialog
         open={exportOpen}
@@ -254,7 +247,15 @@ const Dashboard = () => {
             borderLeft: '4px solid #e86161',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              mb: 2,
+              gap: 1.5,
+            }}
+          >
             <Box
               sx={{
                 display: 'flex',
@@ -275,10 +276,13 @@ const Dashboard = () => {
                 color: 'text.primary',
                 fontWeight: 600,
                 fontSize: '1rem',
+                flex: 1,
+                minWidth: 0,
               }}
             >
               {templateInfoBox.title}
             </Typography>
+            <Box id="page-title-export-action" sx={{ flexShrink: 0 }} />
           </Box>
 
           <Typography

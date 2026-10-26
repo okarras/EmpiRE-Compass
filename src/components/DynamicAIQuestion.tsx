@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import HeaderExportAction from './HeaderExportAction';
 import {
   Box,
   Button,
@@ -34,8 +35,22 @@ import { useAuthData } from '../auth/useAuthData';
 import CRUDDynamicQuestions from '../firestore/CRUDDynamicQuestions';
 import AiEvaluationWidget from './AI/AiEvaluationWidget';
 
+import DownloadIcon from '@mui/icons-material/Download';
+import QuestionExportDialog from './QuestionExportDialog';
+import {
+  exportDynamicQuestionHtml,
+  exportDynamicQuestionDocument,
+  exportDynamicQuestionCharts,
+  supportsDynamicSvgExport,
+} from '../utils/exportQuestion';
+import { toast } from 'react-hot-toast';
+
 const DynamicAIQuestion = () => {
   const aiService = useAIService();
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [svgExportAvailable, setSvgExportAvailable] = useState(false);
+  const resultsRoot = useRef<HTMLDivElement>(null);
   const {
     state,
     updateQuestion,
@@ -971,6 +986,22 @@ const DynamicAIQuestion = () => {
     );
   }
 
+  const exportButton = (
+    <Button
+      variant="outlined"
+      startIcon={<DownloadIcon />}
+      disabled={loading || !state.question.trim()}
+      onClick={() => {
+        setSvgExportAvailable(
+          supportsDynamicSvgExport(resultsRoot.current?.querySelector('iframe'))
+        );
+        setExportOpen(true);
+      }}
+    >
+      Export
+    </Button>
+  );
+
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
@@ -986,7 +1017,76 @@ const DynamicAIQuestion = () => {
             }}
           />
         </Box>
+        <HeaderExportAction>{exportButton}</HeaderExportAction>
       </Box>
+      <QuestionExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export dynamic question"
+        formats={
+          svgExportAvailable
+            ? ['html', 'pdf', 'docx', 'txt', 'svg', 'png']
+            : ['html', 'pdf', 'docx', 'txt', 'png']
+        }
+        progress={exporting ? 'Creating report…' : undefined}
+        availableSections={[
+          'explanation',
+          'requiredData',
+          'analysisMethod',
+          'charts',
+          'sparql',
+        ]}
+        description="HTML preserves chart interactions; some charts require an internet connection. PDF and Word include the current charts as images. TXT contains text only. PNG downloads the current charts as a ZIP. SVG is available when all current charts are rendered as SVG."
+        onExport={async (sections, format) => {
+          if (
+            exporting ||
+            (format !== 'html' &&
+              format !== 'pdf' &&
+              format !== 'docx' &&
+              format !== 'txt' &&
+              format !== 'svg' &&
+              format !== 'png')
+          )
+            return;
+          setExporting(true);
+          try {
+            const frame = resultsRoot.current?.querySelector('iframe');
+            if (format === 'svg' || format === 'png') {
+              await exportDynamicQuestionCharts(
+                state,
+                state.templateId ?? templateId,
+                format,
+                frame
+              );
+            } else if (format === 'html') {
+              exportDynamicQuestionHtml(
+                state,
+                state.templateId ?? templateId,
+                sections,
+                frame?.srcdoc
+              );
+            } else {
+              await exportDynamicQuestionDocument(
+                state,
+                state.templateId ?? templateId,
+                sections,
+                format,
+                frame
+              );
+            }
+            setExportOpen(false);
+          } catch (error) {
+            console.error('Dynamic question export failed:', error);
+            toast.error(
+              error instanceof Error
+                ? error.message
+                : 'Export failed. Please try again.'
+            );
+          } finally {
+            setExporting(false);
+          }
+        }}
+      />
       <QueryExecutionSection
         question={state.question}
         sparqlQuery={state.sparqlQuery}
@@ -1028,23 +1128,25 @@ const DynamicAIQuestion = () => {
         onRegenerateCode={handleRegenerateProcessingCode}
         onOpenHistory={handleOpenProcessingHistory}
       />
-      <ResultsDisplaySection
-        loading={loading}
-        error={error}
-        question={state.question}
-        sparqlQuery={state.sparqlQuery}
-        queryResults={state.queryResults}
-        rawSparqlQueryResults={state.rawSparqlQueryResults}
-        chartHtml={state.chartHtml}
-        questionInterpretation={state.questionInterpretation}
-        dataCollectionInterpretation={state.dataCollectionInterpretation}
-        dataAnalysisInterpretation={state.dataAnalysisInterpretation}
-        dynamicQuery={dynamicQuery}
-        onContentGenerated={handleContentGenerated}
-        onError={setError}
-        onChartHtmlChange={updateChartHtml}
-        costs={state.costs}
-      />
+      <Box ref={resultsRoot}>
+        <ResultsDisplaySection
+          loading={loading}
+          error={error}
+          question={state.question}
+          sparqlQuery={state.sparqlQuery}
+          queryResults={state.queryResults}
+          rawSparqlQueryResults={state.rawSparqlQueryResults}
+          chartHtml={state.chartHtml}
+          questionInterpretation={state.questionInterpretation}
+          dataCollectionInterpretation={state.dataCollectionInterpretation}
+          dataAnalysisInterpretation={state.dataAnalysisInterpretation}
+          dynamicQuery={dynamicQuery}
+          onContentGenerated={handleContentGenerated}
+          onError={setError}
+          onChartHtmlChange={updateChartHtml}
+          costs={state.costs}
+        />
+      </Box>
 
       {!loading &&
         !error &&
