@@ -44,9 +44,12 @@ export const createVerification = async (
 
 /** Public: no auth, gated only by the unguessable token in the link. */
 export const getVerification = async (token: string) =>
-  apiRequest<VerificationData>(`/api/verifications/${encodeURIComponent(token)}`, {
-    method: 'GET',
-  });
+  apiRequest<VerificationData>(
+    `/api/verifications/${encodeURIComponent(token)}`,
+    {
+      method: 'GET',
+    }
+  );
 
 /** Public: no auth, single-use — the backend rejects a second submit for the same token. */
 export const submitVerification = async (

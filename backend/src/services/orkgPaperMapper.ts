@@ -233,7 +233,10 @@ function mapResearchQuestions(
           const subqText = label(child(statements, subqId, PID.rqText));
           if (!isRealValue(subqText)) return null;
           const subqTypeRaw = label(child(statements, subqId, PID.rqType));
-          const subqType = matchOption(subqTypeRaw, KNOWN_OPTIONS.question_type);
+          const subqType = matchOption(
+            subqTypeRaw,
+            KNOWN_OPTIONS.question_type
+          );
           if (subqTypeRaw && isRealValue(subqTypeRaw) && !subqType) {
             notes.push(
               `Unrecognized sub-question type "${subqTypeRaw}" — left blank for review.`
@@ -245,7 +248,9 @@ function mapResearchQuestions(
 
       return {
         rq_text: rqText,
-        rq_highlighted: yesNo(isTrue(label(child(statements, rqId, PID.rqHighlighted)))),
+        rq_highlighted: yesNo(
+          isTrue(label(child(statements, rqId, PID.rqHighlighted)))
+        ),
         rq_hidden: yesNo(isTrue(label(child(statements, rqId, PID.rqHidden)))),
         rq_type: rqType ?? '',
         subquestions,
@@ -266,7 +271,8 @@ function mapDataCollectionMethods(
       const methodId = objectId(methodStmt);
       const methodNameRaw = label(child(statements, methodId, PID.methodName));
       const methodTypeRaw = label(child(statements, methodId, PID.methodType));
-      if (!isRealValue(methodNameRaw) && !isRealValue(methodTypeRaw)) return null;
+      if (!isRealValue(methodNameRaw) && !isRealValue(methodTypeRaw))
+        return null;
 
       const methodType = matchOption(methodTypeRaw, KNOWN_OPTIONS.method_type);
       if (methodTypeRaw && isRealValue(methodTypeRaw) && !methodType) {
@@ -291,17 +297,26 @@ function mapHypotheses(
   return children(statements, inferentialStatsId, PID.hypothesis)
     .map((hypStmt) => {
       const hypId = objectId(hypStmt);
-      const statement = label(child(statements, hypId, PID.hypothesisStatement));
+      const statement = label(
+        child(statements, hypId, PID.hypothesisStatement)
+      );
       if (!isRealValue(statement)) return null;
 
       const hypTypeId = objectId(child(statements, hypId, PID.hypothesisType));
-      const hypothesisType = child(statements, hypTypeId, PID.hypothesisTypeNull)
+      const hypothesisType = child(
+        statements,
+        hypTypeId,
+        PID.hypothesisTypeNull
+      )
         ? 'Null hypothesis'
         : child(statements, hypTypeId, PID.hypothesisTypeAlt)
           ? 'Alternative hypothesis'
           : '';
 
-      return { hypothesis_statement: statement, hypothesis_type: hypothesisType };
+      return {
+        hypothesis_statement: statement,
+        hypothesis_type: hypothesisType,
+      };
     })
     .filter((item): item is NonNullable<typeof item> => item !== null);
 }
@@ -332,15 +347,22 @@ export function mapPaperStatementsToAnswers(
   const paradigmRaw = label(child(statements, contriId, PID.researchParadigm));
   const paradigm = matchOption(paradigmRaw, KNOWN_OPTIONS.research_paradigm);
   if (paradigmRaw && isRealValue(paradigmRaw) && !paradigm) {
-    notes.push(`Unrecognized research paradigm "${paradigmRaw}" — left blank for review.`);
+    notes.push(
+      `Unrecognized research paradigm "${paradigmRaw}" — left blank for review.`
+    );
   }
 
-  const { items: rqItems, notes: rqNotes } = mapResearchQuestions(statements, contriId!);
+  const { items: rqItems, notes: rqNotes } = mapResearchQuestions(
+    statements,
+    contriId!
+  );
   notes.push(...rqNotes);
 
   const answerId = objectId(child(statements, contriId, PID.rqAnswer));
 
-  const dataCollectionId = objectId(child(statements, contriId, PID.dataCollection));
+  const dataCollectionId = objectId(
+    child(statements, contriId, PID.dataCollection)
+  );
   const { items: dcItems, notes: dcNotes } = mapDataCollectionMethods(
     statements,
     dataCollectionId
@@ -360,8 +382,12 @@ export function mapPaperStatementsToAnswers(
   const descriptiveStatsId = objectId(
     child(statements, analysisId, PID.descriptiveStats)
   );
-  const freqId = objectId(child(statements, descriptiveStatsId, PID.freqMeasures));
-  const centralId = objectId(child(statements, descriptiveStatsId, PID.centralMeasures));
+  const freqId = objectId(
+    child(statements, descriptiveStatsId, PID.freqMeasures)
+  );
+  const centralId = objectId(
+    child(statements, descriptiveStatsId, PID.centralMeasures)
+  );
   const dispersionId = objectId(
     child(statements, descriptiveStatsId, PID.dispersionMeasures)
   );
@@ -385,7 +411,9 @@ export function mapPaperStatementsToAnswers(
 
   const threatsId = objectId(child(statements, contriId, PID.threats));
   const threatsReported = Object.entries(THREAT_PROPERTY_TO_OPTION)
-    .filter(([propertyId]) => isTrue(label(child(statements, threatsId, propertyId))))
+    .filter(([propertyId]) =>
+      isTrue(label(child(statements, threatsId, propertyId)))
+    )
     .map(([, option]) => option);
 
   const answers: Record<string, unknown> = {
@@ -396,8 +424,12 @@ export function mapPaperStatementsToAnswers(
     research_paradigm: paradigm ?? '',
 
     research_questions_list: rqItems,
-    answer_highlighted: yesNo(isTrue(label(child(statements, answerId, PID.rqHighlighted)))),
-    answer_hidden: yesNo(isTrue(label(child(statements, answerId, PID.rqHidden)))),
+    answer_highlighted: yesNo(
+      isTrue(label(child(statements, answerId, PID.rqHighlighted)))
+    ),
+    answer_hidden: yesNo(
+      isTrue(label(child(statements, answerId, PID.rqHidden)))
+    ),
 
     data_collection_methods: dcItems,
     research_data: {
@@ -409,18 +441,34 @@ export function mapPaperStatementsToAnswers(
     descriptive_stats: {
       descriptive_stats_used: yesNo(!!descriptiveStatsId),
       measures_frequency: [
-        ...(isTrue(label(child(statements, freqId, PID.freqCount))) ? ['count'] : []),
-        ...(isTrue(label(child(statements, freqId, PID.freqPercent))) ? ['percent'] : []),
+        ...(isTrue(label(child(statements, freqId, PID.freqCount)))
+          ? ['count']
+          : []),
+        ...(isTrue(label(child(statements, freqId, PID.freqPercent)))
+          ? ['percent']
+          : []),
       ],
       measures_central: [
-        ...(isTrue(label(child(statements, centralId, PID.centralMean))) ? ['mean'] : []),
-        ...(isTrue(label(child(statements, centralId, PID.centralMedian))) ? ['median'] : []),
-        ...(isTrue(label(child(statements, centralId, PID.centralMode))) ? ['mode'] : []),
-        ...(isTrue(label(child(statements, centralId, PID.centralMin))) ? ['minimum'] : []),
-        ...(isTrue(label(child(statements, centralId, PID.centralMax))) ? ['maximum'] : []),
+        ...(isTrue(label(child(statements, centralId, PID.centralMean)))
+          ? ['mean']
+          : []),
+        ...(isTrue(label(child(statements, centralId, PID.centralMedian)))
+          ? ['median']
+          : []),
+        ...(isTrue(label(child(statements, centralId, PID.centralMode)))
+          ? ['mode']
+          : []),
+        ...(isTrue(label(child(statements, centralId, PID.centralMin)))
+          ? ['minimum']
+          : []),
+        ...(isTrue(label(child(statements, centralId, PID.centralMax)))
+          ? ['maximum']
+          : []),
       ],
       measures_dispersion: [
-        ...(isTrue(label(child(statements, dispersionId, PID.dispRange))) ? ['range'] : []),
+        ...(isTrue(label(child(statements, dispersionId, PID.dispRange)))
+          ? ['range']
+          : []),
         ...(isTrue(label(child(statements, dispersionId, PID.dispVariance)))
           ? ['variance']
           : []),
@@ -443,7 +491,9 @@ export function mapPaperStatementsToAnswers(
     },
     machine_learning: {
       ml_used: yesNo(!!mlId),
-      ml_algorithms: distinctRealLabels(children(statements, mlId, PID.mlAlgorithm)),
+      ml_algorithms: distinctRealLabels(
+        children(statements, mlId, PID.mlAlgorithm)
+      ),
       ml_metrics: [
         ...(isTrue(label(child(statements, mlMetricsId, PID.mlAccuracy)))
           ? ['accuracy']
@@ -451,7 +501,9 @@ export function mapPaperStatementsToAnswers(
         ...(isTrue(label(child(statements, mlMetricsId, PID.mlPrecision)))
           ? ['precision']
           : []),
-        ...(isTrue(label(child(statements, mlMetricsId, PID.mlRecall))) ? ['recall'] : []),
+        ...(isTrue(label(child(statements, mlMetricsId, PID.mlRecall)))
+          ? ['recall']
+          : []),
         ...(isTrue(label(child(statements, mlMetricsId, PID.mlFscore)))
           ? ['f-score']
           : []),
@@ -469,7 +521,9 @@ export function mapPaperStatementsToAnswers(
   };
 
   const paper: MappedPaper = {
-    title: isRealValue(paperStmt.subject.label) ? paperStmt.subject.label! : 'Untitled paper',
+    title: isRealValue(paperStmt.subject.label)
+      ? paperStmt.subject.label!
+      : 'Untitled paper',
     doi: (answers.doi as string) || undefined,
     authors: authors || undefined,
     year: (() => {
