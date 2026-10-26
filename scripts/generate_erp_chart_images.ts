@@ -53,10 +53,7 @@ const MULTI_COLORS = [
 /** Pull a named query body from SPARQL_QUERIES.ts without evaluating Vite env. */
 function loadNamedSparql(uid: string): string | undefined {
   const src = readFileSync(resolve(ROOT, 'src/api/SPARQL_QUERIES.ts'), 'utf8');
-  const re = new RegExp(
-    `${uid}:\\s*\`([\\s\\S]*?)\`,\\s*\\n`,
-    'm'
-  );
+  const re = new RegExp(`${uid}:\\s*\`([\\s\\S]*?)\`,\\s*\\n`, 'm');
   const m = src.match(re);
   return m?.[1];
 }
@@ -120,7 +117,9 @@ async function fetchSPARQL(query: string, attempt = 1): Promise<BindingRow[]> {
   } catch (err) {
     if (attempt >= 5) throw err;
     const wait = attempt * 2000;
-    console.warn(`  retry ${attempt}/5 in ${wait}ms: ${(err as Error).message}`);
+    console.warn(
+      `  retry ${attempt}/5 in ${wait}ms: ${(err as Error).message}`
+    );
     await sleep(wait);
     return fetchSPARQL(query, attempt + 1);
   }
@@ -131,14 +130,20 @@ function coerceRows(rows: BindingRow[]): Record<string, unknown>[] {
   // on method fields. Only coerce year (used numerically almost everywhere).
   return rows.map((row) => {
     const out: Record<string, unknown> = { ...row };
-    if (row.year != null && row.year !== '' && !Number.isNaN(Number(row.year))) {
+    if (
+      row.year != null &&
+      row.year !== '' &&
+      !Number.isNaN(Number(row.year))
+    ) {
       out.year = Number(row.year);
     }
     return out;
   });
 }
 
-function resolveSparql2(q: Query & { sparqlQuery2?: string }): string | undefined {
+function resolveSparql2(
+  q: Query & { sparqlQuery2?: string }
+): string | undefined {
   if (q.sparqlQuery2) return q.sparqlQuery2;
   const key = q.uid_2 || q.uid_2_merge;
   return key ? loadNamedSparql(key) : undefined;
@@ -152,7 +157,9 @@ function isHorizontal(settings: ChartSetting): boolean {
 
 function categoryKey(settings: ChartSetting, horizontal: boolean): string {
   if (horizontal) {
-    return settings.yAxis?.[0]?.dataKey || settings.xAxis?.[0]?.dataKey || 'label';
+    return (
+      settings.yAxis?.[0]?.dataKey || settings.xAxis?.[0]?.dataKey || 'label'
+    );
   }
   return settings.xAxis?.[0]?.dataKey || 'year';
 }
@@ -174,7 +181,9 @@ function buildSeries(
   }));
 }
 
-function stripItems(dataset: Record<string, unknown>[]): Record<string, unknown>[] {
+function stripItems(
+  dataset: Record<string, unknown>[]
+): Record<string, unknown>[] {
   return dataset.map((row) => {
     const { itemsInGroup: _i, ...rest } = row;
     return rest;
@@ -217,7 +226,8 @@ function toChartSpec(
     color:
       series.length === 1
         ? ACCENT
-        : (settings.colors?.[idx] as string) || MULTI_COLORS[idx % MULTI_COLORS.length],
+        : (settings.colors?.[idx] as string) ||
+          MULTI_COLORS[idx % MULTI_COLORS.length],
   }));
 
   // Drop series that are all zeros to reduce clutter (optional for Q14 etc.)
@@ -251,7 +261,10 @@ function processPrimary(
   data1: Record<string, unknown>[],
   data2: Record<string, unknown>[]
 ): Record<string, unknown>[] {
-  if (codeQ.uid_2_merge && typeof codeQ.dataProcessingFunction2 === 'function') {
+  if (
+    codeQ.uid_2_merge &&
+    typeof codeQ.dataProcessingFunction2 === 'function'
+  ) {
     return codeQ.dataProcessingFunction2(data1, data2) ?? [];
   }
   if (typeof codeQ.dataProcessingFunction === 'function') {
@@ -264,7 +277,10 @@ function processSecondary(
   codeQ: Query,
   data2: Record<string, unknown>[]
 ): Record<string, unknown>[] {
-  if (typeof codeQ.dataProcessingFunction2 === 'function' && !codeQ.uid_2_merge) {
+  if (
+    typeof codeQ.dataProcessingFunction2 === 'function' &&
+    !codeQ.uid_2_merge
+  ) {
     return codeQ.dataProcessingFunction2(data2) ?? [];
   }
   return [];
@@ -363,7 +379,9 @@ function galleryHtml(specs: ChartSpec[]): string {
 async function main() {
   mkdirSync(OUT_DIR, { recursive: true });
   const backup = JSON.parse(readFileSync(BACKUP, 'utf8'));
-  const template = backup.Templates.find((t: { id: string }) => t.id === 'R186491');
+  const template = backup.Templates.find(
+    (t: { id: string }) => t.id === 'R186491'
+  );
   if (!template) throw new Error('R186491 missing from backup');
 
   const fbQuestions = [...template.Questions].sort(
@@ -380,7 +398,9 @@ async function main() {
     if (cache.has(key)) return cache.get(key)!;
     const diskPath = resolve(rawCacheDir, `${key}.json`);
     try {
-      const fromDisk = JSON.parse(readFileSync(diskPath, 'utf8')) as BindingRow[];
+      const fromDisk = JSON.parse(
+        readFileSync(diskPath, 'utf8')
+      ) as BindingRow[];
       const rows = coerceRows(fromDisk);
       cache.set(key, rows);
       console.log(`  cache hit ${key}: ${rows.length} rows`);
@@ -412,7 +432,8 @@ async function main() {
       dataProcessingFunction: codeQ.dataProcessingFunction,
       dataProcessingFunction2: codeQ.dataProcessingFunction2,
       uid_2_merge: fb.uid_2_merge || codeQ.uid_2_merge,
-      sparqlQuery: fb.sparqlQuery || loadNamedSparql(fb.uid) || loadNamedSparql(codeQ.uid),
+      sparqlQuery:
+        fb.sparqlQuery || loadNamedSparql(fb.uid) || loadNamedSparql(codeQ.uid),
       sparqlQuery2:
         fb.sparqlQuery2 ||
         (fb.uid_2 ? loadNamedSparql(fb.uid_2) : undefined) ||
@@ -459,9 +480,8 @@ async function main() {
         const fallback =
           dataset.length === 0 &&
           typeof merged.dataProcessingFunction2 === 'function'
-            ? (merged.dataProcessingFunction2(
-                data2.length ? data2 : data1
-              ) ?? [])
+            ? (merged.dataProcessingFunction2(data2.length ? data2 : data1) ??
+              [])
             : dataset;
         const spec = toChartSpec(
           `q${fb.id}-secondary`,

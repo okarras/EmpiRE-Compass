@@ -49,8 +49,14 @@ describe('mapPaperStatementsToAnswers', () => {
     });
 
     expect(answers.analysis_methods).toEqual(['descriptive statistics']);
-    const descriptiveStats = answers.descriptive_stats as Record<string, unknown>;
-    const inferentialStats = answers.inferential_stats as Record<string, unknown>;
+    const descriptiveStats = answers.descriptive_stats as Record<
+      string,
+      unknown
+    >;
+    const inferentialStats = answers.inferential_stats as Record<
+      string,
+      unknown
+    >;
     const machineLearning = answers.machine_learning as Record<string, unknown>;
     expect(descriptiveStats.descriptive_stats_used).toBe('yes');
     expect(descriptiveStats.measures_frequency).toEqual(['count']);
@@ -69,33 +75,124 @@ describe('mapPaperStatementsToAnswers', () => {
 
   it('maps multiple research questions and data collection methods as distinct resources without mixing them up', () => {
     const statements: ORKGStatement[] = [
-      { subject: { id: 'PAPER', _class: 'resource', label: 'Multi-item paper' }, predicate: { id: 'P31' }, object: { id: 'CONTRI', _class: 'resource' } },
+      {
+        subject: { id: 'PAPER', _class: 'resource', label: 'Multi-item paper' },
+        predicate: { id: 'P31' },
+        object: { id: 'CONTRI', _class: 'resource' },
+      },
 
-      { subject: { id: 'CONTRI', _class: 'resource' }, predicate: { id: 'P37330' }, object: { id: 'RQ1', _class: 'resource' } },
-      { subject: { id: 'RQ1', _class: 'resource' }, predicate: { id: 'P44139' }, object: { id: 'L1', _class: 'literal', label: 'What is RQ1?' } },
-      { subject: { id: 'RQ1', _class: 'resource' }, predicate: { id: 'P41928' }, object: { id: 'L2', _class: 'literal', label: 'exploratory' } },
-      { subject: { id: 'RQ1', _class: 'resource' }, predicate: { id: 'P55038' }, object: { id: 'L3', _class: 'literal', label: 'false' } },
-      { subject: { id: 'RQ1', _class: 'resource' }, predicate: { id: 'P55039' }, object: { id: 'L4', _class: 'literal', label: 'true' } },
-      { subject: { id: 'RQ1', _class: 'resource' }, predicate: { id: 'P57000' }, object: { id: 'SUBQ1', _class: 'resource' } },
-      { subject: { id: 'SUBQ1', _class: 'resource' }, predicate: { id: 'P44139' }, object: { id: 'L5', _class: 'literal', label: 'What is sub-RQ1?' } },
-      { subject: { id: 'SUBQ1', _class: 'resource' }, predicate: { id: 'P41928' }, object: { id: 'L6', _class: 'literal', label: 'descriptive' } },
+      {
+        subject: { id: 'CONTRI', _class: 'resource' },
+        predicate: { id: 'P37330' },
+        object: { id: 'RQ1', _class: 'resource' },
+      },
+      {
+        subject: { id: 'RQ1', _class: 'resource' },
+        predicate: { id: 'P44139' },
+        object: { id: 'L1', _class: 'literal', label: 'What is RQ1?' },
+      },
+      {
+        subject: { id: 'RQ1', _class: 'resource' },
+        predicate: { id: 'P41928' },
+        object: { id: 'L2', _class: 'literal', label: 'exploratory' },
+      },
+      {
+        subject: { id: 'RQ1', _class: 'resource' },
+        predicate: { id: 'P55038' },
+        object: { id: 'L3', _class: 'literal', label: 'false' },
+      },
+      {
+        subject: { id: 'RQ1', _class: 'resource' },
+        predicate: { id: 'P55039' },
+        object: { id: 'L4', _class: 'literal', label: 'true' },
+      },
+      {
+        subject: { id: 'RQ1', _class: 'resource' },
+        predicate: { id: 'P57000' },
+        object: { id: 'SUBQ1', _class: 'resource' },
+      },
+      {
+        subject: { id: 'SUBQ1', _class: 'resource' },
+        predicate: { id: 'P44139' },
+        object: { id: 'L5', _class: 'literal', label: 'What is sub-RQ1?' },
+      },
+      {
+        subject: { id: 'SUBQ1', _class: 'resource' },
+        predicate: { id: 'P41928' },
+        object: { id: 'L6', _class: 'literal', label: 'descriptive' },
+      },
 
-      { subject: { id: 'CONTRI', _class: 'resource' }, predicate: { id: 'P37330' }, object: { id: 'RQ2', _class: 'resource' } },
-      { subject: { id: 'RQ2', _class: 'resource' }, predicate: { id: 'P44139' }, object: { id: 'L7', _class: 'literal', label: 'What is RQ2?' } },
-      { subject: { id: 'RQ2', _class: 'resource' }, predicate: { id: 'P41928' }, object: { id: 'L8', _class: 'literal', label: 'comparative' } },
-      { subject: { id: 'RQ2', _class: 'resource' }, predicate: { id: 'P55038' }, object: { id: 'L9', _class: 'literal', label: 'true' } },
-      { subject: { id: 'RQ2', _class: 'resource' }, predicate: { id: 'P55039' }, object: { id: 'L10', _class: 'literal', label: 'false' } },
+      {
+        subject: { id: 'CONTRI', _class: 'resource' },
+        predicate: { id: 'P37330' },
+        object: { id: 'RQ2', _class: 'resource' },
+      },
+      {
+        subject: { id: 'RQ2', _class: 'resource' },
+        predicate: { id: 'P44139' },
+        object: { id: 'L7', _class: 'literal', label: 'What is RQ2?' },
+      },
+      {
+        subject: { id: 'RQ2', _class: 'resource' },
+        predicate: { id: 'P41928' },
+        object: { id: 'L8', _class: 'literal', label: 'comparative' },
+      },
+      {
+        subject: { id: 'RQ2', _class: 'resource' },
+        predicate: { id: 'P55038' },
+        object: { id: 'L9', _class: 'literal', label: 'true' },
+      },
+      {
+        subject: { id: 'RQ2', _class: 'resource' },
+        predicate: { id: 'P55039' },
+        object: { id: 'L10', _class: 'literal', label: 'false' },
+      },
 
-      { subject: { id: 'CONTRI', _class: 'resource' }, predicate: { id: 'P56008' }, object: { id: 'DC', _class: 'resource' } },
-      { subject: { id: 'DC', _class: 'resource' }, predicate: { id: 'P1005' }, object: { id: 'M1', _class: 'resource' } },
-      { subject: { id: 'M1', _class: 'resource' }, predicate: { id: 'P145012' }, object: { id: 'L11', _class: 'literal', label: 'survey of practitioners' } },
-      { subject: { id: 'M1', _class: 'resource' }, predicate: { id: 'P94003' }, object: { id: 'L12', _class: 'literal', label: 'survey' } },
-      { subject: { id: 'DC', _class: 'resource' }, predicate: { id: 'P1005' }, object: { id: 'M2', _class: 'resource' } },
-      { subject: { id: 'M2', _class: 'resource' }, predicate: { id: 'P145012' }, object: { id: 'L13', _class: 'literal', label: 'follow-up interviews' } },
-      { subject: { id: 'M2', _class: 'resource' }, predicate: { id: 'P94003' }, object: { id: 'L14', _class: 'literal', label: 'interview' } },
+      {
+        subject: { id: 'CONTRI', _class: 'resource' },
+        predicate: { id: 'P56008' },
+        object: { id: 'DC', _class: 'resource' },
+      },
+      {
+        subject: { id: 'DC', _class: 'resource' },
+        predicate: { id: 'P1005' },
+        object: { id: 'M1', _class: 'resource' },
+      },
+      {
+        subject: { id: 'M1', _class: 'resource' },
+        predicate: { id: 'P145012' },
+        object: {
+          id: 'L11',
+          _class: 'literal',
+          label: 'survey of practitioners',
+        },
+      },
+      {
+        subject: { id: 'M1', _class: 'resource' },
+        predicate: { id: 'P94003' },
+        object: { id: 'L12', _class: 'literal', label: 'survey' },
+      },
+      {
+        subject: { id: 'DC', _class: 'resource' },
+        predicate: { id: 'P1005' },
+        object: { id: 'M2', _class: 'resource' },
+      },
+      {
+        subject: { id: 'M2', _class: 'resource' },
+        predicate: { id: 'P145012' },
+        object: { id: 'L13', _class: 'literal', label: 'follow-up interviews' },
+      },
+      {
+        subject: { id: 'M2', _class: 'resource' },
+        predicate: { id: 'P94003' },
+        object: { id: 'L14', _class: 'literal', label: 'interview' },
+      },
     ];
 
-    const { answers, unmappedNotes } = mapPaperStatementsToAnswers(statements, 'PAPER')!;
+    const { answers, unmappedNotes } = mapPaperStatementsToAnswers(
+      statements,
+      'PAPER'
+    )!;
 
     expect(answers.research_questions_list).toEqual([
       {
@@ -103,7 +200,9 @@ describe('mapPaperStatementsToAnswers', () => {
         rq_highlighted: 'yes',
         rq_hidden: 'no',
         rq_type: 'exploratory',
-        subquestions: [{ subq_text: 'What is sub-RQ1?', subq_type: 'descriptive' }],
+        subquestions: [
+          { subq_text: 'What is sub-RQ1?', subq_type: 'descriptive' },
+        ],
       },
       {
         rq_text: 'What is RQ2?',
@@ -123,11 +222,22 @@ describe('mapPaperStatementsToAnswers', () => {
 
   it('flags an unrecognized label instead of guessing', () => {
     const statements: ORKGStatement[] = [
-      { subject: { id: 'PAPER', _class: 'resource', label: 'A paper' }, predicate: { id: 'P31' }, object: { id: 'CONTRI', _class: 'resource' } },
-      { subject: { id: 'CONTRI', _class: 'resource' }, predicate: { id: 'P57003' }, object: { id: 'L1', _class: 'literal', label: 'quasi-experimental' } },
+      {
+        subject: { id: 'PAPER', _class: 'resource', label: 'A paper' },
+        predicate: { id: 'P31' },
+        object: { id: 'CONTRI', _class: 'resource' },
+      },
+      {
+        subject: { id: 'CONTRI', _class: 'resource' },
+        predicate: { id: 'P57003' },
+        object: { id: 'L1', _class: 'literal', label: 'quasi-experimental' },
+      },
     ];
 
-    const { answers, unmappedNotes } = mapPaperStatementsToAnswers(statements, 'PAPER')!;
+    const { answers, unmappedNotes } = mapPaperStatementsToAnswers(
+      statements,
+      'PAPER'
+    )!;
 
     expect(answers.research_paradigm).toBe('');
     expect(unmappedNotes).toContain(

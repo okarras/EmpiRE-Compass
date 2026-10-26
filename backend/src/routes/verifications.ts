@@ -221,7 +221,9 @@ router.get('/:token', async (req, res) => {
   try {
     const doc = await findByToken(req.params.token);
     if (!doc) {
-      return res.status(404).json({ error: 'This verification link was not found.' });
+      return res
+        .status(404)
+        .json({ error: 'This verification link was not found.' });
     }
 
     const verification = doc.data() as PaperVerification;
@@ -279,7 +281,9 @@ router.post('/:token/submit', async (req, res) => {
   try {
     const doc = await findByToken(req.params.token);
     if (!doc) {
-      return res.status(404).json({ error: 'This verification link was not found.' });
+      return res
+        .status(404)
+        .json({ error: 'This verification link was not found.' });
     }
 
     const verification = doc.data() as PaperVerification;
