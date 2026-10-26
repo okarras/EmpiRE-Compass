@@ -40,6 +40,7 @@ export interface GenerateTextRequest {
   temperature?: number;
   maxTokens?: number;
   systemContext?: string;
+  responseFormat?: 'text' | 'json';
 }
 
 export interface GenerateTextResponse {
@@ -231,12 +232,17 @@ export class AIService {
         temperature?: number;
         maxOutputTokens?: number;
         system?: string;
+        responseFormat?: 'text' | 'json';
       } = {
         model,
         prompt: request.prompt,
         temperature: request.temperature ?? 0.3,
         system: request.systemContext,
       };
+
+      if (request.responseFormat) {
+        generateOptions.responseFormat = request.responseFormat;
+      }
 
       // The AI SDK v5 option is `maxOutputTokens`; the old `maxTokens` name was
       // accepted by the object literal but ignored by the SDK, so generation was

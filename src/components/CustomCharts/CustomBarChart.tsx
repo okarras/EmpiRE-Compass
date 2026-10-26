@@ -34,6 +34,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     isSubChart = false,
     normalizationType = 'per-year',
   } = props;
+  const { hideDetailedChartLegend, ...restChartSetting } = chartSetting;
   const hasMultipleSubCharts = chartSetting.series.length > 1;
 
   const [papersDialog, setPapersDialog] = useState<{
@@ -184,7 +185,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       )}
       <BarChart
         dataset={computedDataset}
-        {...chartSetting}
+        {...restChartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
         series={mappedSeries}
