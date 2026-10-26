@@ -22,7 +22,7 @@ import {
   type ExportChartMode,
   type ExportSections,
   type QuestionHtmlExport,
-} from '../utils/exportQuestion';
+} from './ExportQuestion';
 import { toast } from 'react-hot-toast';
 
 //* Dashboard component that displays the questions for a given template

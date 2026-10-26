@@ -42,7 +42,7 @@ import {
   exportDynamicQuestionDocument,
   exportDynamicQuestionCharts,
   supportsDynamicSvgExport,
-} from '../utils/exportQuestion';
+} from './ExportQuestion';
 import { toast } from 'react-hot-toast';
 
 const DynamicAIQuestion = () => {
