@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Query } from '../constants/queries_chart_info';
 import {
   Box,
@@ -13,7 +14,11 @@ import {
   FormControlLabel,
   Switch,
   Chip,
+  Button,
 } from '@mui/material';
+import DownloadIcon from '@mui/icons-material/Download';
+import QuestionExportDialog from './QuestionExportDialog';
+import HeaderExportAction from './HeaderExportAction';
 
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
@@ -27,15 +32,37 @@ import { useQuestionOverrides } from '../hooks/useQuestionOverrides';
 import EditableSection from './EditableSection';
 import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
+import {
+  exportQuestion,
+  serializeChartSvg,
+  getExportChartModes,
+  type ExportChartGroup,
+  type ExportChartMode,
+  type ExportSections,
+  type ExportFormat,
+  type QuestionHtmlExport,
+} from './ExportQuestion';
+import { toast } from 'react-hot-toast';
 
 interface QuestionProps {
   query: Query;
+  reportExport?: {
+    sections: ExportSections;
+    format?: ExportFormat;
+    chartMode?: ExportChartMode;
+    onComplete: (question: QuestionHtmlExport) => void;
+    onError: (error: unknown) => void;
+  };
 }
 
-const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
+const Question: React.FC<QuestionProps> = ({
+  query: initialQuery,
+  reportExport,
+}) => {
   // Use overrides hook
   const {
     mergedQuery: query,
+    loading: loadingOverrides,
     isAdmin,
     isEditMode,
     setIsEditMode,
@@ -48,8 +75,21 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     handleRestore,
   } = useQuestionOverrides({ query: initialQuery });
 
+  const exportStarted = useRef(false);
+  const chartRoot = useRef<HTMLDivElement>(null);
+
   // Tabs state
   const [tab, setTab] = useState(0);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportingCharts, setExportingCharts] = useState<ExportFormat | null>(
+    null
+  );
+  const textOnlyReport = reportExport?.format === 'txt';
+  const mainChartsOnly =
+    reportExport?.format === 'pdf' ||
+    reportExport?.format === 'docx' ||
+    exportingCharts === 'pdf' ||
+    exportingCharts === 'docx';
   const { setContext } = useAIAssistantContext();
   const { templateId } = useParams();
   const backupVersion = useBackupChange(); // Listen for backup changes
@@ -72,10 +112,10 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
 
   // Update AI Assistant context when data changes
   useEffect(() => {
-    if (!loading1 && !error1) {
+    if (!reportExport && !loading1 && !error1) {
       setContext(query, dataCollection);
     }
-  }, [query, dataCollection, loading1, error1, setContext]);
+  }, [query, dataCollection, loading1, error1, setContext, reportExport]);
 
   useEffect(() => {
     setCategorizeByVenue(
@@ -123,6 +163,11 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     setDataCollection([]);
     setDataAnalysis([]);
 
+    if (textOnlyReport) {
+      setLoading1(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading1(true);
@@ -143,7 +188,7 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       }
     };
     fetchData();
-  }, [query.uid, templateId, backupVersion, query.sparqlQuery]); // Re-fetch when backup changes
+  }, [query.uid, templateId, backupVersion, query.sparqlQuery, textOnlyReport]); // Re-fetch when backup changes
 
   // Fetch secondary data (uid_2) if it exists
   useEffect(() => {
@@ -152,23 +197,9 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     setError2(null);
     setLoading2(false);
 
-    if (query?.uid_2 && query.sparqlQuery2) {
-      const fetchData = async () => {
-        try {
-          setLoading2(true);
-          setError2(null);
+    if (textOnlyReport) return;
 
-          const data = await fetchSPARQLData(query.sparqlQuery2!);
-          setDataAnalysis(data);
-        } catch (err) {
-          setError2('Failed to load secondary data');
-          console.error('Error fetching secondary data:', err);
-        } finally {
-          setLoading2(false);
-        }
-      };
-      fetchData();
-    } else if (query?.uid_2_merge && query.sparqlQuery2) {
+    if ((query.uid_2 || query.uid_2_merge) && query.sparqlQuery2) {
       const fetchData = async () => {
         try {
           setLoading2(true);
@@ -192,9 +223,11 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     templateId,
     backupVersion,
     query.sparqlQuery2,
+    textOnlyReport,
   ]); // Re-fetch when backup changes
 
-  const getProcessedChartData = () => {
+  const processedChartDataCollection = useMemo(() => {
+    if (textOnlyReport) return [];
     if (query.uid_2_merge) {
       if (typeof query.dataProcessingFunction2 === 'function') {
         return (
@@ -208,7 +241,17 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
       return query.dataProcessingFunction(dataCollection ?? []) ?? [];
     }
     return [];
-  };
+  }, [query, dataCollection, dataAnalysis, textOnlyReport]);
+
+  const processedChartDataAnalysis = useMemo(
+    () =>
+      !textOnlyReport &&
+      query.uid_2 &&
+      typeof query.dataProcessingFunction2 === 'function'
+        ? (query.dataProcessingFunction2(dataAnalysis ?? []) ?? [])
+        : [],
+    [query, dataAnalysis, textOnlyReport]
+  );
 
   const getDataInterpretation = (tabName: string): string => {
     const dataInterpretation = query.dataAnalysisInformation.dataInterpretation;
@@ -258,16 +301,370 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
     </Paper>
   );
 
-  if (loading1) {
-    return renderLoadingState();
-  }
+  const getCurrentChartSvg = (source?: SVGSVGElement): string | null => {
+    const queryId = tab === 1 ? query.uid_2 : query.uid;
 
-  if (error1) {
-    return renderErrorState(error1);
-  }
+    const svg =
+      source ??
+      chartRoot.current
+        ?.querySelector(`[id="chart-${queryId}"]`)
+        ?.querySelector('svg');
+
+    if (!svg) {
+      toast.error('No chart found.');
+      return null;
+    }
+
+    return serializeChartSvg(svg);
+  };
+
+  const getCurrentChartsHtml = (
+    tabIndex = tab,
+    mainOnly = false
+  ): string | null => {
+    const queryId = tabIndex === 1 ? query.uid_2 : query.uid;
+    const svgs = chartRoot.current
+      ?.querySelector(`[id="question-charts-${queryId}"]`)
+      ?.querySelectorAll<SVGSVGElement>('[id^="chart-"] svg');
+
+    if (!svgs?.length) {
+      toast.error('No charts found.');
+      return null;
+    }
+
+    return Array.from(svgs)
+      .slice(0, mainOnly ? 1 : undefined)
+      .map((svg, index) => {
+        const heading = document.createElement('h3');
+        heading.textContent =
+          svg
+            .closest('[id^="chart-"]')
+            ?.querySelector('h4, h6')
+            ?.textContent?.trim() ?? '';
+
+        const content = getCurrentChartSvg(svg);
+        if (!content) {
+          throw new Error('Chart could not be copied.');
+        }
+
+        return `
+  <figure
+    class="report-chart"
+    data-chart-kind="${index === 0 ? 'main' : 'detail'}"
+  >
+    ${heading.textContent ? heading.outerHTML : ''}
+    ${content}
+  </figure>
+`;
+      })
+      .join('\n');
+  };
+
+  const handleExport = async (
+    sections: ExportSections,
+    format: ExportFormat
+  ) => {
+    if (exportingCharts) return;
+    const originalNormalized = normalized;
+    const originalTab = tab;
+
+    try {
+      if (!templateId) throw new Error('No theme selected.');
+      let chartSvg: string | undefined;
+      const chartGroups: ExportChartGroup[] = [];
+
+      if (format !== 'txt' && sections.charts) {
+        const imageExport = format === 'svg' || format === 'png';
+        const allTabsExport = imageExport || format === 'html';
+        const tabs = allTabsExport
+          ? [0, ...(query.uid_2 ? [1] : [])]
+          : [originalTab];
+
+        for (const tabIndex of tabs) {
+          const chartSettings =
+            tabIndex === 1 ? query.chartSettings2 : query.chartSettings;
+
+          if (allTabsExport && !chartSettings) continue;
+          if (
+            allTabsExport &&
+            (tabIndex === 1 ? loading2 || error2 : loading1 || error1)
+          ) {
+            throw new Error('Chart data is not ready for all tabs.');
+          }
+
+          const modes = allTabsExport
+            ? getExportChartModes(
+                query,
+                tabIndex,
+                imageExport ? 'both' : (reportExport?.chartMode ?? 'both'),
+                imageExport ? false : originalNormalized
+              )
+            : [originalNormalized];
+
+          for (const relative of modes) {
+            flushSync(() => {
+              setExportingCharts(format);
+              setTab(tabIndex);
+              setNormalized(relative);
+            });
+
+            // A newly visible tab first reports its size through ResizeObserver.
+            // React Spring applies the final bar geometry in subsequent frames.
+            let previousGeometry = '';
+            let stableFrames = 0;
+            for (let frame = 0; frame < 30; frame += 1) {
+              await new Promise<void>((resolve) => {
+                requestAnimationFrame(() => resolve());
+              });
+              const queryId = tabIndex === 1 ? query.uid_2 : query.uid;
+              const bars = chartRoot.current?.querySelectorAll<SVGRectElement>(
+                `[id="question-charts-${queryId}"] .MuiBarElement-root`
+              );
+              const sizes = Array.from(bars ?? [], (bar) => {
+                const style = getComputedStyle(bar);
+                return [style.width, style.height, style.transform];
+              });
+              const geometry = JSON.stringify(sizes);
+              stableFrames =
+                geometry === previousGeometry ? stableFrames + 1 : 0;
+              previousGeometry = geometry;
+              if (
+                frame >= 2 &&
+                stableFrames >= 2 &&
+                (!sizes.length ||
+                  sizes.some(
+                    ([width, height]) =>
+                      Number.parseFloat(width) > 0 &&
+                      Number.parseFloat(height) > 0
+                  ))
+              )
+                break;
+            }
+
+            const charts = getCurrentChartsHtml(
+              tabIndex,
+              format === 'pdf' ||
+                format === 'docx' ||
+                reportExport?.format === 'pdf' ||
+                reportExport?.format === 'docx'
+            );
+            if (charts === null) throw new Error('Chart capture failed.');
+
+            if (allTabsExport) {
+              chartGroups.push({
+                tabIndex,
+                normalized: relative,
+                html: charts,
+              });
+            } else {
+              chartSvg = charts;
+            }
+          }
+        }
+
+        flushSync(() => {
+          setTab(originalTab);
+          setNormalized(originalNormalized);
+        });
+      }
+
+      if (reportExport) {
+        reportExport.onComplete({ query, chartGroups });
+      } else {
+        await exportQuestion(
+          query,
+          templateId,
+          tab,
+          sections,
+          format,
+          originalNormalized,
+          chartSvg,
+          chartGroups
+        );
+      }
+      setExportOpen(false);
+    } catch (error) {
+      console.error('Question export failed:', error);
+      if (reportExport) reportExport.onError(error);
+      else toast.error('Export failed. Please try again.');
+    } finally {
+      setTab(originalTab);
+      setNormalized(originalNormalized);
+      setExportingCharts(null);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !reportExport ||
+      exportStarted.current ||
+      loadingOverrides ||
+      loading1 ||
+      loading2
+    )
+      return;
+    exportStarted.current = true;
+    if (reportExport.sections.charts && (error1 || error2)) {
+      reportExport.onError(
+        new Error(error1 || error2 || 'Chart data could not be loaded.')
+      );
+    } else {
+      requestAnimationFrame(() => {
+        void handleExport(
+          reportExport.sections,
+          reportExport.format === 'svg' || reportExport.format === 'png'
+            ? reportExport.format
+            : textOnlyReport
+              ? 'txt'
+              : 'html'
+        );
+      });
+    }
+  });
+
+  const renderQuestionTab = (index: 0 | 1) => {
+    const collection = index === 0;
+    const data = collection ? dataCollection : dataAnalysis;
+    const chartSettings = collection
+      ? query.chartSettings
+      : query.chartSettings2;
+    const type = collection ? 'dataCollection' : 'dataAnalysis';
+    const label = collection ? 'Data Collection' : 'Data Analysis';
+    const saveInterpretation = async (newContent: string) => {
+      await saveVersion(
+        'dataAnalysisInformation.dataInterpretation',
+        collection
+          ? [newContent, getDataInterpretation('dataAnalysis')]
+          : [getDataInterpretation('dataCollection'), newContent]
+      );
+    };
+
+    return (
+      <Box key={index} hidden={tab !== index}>
+        {!collection && loading2 ? (
+          renderLoadingState()
+        ) : !collection && error2 ? (
+          renderErrorState(error2)
+        ) : (
+          <>
+            {chartSettings ? (
+              <>
+                {collection && <Divider sx={{ my: 3 }} />}
+                <SectionSelector
+                  sectionType="chart"
+                  sectionTitle={
+                    collection ? 'Chart Visualization' : 'Data Analysis Chart'
+                  }
+                  query={query}
+                  data={data}
+                />
+                <QuestionChartView
+                  showAllDetailedCharts={
+                    Boolean(exportingCharts) && (!reportExport || tab === index)
+                  }
+                  query={query}
+                  normalized={normalized}
+                  setNormalized={setNormalized}
+                  categorizeByVenue={categorizeByVenue}
+                  setCategorizeByVenue={setCategorizeByVenue}
+                  showVenueCategorization={
+                    (collection
+                      ? hasVenueInCollectionData
+                      : hasVenueInAnalysisData) && query.venue !== false
+                  }
+                  queryId={collection ? query.uid : query.uid_2!}
+                  chartSettings={
+                    mainChartsOnly
+                      ? { ...chartSettings, hideDetailedCharts: true }
+                      : chartSettings
+                  }
+                  processedChartDataset={
+                    collection
+                      ? processedChartDataCollection
+                      : processedChartDataAnalysis
+                  }
+                  rawChartData={
+                    collection ? rawChartDataCollection : dataAnalysis
+                  }
+                  dataInterpretation={getDataInterpretation(type)}
+                  type={type}
+                  isEditMode={isEditMode}
+                  chartKey={collection ? 'chartSettings' : 'chartSettings2'}
+                  onSaveInterpretation={
+                    isEditMode ? saveInterpretation : undefined
+                  }
+                  onSaveChartSettings={
+                    isEditMode
+                      ? async (which, settings, desc) => {
+                          await saveChartSettings(which, settings, desc);
+                        }
+                      : undefined
+                  }
+                  onFetchOverrides={isEditMode ? fetchOverrides : undefined}
+                />
+                <Divider sx={{ my: 3 }} />
+              </>
+            ) : isEditMode ? (
+              <Box sx={{ my: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>
+                  Data Interpretation
+                </Typography>
+                <EditableSection
+                  isEditingInfo={isEditMode}
+                  content={getDataInterpretation(type)}
+                  sectionLabel={`${label} Interpretation`}
+                  onSave={saveInterpretation}
+                />
+              </Box>
+            ) : (
+              <QuestionInformation
+                information={getDataInterpretation(type)}
+                label="Data Interpretation"
+                tabIndex={tab}
+              />
+            )}
+            <SectionSelector
+              sectionType="data"
+              sectionTitle={label}
+              query={query}
+              data={data}
+            />
+            {!reportExport && (
+              <QuestionDataGridView
+                questionData={data}
+                gridOptions={query.gridOptions}
+              />
+            )}
+          </>
+        )}
+      </Box>
+    );
+  };
+
+  if (textOnlyReport || (reportExport && !reportExport.sections.charts))
+    return null;
+  if (loading1) return renderLoadingState();
+  if (error1 && !reportExport) return renderErrorState(error1);
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box ref={chartRoot} sx={{ width: '100%' }}>
+      {!reportExport && (
+        <HeaderExportAction targetId="question-title-export-action">
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => setExportOpen(true)}
+          >
+            Export
+          </Button>
+        </HeaderExportAction>
+      )}
+
+      <QuestionExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        onExport={templateId ? handleExport : undefined}
+      />
       {/* Admin Toolbar */}
       {isAdmin && (
         <Fade in={isAdmin}>
@@ -365,210 +762,8 @@ const Question: React.FC<QuestionProps> = ({ query: initialQuery }) => {
           onSave={saveVersion}
         />
 
-        {/* Data Collection View */}
-        <Box hidden={tab !== 0}>
-          {query.chartSettings ? (
-            <>
-              <Divider sx={{ my: 3 }} />
-              <SectionSelector
-                sectionType="chart"
-                sectionTitle="Chart Visualization"
-                query={query}
-                data={dataCollection}
-              />
-              <QuestionChartView
-                query={query}
-                normalized={normalized}
-                setNormalized={setNormalized}
-                categorizeByVenue={categorizeByVenue}
-                setCategorizeByVenue={setCategorizeByVenue}
-                showVenueCategorization={
-                  hasVenueInCollectionData && query.venue !== false
-                }
-                queryId={query.uid}
-                chartSettings={query.chartSettings}
-                processedChartDataset={getProcessedChartData()}
-                rawChartData={rawChartDataCollection}
-                dataInterpretation={getDataInterpretation('dataCollection')}
-                type="dataCollection"
-                isEditMode={isEditMode}
-                chartKey="chartSettings"
-                onSaveInterpretation={
-                  isEditMode
-                    ? async (newContent) => {
-                        await saveVersion(
-                          'dataAnalysisInformation.dataInterpretation',
-                          [newContent, getDataInterpretation('dataAnalysis')]
-                        );
-                      }
-                    : undefined
-                }
-                onSaveChartSettings={
-                  isEditMode
-                    ? async (which, settings, desc) => {
-                        await saveChartSettings(which, settings, desc);
-                      }
-                    : undefined
-                }
-                onFetchOverrides={isEditMode ? fetchOverrides : undefined}
-              />
-              <Divider sx={{ my: 3 }} />
-            </>
-          ) : (
-            <>
-              {isEditMode ? (
-                <Box sx={{ my: 2 }}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{ mb: 1, fontWeight: 600 }}
-                  >
-                    Data Interpretation
-                  </Typography>
-                  <EditableSection
-                    isEditingInfo={isEditMode}
-                    content={getDataInterpretation('dataCollection')}
-                    sectionLabel="Data Collection Interpretation"
-                    onSave={async (newContent) => {
-                      await saveVersion(
-                        'dataAnalysisInformation.dataInterpretation',
-                        [newContent, getDataInterpretation('dataAnalysis')]
-                      );
-                    }}
-                  />
-                </Box>
-              ) : (
-                <QuestionInformation
-                  information={getDataInterpretation('dataCollection')}
-                  label="Data Interpretation"
-                  tabIndex={tab}
-                />
-              )}
-            </>
-          )}
-          <SectionSelector
-            sectionType="data"
-            sectionTitle="Data Collection"
-            query={query}
-            data={dataCollection}
-          />
-          <QuestionDataGridView
-            questionData={dataCollection}
-            gridOptions={query.gridOptions}
-          />
-        </Box>
-
-        {/* Data Analysis View */}
-        {query.uid_2 && (
-          <Box hidden={tab !== 1}>
-            {loading2 ? (
-              renderLoadingState()
-            ) : error2 ? (
-              renderErrorState(error2)
-            ) : (
-              <>
-                {query.chartSettings2 ? (
-                  <>
-                    <SectionSelector
-                      sectionType="chart"
-                      sectionTitle="Data Analysis Chart"
-                      query={query}
-                      data={dataAnalysis}
-                    />
-                    <QuestionChartView
-                      query={query}
-                      normalized={normalized}
-                      setNormalized={setNormalized}
-                      categorizeByVenue={categorizeByVenue}
-                      setCategorizeByVenue={setCategorizeByVenue}
-                      showVenueCategorization={
-                        hasVenueInAnalysisData && query.venue !== false
-                      }
-                      queryId={query.uid_2}
-                      chartSettings={query.chartSettings2}
-                      processedChartDataset={
-                        typeof query.dataProcessingFunction2 === 'function'
-                          ? (query.dataProcessingFunction2(
-                              dataAnalysis ?? []
-                            ) ?? [])
-                          : []
-                      }
-                      rawChartData={dataAnalysis}
-                      dataInterpretation={getDataInterpretation('dataAnalysis')}
-                      type="dataAnalysis"
-                      isEditMode={isEditMode}
-                      chartKey="chartSettings2"
-                      onSaveInterpretation={
-                        isEditMode
-                          ? async (newContent) => {
-                              await saveVersion(
-                                'dataAnalysisInformation.dataInterpretation',
-                                [
-                                  getDataInterpretation('dataCollection'),
-                                  newContent,
-                                ]
-                              );
-                            }
-                          : undefined
-                      }
-                      onSaveChartSettings={
-                        isEditMode
-                          ? async (which, settings, desc) => {
-                              await saveChartSettings(which, settings, desc);
-                            }
-                          : undefined
-                      }
-                      onFetchOverrides={isEditMode ? fetchOverrides : undefined}
-                    />
-                    <Divider sx={{ my: 3 }} />
-                  </>
-                ) : (
-                  <>
-                    {isEditMode ? (
-                      <Box sx={{ my: 2 }}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ mb: 1, fontWeight: 600 }}
-                        >
-                          Data Interpretation
-                        </Typography>
-                        <EditableSection
-                          isEditingInfo={isEditMode}
-                          content={getDataInterpretation('dataAnalysis')}
-                          sectionLabel="Data Analysis Interpretation"
-                          onSave={async (newContent) => {
-                            await saveVersion(
-                              'dataAnalysisInformation.dataInterpretation',
-                              [
-                                getDataInterpretation('dataCollection'),
-                                newContent,
-                              ]
-                            );
-                          }}
-                        />
-                      </Box>
-                    ) : (
-                      <QuestionInformation
-                        information={getDataInterpretation('dataAnalysis')}
-                        label="Data Interpretation"
-                        tabIndex={tab}
-                      />
-                    )}
-                  </>
-                )}
-                <SectionSelector
-                  sectionType="data"
-                  sectionTitle="Data Analysis"
-                  query={query}
-                  data={dataAnalysis}
-                />
-                <QuestionDataGridView
-                  questionData={dataAnalysis}
-                  gridOptions={query.gridOptions}
-                />
-              </>
-            )}
-          </Box>
-        )}
+        {renderQuestionTab(0)}
+        {query.uid_2 && renderQuestionTab(1)}
       </Paper>
     </Box>
   );

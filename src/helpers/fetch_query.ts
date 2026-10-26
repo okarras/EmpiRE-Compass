@@ -5,13 +5,13 @@ import { PREFIXES } from '../api/SPARQL_QUERIES';
  * and strip Virtuoso directives that can cause SP030 "syntax error at '}'".
  * LLM-generated queries often include PREFIXes; duplicates confuse Virtuoso's parser.
  */
-function prepareQuery(query: string): string {
+export function prepareQueryForExecution(query: string): string {
   const lines = query.split('\n');
   const filtered = lines.filter((line) => {
     const t = line.trim();
     return !/^PREFIX\s+/i.test(t) && !/^define\s+sql:big-data-const/i.test(t);
   });
-  return filtered.join('\n').trim();
+  return `${PREFIXES.trim()}\n${filtered.join('\n').trim()}`;
 }
 
 const fetchSPARQLData = async (
@@ -19,8 +19,7 @@ const fetchSPARQLData = async (
   endpoint: string = 'https://orkg.org/triplestore'
 ) => {
   // Strip PREFIXes and Virtuoso directives to avoid duplicates/SP030
-  const queryWithoutPrefixes = prepareQuery(query);
-  const fullQuery = `${PREFIXES.trim()}\n${queryWithoutPrefixes}`;
+  const fullQuery = prepareQueryForExecution(query);
 
   const response = await fetch(endpoint, {
     method: 'POST',
