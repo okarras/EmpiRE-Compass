@@ -20,11 +20,14 @@ import dynamicQuestionsRouter from './routes/dynamicQuestions.js';
 import statisticsRouter from './routes/statistics.js';
 import newsRouter from './routes/news.js';
 import papersRouter from './routes/papers.js';
+import contributionsRouter from './routes/contributions.js';
+import verificationsRouter from './routes/verifications.js';
 import orkgAskRouter from './routes/orkgAsk.js';
 import statementsRouter from './routes/statements.js';
 import restoreRouter from './routes/restore.js';
 import questionOverridesRouter from './routes/questionOverrides.js';
 import backupRouter from './routes/backup.js';
+import aiEvaluationsRouter from './routes/aiEvaluations.js';
 
 dotenv.config();
 
@@ -179,11 +182,14 @@ app.use('/api/dynamic-questions', dynamicQuestionsRouter);
 app.use('/api/statistics', statisticsRouter);
 app.use('/api/news', newsRouter);
 app.use('/api/papers', papersRouter);
+app.use('/api/contributions', contributionsRouter);
+app.use('/api/verifications', verificationsRouter);
 app.use('/api/orkg-ask', orkgAskRouter);
 app.use('/api/statements', statementsRouter);
 app.use('/api/restore', restoreRouter);
 app.use('/api/question-overrides', questionOverridesRouter);
 app.use('/api/backup', backupRouter);
+app.use('/api/ai-evaluations', aiEvaluationsRouter);
 
 const swaggerUiOptions = {
   customCssUrl:

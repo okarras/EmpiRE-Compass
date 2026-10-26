@@ -192,6 +192,36 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         loading={loading}
         onItemClick={handleBarItemClick}
         slotProps={{
+          bar: ({ id, dataIndex }) => {
+            const series = mappedSeries.find(
+              (item: { id: unknown }) => item.id === id
+            );
+            const row = computedDataset?.[dataIndex];
+            if (!series || !row) return {};
+
+            const categoryKey =
+              chartSetting.layout === 'horizontal'
+                ? chartSetting.yAxis?.[0]?.dataKey
+                : chartSetting.xAxis?.[0]?.dataKey;
+
+            const value = row[series.dataKey];
+            if (value == null) return {};
+
+            const label =
+              typeof series.label === 'function'
+                ? series.label('tooltip')
+                : series.label;
+
+            const formattedValue = series.valueFormatter
+              ? series.valueFormatter(value, { dataIndex })
+              : String(value);
+
+            const text = [row[categoryKey ?? 'year'], label, formattedValue]
+              .filter((part) => part != null && part !== '')
+              .join(' · ');
+
+            return { children: <title>{text}</title> };
+          },
           legend: {
             hidden: isSubChart && chartSetting.hideDetailedChartLegend,
             labelStyle: {

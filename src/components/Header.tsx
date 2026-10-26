@@ -23,6 +23,7 @@ import BookIcon from '@mui/icons-material/Book';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ApiIcon from '@mui/icons-material/Api';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import {
   useLocation,
   Link as RouterLink,
@@ -40,6 +41,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import BackupSelector from './BackupSelector';
 import BackupService from '../services/BackupService';
 import { useBackupChange } from '../hooks/useBackupChange';
+import { useAuthData } from '../auth/useAuthData';
 
 interface HeaderProps {
   handleDrawerOpen: () => void;
@@ -58,6 +60,8 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const [backupSelectorOpen, setBackupSelectorOpen] = useState(false);
   const [currentBackupName, setCurrentBackupName] = useState<string>('');
   const backupVersion = useBackupChange(); // Listen for backup changes
+  const { user } = useAuthData();
+  const isAdmin = Boolean(user?.is_admin);
 
   useEffect(() => {
     const name = BackupService.getCurrentBackupName();
@@ -206,6 +210,11 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
   const redirectToNews = () => {
     const currentTemplateId = templateId || selectedTemplate;
     navigate(`/${currentTemplateId}/news`);
+  };
+
+  const redirectToScidQuest = () => {
+    const currentTemplateId = templateId || selectedTemplate;
+    navigate(`/${currentTemplateId}/scid-quest`);
   };
 
   return (
@@ -530,6 +539,23 @@ const Header = ({ handleDrawerOpen }: HeaderProps) => {
               <BookIcon sx={{ fontSize: '1.1rem' }} />
             </IconButton>
           </Tooltip>
+          {isAdmin && (
+            <Tooltip title="Scid-Quest">
+              <IconButton
+                onClick={redirectToScidQuest}
+                size="small"
+                sx={{
+                  color: 'text.secondary',
+                  '&:hover': {
+                    color: 'text.primary',
+                    backgroundColor: 'action.hover',
+                  },
+                }}
+              >
+                <AssignmentIcon sx={{ fontSize: '1.1rem' }} />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="API Docs">
             <IconButton
               onClick={redirectToSwagger}

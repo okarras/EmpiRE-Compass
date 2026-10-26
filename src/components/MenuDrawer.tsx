@@ -24,6 +24,8 @@ import {
   Edit,
   MenuBook,
   Groups3,
+  Assignment,
+  FactCheck,
 } from '@mui/icons-material';
 import type { SxProps, Theme } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router';
@@ -134,6 +136,18 @@ const ADMIN_NAV_ITEMS: NavItemConfig[] = [
     label: 'Papers Management',
     tooltip: 'Manage published papers',
     Icon: MenuBook,
+  },
+  {
+    path: '/admin/contributions',
+    label: 'Contributions',
+    tooltip: 'Review and accept submitted questionnaires',
+    Icon: FactCheck,
+  },
+  {
+    path: '/scid-quest',
+    label: 'Contribute (SciD-QuESt)',
+    tooltip: 'Fill the EmpiRE questionnaire and submit it for review',
+    Icon: Assignment,
   },
 ];
 
@@ -458,7 +472,7 @@ function MenuDrawer({ open, handleDrawerClose }: MenuDrawerProps) {
 
         {questions.map((question, index) => (
           <QuestionNavItem
-            key={question.id}
+            key={`${question.id}-${index}`}
             question={question}
             index={index}
             isCurrentPath={isCurrentPath}

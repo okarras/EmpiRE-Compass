@@ -25,10 +25,15 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminRequestMonitor = lazy(() => import('./pages/AdminRequestMonitor'));
 const AdminNews = lazy(() => import('./pages/AdminNews'));
 const AdminPapers = lazy(() => import('./pages/AdminPapers'));
+const AdminContributions = lazy(() => import('./pages/AdminContributions'));
 const AdminTeam = lazy(() => import('./pages/AdminTeam'));
 
 const CommunityQuestionDetailsPage = lazy(
   () => import('./pages/CommunityQuestionDetailsPage')
+);
+const ScidQuestPage = lazy(() => import('./pages/ScidQuestPage'));
+const PaperVerificationPage = lazy(
+  () => import('./pages/PaperVerificationPage')
 );
 
 const Router = () => {
@@ -90,6 +95,20 @@ const Router = () => {
             <Route
               path="community-questions/:id"
               element={<CommunityQuestionDetailsPage />}
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="scid-quest"
+              element={
+                <AdminGuard>
+                  <ScidQuestPage />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="verify/:token"
+              element={<PaperVerificationPage />}
               errorElement={<ErrorFallback />}
             />
             <Route
@@ -169,6 +188,15 @@ const Router = () => {
               element={
                 <AdminGuard>
                   <AdminTeam />
+                </AdminGuard>
+              }
+              errorElement={<ErrorFallback />}
+            />
+            <Route
+              path="admin/contributions"
+              element={
+                <AdminGuard>
+                  <AdminContributions />
                 </AdminGuard>
               }
               errorElement={<ErrorFallback />}

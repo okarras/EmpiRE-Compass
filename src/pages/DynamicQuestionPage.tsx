@@ -20,9 +20,13 @@ const DynamicQuestionPage: React.FC = () => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'flex-start',
-              flexWrap: 'wrap',
+              alignItems: { xs: 'flex-start', sm: 'center' },
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: 2,
               mb: 4,
+              pb: 1,
+              borderBottom: '4px solid',
+              borderColor: 'primary.main',
             }}
           >
             <Typography
@@ -32,21 +36,13 @@ const DynamicQuestionPage: React.FC = () => {
                 fontWeight: 700,
                 fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
                 lineHeight: 1.3,
-                position: 'relative',
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -8,
-                  left: 0,
-                  width: '100%',
-                  height: '4px',
-                  backgroundColor: 'primary.main',
-                  borderRadius: '2px',
-                },
+                flex: 1,
+                minWidth: 0,
               }}
             >
               Dynamic Question
             </Typography>
+            <Box id="page-title-export-action" sx={{ flexShrink: 0 }} />
           </Box>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
             Ask any research question, and the AI will generate a SPARQL query,
