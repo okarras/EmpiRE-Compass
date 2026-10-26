@@ -1,0 +1,135 @@
+[
+  {
+    "id": "q1-primary",
+    "questionId": 1,
+    "question": "How has the proportion of empirical studies evolved over time?",
+    "heading": "Relative number of papers with an empirical study per year",
+    "path": "exports/charts/png/q1-primary.png"
+  },
+  {
+    "id": "q2-primary",
+    "questionId": 2,
+    "question": "How often are which empirical methods used over time?",
+    "heading": "Relative number of empirical methods used for data collection per year",
+    "path": "exports/charts/png/q2-primary.png"
+  },
+  {
+    "id": "q2-secondary",
+    "questionId": 2,
+    "question": "How often are which empirical methods used over time?",
+    "heading": "Relative number of empirical methods used for data analysis per year",
+    "path": "exports/charts/png/q2-secondary.png"
+  },
+  {
+    "id": "q3-primary",
+    "questionId": 3,
+    "question": "How has the proportion of papers that do not have an empirical study evolved over time?",
+    "heading": "Relative number of papers without an empirical study per year",
+    "path": "exports/charts/png/q3-primary.png"
+  },
+  {
+    "id": "q4-primary",
+    "questionId": 4,
+    "question": "How often are which empirical methods used?",
+    "heading": "Relative number of empirical methods used for data collection",
+    "path": "exports/charts/png/q4-primary.png"
+  },
+  {
+    "id": "q4-secondary",
+    "questionId": 4,
+    "question": "How often are which empirical methods used?",
+    "heading": "Relative number of empirical methods used for data analysis",
+    "path": "exports/charts/png/q4-secondary.png"
+  },
+  {
+    "id": "q5-primary",
+    "questionId": 5,
+    "question": "How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?",
+    "heading": "Relative normalized number of empirical methods used for data collection per year",
+    "path": "exports/charts/png/q5-primary.png"
+  },
+  {
+    "id": "q6-secondary",
+    "questionId": 6,
+    "question": "How often are which statistical methods used?",
+    "heading": "Relative number of statistical methods of descriptive statistics used for data analysis",
+    "path": "exports/charts/png/q6-secondary.png"
+  },
+  {
+    "id": "q7-primary",
+    "questionId": 7,
+    "question": "How has the use of statistical methods evolved over time?",
+    "heading": "Relative number of statistical methods of inferential statistics used for data analysis per year",
+    "path": "exports/charts/png/q7-primary.png"
+  },
+  {
+    "id": "q7-secondary",
+    "questionId": 7,
+    "question": "How has the use of statistical methods evolved over time?",
+    "heading": "Relative number of statistical method used for data analysis per year grouped by statistical method",
+    "path": "exports/charts/png/q7-secondary.png"
+  },
+  {
+    "id": "q8-primary",
+    "questionId": 8,
+    "question": "How has the reporting of threats to validity evolved over time?",
+    "heading": "Relative number of papers reporting threats to validity per year",
+    "path": "exports/charts/png/q8-primary.png"
+  },
+  {
+    "id": "q9-primary",
+    "questionId": 9,
+    "question": "What types of threats to validity do the authors report?",
+    "heading": "Relative number of threats to validity reported in papers",
+    "path": "exports/charts/png/q9-primary.png"
+  },
+  {
+    "id": "q10-primary",
+    "questionId": 10,
+    "question": "How have the proportions of case studies and action research in the empirical methods used evolved over time?",
+    "heading": "Relative number of case studies and action research used for data collection per year",
+    "path": "exports/charts/png/q10-primary.png"
+  },
+  {
+    "id": "q11-primary",
+    "questionId": 11,
+    "question": "How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?",
+    "heading": "Relative number of papers that provide at least one URL to data per year",
+    "path": "exports/charts/png/q11-primary.png"
+  },
+  {
+    "id": "q12-primary",
+    "questionId": 12,
+    "question": "How has the reporting of research questions and answers evolved over time?",
+    "heading": "Relative number of papers without and with highlighting/hidden research question(s) and highlighted hidden answers per year",
+    "path": "exports/charts/png/q12-primary.png"
+  },
+  {
+    "id": "q13-primary",
+    "questionId": 13,
+    "question": "What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?",
+    "heading": "Relative number of empirical methods used for secondary research",
+    "path": "exports/charts/png/q13-primary.png"
+  },
+  {
+    "id": "q14-primary",
+    "questionId": 14,
+    "question": "How has the proportion of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?",
+    "heading": "Relative number of empirical methods used for secondary research per year",
+    "path": "exports/charts/png/q14-primary.png"
+  },
+  {
+    "id": "q15-primary",
+    "questionId": 15,
+    "question": "How many different research methods are used per publication?",
+    "heading": "Relative number of papers using X empirical methods for data collection",
+    "path": "exports/charts/png/q15-primary.png"
+  },
+  {
+    "id": "q16-primary",
+    "questionId": 16,
+    "question": "How has the number of research methods used per publication evolved over time?",
+    "heading": "Relative number of papers using X empirical methods for data collection per year grouped by number of empirical methods",
+    "path": "exports/charts/png/q16-primary.png"
+  }
+]

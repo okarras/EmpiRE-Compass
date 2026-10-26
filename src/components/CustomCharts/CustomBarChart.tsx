@@ -59,6 +59,16 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     setPapersDialog((d) => ({ ...d, open: false }));
   }, []);
 
+  const barSeries = chartSetting.series.map(
+    (series: Record<string, unknown>, index: number) => ({
+      ...series,
+      id: series.id ?? index,
+      dataKey:
+        normalized || hasMultipleSubCharts || isSubChart
+          ? series.dataKey
+          : 'count',
+    })
+  );
   const labelFormatter = createLabelFormatter(chartSetting, dataset.length);
 
   const xAxisWithFormatter = chartSetting.xAxis?.map((axis: any) => {
@@ -132,17 +142,41 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         {...restChartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
-        series={chartSetting.series.map((s: Record<string, unknown>) => ({
-          ...s,
-          dataKey:
-            normalized || hasMultipleSubCharts || isSubChart
-              ? s.dataKey
-              : 'count',
-        }))}
+        series={barSeries}
         colors={chartSetting.colors ?? ['#e86161']}
         loading={loading}
         onItemClick={handleBarItemClick}
         slotProps={{
+          bar: ({ id, dataIndex }) => {
+            const series = barSeries.find(
+              (item: { id: unknown }) => item.id === id
+            );
+            const row = dataset[dataIndex];
+            if (!series || !row) return {};
+
+            const categoryKey =
+              chartSetting.layout === 'horizontal'
+                ? chartSetting.yAxis?.[0]?.dataKey
+                : chartSetting.xAxis?.[0]?.dataKey;
+
+            const value = row[series.dataKey];
+            if (value == null) return {};
+
+            const label =
+              typeof series.label === 'function'
+                ? series.label('tooltip')
+                : series.label;
+
+            const formattedValue = series.valueFormatter
+              ? series.valueFormatter(value, { dataIndex })
+              : String(value);
+
+            const text = [row[categoryKey ?? 'year'], label, formattedValue]
+              .filter((part) => part != null && part !== '')
+              .join(' · ');
+
+            return { children: <title>{text}</title> };
+          },
           legend: {
             hidden: isSubChart && chartSetting.hideDetailedChartLegend,
             labelStyle: {
