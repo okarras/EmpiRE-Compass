@@ -221,7 +221,6 @@ export default function PaperVerificationPage() {
                   answers={answers}
                   setAnswers={setAnswers}
                   layout="single"
-                  fileManagerView="hidden"
                 />
               </ScidQuestProviders>
             </ErrorBoundary>
