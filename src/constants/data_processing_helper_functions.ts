@@ -881,20 +881,6 @@ export const Query14DataProcessingFunction = (
 ): Query14DataProcessingFunctionReturnInterface[] => {
   if (!rawData.length) return [];
 
-  // Get unique papers per year
-  const uniquePapers: Record<number, Set<string>> = {};
-  rawData.forEach(({ year, paper }) => {
-    if (!uniquePapers[year]) uniquePapers[year] = new Set();
-    uniquePapers[year].add(paper);
-  });
-
-  const papersPerYear = Object.fromEntries(
-    Object.entries(uniquePapers).map(([year, papers]) => [
-      Number(year),
-      papers.size,
-    ])
-  );
-
   const methodCounts: Record<number, Record<string, number>> = {};
   rawData.forEach(({ year, dc_method_name }) => {
     if (!methodCounts[year]) methodCounts[year] = {};
