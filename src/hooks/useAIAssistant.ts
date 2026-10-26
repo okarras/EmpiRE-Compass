@@ -81,6 +81,20 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       return value;
     };
 
+    // Drop raw paper arrays used by chart dialogs so we don't blow past the prompt length limit
+    const processedData = query.dataProcessingFunction?.(questionData);
+    const sanitizedData = Array.isArray(processedData)
+      ? processedData.map((item) => {
+          if (item && typeof item === 'object') {
+            const copy = { ...(item as Record<string, unknown>) };
+            delete copy.itemsInGroup;
+            delete copy.itemsBySeries;
+            return copy;
+          }
+          return item;
+        })
+      : processedData;
+
     return `You are analyzing a research question in Requirements Engineering. Please provide your response in HTML format.
       Question: ${query.dataAnalysisInformation.question}
       Question Explanation: ${query.dataAnalysisInformation.questionExplanation}
@@ -88,7 +102,7 @@ const useAIAssistant = ({ query, questionData }: UseAIAssistantProps) => {
       Data Analysis Method: ${safeString(query.dataAnalysisInformation.dataAnalysis)}
       Data Interpretation: ${safeString(query.dataAnalysisInformation.dataInterpretation)}
 
-       Data: ${JSON.stringify(query.dataProcessingFunction?.(questionData), null, 2)}
+       Data: ${JSON.stringify(sanitizedData, null, 2)}
       Your role is to:
       1. Understand and analyze the research question and its context
       2. Interpret the available data and charts
