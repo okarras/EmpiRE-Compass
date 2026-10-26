@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Empirical Research Practice — Questions, Answers &amp; Plot Details</title>
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --muted: #555;
+      --accent: #b33a3a;
+      --border: #ddd;
+      --bg: #fafafa;
+    }
+    @page {
+      size: A4;
+      margin: 18mm 16mm;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      line-height: 1.55;
+      font-size: 11pt;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px;
+      background: white;
+    }
+    h1 { font-size: 22pt; margin: 0 0 8px; color: var(--accent); }
+    h2 {
+      font-size: 15pt;
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 6px;
+      margin-top: 36px;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 12.5pt; margin-top: 20px; page-break-after: avoid; }
+    h4 { font-size: 11pt; margin-top: 14px; color: var(--muted); }
+    .meta-banner {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      margin: 16px 0 28px;
+      font-size: 10pt;
+    }
+    .subtitle { color: var(--muted); font-style: italic; margin-top: -8px; }
+    .content p { margin: 0 0 10px; }
+    .answer {
+      background: #fff8f8;
+      border-left: 4px solid var(--accent);
+      padding: 10px 14px;
+    }
+    figure.plot {
+      margin: 12px 0 20px;
+      page-break-inside: avoid;
+    }
+    figure.plot figcaption {
+      font-size: 10pt;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+    figure.plot img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+    table.meta {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0 12px;
+      font-size: 10pt;
+    }
+    table.meta th, table.meta td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.meta th { width: 32%; background: var(--bg); }
+    pre {
+      background: #f4f4f4;
+      border: 1px solid var(--border);
+      padding: 10px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 8.5pt;
+      line-height: 1.35;
+    }
+    details { margin: 8px 0 12px; }
+    summary { cursor: pointer; font-weight: 600; }
+    .question { page-break-before: always; }
+    .question:first-of-type { page-break-before: auto; }
+    #toc ol { padding-left: 22px; }
+    #toc li { margin: 4px 0; }
+    a { color: var(--accent); text-decoration: none; }
+    .note {
+      font-size: 9.5pt;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+      padding-top: 12px;
+    }
+    @media print {
+      body { padding: 0; max-width: none; }
+      a { color: inherit; }
+      details[open] summary { margin-bottom: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Empirical Research Practice</h1>
+    <p><strong>EmpiRE-Compass export</strong> — competency questions, analyses, interpretations (answers), and plots.</p>
+    <div class="meta-banner">
+      <div><strong>Template ID:</strong> R186491</div>
+      <div><strong>Questions:</strong> 16</div>
+      <div><strong>Rendered plots:</strong> 19</div>
+      <div><strong>Generated:</strong> 2026-10-11 17:22 UTC</div>
+      <div><strong>Description:</strong> Template for analyzing empirical research practices in software engineering</div>
+    </div>
+    <p>
+      Plots were regenerated from live ORKG SPARQL results using the same data-processing functions as the dashboard
+      (relative/normalized view).
+    </p>
+  </header>
+
+  <nav id="toc">
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#q-1">Q1. How has the proportion of empirical studies evolved over time?</a></li><li><a href="#q-2">Q2. How often are which empirical methods used over time?</a></li><li><a href="#q-3">Q3. How has the proportion of papers that do not have an empirical study evolved over time?</a></li><li><a href="#q-4">Q4. How often are which empirical methods used?</a></li><li><a href="#q-5">Q5. How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?</a></li><li><a href="#q-6">Q6. How often are which statistical methods used?</a></li><li><a href="#q-7">Q7. How has the use of statistical methods evolved over time?</a></li><li><a href="#q-8">Q8. How has the reporting of threats to validity evolved over time?</a></li><li><a href="#q-9">Q9. What types of threats to validity do the authors report?</a></li><li><a href="#q-10">Q10. How have the proportions of case studies and action research in the empirical methods used evolved over time?</a></li><li><a href="#q-11">Q11. How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?</a></li><li><a href="#q-12">Q12. How has the reporting of research questions and answers evolved over time?</a></li><li><a href="#q-13">Q13. What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?</a></li><li><a href="#q-14">Q14. How has the proportion of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?</a></li><li><a href="#q-15">Q15. How many different research methods are used per publication?</a></li><li><a href="#q-16">Q16. How has the number of research methods used per publication evolved over time?</a></li>
+    </ol>
+  </nav>
+
+  
+            <section class="question" id="q-1">
+              <h2>Q1. How has the proportion of empirical studies evolved over time?</h2>
+              <p class="subtitle">Empirical studies per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that there are relatively <strong>few empirical studies</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision a <strong>large number of studies</strong>. This predicted change from a few to a large number of empirical studies leads to the corresponding competency question.</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report an empirical study. However, we need to define what we mean by an empirical study. According to <a href="https://www.springer.com/journal/10664">Empirical Software Engineering Journal</a>, &quot;<em>Empirical studies presented here usually involve the collection and analysis of data and experience...</em>&quot;. For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study (<em>Necessity</em>) and data collection as a sufficient condition to be an empirical study (<em>Sufficiency</em>). Thus, a study must always include data analysis and an empirical study must include data collection and data analysis. We do not consider the mere reporting of a data collection as a study or even an empirical study.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we select all papers that have an empirical study according to our definition (data collection and data analysis). For this reason, we remove all papers that have &quot;no collection&quot; and/or &quot;no analysis&quot;. In addition, a paper can involve more than one empirical method for data collection and data analysis, so we must exclude duplicate papers. In this way, we can determine the number of all unique papers. For more detailed insights, we normalize the number of all papers with an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers with an empirical study per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q1-primary.png" alt="Relative number of papers with an empirical study per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the table below, there is a clear increasing trend in the proportion of papers that include an empirical study over time. The average proportion increases steadily across the decades.</p>
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt">Timeframe</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-c3ow">1993–1999</td>
+<td class="tg-c3ow">48.6</td>
+<td class="tg-c3ow">33–74</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2000–2009</td>
+<td class="tg-c3ow">69.2</td>
+<td class="tg-c3ow">59–86</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2010–2019</td>
+<td class="tg-c3ow">85.2</td>
+<td class="tg-c3ow">63–100</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2020–2025</td>
+<td class="tg-c3ow">95.0</td>
+<td class="tg-c3ow">88–100</td>
+</tr>
+</tbody>
+</table>
+<p>While the <strong>state reported by Sjøberg et al. (2007)</strong> shows an average proportion of papers with an empirical study of 79.0% (for the period around 2007), the proportion in the <strong>target state (2020–2025)</strong> is consistently high (above 88.0%), with an average of 95.0%. These data support the trend predicted by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>: empirical studies have become the norm in recent years, and the envisaged target state for 2020–2025 appears to have been largely met.</p></div>
+            </section>
+            
+            <section class="question" id="q-2">
+              <h2>Q2. How often are which empirical methods used over time?</h2>
+              <p class="subtitle">Eempirical methods used for data collection and analysis per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that there are relatively <strong>few empirical studies</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision a <strong>large number of studies [...] using different empirical methods</strong>. This predicted change from a few to a large number of empirical studies using different empirical methods leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>
+  We must retrieve all papers with their publication year that use our ORKG template and report on the use of empirical methods. According to 
+  <a href="https://doi.org/10.1002/9781118901731.iecrm0083" target="_blank">Dan (2017)</a>, empirical methods include data collection and data analysis. 
+  An empirical method can therefore be a method for data collection and data analysis. We consider the empirical method used for data collection or 
+  data analysis respectively, as our template allows for a correspondingly more fine-grained analysis.
+</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year.</p>
+<p>For this data analysis, we consider the empirical methods used for data analysis. We identify the empirical methods used for data analysis. A paper can involve more than one empirical method for data analysis so that the number of empirical methods can be larger than the number of papers. In addition, the number of papers per year varies. For this reason, we normalize the number of empirical methods used based on the number of all unique papers per year.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for data collection per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q2-primary.png" alt="Relative number of empirical methods used for data collection per year" />
+            </figure>
+            
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for data analysis per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q2-secondary.png" alt="Relative number of empirical methods used for data analysis per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe that seven empirical methods are used for data collection. These seven methods are <em>case study</em> (242  times), <em>experiment</em> (155 times), <em>survey</em> (116 times), <em>secondary research</em> (116 times), <em>interview</em> (110 times), <em>action research</em> (10 times), and <em>other methods</em> as a default category (229 times).</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt" rowspan="2">Timeframe</th>
+<th class="tg-7btt" colspan="2">Case study</th>
+<th class="tg-7btt" colspan="2">Experiment</th>
+<th class="tg-7btt" colspan="2">Survey</th>
+<th class="tg-7btt" colspan="2">Interview</th>
+<th class="tg-7btt" colspan="2">Secondary research</th>
+<th class="tg-7btt" colspan="2">Action research</th>
+<th class="tg-7btt" colspan="2">Other methods</th>
+</tr>
+<tr>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-0pky">1993-1999</td>
+<td class="tg-c3ow">50.6</td>
+<td class="tg-c3ow">12-78</td>
+<td class="tg-c3ow">9.1</td>
+<td class="tg-c3ow">0-21</td>
+<td class="tg-c3ow">11.6</td>
+<td class="tg-c3ow">0-23</td>
+<td class="tg-c3ow">14.3</td>
+<td class="tg-c3ow">0-33</td>
+<td class="tg-c3ow">12.1</td>
+<td class="tg-c3ow">0-30</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+<td class="tg-c3ow">45.3</td>
+<td class="tg-c3ow">11-75</td>
+</tr>
+<tr>
+<td class="tg-0pky">2000-2009</td>
+<td class="tg-c3ow">53.0</td>
+<td class="tg-c3ow">44-67</td>
+<td class="tg-c3ow">16.0</td>
+<td class="tg-c3ow">0-39</td>
+<td class="tg-c3ow">14.0</td>
+<td class="tg-c3ow">0-28</td>
+<td class="tg-c3ow">12.9</td>
+<td class="tg-c3ow">0-25</td>
+<td class="tg-c3ow">11.5</td>
+<td class="tg-c3ow">5-17</td>
+<td class="tg-c3ow">3.0</td>
+<td class="tg-c3ow">0-10</td>
+<td class="tg-c3ow">35.9</td>
+<td class="tg-c3ow">6-88</td>
+</tr>
+<tr>
+<td class="tg-0pky">2010-2019</td>
+<td class="tg-c3ow">34.1</td>
+<td class="tg-c3ow">6-53</td>
+<td class="tg-c3ow">36.4</td>
+<td class="tg-c3ow">21-56</td>
+<td class="tg-c3ow">21.0</td>
+<td class="tg-c3ow">11-35</td>
+<td class="tg-c3ow">20.7</td>
+<td class="tg-c3ow">4-38</td>
+<td class="tg-c3ow">17.0</td>
+<td class="tg-c3ow">0-29</td>
+<td class="tg-c3ow">1.6</td>
+<td class="tg-c3ow">0-5</td>
+<td class="tg-c3ow">33.4</td>
+<td class="tg-c3ow">11-59</td>
+</tr>
+<tr>
+<td class="tg-0pky">2020-2025</td>
+<td class="tg-c3ow">20.5</td>
+<td class="tg-c3ow">12-40</td>
+<td class="tg-c3ow">34.8</td>
+<td class="tg-c3ow">15-57</td>
+<td class="tg-c3ow">25.8</td>
+<td class="tg-c3ow">14-43</td>
+<td class="tg-c3ow">21.5</td>
+<td class="tg-c3ow">14-29</td>
+<td class="tg-c3ow">41.5</td>
+<td class="tg-c3ow">35-50</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+<td class="tg-c3ow">33.0</td>
+<td class="tg-c3ow">21-55</td>
+</tr>
+</tbody>
+</table>
+
+<p>First, we will briefly summarize our observations for each empirical method before looking at the data as a whole.</p>
+<p>1) <em>Case study</em>: Over the years, case studies are the dominant empirical method, especially in the early period, peaking at 78.0% in 1996. However, their use declines steadily after 2012. For the <strong>&quot;current&quot; state of practice (2007)</strong>, case studies are still the most common empirical method overall, used in 54.0% of papers analyzed, but their dominance is already decreasing. For the <strong>target state (2020 - 2025)</strong>, the average proportion of case studies drops significantly to 20.5%, indicating a major shift away from this method toward other empirical methods. We assume this change is a result of a clear definition of the term case study. According to <a href="https://doi.org/10.1016/j.infsof.2021.106514">Wohlin</a>, the term case study is often misused in software engineering research. Based on the manual curation of the 776 papers, we can confirm this finding. Prior to 2013, we found many papers that use the term case study (with an average proportion of 51.9%), although at best they report an experiment or a larger use case in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE as researchers appear to be more aware of how a case study is defined.</p>
+<p>2) <em>Experiment</em>: Experiments show a gradual increase in popularity over time, becoming more widely used after 2007. For the <strong>&quot;current&quot; state of practice (2007)</strong>, experiments are only used in 8.0% of papers analyzed, reflecting low adoption. Their use peaked at 57.0% in 2022, demonstrating a growing interest in this empirical method. For the <strong>target state (2020 - 2025)</strong>, experiments are established as a key method, with an average proportion of 34.8%, highlighting their enduring importance in empirical research in RE.</p>
+<p>3) <em>Survey</em>: Surveys maintained a relatively stable throughout the years, with minor fluctuations. For the <strong>&quot;current&quot; state of practice (2007)</strong>, they were used in only 8.0% of the papers analyzed, indicating limited adoption at the time. However, their use increased steadily in recent years, reaching an average proportion of 25.8% for the <strong>target state (2020 - 2025)</strong>. This suggests a growing preference for structured data collection through surveys, reflecting their consistent role in empirical research in RE.</p>
+<p>4) <em>Interview</em>: Interviews gained traction over time, particularly after 2010. For the <strong>&quot;current&quot; state of practice (2007)</strong>, interviews were used in 25.0% of papers analyzed, showing moderate adoption. For the <strong>target state (2020 - 2025)</strong>, their use remains constant with an average proportion of 21.5%, indicating stable use in empirical research in RE.</p>
+<p>5) <em>Secondary research</em>: Secondary research, including all kinds of literature reviews and archive analysis, shows a clear rise from 2015 onward, becoming one of the most popular empirical methods by 2022. For the <strong>&quot;current&quot; state of practice (2007)</strong>, it was rarely used, with a proportion of just 12.0%. However, its use surged in the <strong>target state (2020 - 2025)</strong> with an average proportion of 41.5% and its peak at 50.0% in 2022. This trend highlights the increasing value of analyzing existing data in empirical research in RE.</p>
+<p>6) <em>Action research</em>: Action research remains consistently low throughout the entire analyzed timeframe (1993-2025). For the <strong>&quot;current&quot; state of practice (2007)</strong>, it was used with a proportion of 8.0%. After 2017, and thus also for the <strong>target state (2020 - 2025)</strong>, there is no paper using action research. It remains a niche method, indicating limited adoption in empirical research in RE.</p>
+<p>7) <em>Other methods</em>: This category is the default category covering all empirical methods that do not belong to one of the other six categories. The use of other methods varied significantly over the years, peaking at 88.0% in 2005 and showing an overall average proportion of 36.9%. Given that more than a third of the papers analyzed use other methods, a more detailed analysis of this category is necessary in the future.</p>
+<p>Looking at the data as a whole, we observe a clear shift towards a more diverse and balanced use of empirical methods for data collection, as envisioned by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. While the <strong>&quot;current&quot; state of practice (2007)</strong> shows limited diversity of empirical methods, the <strong>target state (2020 - 2025)</strong> reflects a significant diversification of empirical methods used for empirical research in RE. The decline in the dominance of case studies and the rise in experiments, surveys, interviews, and secondary research indicate a broader adoption of various empirical methods for data collection in recent years.</p>
+<p>Based on the figure and the following table, we observe that four empirical methods are used for data analysis. These four methods are <em>descriptive statistics</em> (671 times), <em>inferential statistics</em> (125 times), <em>machine learning</em> (153 times), and <em>other methods</em> as a default category (579 times).</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">Descriptive statistics</th>
+    <th class="tg-7btt" colspan="2">Inferential statistics</th>
+    <th class="tg-7btt" colspan="2">Machine learning</th>
+    <th class="tg-7btt" colspan="2">Other methods</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">68.3</td>
+    <td class="tg-c3ow">50-83</td>
+    <td class="tg-c3ow">6.9</td>
+    <td class="tg-c3ow">0-18</td>
+    <td class="tg-c3ow">1.3</td>
+    <td class="tg-c3ow">0-9</td>
+    <td class="tg-c3ow">84.3</td>
+    <td class="tg-c3ow">73-92</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">80.4</td>
+    <td class="tg-c3ow">53-94</td>
+    <td class="tg-c3ow">11.4</td>
+    <td class="tg-c3ow">6-25</td>
+    <td class="tg-c3ow">8.3</td>
+    <td class="tg-c3ow">0-15</td>
+    <td class="tg-c3ow">70.4</td>
+    <td class="tg-c3ow">38-88</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">93.4</td>
+    <td class="tg-c3ow">89-100</td>
+    <td class="tg-c3ow">24.8</td>
+    <td class="tg-c3ow">11-40</td>
+    <td class="tg-c3ow">25.4</td>
+    <td class="tg-c3ow">11-56</td>
+    <td class="tg-c3ow">48.6</td>
+    <td class="tg-c3ow">35-68</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">96.0</td>
+    <td class="tg-c3ow">83-100</td>
+    <td class="tg-c3ow">22.3</td>
+    <td class="tg-c3ow">6-36</td>
+    <td class="tg-c3ow">41.7</td>
+    <td class="tg-c3ow">26-58</td>
+    <td class="tg-c3ow">72.5</td>
+    <td class="tg-c3ow">36-87</td>
+  </tr>
+</tbody></table>
+
+<p>First, we will briefly summarize our observations for each empirical method before looking at the data as a whole.</p>
+<p>1) <em>Descriptive statistics</em>: Descriptive statistics are consistently the most widely used empirical method for data analysis, starting already with an average proportion of 68.3% in 1993-1999 and steadily increasing. For the <strong>&quot;current&quot; state of practice (2007)</strong>, they are already a dominant approach, with a proportion of 83.0%, reflecting their foundational role in data analysis. For the <strong>target state (2020 - 2025)</strong>, their usage remains robust and even further increasing to an average proportion of 95.0%, underscoring their continued importance in empirical research in RE.</p>
+<p>2) <em>Inferential statistics</em>: The use of inferential statistics shows a gradual but steady increase over time. For the <strong>&quot;current&quot; state of practice (2007)</strong>, their adoption was relatively low at 13.0%, indicating limited use in empirical studies. However, for the <em>*target state (2020 - 2025)</em>, there is a notable rise, reaching an average proportion of 22.3%, which highlights a growing recognition of their value in data analysis.</p>
+<p>3) <em>Machine learning</em>: Machine learning methods, including all types of artificial intelligence approaches (to be revised in the future), have experienced a clear increase in popularity, particularly from 2010 onwards. Starting with an average proportion of 1.3% in 1993-1999, their usage peaked at 58.0% in 2020. For the <strong>&quot;current&quot; state of practice (2007)</strong>, their adoption was low at 9.0%, reflecting early-stage exploration. The <strong>target state (2020 - 2025)</strong> marks a significant shift, with machine learning methods becoming a major empirical method with an average proportion of 41.7%.</p>
+<p>4) <em>Other methods</em>: This category is the default category covering all empirical methods that do not belong to one of the other three categories. The use of other methods varied significantly over the years, peaking at 92.0% in 1998 and showing an overall average proportion of 70%%. Based on the manual analysis of the 776 papers, we can report that these other methods include various types of coding as qualitative analysis method. Given that almost three-quarters of the papers analyzed use other methods, a more detailed analysis of this category is necessary in the future.</p>
+<p>Looking at the data as a whole, it supports the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. The <strong>&quot;current&quot; state of practice (2007)</strong> was characterized by a dominance of descriptive statistics and relatively few empirical studies using other methods. However, the <strong>target state (2020 - 2025)</strong> shows a substantial increase in the use of diverse empirical methods for data analysis.</p></div>
+            </section>
+            
+            <section class="question" id="q-3">
+              <h2>Q3. How has the proportion of papers that do not have an empirical study evolved over time?</h2>
+              <p class="subtitle">Papers without an empirical study per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> 
+  envision that there should be a good reason for <strong>not including</strong> a proper evaluation. 
+  This predicted state leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>
+  We must retrieve all papers with their publication year that use our ORKG template and do not report an empirical study. 
+  However, we need to define what we mean by an empirical study. According to the 
+  <a href="https://www.springer.com/journal/10664" target="_blank">Empirical Software Engineering Journal</a>, 
+  "<em>Empirical studies presented here usually involve the collection and analysis of data and experience...</em>". 
+  For this reason, we define that an empirical study is a study that includes data analysis as a necessary condition to be a study 
+  (<strong>Necessity</strong>) and data collection as a sufficient condition to be an empirical study (<strong>Sufficiency</strong>).
+</p>
+
+<p>
+  Thus, a study must always include data analysis and an empirical study must include both data collection and data analysis. 
+  We do not consider the mere reporting of a data collection as a study or even an empirical study. 
+  Therefore, we must retrieve all papers that do not have data collection, data analysis, or both.
+</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we select all papers that do not have an empirical study according to our definition (data collection and data analysis). For this reason, we only keep all papers that have &quot;no collection&quot; and/or &quot;no analysis&quot;. For more detailed insights, we normalize the number of all papers without an empirical study based on the number of all unique papers per year, as the total number of papers per year varies.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers without an empirical study per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q3-primary.png" alt="Relative number of papers without an empirical study per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe a significant decline in the proportion of papers without an empirical study over time. The average proportion of papers without an empirical study decreased steadily over the decades, indicating a clear shift toward including empirical studies in papers.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt">Timeframe</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-c3ow">1993-1999</td>
+<td class="tg-c3ow">51.4</td>
+<td class="tg-c3ow">26-67</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2000-2009</td>
+<td class="tg-c3ow">30.5</td>
+<td class="tg-c3ow">14-41</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2010-2019</td>
+<td class="tg-c3ow">14.8</td>
+<td class="tg-c3ow">0-37</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2020-2025</td>
+<td class="tg-c3ow">5.0</td>
+<td class="tg-c3ow">0-12</td>
+</tr>
+</tbody>
+</table>
+
+<p>While the <strong>“current” state of practice (2007)</strong> shows an average proportion of papers without an empirical study of 21.0%, the proportion of papers without an empirical study in the <strong>target state (2020–2025)</strong> is consistently low (below 12.0%), with an average value of 5.0%. The data supports the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. The proportion of papers without empirical studies has declined dramatically, reaching near-zero levels in the <strong>target state (2020–2025)</strong>. This suggests that the research community has largely adopted the practice of including empirical studies so that empirical studies have become the standard rather than the exception in empirical research in RE in recent years. </p><p>However, regarding the aspect that the papers should provide a good reason for <strong>not including a proper evaluation</strong>, further analysis is needed, as we have not yet examined how papers without empirical studies justify why they do not provide proper evaluation.</p></div>
+            </section>
+            
+            <section class="question" id="q-4">
+              <h2>Q4. How often are which empirical methods used?</h2>
+              <p class="subtitle">Empirical methods used for data collection and analysis</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> 
+  envision that researchers are trained in using a <strong>large set of research methods and techniques</strong>. 
+  This predicted state leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>
+  We must retrieve all papers that use our ORKG template and report on the use of empirical methods. 
+  According to <a href="https://doi.org/10.1002/9781118901731.iecrm0083" target="_blank">Dan (2017)</a>, 
+  empirical methods include data collection and data analysis. 
+  An empirical method can therefore be a method for data collection and data analysis. 
+  We consider the empirical method used for data collection or data analysis respectively, 
+  as our template allows for a correspondingly more fine-grained analysis.
+</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider the empirical methods used for data collection. We identify the empirical methods used for data collection. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers using empirical methods for data collection. We normalize the number of empirical methods used for data collection based on the number of all papers using at least one empirical methods for data collection.</p>
+<p>For this data analysis, we consider the empirical methods used for data analysis. We identify the empirical methods used for data analysis. A paper can involve more than one empirical method for data analysis so that the number of empirical methods can be larger than the number of papers using empirical methods for data analysis. We normalize the number of empirical methods used for data analysis based on the number of all papers using at least one empirical methods for data analysis.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for data collection</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q4-primary.png" alt="Relative number of empirical methods used for data collection" />
+            </figure>
+            
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for data analysis</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q4-secondary.png" alt="Relative number of empirical methods used for data analysis" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure, we observe that mainly seven empirical methods are used for data collection. These seven methods are <em>case study</em> (242 times), <em>experiment</em> (155 times), <em>survey</em> (116 times), <em>secondary research</em> (116 times), <em>interview</em> (110 times), <em>action research</em> (10 times), and <em>others</em> as a default category (229 times). <em>Case study</em> (24.7%) and <em>others</em> (23.4%) are the most frequently used for data collection, with a very similar proportion. These methods are followed by <em>experiment</em> (15.8%), <em>survey</em> (11.9%), <em>secondary research</em> (11.9%), and <em>interview</em> (11.2%), which also have similar proportions and play a significant role. Only <em>action research</em> is rarely used, with a proportion of only 1.0% of all analyzed papers with data collection, indicating a gap in its adoption.</p>
+<p>The data indicates that researchers use diverse empirical methods, including case studies, experiments, secondary research, surveys, and interviews, which demonstrates that researchers are increasingly trained in and applying a broad range of empirical methods, supporting the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. However, the dominance of specific methods, such as case studies, suggests that while progress has been made, there is still potential to further diversify the empirical methods used in empirical research in RE.</p>
+<p>Based on the figure, we observe that mainly four empirical methods are used for data analysis. These four methods are <em>descriptive statistics</em> (671 times), <em>inferential statistics</em> (125 times), <em>machine learning</em> (153 times), and <em>other methods</em> as a default category (579 times). Most frequently, <em>descriptive statistics</em> are used with a proportion of 87% of all analyzed papers with data analysis. <em>Other methods</em> are used second most frequently, with a proportion of 65%. This large proportion requires further analysis in the future for more fine-grained insights. While <em>machine learning</em> is used in 20% of the analyzed papers, <em>inferential statistics</em> is used least frequently with a proportion of only 18%.</p>
+<p>Looking at the data as a whole, the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> is partially realized. The relatively low usage of machine learning and inferential statistics indicates that there may still be gaps in the adoption of more advanced or specialized empirical methods in empirical research in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-5">
+              <h2>Q5. How have the proportions of experiments, secondary research (reviews), surveys, case studies, and action research in the empirical methods used evolved over time?</h2>
+              <p class="subtitle">Experiments, secondary research, surveys, case studies, and action research per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that <strong>researchers are skilled</strong> (frequently use) <strong>experiments and reviews</strong> (secondary research), but <strong>researchers are not skilled</strong> (do not frequently use) <strong>surveys, case studies, and action research</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision that researchers are trained in using a <strong>large set of research methods and techniques</strong> and that their <strong>skills</strong> (frequent use) <strong>of conducting case studies and action research are stimulated</strong>. This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report on the use of the empirical methods: experiments, secondary reserach (reviews), surveys, case studies, and action research.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that report on the use of the empirical methods: experiment, secondary research, survey, case study, action research. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. We normalize the number of empirical methods (experiment, secondary research, survey, case study, action research) used based on the number of all unique papers per year.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative normalized number of empirical methods used for data collection per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q5-primary.png" alt="Relative normalized number of empirical methods used for data collection per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe the following trends for the five empirical methods for data collection.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt" rowspan="2">Timeframe</th>
+<th class="tg-7btt" colspan="2">Experiment</th>
+<th class="tg-7btt" colspan="2">Case study</th>
+<th class="tg-7btt" colspan="2">Secondary research</th>
+<th class="tg-7btt" colspan="2">Survey</th>
+<th class="tg-7btt" colspan="2">Action research</th>
+</tr>
+<tr>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-0pky">1993-1999</td>
+<td class="tg-c3ow">9.1</td>
+<td class="tg-c3ow">0-21</td>
+<td class="tg-c3ow">50.6</td>
+<td class="tg-c3ow">12-78</td>
+<td class="tg-c3ow">12.1</td>
+<td class="tg-c3ow">0-30</td>
+<td class="tg-c3ow">11.6</td>
+<td class="tg-c3ow">0-23</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+</tr>
+<tr>
+<td class="tg-0pky">2000-2009</td>
+<td class="tg-c3ow">16.0</td>
+<td class="tg-c3ow">0-39</td>
+<td class="tg-c3ow">53.0</td>
+<td class="tg-c3ow">44-67</td>
+<td class="tg-c3ow">11.5</td>
+<td class="tg-c3ow">5-17</td>
+<td class="tg-c3ow">14.0</td>
+<td class="tg-c3ow">0-28</td>
+<td class="tg-c3ow">3.0</td>
+<td class="tg-c3ow">0-10</td>
+</tr>
+<tr>
+<td class="tg-0pky">2010-2019</td>
+<td class="tg-c3ow">36.4</td>
+<td class="tg-c3ow">21-56</td>
+<td class="tg-c3ow">34.1</td>
+<td class="tg-c3ow">6-53</td>
+<td class="tg-c3ow">17.0</td>
+<td class="tg-c3ow">0-29</td>
+<td class="tg-c3ow">21.0</td>
+<td class="tg-c3ow">11-35</td>
+<td class="tg-c3ow">1.6</td>
+<td class="tg-c3ow">0-5</td>
+</tr>
+<tr>
+<td class="tg-0pky">2020-2025</td>
+<td class="tg-c3ow">34.8</td>
+<td class="tg-c3ow">15-57</td>
+<td class="tg-c3ow">20.5</td>
+<td class="tg-c3ow">12-40</td>
+<td class="tg-c3ow">41.5</td>
+<td class="tg-c3ow">35-50</td>
+<td class="tg-c3ow">25.8</td>
+<td class="tg-c3ow">14-43</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+</tr>
+</tbody>
+</table>
+
+<p>First, we will briefly summarize our observations for each empirical method before looking at the data as a whole.</p>
+
+<p>1) <em>Experiment</em>: Experiments show a gradual increase in popularity over time, becoming more widely used after 2007. For the <strong>&quot;current&quot; state of practice (2007)</strong>, experiments are only used in 8.0% of papers analyzed, reflecting low adoption. Their use peaked at 57.0% in 2022, demonstrating a growing interest in this empirical method. For the <strong>target state (2020 - 2025)</strong>, experiments are established as a key method, with an average proportion of 34.8%, highlighting their enduring importance in empirical research in RE.</p>
+
+<p>2) <em>Case study</em>: Over the years, case studies have been the dominant empirical method, especially in the early period, peaking at 78.0% in 1996. However, their use declines steadily after 2012. For the <strong>&quot;current&quot; state of practice (2007)</strong>, case studies are still the most common empirical method overall, used in 54.0% of papers analyzed, but their dominance is already decreasing. For the <strong>target state (2020 - 2025)</strong>, the average proportion of case studies drops significantly to 20.5%, indicating a major shift away from this method toward other empirical methods. </p>
+<p>We assume this change is a result of a clear definition of the term case study. According to <a href="https://doi.org/10.1016/j.infsof.2021.106514">Wohlin</a>, the term case study is often misused in software engineering research. Based on the manual curation of the 776 papers, we can confirm this finding. Before 2013, we found many papers that use the term case study (with an average proportion of 51.9%), although at best they report an experiment or a larger use case in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE, as researchers appear to be more aware of how a case study is defined.</p>
+
+<p>3) <em>Secondary research</em>: Secondary research, including all kinds of literature reviews and archive analysis, shows a clear rise from 2015 onward, becoming one of the most popular empirical methods by 2022. For the <strong>&quot;current&quot; state of practice (2007)</strong>, it was rarely used, with a proportion of just 12.0%. However, its use surged in the <strong>target state (2020 - 2025)</strong> with an average proportion of 41.5% and its peak at 50.0% in 2022. This trend highlights the increasing value of analyzing existing data in empirical research in RE.</p>
+
+<p>4) <em>Survey</em>: Surveys maintained a relatively stable level throughout the years, with minor fluctuations. For the <strong>&quot;current&quot; state of practice (2007)</strong>, they were used in only 8.0% of the papers analyzed, indicating limited adoption at the time. However, their use increased steadily in recent years, reaching an average proportion of 25.8% for the <strong>target state (2020 - 2025)</strong>. This suggests a growing preference for structured data collection through surveys, reflecting their consistent role in empirical research in RE.</p>
+
+<p>5) <em>Action research</em>: Action research remains consistently low throughout the entire analyzed timeframe (1993-2025). For the <strong>&quot;current&quot; state of practice (2007)</strong>, it was used with a proportion of 8.0%. After 2017, and thus also for the <strong>target state (2020 - 2025)</strong>, there is no paper using action research. It remains a niche method, indicating limited adoption in empirical research in RE.</p>
+
+<p>The data reveals a mixed picture when compared to the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. On one hand, the continued prominence of experiments and the growing use of secondary research align well with their prediction that researchers maintain and expand their skills in these areas. Surveys also saw a notable increase, suggesting some progress toward broadening researchers’ methodological skills. However, the vision of stimulating greater use of case studies and action research has not materialized. Case studies, despite being widely used in the early years, have seen a steady decline. Although this decline does not fundamentally help to achieve the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, we believe this change nonetheless represents a positive development in empirical research in RE, as researchers appear to be more aware of how the term case study is defined. Action research remains negligible throughout the entire analyzed time frame. This discrepancy regarding case studies and action research highlights a gap between the envisioned <strong>target state (2020 - 2025)</strong> and the actual evolution of research practices, indicating that additional efforts may be needed to foster these underutilized methods in empirical research in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-6">
+              <h2>Q6. How often are which statistical methods used?</h2>
+              <p class="subtitle">Number of statistical methods used for descriptive statistics and inferential statistics</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that <strong>statistical methods are used mechanically, and with little knowledge about limitations and assumptions</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision that <strong>the use of statistical methods is mature</strong>. This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers that use our ORKG template and report on the use of the statistical methods: descriptive statistics and inferential statistics. We consider each of these two types of statistics separately, as our template allows for a correspondingly more fine-grained analysis.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider the statistical methods of inferential statistics used for data analysis. We identify the statistical methods of inferenttial statistics used for data analysis. A paper can involve more than one statistical methods of inferential statistics used for data analysis so that the number of statistical methodsof inferential statistics used for data analysis can be larger than the number of papers using empricial methods for data analysis. We normalize the number of statistical methods of inferential statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis.</p>
+<p>For this data analysis, we consider the statistical methods of descriptive statistics used for data analysis. We identify the statistical methods of descriptive statistics used for data analysis. A paper can involve more than one statistical methods of descriptive statistics used for data analysis so that the number of statistical methodsof descriptive statistics used for data analysis can be larger than the number of papers using empricial methods for data analysis. We normalize the number of statistical methods of descriptive statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of statistical methods of descriptive statistics used for data analysis</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q6-secondary.png" alt="Relative number of statistical methods of descriptive statistics used for data analysis" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the "Column Statistics & Distribution" (see below in the "Explore Data" section), we see that 72 statistical tests are reported in the 776 papers analyzed. A closer look at the names of the statistical tests extracted from the papers shows that there seems to be a large number of different spellings for partly the same test, such as the Mann-Whitney-U-test with 6 different spellings. Unfortunately, most papers do not provide a reference with which it could be determined more precisely whether all the different spellings always refer to the same test. Overall, the maximum proportion of the most frequently used statistical test (<em>Shapiro-Wilk test</em>) is 3.1%. Thus, the application of statistical methods of inferential statistics seems to be, on the one hand, rather low and, on the other hand, very diverse.</p>
+<p>However, we can observe some trends in the usage of statistical methods of inferential statistics. First, the results reveal a heavy reliance on a small set of foundational and non-parametric tests, with the <em>Shapiro-Wilk test</em> (3.1%), <em>Wilcoxon signed rank test</em> (2.4%), <em>T-test</em> (2.1%), and <em>Chi-square test</em> (1.9%) being the most frequently applied. These methods dominate the landscape, accounting for the highest relative frequencies, which suggests that researchers and practitioners often prioritize basic hypothesis testing and normality checks. Non-parametric alternatives like the <em>Mann-Whitney U test</em> (1.4%) and <em>Kruskal-Wallis test</em> (1.5%) show moderated use, indicating a preference for robust methods that do not assume normal distribution. The usage of correlation and regression techniques, such as <em>Pearson correlation</em> (1.5%) and <em>Linear regression</em> (0.9%), is moderate, reflecting their importance in exploring relationships and predictive modeling. In contrast, advanced and specialized methods, such as <em>Bayesian data analysis</em>, <em>mixed-effect models</em>, <em>factor analysis</em>, and <em>post-hoc tests</em>, are rarely used, each appearing in less than 0.6% of cases. This pattern highlights a broad but shallow application of statistical techniques, where a few core methods are widely adopted, while more sophisticated approaches remain underutilized. The diversity of methods listed is notable, but the concentration of usage on a limited number of tests suggests that statistical practice is still largely driven by familiarity and simplicity rather than a deep, nuanced understanding of the full range of available tools.</p>
+<p>The results indicate that the envisioned use of statistical methods is not yet mature as the overall and individual proportion of statistical tests is rather low and researchers already struggle with the consistent use of uniform names for the statistical tests applied.</p>
+<p>Based on the figure, we observe a clear dominance of basic descriptive statistical methods in data analysis, with <em>count</em> being the most frequently used method at a proportion of 85.0%, followed by <em>percent</em> (57.0%) and <em>mean</em> (43.0%). This indicates a heavy reliance on straightforward summarization techniques. Methods such as <em>range</em> (25.0%), <em>minimum</em> (12.0%), <em>standard deviation</em> (11.0%), and <em>maximum</em> (10.0%) are used less frequently, suggesting a moderate but secondary role in analysis. Notably, more advanced or visual methods like <em>boxplot</em> (9.0%)<em>*, </em>variance<em> (1.0%), and </em>mode* (1.0%) are rarely employed, highlighting a gap in the utilization of statistical methods that could provide deeper insights into data distribution and variability. This trend underscores a preference for simplicity and ease of interpretation. The results show that basic descriptive statistics (count, percent, mean) dominate current empirical research practice in RE, while more advanced or nuanced methods (e.g., boxplot, variance, mode) are underutilized. This observation indicates that the empirical research practice in RE does not yet reflect the maturity expected by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, as the usage remains skewed toward simpler methods.</p></div>
+            </section>
+            
+            <section class="question" id="q-7">
+              <h2>Q7. How has the use of statistical methods evolved over time?</h2>
+              <p class="subtitle">Statistical methods used for data analysis per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that <strong>statistical methods are used mechanically, and with little knowledge about limitations and assumptions</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision that <strong>the use of statistical methods is mature</strong>. This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report on the use of the statistical methods: descriptive statistics and inferential statistics. We consider each of these two types of statistics separately, as our template allows for a correspondingly more fine-grained analysis.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider the statistical methods of inferential statistics used for data analysis overall. Competency question 6 revealed a diverse and low use of 72 different statistical methods of inferential statistics, so a detailed analysis of each statistical method does not provide much value. We identify the statistical methods of inferential statistics used for data analysis. A paper can involve more than one statistical method of inferential statistics used for data analysis, so that the number of statistical methods of inferential statistics used for data analysis can be larger than the number of papers using empirical methods for data analysis. We normalize the number of statistical methods of inferential statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis.</p>
+<p>For this data analysis, we consider the statistical methods of descriptive statistics used for data analysis. We identify the statistical methods of descriptive statistics used for data analysis. A paper can involve more than one statistical method of descriptive statistics used for data analysis, so that the number of statistical methods of descriptive statistics used for data analysis can be larger than the number of papers using empirical methods for data analysis. We normalize the number of statistical methods of descriptive statistics used for data analysis based on the number of all papers using at least one empirical method for data analysis.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of statistical methods of inferential statistics used for data analysis per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q7-primary.png" alt="Relative number of statistical methods of inferential statistics used for data analysis per year" />
+            </figure>
+            
+            <figure class="plot">
+              <figcaption>Relative number of statistical method used for data analysis per year grouped by statistical method</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q7-secondary.png" alt="Relative number of statistical method used for data analysis per year grouped by statistical method" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe a gradual but consistent increase in the adoption of statistical methods of inferential statistics, though the overall usage remains relatively low, with no single year exceeding 5.0%. </p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">Statistical methods of inferential statistics</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">0.20</td>
+    <td class="tg-c3ow">0-1</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">0.61</td>
+    <td class="tg-c3ow">0.2-1.5</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">2.13</td>
+    <td class="tg-c3ow">0.4-5.1</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">1.77</td>
+    <td class="tg-c3ow">0.8-3.6</td>
+  </tr>
+</tbody>
+</table>
+
+<p>In the early years, particularly around the <strong>&quot;current&quot; state of practice (2007)</strong>, the use of statistical methods was minimal, with an average proportion of 0.61%, reflecting the observation of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. By the <strong>target state (2020 - 2025)</strong>, the data shows an increase in usage, stabilizing around an average proportion of 1.77%, indicating a more mature use of statistical methods of inferential statistics.</p>
+<p>While the results show that the use of statistical methods of inferential statistics grown over time, the overall adoption remains modest. Despite some evidence of progress, the continued low proportions indicate that statistical methods are still not a dominant empirical research practice in RE. There is no clear trend that a mature use of statistical methods of inferential statistics has emerged over time, especially not for the <strong>target state (2020 - 2025)</strong> of the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> so far.</p>
+<p>Based on the figure, we observe a transformative journey in the use of statistical methods from 1993 to 2025. In the early years, particularly around 2007, the <strong>&quot;current&quot; state of practice (2007)</strong> was characterized by a heavy reliance on basic methods such as <em>count</em> and <em>percent</em>. This aligns with the observation by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> that the application of statistical methods was limited. The use of more advanced techniques like <em>mean</em>, <em>median</em>, <em>variance</em>, <em>standard deviation</em>, and boxplot was minimal or negligible, reflecting an immature and simplistic approach to data analysis. However, the overall trend reveals a significant shift toward diversification and sophistication. As we move closer to the <strong>target state (2020 - 2025)</strong>, there is a marked increase in the adoption of a broader range of statistical methods. While <em>count</em> and <em>percent</em> remain widely used, their dominance is tempered by a substantial rise in the use of <em>mean</em>, <em>median</em>, <em>range</em>, <em>standard deviation</em>, and <em>boxplot</em>. This evolution indicates a transition from simple methods to a more mature statistical methods, supporting the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> for a more sophisticated empirical research practice in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-8">
+              <h2>Q8. How has the reporting of threats to validity evolved over time?</h2>
+              <p class="subtitle">Threats to validity per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to  <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>,  the <strong>"current" state of practice (2007)</strong> shows that researchers <strong>lack knowledge about limitations and assumptions of statistical tests, power analysis and effect size estimation as well as do not well define populations</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision that <strong>all these aspects are sufficiently addressed</strong>. All mentioned aspects relate to threats to validity of an empirical study, and this predicted change leads to the corresponding competency question.</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report on threats to validity.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we select all papers that report threats to validity. For more detailed insights, we normalize the number of all papers reporting threats to validity based on the number of all unique papers per year, as the total number of papers per year varies.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers reporting threats to validity per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q8-primary.png" alt="Relative number of papers reporting threats to validity per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe a clear upward trend in the proportion of papers reporting threats to validity over time. In the early 1990s, the proportion was negligible or zero, but it began to rise steadily from the late 1990s. By the mid-2000s, there was a noticeable increase, and the trend accelerated significantly after 2010. The proportion of papers addressing threats to validity reached its peak in 2025, with a value of 100.0%, indicating that all papers in that year reported threats to validity.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt">Timeframe</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-c3ow">1993-1999</td>
+<td class="tg-c3ow">4.9</td>
+<td class="tg-c3ow">0-20</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2000-2009</td>
+<td class="tg-c3ow">17.5</td>
+<td class="tg-c3ow">0-40</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2010-2019</td>
+<td class="tg-c3ow">71.8</td>
+<td class="tg-c3ow">52-86</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2020-2025</td>
+<td class="tg-c3ow">91.5</td>
+<td class="tg-c3ow">87-100</td>
+</tr>
+</tbody>
+</table>
+
+<p>While the <strong>“current” state of practice (2007)</strong> shows an average proportion of papers with an empirical study of 21.0%, the proportion of papers with an empirical study in the <strong>target state (2020–2025)</strong> is consistently high (above 87.0%), with an average value of 91.5%. The data confirms a significant improvement in the reporting of threats to validity over time. The upward trend, especially after 2010, supports the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> as it demonstrates a growing awareness and adoption of reporting threats to validity in empirical research in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-9">
+              <h2>Q9. What types of threats to validity do the authors report?</h2>
+              <p class="subtitle">Threats to validity reported</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, 
+  the <strong>"current" state of practice (2007)</strong> shows that researchers 
+  <strong>lack knowledge about limitations and assumptions of statistical tests, power analysis and effect size estimation as well as do not well define populations</strong>.
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that 
+  <strong>all these aspects are sufficiently addressed</strong>.
+  All mentioned aspects relate to threats to validity of an empirical study, and this predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report on threats to validity.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we select all papers that report threats to validity. For more detailed insights, we normalize the number of all papers reporting threats to validity based on the number of all unique papers per year, as the total number of papers per year varies.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of threats to validity reported in papers</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q9-primary.png" alt="Relative number of threats to validity reported in papers" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure, we observe that mainly ten different types of validity are reported in all 776 papers analyzed. <em>External</em> (59.5% proportion), <em>internal</em> (56.2% proportion), and <em>construct</em> (48.8% proportion) validity are reported most frequently. All other types of validity have a proportion below 20%. It is striking that <em>conclusion</em> validity has only a proportion of 18.6%. Even if we consider the type <em>reliability</em> as a synonym of <em>conclusion</em> validity and add the proportions together, we still get a proportion of only 28.7%. In this regard, the reporting of threats to validity seems to be unbalanced as researchers frequently do not address the conclusion validity of their findings. In addition, we found that 34.3% of the papers analyzed that report validity threats simply mention threats to validity without further classification of the types of validity addressed. This lack of classification makes it difficult for the reader to easily assess whether the validity of the findings has been extensively discussed.</p>
+<p>Overall, the data shows that researchers mainly deal with the <em>external</em>, <em>internal</em>, and <em>construct</em> validity of their findings. Although a positive development towards a sufficient addressing of threats to validity as envisioned in the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> can be seen, a better consideration of the <em>conclusion</em> validity and <em>reliability</em> is necessary for a comprehensive treatment of threats to validity. Furthermore, while it is good that researchers report more and more threats to validity, a classification of the threats to validity reported is particularly helpful for the reader to determine whether the validity of the results has been extensively discussed.</p></div>
+            </section>
+            
+            <section class="question" id="q-10">
+              <h2>Q10. How have the proportions of case studies and action research in the empirical methods used evolved over time?</h2>
+              <p class="subtitle">Case studies and action research per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, 
+  one may question the <strong>industrial relevance of most of the studies</strong> in the 
+  <strong>"current" state of practice (2007)</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that researchers carry out 
+  <strong>more case studies and action research</strong>. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and report on the use of the empirical methods: case studies and action research.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that report on the use of the empirical methods: case study and action research. A paper can involve more than one empirical method for data collection so that the number of empirical methods can be larger than the number of papers. We normalize the number of empirical methods (case study and action research) used based on the number of all unique papers with data collection per year.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of case studies and action research used for data collection per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q10-primary.png" alt="Relative number of case studies and action research used for data collection per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe the following trends for case studies and action research used as empirical methods for data collection.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt" rowspan="2">Timeframe</th>
+<th class="tg-7btt" colspan="2">Case study</th>
+<th class="tg-7btt" colspan="2">Action research</th>
+</tr>
+<tr>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-0pky">1993-1999</td>
+<td class="tg-c3ow">50.6</td>
+<td class="tg-c3ow">12-78</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+</tr>
+<tr>
+<td class="tg-0pky">2000-2009</td>
+<td class="tg-c3ow">53.0</td>
+<td class="tg-c3ow">44-67</td>
+<td class="tg-c3ow">3.0</td>
+<td class="tg-c3ow">0-10</td>
+</tr>
+<tr>
+<td class="tg-0pky">2010-2019</td>
+<td class="tg-c3ow">34.1</td>
+<td class="tg-c3ow">6-53</td>
+<td class="tg-c3ow">1.6</td>
+<td class="tg-c3ow">0-5</td>
+</tr>
+<tr>
+<td class="tg-0pky">2020-2025</td>
+<td class="tg-c3ow">20.5</td>
+<td class="tg-c3ow">12-40</td>
+<td class="tg-c3ow">0.0</td>
+<td class="tg-c3ow">0</td>
+</tr>
+</tbody>
+</table>
+
+<p>First, we will briefly summarize our observations for each empirical method before looking at the data as a whole.</p>
+<p>1) <em>Case study</em>: Over the years, case studies are the dominant empirical method, especially in the early period, peaking at 78.0% in 1996. However, their use declines steadily after 2012. For the <strong>&quot;current&quot; state of practice (2007)</strong>, case studies are still the most common empirical method overall, used in 54.0% of papers analyzed, but their dominance is already decreasing. For the <strong>target state (2020 - 2025)</strong>, the average proportion of case studies drops significantly to 20.5%, indicating a slight resurgence of this empirical method in empirical research in RE.</p>
+<p>We assume this change is a result of a clear definition of the term case study. According to <a href="https://doi.org/10.1016/j.infsof.2021.106514">Wohlin</a>, the term case study is often misused in software engineering research. Based on the manual curation of the 776 papers, we can confirm this finding. Prior to 2013, we found many papers that use the term case study (with an average proportion of 51.9%), although at best they report an experiment or a larger use case in the sense of an application example. Despite the decrease, this finding represents a positive development of the empirical research in RE as researchers appear to be more aware of how a case study is defined.</p>
+<p>2) <em>Action research</em>: Action research remains consistently low throughout the entire analyzed timeframe (1993-2025). For the <strong>&quot;current&quot; state of practice (2007)</strong>, it was used with a proportion of 8.0%. After 2017, and thus also for the <strong>target state (2020 - 2025)</strong>, there is no paper using action research. It remains a niche method, indicating limited adoption in empirical research in RE.</p>
+<p>The evolution of empirical methods in research, as depicted in the data, reveals a mixed picture regarding the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. While there was a notable peak in the use of case studies during the late 1990s and early 2000s, the subsequent decline in their application raised concerns about the industrial relevance of research. Although this decline does not fundamentally help achieving the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, we believe this change nonetheless represents a positive development in empirical research in RE, as researchers appear to be more aware of how the term case study is defined. Nevertheless, the <strong>target state (2020 - 2025)</strong> shows a promising, albeit modest, resurgence in the use of case studies, indicating a partial alignment with the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. However, the same does not apply for action research, which remains conspicuously absent in the <strong>target state (2020 - 2025)</strong>. This lack of growth in action research suggests that the industrial relevance of studies may still be falling short of the aspirations outlined by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. To bridge this gap and fully realize the envisioned state, a concerted effort to promote and integrate action research into empirical practices is essential, ensuring that research remains both rigorous and relevant to industry needs.</p></div>
+            </section>
+            
+            <section class="question" id="q-11">
+              <h2>Q11. How has the provision of data (the materials used, raw data collected, and study results identified) evolved over time?</h2>
+              <p class="subtitle">Papers with data per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the 
+  <strong>"current" state of practice (2007)</strong> shows that <strong>few studies</strong> provide results, materials, and raw data 
+  that enable efficient cumulative research. For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that 
+  <strong>more research studies</strong> are designed with the goal of enabling efficient use of their results by other researchers. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and provide at least one url for the availiability of the materials used, raw data collected, and study results.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that provide at least one url for the availiability of the materials used, raw data collected, and study results. A paper can involve more than one url for the data. For this reason, we determine the number of papers that provide at least one url and we normalize the number of papers with at least one url based on the number of all unique papers with data collection per year.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers that provide at least one URL to data per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q11-primary.png" alt="Relative number of papers that provide at least one URL to data per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table, we observe a clear upward trend in the proportion of papers that provide at least one URL to data over time. The average proportion of papers with an empirical study increased steadily over the decades.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:center}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg">
+<thead>
+<tr>
+<th class="tg-7btt">Timeframe</th>
+<th class="tg-7btt">Avg. proportion [%]</th>
+<th class="tg-7btt">Range [%]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tg-c3ow">1993-1999</td>
+<td class="tg-c3ow">4.1</td>
+<td class="tg-c3ow">0-29</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2000-2009</td>
+<td class="tg-c3ow">25.4</td>
+<td class="tg-c3ow">10-44</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2010-2019</td>
+<td class="tg-c3ow">49.8</td>
+<td class="tg-c3ow">21-76</td>
+</tr>
+<tr>
+<td class="tg-c3ow">2020-2025</td>
+<td class="tg-c3ow">83.0</td>
+<td class="tg-c3ow">64-100</td>
+</tr>
+</tbody>
+</table>
+
+<p>While the <strong>“current” state of practice (2007)</strong> shows an average proportion of papers that provide at least one URL to data of 38.0%, the proportion of papers that provide at least one URL to data in the <strong>target state (2020–2025)</strong> is consistently high (above 64.0%), with an average value of 83.0%. The data strongly supports the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. The proportion of papers providing at least one URL to data has significantly increased, with the most rapid growth occurring after 2015. These results suggest that the research community has embraced open data practices as a standard in empirical research in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-12">
+              <h2>Q12. How has the reporting of research questions and answers evolved over time?</h2>
+              <p class="subtitle">Reporting of research questions and answer per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the 
+  <strong>"current" state of practice (2007)</strong> shows that <strong>results are hidden</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that researchers 
+  <strong>focus more on communicating important results</strong>, such as the research question and its answer. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and have information about the research questions and answer.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that report at least one research question (either highlighted or hidden). We also assume that all papers provide an answer (highlighted or hidden) in some way as they are published research paper. A paper can involve more than one research question so that the number of research questions can be larger than the number of papers. We normalize the number of papers with hightlighted/hidden research question(s) and anwers based on the number of all unique papers per year.</p>
+<p>In addition, we also consider all papers that do not report any research question. We also assume that even the papers without a research question provide an answer (highlighted or hidden) in some way as they are published research papers. We normalize the number of papers without any research question and highlighted/hidden answers based on the number of all unique papers per year.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers without and with highlighting/hidden research question(s) and highlighted hidden answers per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q12-primary.png" alt="Relative number of papers without and with highlighting/hidden research question(s) and highlighted hidden answers per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>In the figure and the following table, we see the development trend for all four combinations of highlighted/hidden research question(s) and answer(s) pairs:</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">Highlighted research question and <br>highlighted answer</th>
+    <th class="tg-7btt" colspan="2">Highlighted research question and <br>hidden answer</th>
+    <th class="tg-7btt" colspan="2">Hidden research question and<br>highlighted answer</th>
+    <th class="tg-7btt" colspan="2">Hidden research question and<br>hidden answer</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">4.6</td>
+    <td class="tg-c3ow">5-10</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">4.7</td>
+    <td class="tg-c3ow">4-10</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">1.4</td>
+    <td class="tg-c3ow">0-4</td>
+    <td class="tg-c3ow">6.4</td>
+    <td class="tg-c3ow">3-22</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">7.3</td>
+    <td class="tg-c3ow">4-14</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">9.3</td>
+    <td class="tg-c3ow">4-18</td>
+    <td class="tg-c3ow">36.8</td>
+    <td class="tg-c3ow">22-58</td>
+    <td class="tg-c3ow">4</td>
+    <td class="tg-c3ow">4</td>
+    <td class="tg-c3ow">14.8</td>
+    <td class="tg-c3ow">7-25</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">22.7</td>
+    <td class="tg-c3ow">10-44</td>
+    <td class="tg-c3ow">58.0</td>
+    <td class="tg-c3ow">38-71</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">2.5</td>
+    <td class="tg-c3ow">4-6</td>
+  </tr>
+</tbody></table>
+
+<p>1) The proportion of papers with highlighted research question(s) and highlighted answers increased over time. However, the overall average proportion is only 12.8%. For the <strong>target state (2020 - 2025)</strong>, we observe an almost twofold increase in the proportion of papers highlighting their research question(s) and answers. Although the overall average proportion is low, the development is positive as researchers focus more on communicating (highlighting) their results, given the increased proportion for the <strong>target state (2020 - 2025)</strong>.</p>
+<p>2) The proportion of papers with highlighted research question(s) and answers hidden in the running text steadily increased until 2020 and then stabilized with an overall average proportion of 31.2%. We observe a constant increase in this proportion of papers over the years, with its current maximum of 71.0% in 2024, which can be partly interpreted positively. While researchers highlight their research question(s) as one important element of their paper, they hide the associated answer in the running text. As a consequence, the reader has to find the answer to the research question in the paper themselves, which makes it difficult to get a quick and easy overview of the paper with its central results.</p>
+<p>3) The proportion of papers with research question(s) hidden in the running text and highlighted answers is constantly low, with only 4.0% in 2011, which corresponds to one paper. Based on our manual curation, we can report that this paper is a special case, as the authors failed to formulate their research questions as questions and instead offer only a bullet point list of aspects to be investigated, which are nevertheless called research questions.</p>
+<p>4) The proportion of papers with research question(s) and answers hidden in the running text is overall low, with an average proportion of 10.0%. While the proportion increases slightly until 2018, we observe that it peaks at 6.0% between 2019 and 2022 and even falls to 0.0% between 2023 and 2025. In particular, for the <strong>target state (2020 - 2025)</strong>, the average percentage is only 2.5%, which means that a small number of papers hide their research question(s) and answers in the running text and, conversely, more researchers make an effort to visibly communicate their important findings.</p>
+<p>The data strongly supports the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. Over time, there has been a clear shift toward highlighting both research questions and answers in empirical research papers in RE. The proportion of papers with hidden results has decreased, while those with highlighted results have increased significantly, especially in the <strong>target state (2020 - 2025)</strong>. This indicates a positive evolution in empirical research in RE.</p>
+<p>In the figure and the following table, we also see the development trend of papers without a research question and highlighted or hidden answers:</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">No research question and <br>highlighted answer</th>
+    <th class="tg-7btt" colspan="2">No research question and <br>hidden answer</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">90.6</td>
+    <td class="tg-c3ow">80-100</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">85.0</td>
+    <td class="tg-c3ow">61-96</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">38.7</td>
+    <td class="tg-c3ow">18-63</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">16.8</td>
+    <td class="tg-c3ow">9-25</td>
+  </tr>
+</tbody></table>
+
+<p>1) The proportion of papers without a research question and a highlighted answer is always 0.0% which means that researchers who do not pose a research question also do not highlight any results as an answer to the problem under study.</p>
+<p>2) The proportion of papers without a research question and a hidden answer is gradually decreasing over the years. For the <strong>target state (2020 - 2025)</strong>, the average proportion is decreasing, with an average proportion of 16.8% and its current smallest value of 9.0% in 2025.</p>
+<p>The evolution of academic reporting practices from 1993 to 2025 reveals a remarkable transformation in how research questions and answers are communicated. In 2007, as noted by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the overwhelming majority of papers failed to explicitly state their research questions or highlight their answers, leaving key findings obscured. However, the data demonstrates a significant shift toward transparency and clarity over the subsequent decades. This trend underscores a successful transition toward the <strong>target state (2020 - 2025)</strong> envisioned by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, where researchers prioritize the clear communication of research questions and their answers, ultimately enhancing the accessibility and impact of academic work.</p></div>
+            </section>
+            
+            <section class="question" id="q-13">
+              <h2>Q13. What empirical methods are used to conduct integrative and interpretive (systematic literature) reviews, so-called secondary research?</h2>
+              <p class="subtitle">Proportion of empirical methods used for secondary research per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the 
+  <strong>"current" state of practice (2007)</strong> shows that (literature) <strong>reviews</strong>, so-called secondary research, are mainly 
+  <strong>narrative and biased</strong>, and researchers have <strong>little appreciation of the value of systematic (literature) reviews</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that 
+  <strong>scientific methods are used to undertake integrative and interpretive (literature) reviews</strong>. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers that use our ORKG template and secondardy research as the empirical method for data collection.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that that use our ORKG template and secondardy research as the empirical method for data collection. From these papers, we extract the empirical methods used for secondary research. We normalize the number of papers using empirical mehtods for secondary research based on the number of all papers that use secondary research for data collection.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for secondary research</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q13-primary.png" alt="Relative number of empirical methods used for secondary research" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure, we observe that mainly three empirical methods are used for secondary research. These three methods are <em>archive analysis</em> (58.0%), <em>literature review</em> (14.0%), and <em>systematic literature reviews</em> (10.0% proportion). In addition, we found fourteen other methods based on the extracted names whose proportion is below 3%. <em>Archive analysis</em> is the most frequently used method for secondary research. This method included all types of analyses based on archived data, such as data from issue trackers, app stores, forums, or Twitter. This finding indicates that researchers heavily rely on analyzing existing archives and datasets. The next two most commonly used methods are literature review and systematic literature review, which are probably the best-known methods of secondary research dealing with literature. This distribution highlights a shift toward more structured and empirical methods in secondary research in RE, with a strong preference for archive analysis and systematic approaches.</p>
+<p>These results underscore a meaningful evolution in the methods used for integrative and interpretive (systematic literature) reviews, aligning with the vision by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. There is a clear shift toward more empirical and structured approaches in secondary research, as evidenced by the dominance of archive analysis (58.0%) and the substantial presence of systematic literature reviews (10.0%). This trend reflects a growing appreciation for scientific rigor and a reduction in the reliance on purely narrative and potentially biased literature reviews, but traditional literature reviews still play a role. Overall, the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> for the <strong>target state (2020–2025)</strong> is partially realized, as the dominant methods are still data-driven archive analysis and traditional literature reviews compared to the expected systematic approaches, such as systematic literature review or systematic mapping studies.</p></div>
+            </section>
+            
+            <section class="question" id="q-14">
+              <h2>Q14. How has the proportion of empirical methods to conduct (systematic literature) reviews, so-called secondary research, evolved over time?</h2>
+              <p class="subtitle">Proportion of empirical methods used for secondary research per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the 
+  <strong>"current" state of practice (2007)</strong> shows that (literature) <strong>reviews</strong>, so-called secondary research, are mainly 
+  <strong>narrative and biased</strong>, and researchers have <strong>little appreciation of the value of systematic (literature) reviews</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that 
+  <strong>scientific methods are used to undertake integrative and interpretive (literature) reviews</strong>. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>We must retrieve all papers with their publication year that use our ORKG template and secondardy research as the empirical method for data collection.</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that that use our ORKG template and secondardy research as the empirical method for data collection. From these papers, we extract the empirical methods used for secondary research. We normalize the number of papers using empirical mehtods for secondary research based on the number of all papers that use secondary research for data collection.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of empirical methods used for secondary research per year</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q14-primary.png" alt="Relative number of empirical methods used for secondary research per year" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table of the top-3 empirical methods used for secondary research, we observe that mainly three empirical methods are used for secondary research. These three methods are <em>archive analysis</em> (58.0%), <em>literature review</em> (14.0%), and <em>systematic literature reviews</em> (10.0% proportion). In addition, we found fourteen other methods based on the extracted names whose proportion is below 3%.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">Archive analysis</th>
+    <th class="tg-7btt" colspan="2">Literature review</th>
+    <th class="tg-7btt" colspan="2">Systematic literature review</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">45.5</td>
+    <td class="tg-c3ow">0-100</td>
+    <td class="tg-c3ow">11.9</td>
+    <td class="tg-c3ow">0-50</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">58.4</td>
+    <td class="tg-c3ow">0-100</td>
+    <td class="tg-c3ow">0.0</td>
+    <td class="tg-c3ow">0</td>
+    <td class="tg-c3ow">5.0</td>
+    <td class="tg-c3ow">0-50</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">61.0</td>
+    <td class="tg-c3ow">0-100</td>
+    <td class="tg-c3ow">15.6</td>
+    <td class="tg-c3ow">0-50</td>
+    <td class="tg-c3ow">6.4</td>
+    <td class="tg-c3ow">0-33</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">57.7</td>
+    <td class="tg-c3ow">17-100</td>
+    <td class="tg-c3ow">16.5</td>
+    <td class="tg-c3ow">0-40</td>
+    <td class="tg-c3ow">17.0</td>
+    <td class="tg-c3ow">0-62</td>
+  </tr>
+</tbody></table>
+
+<p>In the <strong>&quot;current&quot; state of practice (2007)</strong>, secondary research was predominantly characterized by the use of archive analysis, which accounted for an average proportion of 58.4% of methods used during the 2000–2009 period. Literature review was not utilized at all during this timeframe. While systematic literature review was emerging with an average adoption rate of 5.0%, its use was still limited and inconsistent, indicating a lack of widespread appreciation for systematic and empirical approaches in secondary research. By the <strong>target state (2020–2025)</strong>, a notable shift occurred in the landscape of secondary research methods. Although archive analysis remained a significant approach, its dominance slightly declined to an average proportion of 57.7%. Meanwhile, systematic literature review saw a substantial increase, reaching an average proportion of 17.0% and demonstrating a broader adoption of rigorous, empirical methods. This evolution aligns with the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, reflecting a transition from narrative and biased reviews to more structured, systematic, and scientific approaches in conducting secondary research in RE.</p></div>
+            </section>
+            
+            <section class="question" id="q-15">
+              <h2>Q15. How many different research methods are used per publication?</h2>
+              <p class="subtitle">Number of research methods used</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, the 
+  <strong>"current" state of practice (2007)</strong> shows that there is <strong>limited</strong> advice on how to 
+  <strong>combine data from diverse study types</strong>. 
+  For the <strong>target state (2020 - 2025)</strong>, 
+  <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> envision that 
+  <strong>methods are available</strong> for synthesizing evidence from a <strong>variety of perspectives and approaches</strong>. 
+  This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>
+  We must retrieve all papers that use our ORKG template and report on the use of empirical methods. 
+  According to <a href="https://doi.org/10.1002/9781118901731.iecrm0083">Dan (2017)</a>, empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. 
+  For this reason, we identify the number of empirical methods used for data collection and data analysis respectively. 
+  Based on the individual paper, we can determine the sum of all empirical methods per publication.
+</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that that use our ORKG template and report empirical method for data collection and data analysis. From these papers, we count the number of empirical methods used for data collection and data analysis. We normalize the number of papers using X empirical methods based on the number of all papers that use empirical methods for data collection and data analysis.</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers using X empirical methods for data collection</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q15-primary.png" alt="Relative number of papers using X empirical methods for data collection" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure, we observe that papers use one to twelve empirical methods for data collection. Most papers use three (29.1%) to four (22.4%) empirical methods. The results indicate that while multiple empirical methods are commonly used, the majority of papers tend to use between 2 to 5 methods. The use of more than 5 methods is relatively rare. While the use of two to five methods in one paper requires the need for methods to synthesize evidence from a <strong>variety of perspectives and approaches</strong> as envisioned by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>, we cannot say whether such methods are used in the <strong>target state (2020 - 2025)</strong> based on our data. However, the increased number of methods used per paper implies a clear need for such methods.</p></div>
+            </section>
+            
+            <section class="question" id="q-16">
+              <h2>Q16. How has the number of research methods used per publication evolved over time?</h2>
+              <p class="subtitle">Number of papers using X empirical methods per year</p>
+
+              <h3>Question explanation</h3>
+              <div class="content"><p>
+  According to <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a>, the <strong>"current" state of practice (2007)</strong> shows that there is <strong>limited</strong> advice on how to <strong>combine data from diverse study types</strong>. For the <strong>target state (2020 - 2025)</strong>, <a href="https://doi.org/10.1109/FOSE.2007.30" target="_blank">Sjøberg et al. (2007)</a> envision that <strong>methods are available</strong> for synthesizing evidence from <strong>variety of perspectives and approaches</strong>. This predicted change leads to the corresponding competency question.
+</p></div>
+
+              <h3>Required data for analysis</h3>
+              <div class="content"><p>
+  We must retrieve all papers that use our ORKG template and report on the use of empirical methods. According to <a href="https://doi.org/10.1002/9781118901731.iecrm0083" target="_blank">Dan (2017)</a>, empirical methods include data collection and data analysis. An empirical method can therefore be a method for data collection and data analysis. For this reason, we identify the number of empirical methods used for data collection and data analysis respectively. Based on the individual paper, we can determine the sum of all empirical methods per publication.
+</p></div>
+
+              <h3>Data analysis</h3>
+              <div class="content"><p>For this data analysis, we consider all papers that that use our ORKG template and report empirical method for data collection and data analysis. From these papers, we count the number of empirical methods used for data collection and data analysis. We normalize the number of papers using X empirical mehtods based on the number of all papers that use empirical methods for data collection and data analysis.
+</p></div>
+
+              <h3>Plots</h3>
+            <figure class="plot">
+              <figcaption>Relative number of papers using X empirical methods for data collection per year grouped by number of empirical methods</figcaption>
+              <img src="file:///Users/amirrezaalasti/Desktop/TIB/EmpiRE-Compass/exports/charts/png/q16-primary.png" alt="Relative number of papers using X empirical methods for data collection per year grouped by number of empirical methods" />
+            </figure>
+            
+
+              <h3>Answer / data interpretation</h3>
+              <div class="content answer"><p>Based on the figure and the following table focusing on two to five empirical methods used which is the range of methods the majority of papers tend to use. We observe that the use of one or two empirical methods steadily decreases over time while the use of three or more methods increases over time. This trend indicates a trend toward greater methodological diversity.</p>
+<p><style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+.tg .tg-7btt{border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style></p>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-7btt" rowspan="2">Timeframe</th>
+    <th class="tg-7btt" colspan="2">2 empirical methods used</th>
+    <th class="tg-7btt" colspan="2">3 empirical methods used</th>
+    <th class="tg-7btt" colspan="2">4 empirical methods used</th>
+    <th class="tg-7btt" colspan="2">5 empirical methods used</th>
+  </tr>
+  <tr>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+    <th class="tg-7btt">Avg. proportion [%]</th>
+    <th class="tg-7btt">Range [%]</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">1993-1999</td>
+    <td class="tg-c3ow">32.9</td>
+    <td class="tg-c3ow">14-55</td>
+    <td class="tg-c3ow">30.3</td>
+    <td class="tg-c3ow">17-62</td>
+    <td class="tg-c3ow">16.1</td>
+    <td class="tg-c3ow">8-36</td>
+    <td class="tg-c3ow">6.6</td>
+    <td class="tg-c3ow">0-15</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2000-2009</td>
+    <td class="tg-c3ow">22.6</td>
+    <td class="tg-c3ow">5-35</td>
+    <td class="tg-c3ow">38.0</td>
+    <td class="tg-c3ow">21-58</td>
+    <td class="tg-c3ow">17.3</td>
+    <td class="tg-c3ow">5-28</td>
+    <td class="tg-c3ow">7.9</td>
+    <td class="tg-c3ow">0-13</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2010-2019</td>
+    <td class="tg-c3ow">16.3</td>
+    <td class="tg-c3ow">0-42</td>
+    <td class="tg-c3ow">31.6</td>
+    <td class="tg-c3ow">9-63</td>
+    <td class="tg-c3ow">22.9</td>
+    <td class="tg-c3ow">5-34</td>
+    <td class="tg-c3ow">11.7</td>
+    <td class="tg-c3ow">0-24</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">2020-2025</td>
+    <td class="tg-c3ow">4.5</td>
+    <td class="tg-c3ow">0-12</td>
+    <td class="tg-c3ow">14.7</td>
+    <td class="tg-c3ow">6-29</td>
+    <td class="tg-c3ow">28.2</td>
+    <td class="tg-c3ow">21-47</td>
+    <td class="tg-c3ow">23.0</td>
+    <td class="tg-c3ow">12-33</td>
+  </tr>
+</tbody></table>
+
+<p>The evolution of empirical research methods from 1993 to 2025 reveals a profound transformation in empirical research practice in RE, aligning closely with the vision outlined by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. The <strong>&quot;current&quot; state of practice (2007)</strong> shows a limited use of empirical methods, with most publications relying on only two or three empirical methods, and a relatively low adoption of four or more methods. This observation reflects the challenges in synthesizing evidence from diverse study types, as noted by <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. However, the <strong>target state (2020 - 2025)</strong> shows a substantial increase in the use of four and five empirical methods per paper. The proportion of papers using four methods rose to 28.2%, and those using five methods reached 23.0%, while the use of only two methods declined to just 4.5%. This shift underscores a broader trend toward methodological diversity and integration, supporting the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a> for a research landscape where evidence is synthesized from a variety of perspectives and approaches, ultimately enhancing the robustness and applicability of research findings. Based on these results, we observe a positive development towards the vision of <a href="https://doi.org/10.1109/FOSE.2007.30">Sjøberg et al. (2007)</a>. Researchers combine data using different methods for data collection and data analysis. Based on our data, we cannot say whether correspondings methods for synthesizing evidence are already available for the <strong>target state (2020 - 2025)</strong> as envisioned. However, our results indicate that there is a need for methods to synthesize findings due to the increase in the number of methods used per paper in recent years.</p></div>
+            </section>
+            
+
+  <p class="note">
+    Generated for research / paper drafting from EmpiRE-Compass (template R186491, Empirical Research Practice / KG-EmpiRE).
+    Interpretations reflect the curated dashboard answers; plots reflect current ORKG query results.
+  </p>
+</body>
+</html>
