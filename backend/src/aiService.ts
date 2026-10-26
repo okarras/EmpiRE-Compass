@@ -229,7 +229,7 @@ export class AIService {
         model: any;
         prompt: string;
         temperature?: number;
-        maxTokens?: number;
+        maxOutputTokens?: number;
         system?: string;
       } = {
         model,
@@ -238,9 +238,12 @@ export class AIService {
         system: request.systemContext,
       };
 
-      // Only include maxTokens if it's provided and valid
+      // The AI SDK v5 option is `maxOutputTokens`; the old `maxTokens` name was
+      // accepted by the object literal but ignored by the SDK, so generation was
+      // effectively uncapped — a single suggestion could run past 2,500 tokens
+      // and take two minutes.
       if (request.maxTokens && request.maxTokens > 0) {
-        generateOptions.maxTokens = request.maxTokens;
+        generateOptions.maxOutputTokens = request.maxTokens;
       }
 
       const result = await generateText(generateOptions);

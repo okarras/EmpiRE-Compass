@@ -43,6 +43,9 @@ const News = () => {
   const [selectedTag, setSelectedTag] = useState<string>('all');
   const [selectedPriority, setSelectedPriority] = useState<string>('all');
   const [page, setPage] = useState(1);
+  // URLs that failed to load (e.g. a PDF link) -- rendered as no image at all
+  // instead of a broken placeholder.
+  const [brokenImages, setBrokenImages] = useState<string[]>([]);
   const itemsPerPage = 9;
 
   useEffect(() => {
@@ -317,15 +320,23 @@ const News = () => {
                         alignItems: 'stretch',
                       }}
                     >
-                      {news.imageUrl && (
-                        <CardMedia
-                          component="img"
-                          height="200"
-                          image={news.imageUrl}
-                          alt={news.title}
-                          sx={{ objectFit: 'cover' }}
-                        />
-                      )}
+                      {news.imageUrl &&
+                        !brokenImages.includes(news.imageUrl) && (
+                          <CardMedia
+                            component="img"
+                            height="200"
+                            image={news.imageUrl}
+                            alt={news.title}
+                            sx={{ objectFit: 'cover' }}
+                            onError={() =>
+                              setBrokenImages((prev) =>
+                                prev.includes(news.imageUrl!)
+                                  ? prev
+                                  : [...prev, news.imageUrl!]
+                              )
+                            }
+                          />
+                        )}
                       <CardContent
                         sx={{
                           flexGrow: 1,

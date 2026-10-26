@@ -127,6 +127,7 @@ export class AIService {
       provider?: AIProvider;
       model?: string;
       systemContext?: string;
+      signal?: AbortSignal;
     }
   ) {
     const targetProvider = options?.provider || this.config.provider;
@@ -137,7 +138,12 @@ export class AIService {
       prompt,
       system: options?.systemContext,
       temperature: options?.temperature ?? 0.3,
-      // omit maxTokens to match SDK typings
+      abortSignal: options?.signal,
+      // v5 names this `maxOutputTokens`; without it generation is uncapped and a
+      // single suggestion can run for minutes.
+      ...(options?.maxTokens && options.maxTokens > 0
+        ? { maxOutputTokens: options.maxTokens }
+        : {}),
     });
 
     // Normalize text to string (handle different response formats)

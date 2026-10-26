@@ -4,6 +4,35 @@
   "outputDirectory": "dist",
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com 'unsafe-eval' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' blob: https://*.googleapis.com https://cdn.jsdelivr.net https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://api.openai.com https://api.groq.com https://api.mistral.ai https://generativelanguage.googleapis.com https://orkg.org https://*.orkg.org http://localhost:5001 http://127.0.0.1:5001 https://empirecompassbackend.vercel.app https://*.vercel.app https://empire-compass-backend.tib.eu https://*.tib.eu https://huggingface.co https://*.huggingface.co https://hf.co https://*.hf.co https://openrouter.ai https://*.openrouter.ai; font-src 'self' data: https://cdn.jsdelivr.net; frame-src 'self' https://av.tib.eu https://*.tib.eu https://accounts.orkg.org https://*.orkg.org; worker-src 'self' blob: https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        }
+      ]
+    },
+    {
       "source": "/index.html",
       "headers": [
         {

@@ -1,5 +1,5 @@
 import QuestionAccordion from './QuestionAccordion';
-import { Box, Paper, Typography, Chip } from '@mui/material';
+import { Box, Paper, Typography, Chip, Button } from '@mui/material';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
@@ -10,6 +10,20 @@ import InfoIcon from '@mui/icons-material/Info';
 import { useState, useEffect } from 'react';
 import CRUDHomeContent, { HomeContentData } from '../firestore/CRUDHomeContent';
 import { useBackupChange } from '../hooks/useBackupChange';
+import DownloadIcon from '@mui/icons-material/Download';
+import QuestionExportDialog from './QuestionExportDialog';
+import HeaderExportAction from './HeaderExportAction';
+import Question from './Question';
+import {
+  exportQuestionsHtml,
+  exportQuestionsCharts,
+  type ExportFormat,
+  exportQuestionsDocument,
+  type ExportChartMode,
+  type ExportSections,
+  type QuestionHtmlExport,
+} from './ExportQuestion';
+import { toast } from 'react-hot-toast';
 
 //* Dashboard component that displays the questions for a given template
 const Dashboard = () => {
@@ -17,6 +31,15 @@ const Dashboard = () => {
   const templateId = params.templateId;
   const [homeContent, setHomeContent] = useState<HomeContentData | null>(null);
   const backupVersion = useBackupChange(); // Listen for backup changes
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportJob, setExportJob] = useState<{
+    questions: Query[];
+    sections: ExportSections;
+    results: QuestionHtmlExport[];
+    format: ExportFormat;
+    creatingReport?: boolean;
+    chartMode: ExportChartMode;
+  } | null>(null);
 
   const firebaseQuestions = useSelector<
     RootState,
@@ -72,6 +95,139 @@ const Dashboard = () => {
         py: { xs: 3, md: 6 },
       }}
     >
+      <HeaderExportAction>
+        <Button
+          variant="outlined"
+          startIcon={<DownloadIcon />}
+          onClick={() => setExportOpen(true)}
+        >
+          Export
+        </Button>
+      </HeaderExportAction>
+
+      <QuestionExportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        title="Export selected questions"
+        progress={
+          exportJob
+            ? exportJob.creatingReport
+              ? `Creating ${exportJob.format.toUpperCase()} report…`
+              : `Preparing question ${exportJob.results.length + 1} of ${exportJob.questions.length}…`
+            : undefined
+        }
+        onExport={
+          templateId
+            ? (sections, format, questionIds, chartMode = 'relative') => {
+                if (exportJob) return;
+                const sparqlMap: Record<string, string> = templateConfig.sparql;
+                const selected = (
+                  mergedQuestions.filter(
+                    (question) =>
+                      questionIds?.includes(question.id) &&
+                      queries.some((query) => query.id === question.id)
+                  ) as Query[]
+                ).map((question) => ({
+                  ...question,
+                  sparqlQuery2:
+                    question.sparqlQuery2 ||
+                    sparqlMap[question.uid_2_merge ?? question.uid_2 ?? ''],
+                }));
+                if (selected.length)
+                  setExportJob({
+                    questions: selected,
+                    sections:
+                      format === 'txt'
+                        ? { ...sections, charts: false }
+                        : sections,
+                    results: [],
+                    format,
+                    chartMode,
+                  });
+              }
+            : undefined
+        }
+        questions={mergedQuestions
+          .filter((question) =>
+            queries.some((query) => query.id === question.id)
+          )
+          .map((question) => ({
+            id: question.id,
+            title: question.dataAnalysisInformation?.question ?? '',
+          }))}
+      />
+      {exportJob && (
+        <Box
+          aria-hidden="true"
+          sx={{
+            position: 'fixed',
+            left: '-12000px',
+            top: 0,
+            width: 1200,
+            pointerEvents: 'none',
+          }}
+        >
+          <Question
+            key={exportJob.results.length}
+            query={exportJob.questions[exportJob.results.length]}
+            reportExport={{
+              sections: exportJob.sections,
+              format: exportJob.format,
+              chartMode:
+                exportJob.format === 'pdf' || exportJob.format === 'docx'
+                  ? exportJob.chartMode
+                  : undefined,
+              onComplete: async (question) => {
+                const results = [...exportJob.results, question];
+                if (results.length < exportJob.questions.length) {
+                  setExportJob({ ...exportJob, results });
+                  return;
+                }
+                setExportJob({ ...exportJob, creatingReport: true });
+                // Show the final phase before starting the document conversion.
+                await new Promise<void>((resolve) => setTimeout(resolve, 0));
+                try {
+                  if (
+                    exportJob.format === 'svg' ||
+                    exportJob.format === 'png'
+                  ) {
+                    await exportQuestionsCharts(
+                      results,
+                      templateId!,
+                      exportJob.sections,
+                      exportJob.format
+                    );
+                  } else if (exportJob.format !== 'html') {
+                    await exportQuestionsDocument(
+                      results,
+                      templateId!,
+                      exportJob.sections,
+                      exportJob.chartMode,
+                      exportJob.format
+                    );
+                  } else {
+                    exportQuestionsHtml(
+                      results,
+                      templateId!,
+                      exportJob.sections
+                    );
+                  }
+                  setExportOpen(false);
+                } catch (error) {
+                  console.error('Questions export failed:', error);
+                  toast.error('Export failed. Please try again.');
+                }
+                setExportJob(null);
+              },
+              onError: (error) => {
+                console.error('Questions export failed:', error);
+                toast.error('Export failed. Please try again.');
+                setExportJob(null);
+              },
+            }}
+          />
+        </Box>
+      )}
       {/* Template Info Box */}
       <Box
         sx={{
@@ -91,7 +247,15 @@ const Dashboard = () => {
             borderLeft: '4px solid #e86161',
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1.5 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              mb: 2,
+              gap: 1.5,
+            }}
+          >
             <Box
               sx={{
                 display: 'flex',
@@ -112,10 +276,13 @@ const Dashboard = () => {
                 color: 'text.primary',
                 fontWeight: 600,
                 fontSize: '1rem',
+                flex: 1,
+                minWidth: 0,
               }}
             >
               {templateInfoBox.title}
             </Typography>
+            <Box id="page-title-export-action" sx={{ flexShrink: 0 }} />
           </Box>
 
           <Typography
