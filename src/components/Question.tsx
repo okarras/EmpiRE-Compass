@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import QuestionExportDialog from './QuestionExportDialog';
+import HeaderExportAction from './HeaderExportAction';
 
 import fetchSPARQLData from '../helpers/fetch_query';
 import QuestionInformationView from './QuestionInformationView';
@@ -33,6 +34,7 @@ import { useBackupChange } from '../hooks/useBackupChange';
 import QuestionVersionHistoryDialog from './QuestionVersionHistoryDialog';
 import {
   exportQuestion,
+  serializeChartSvg,
   getExportChartModes,
   type ExportChartGroup,
   type ExportChartMode,
@@ -313,77 +315,7 @@ const Question: React.FC<QuestionProps> = ({
       return null;
     }
 
-    const copy = svg.cloneNode(true) as SVGSVGElement;
-    const originals = [svg, ...svg.querySelectorAll('*')];
-    const copies = [copy, ...copy.querySelectorAll('*')];
-
-    originals.forEach((element, index) => {
-      const style = getComputedStyle(element);
-      const target = copies[index] as SVGElement;
-
-      if (element instanceof SVGRectElement) {
-        ['x', 'y', 'width', 'height'].forEach((property) => {
-          const value = Number.parseFloat(style.getPropertyValue(property));
-
-          if (Number.isFinite(value)) {
-            target.setAttribute(property, String(value));
-            target.style.removeProperty(property);
-          }
-        });
-      }
-
-      if (element !== svg && style.transform !== 'none') {
-        const matrix = new DOMMatrixReadOnly(style.transform);
-
-        // Chart transforms are planar, even when the browser reports matrix3d.
-        // Standalone SVG images need the equivalent SVG matrix attribute.
-        target.setAttribute(
-          'transform',
-          `matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f})`
-        );
-        target.style.removeProperty('transform');
-      }
-
-      [
-        'fill',
-        'stroke',
-        'font-size',
-        'font-family',
-        'font-weight',
-        'text-anchor',
-        'dominant-baseline',
-        'pointer-events',
-      ].forEach((property) => {
-        target.style.setProperty(property, style.getPropertyValue(property));
-      });
-
-      // Collection charts inherit pointer-events: none from their hidden container.
-      // Exported bars must remain interactive for hover styles and SVG titles.
-      if (element.classList.contains('MuiBarElement-root')) {
-        target.style.setProperty('pointer-events', 'auto');
-      }
-    });
-
-    const hoverStyle = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'style'
-    );
-
-    hoverStyle.textContent = `
-  .MuiBarElement-root {
-    transition: filter 150ms ease;
-  }
-
-  .MuiBarElement-root:hover {
-    filter: brightness(0.75);
-  }
-`;
-
-    copy.prepend(hoverStyle);
-
-    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
-    return new XMLSerializer().serializeToString(copy);
+    return serializeChartSvg(svg);
   };
 
   const getCurrentChartsHtml = (
@@ -716,15 +648,17 @@ const Question: React.FC<QuestionProps> = ({
 
   return (
     <Box ref={chartRoot} sx={{ width: '100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<DownloadIcon />}
-          onClick={() => setExportOpen(true)}
-        >
-          Export
-        </Button>
-      </Box>
+      {!reportExport && (
+        <HeaderExportAction targetId="question-title-export-action">
+          <Button
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            onClick={() => setExportOpen(true)}
+          >
+            Export
+          </Button>
+        </HeaderExportAction>
+      )}
 
       <QuestionExportDialog
         open={exportOpen}

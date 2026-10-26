@@ -1,7 +1,12 @@
 import DOMPurify from 'dompurify';
+import type JSZip from 'jszip';
+import type { DynamicQuestionState } from '../context/DynamicQuestionContext';
 import { prepareQueryForExecution } from '../helpers/fetch_query';
 import type { Query } from '../constants/queries_chart_info';
-import { getTemplateConfig } from '../constants/template_config';
+import {
+  getTemplateConfig,
+  templateConfig,
+} from '../constants/template_config';
 
 import type {
   Content,
@@ -77,17 +82,12 @@ function requireChartGroup(
   return group;
 }
 
-// Select the content once for every format.
-function buildReport(
-  query: Query,
-  templateId: string,
-  tabIndex: number,
+function buildReportSections(
+  info: Query['dataAnalysisInformation'],
   selected: ExportSections,
-  format: ExportFormat,
-  normalized: boolean,
-  exportedAt: Date
+  tabIndex: number,
+  sparql?: string
 ) {
-  const info = query.dataAnalysisInformation;
   const getContent = (value?: string | string[]) =>
     Array.isArray(value) ? (value[tabIndex] ?? '') : (value ?? '');
 
@@ -114,17 +114,55 @@ function buildReport(
     },
   ];
 
-  if (selected.sparql) {
-    const sparql =
-      tabIndex === 1 && query.uid_2 ? query.sparqlQuery2 : query.sparqlQuery;
-    if (sparql?.trim()) {
-      sections.push({
-        enabled: true,
-        title: 'SPARQL query',
-        content: `<pre><code>${escapeHtml(prepareQueryForExecution(sparql))}</code></pre>`,
-      });
-    }
+  if (selected.sparql && sparql?.trim()) {
+    sections.push({
+      enabled: true,
+      title: 'SPARQL query',
+      content: `<pre><code>${escapeHtml(prepareQueryForExecution(sparql))}</code></pre>`,
+    });
   }
+
+  return sections
+    .filter((section) => section.enabled && section.content.trim())
+    .map((section) => ({
+      title: section.title,
+      content: DOMPurify.sanitize(section.content, {
+        USE_PROFILES: { html: true },
+      }),
+    }));
+}
+
+function buildReportMetadata(
+  templateId: string,
+  exportedAt: Date,
+  source: { label: string; value: string; url: string },
+  details: { label: string; value: string; url?: string }[] = []
+) {
+  return [
+    {
+      label: 'Theme',
+      value: getTemplateConfig(templateId).title,
+      url: `https://orkg.org/template/${encodeURIComponent(templateId)}`,
+    },
+    ...details,
+    { label: 'Export date', value: exportedAt.toLocaleDateString('en-GB') },
+    source,
+  ];
+}
+
+// Select the content once for every format.
+function buildReport(
+  query: Query,
+  templateId: string,
+  tabIndex: number,
+  selected: ExportSections,
+  format: ExportFormat,
+  normalized: boolean,
+  exportedAt: Date
+) {
+  const info = query.dataAnalysisInformation;
+  const sparql =
+    tabIndex === 1 && query.uid_2 ? query.sparqlQuery2 : query.sparqlQuery;
 
   const sourceUrl = `https://empire-compass.tib.eu/${encodeURIComponent(templateId)}/questions/${encodeURIComponent(String(query.id))}`;
   const tab = getExportTab(query, tabIndex);
@@ -138,34 +176,25 @@ function buildReport(
         ? 'Relative'
         : 'Absolute';
 
-  const metadata: { label: string; value: string; url?: string }[] = [
-    {
-      label: 'Theme',
-      value: getTemplateConfig(templateId).title,
-      url: `https://orkg.org/template/${encodeURIComponent(templateId)}`,
-    },
-    ...(tab.name ? [{ label: 'Analysis', value: tab.name }] : []),
-    ...(hasCharts ? [{ label: 'Chart display', value: chartDisplay }] : []),
-    { label: 'Export date', value: exportedAt.toLocaleDateString('en-GB') },
+  const metadata = buildReportMetadata(
+    templateId,
+    exportedAt,
     {
       label: 'Source question',
       value: `Question ${query.id}`,
       url: sourceUrl,
     },
-  ];
+    [
+      ...(tab.name ? [{ label: 'Analysis', value: tab.name }] : []),
+      ...(hasCharts ? [{ label: 'Chart display', value: chartDisplay }] : []),
+    ]
+  );
 
   return {
     title: `${query.id}. ${info.question}`,
     metadata,
     sourceUrl,
-    sections: sections
-      .filter((section) => section.enabled && section.content.trim())
-      .map((section) => ({
-        title: section.title,
-        content: DOMPurify.sanitize(section.content, {
-          USE_PROFILES: { html: true },
-        }),
-      })),
+    sections: buildReportSections(info, selected, tabIndex, sparql),
   };
 }
 
@@ -1164,6 +1193,101 @@ function htmlToPdfBlocks(
   });
 }
 
+export function serializeChartSvg(svg: SVGSVGElement): string {
+  const copy = svg.cloneNode(true) as SVGSVGElement;
+  const originals = [svg, ...svg.querySelectorAll('*')];
+  const copies = [copy, ...copy.querySelectorAll('*')];
+
+  originals.forEach((element, index) => {
+    const style = (
+      element.ownerDocument.defaultView ?? window
+    ).getComputedStyle(element);
+    const target = copies[index] as SVGElement;
+
+    if (element.localName === 'rect') {
+      ['x', 'y', 'width', 'height'].forEach((property) => {
+        const value = Number.parseFloat(style.getPropertyValue(property));
+
+        if (Number.isFinite(value)) {
+          target.setAttribute(property, String(value));
+          target.style.removeProperty(property);
+        }
+      });
+    }
+
+    if (element !== svg && style.transform !== 'none') {
+      const matrix = new DOMMatrixReadOnly(style.transform);
+
+      // Chart transforms are planar, even when the browser reports matrix3d.
+      // Standalone SVG images need the equivalent SVG matrix attribute.
+      target.setAttribute(
+        'transform',
+        `matrix(${matrix.a} ${matrix.b} ${matrix.c} ${matrix.d} ${matrix.e} ${matrix.f})`
+      );
+      target.style.removeProperty('transform');
+    }
+
+    [
+      'fill',
+      'stroke',
+      'font-size',
+      'font-family',
+      'font-weight',
+      'text-anchor',
+      'dominant-baseline',
+      'pointer-events',
+    ].forEach((property) => {
+      target.style.setProperty(property, style.getPropertyValue(property));
+    });
+
+    // Collection charts inherit pointer-events: none from their hidden container.
+    // Exported bars must remain interactive for hover styles and SVG titles.
+    if (element.classList.contains('MuiBarElement-root')) {
+      target.style.setProperty('pointer-events', 'auto');
+    }
+  });
+
+  const hoverStyle = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'style'
+  );
+
+  hoverStyle.textContent = `
+.MuiBarElement-root {
+  transition: filter 150ms ease;
+}
+
+.MuiBarElement-root:hover {
+  filter: brightness(0.75);
+}
+`;
+
+  copy.prepend(hoverStyle);
+
+  copy.removeAttribute('xmlns');
+  copy.setAttributeNS(
+    'http://www.w3.org/2000/xmlns/',
+    'xmlns',
+    'http://www.w3.org/2000/svg'
+  );
+
+  return new XMLSerializer().serializeToString(copy);
+}
+
+function buildSvgChartFigure(svg: SVGSVGElement, title: string) {
+  const figure = document.createElement('figure');
+  figure.className = 'report-chart';
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  figure.append(heading);
+  figure.insertAdjacentHTML('beforeend', serializeChartSvg(svg));
+  const copy = figure.querySelector('svg')!;
+  const { width, height } = svg.getBoundingClientRect();
+  copy.setAttribute('width', String(width));
+  copy.setAttribute('height', String(height));
+  return figure;
+}
+
 async function chartsToPng(
   chartHtml: string,
   includeTitle = false,
@@ -1247,8 +1371,107 @@ async function chartsToPng(
   return images;
 }
 
-async function getMainChartImages(chartHtml?: string) {
+async function getMainChartImages(chartHtml?: string | ChartImage[]) {
+  if (Array.isArray(chartHtml)) return chartHtml;
   return chartHtml ? chartsToPng(chartHtml, false, true) : [];
+}
+
+type ChartImage = Awaited<ReturnType<typeof chartsToPng>>[number];
+
+function getDynamicChartElements(frame?: HTMLIFrameElement | null) {
+  const chartDocument = frame?.contentDocument;
+  if (!chartDocument || chartDocument.readyState !== 'complete') {
+    throw new Error('The generated chart is not ready for export.');
+  }
+  const elements = Array.from(
+    chartDocument.querySelectorAll('canvas, svg')
+  ).filter((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return (
+      width > 0 &&
+      height > 0 &&
+      !element.parentElement?.closest('svg') &&
+      chartDocument.defaultView?.getComputedStyle(element).visibility !==
+        'hidden'
+    );
+  });
+  if (!elements.length) throw new Error('No canvas or SVG chart found.');
+  return elements;
+}
+
+export function supportsDynamicSvgExport(
+  frame?: HTMLIFrameElement | null
+): boolean {
+  try {
+    return getDynamicChartElements(frame).every(
+      (element) => element.localName === 'svg'
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function captureDynamicCharts(
+  frame?: HTMLIFrameElement | null
+): Promise<ChartImage[]> {
+  const elements = getDynamicChartElements(frame);
+  const images: ChartImage[] = [];
+  for (const [index, element] of elements.entries()) {
+    const title =
+      elements.length === 1
+        ? 'AI-Generated Chart'
+        : `AI-Generated Chart ${index + 1}`;
+    if (element.localName === 'svg') {
+      const figure = buildSvgChartFigure(element as SVGSVGElement, title);
+      images.push(...(await chartsToPng(figure.outerHTML)));
+      continue;
+    }
+    const source = element as HTMLCanvasElement;
+    if (!source.width || !source.height)
+      throw new Error('Chart dimensions are missing.');
+    // Wait for the existing drawing to settle without rerunning the chart calculation.
+    let previous = '';
+    let stableFrames = 0;
+    for (let attempt = 0; attempt < 120 && stableFrames < 3; attempt += 1) {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve())
+      );
+      const current = source.toDataURL('image/png');
+      stableFrames = current === previous ? stableFrames + 1 : 0;
+      previous = current;
+    }
+    if (stableFrames < 3)
+      throw new Error(
+        'The chart is still changing. Please wait and try again.'
+      );
+    const pixels = source
+      .getContext('2d')
+      ?.getImageData(0, 0, source.width, source.height).data;
+    if (
+      pixels &&
+      !pixels.some((value, index) => index % 4 === 3 && value > 0)
+    ) {
+      throw new Error('The generated chart is not ready for export.');
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = source.width;
+    canvas.height = source.height;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas is unavailable.');
+    context.fillStyle = '#fff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(source, 0, 0);
+    images.push({
+      title,
+      display: null,
+      dataUrl: canvas.toDataURL('image/png'),
+      width: canvas.width,
+      height: canvas.height,
+    });
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+  return images;
 }
 
 interface ReportChapter {
@@ -1423,7 +1646,7 @@ function pdfReportContent(
 
 async function exportPdf(
   report: Report,
-  chartHtml?: string,
+  chartHtml?: string | ChartImage[],
   chapters?: ReportChapter[]
 ): Promise<Blob> {
   const charts = await getMainChartImages(chartHtml);
@@ -1471,12 +1694,18 @@ async function exportPdf(
             if (line) lines.push(line);
             return [
               {
-                // One link per complete line, rather than per word.
-                stack: lines.map((text) => ({
-                  text,
-                  noWrap: true,
-                  linkToDestination: chapter.id,
-                })),
+                stack: [
+                  {
+                    stack: lines.map((text) => ({ text, noWrap: true })),
+                    relativePosition: { x: 0, y: 0 },
+                  },
+                  {
+                    // One transparent link area covers the complete title.
+                    // Keep the visible title as normal, selectable PDF text.
+                    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${lines.length * 18}"><rect width="100%" height="100%" fill="none"/></svg>`,
+                    linkToDestination: chapter.id,
+                  },
+                ],
                 margin: [indent, 4, 0, 4],
               },
               {
@@ -1536,7 +1765,7 @@ async function exportPdf(
 
 async function exportDocx(
   report: Report,
-  chartHtml?: string,
+  chartHtml?: string | ChartImage[],
   chapters?: ReportChapter[]
 ): Promise<Blob> {
   const {
@@ -1952,6 +2181,26 @@ function buildChartZipGroups(
   });
 }
 
+function createChartZipFolder(zip: JSZip, name: string, report: Report) {
+  const folder = zip.folder(name);
+  if (!folder) throw new Error('Chart export folder could not be created.');
+  folder.file('metadata.txt', exportTxt({ ...report, sections: [] }));
+  return folder;
+}
+
+function addPngChartsToZip(
+  folder: JSZip,
+  charts: ChartImage[],
+  chartNumber = 0
+) {
+  charts.forEach((chart) => {
+    folder.file(`chart-${++chartNumber}.png`, chart.dataUrl.split(',')[1], {
+      base64: true,
+    });
+  });
+  return chartNumber;
+}
+
 async function exportChartZip(
   groups: { folder: string; html: string; report: Report }[],
   format: 'svg' | 'png'
@@ -1961,19 +2210,13 @@ async function exportChartZip(
   const chartCounts = new Map<string, number>();
 
   for (const group of groups) {
-    const folder = zip.folder(group.folder);
-    if (!folder) throw new Error('Chart export folder could not be created.');
-    folder.file('metadata.txt', exportTxt({ ...group.report, sections: [] }));
+    const folder = createChartZipFolder(zip, group.folder, group.report);
 
     let chartNumber = chartCounts.get(group.folder) ?? 0;
     if (format === 'png') {
       const charts = await chartsToPng(group.html, true);
 
-      charts.forEach((chart) => {
-        folder.file(`chart-${++chartNumber}.png`, chart.dataUrl.split(',')[1], {
-          base64: true,
-        });
-      });
+      chartNumber = addPngChartsToZip(folder, charts, chartNumber);
     } else {
       const container = document.createElement('div');
       container.innerHTML = group.html;
@@ -2055,7 +2298,7 @@ const exportMimeTypes = {
 async function renderDocument(
   format: 'pdf' | 'docx' | 'txt',
   report: Report,
-  chartHtml?: string,
+  chartHtml?: string | ChartImage[],
   chapters?: ReportChapter[]
 ): Promise<string | Blob> {
   if (format === 'pdf') return exportPdf(report, chartHtml, chapters);
@@ -2200,34 +2443,14 @@ export async function exportQuestionsDocument(
         exportedAt
       )
     );
-    const shared =
-      tabs.length > 1
-        ? tabs[0].sections.filter(
-            (section) =>
-              [
-                'Question explanation',
-                'Required data',
-                'Analysis method',
-              ].includes(section.title) &&
-              tabs.every((tab) =>
-                tab.sections.some(
-                  (other) =>
-                    other.title === section.title &&
-                    other.content === section.content
-                )
-              )
-          )
-        : [];
     if (tabs.length > 1) {
       chapters.push({
         id: `question-${query.id}`,
         level: 1,
         report: {
           ...tabs[0],
-          sections: shared,
-          metadata: tabs[0].metadata.filter(
-            (item) => item.label === 'Source question'
-          ),
+          sections: [],
+          metadata: [],
         },
       });
     }
@@ -2261,14 +2484,11 @@ export async function exportQuestionsDocument(
         report: {
           ...tab,
           title: tabs.length > 1 ? tabInfo.label : tab.title,
-          sections: tab.sections.filter(
-            (section) => !shared.some((other) => other.title === section.title)
-          ),
           metadata: tab.metadata
             .filter(
               (item) =>
                 item.label === 'Chart display' ||
-                (tabs.length === 1 && item.label === 'Source question')
+                item.label === 'Source question'
             )
             .map((item) =>
               item.label === 'Chart display' &&
@@ -2338,6 +2558,155 @@ export async function exportQuestionsCharts(
     zip,
     `questions_${templateId}_charts_${format}_${exportedAt.toISOString().slice(0, 10)}.zip`,
     'zip'
+  );
+}
+
+type DynamicExportState = Pick<
+  DynamicQuestionState,
+  | 'question'
+  | 'sparqlQuery'
+  | 'chartHtml'
+  | 'questionInterpretation'
+  | 'dataCollectionInterpretation'
+  | 'dataAnalysisInterpretation'
+>;
+
+function buildDynamicReport(
+  state: DynamicExportState,
+  templateId: string,
+  sections: ExportSections
+) {
+  if (!state.question.trim())
+    throw new Error('Enter a question before exporting.');
+  const exportedAt = new Date();
+  const sourceUrl = `https://empire-compass.tib.eu/${encodeURIComponent(templateId)}/dynamic-question`;
+  const metadata = buildReportMetadata(templateId, exportedAt, {
+    label: 'Source page',
+    value: 'Dynamic Question',
+    url: sourceUrl,
+  });
+  if (!templateConfig[templateId]) metadata[0].value = templateId;
+  const report: Report = {
+    title: state.question.trim(),
+    sourceUrl,
+    metadata,
+    sections: buildReportSections(
+      {
+        question: state.question,
+        questionExplanation: state.questionInterpretation,
+        requiredDataForAnalysis: state.dataCollectionInterpretation,
+        dataAnalysis: state.dataAnalysisInterpretation,
+      },
+      sections,
+      0,
+      state.sparqlQuery
+    ),
+  };
+  return { report, exportedAt };
+}
+
+export function exportDynamicQuestionHtml(
+  state: DynamicExportState,
+  templateId: string,
+  sections: ExportSections,
+  chartDocument?: string
+): void {
+  const { report, exportedAt } = buildDynamicReport(
+    state,
+    templateId,
+    sections
+  );
+  let charts: string | undefined;
+  if (sections.charts && state.chartHtml.trim()) {
+    if (!chartDocument?.trim())
+      throw new Error('The generated chart is not ready for export.');
+    const frame = document.createElement('iframe');
+    frame.title = 'AI-Generated Chart';
+    frame.setAttribute('sandbox', 'allow-scripts');
+    frame.style.cssText = 'width:100%;height:600px;border:0;display:block';
+    frame.srcdoc = chartDocument;
+    charts = frame.outerHTML;
+  }
+  downloadFile(
+    exportHtml([{ label: 'Dynamic Question', report, charts }], 0),
+    `dynamic-question_${exportedAt.toISOString().slice(0, 10)}.html`,
+    'html'
+  );
+}
+
+export async function exportDynamicQuestionCharts(
+  state: DynamicExportState,
+  templateId: string,
+  format: 'svg' | 'png',
+  frame?: HTMLIFrameElement | null
+): Promise<void> {
+  const { report, exportedAt } = buildDynamicReport(state, templateId, {
+    explanation: false,
+    requiredData: false,
+    analysisMethod: false,
+    interpretation: false,
+    charts: true,
+    sparql: false,
+  });
+  if (!state.chartHtml.trim())
+    throw new Error('No chart available for export.');
+  let archive: Blob;
+  if (format === 'svg') {
+    const elements = getDynamicChartElements(frame);
+    if (elements.some((element) => element.localName !== 'svg')) {
+      throw new Error(
+        'This chart uses canvas and cannot be exported as a vector SVG. Please choose PNG.'
+      );
+    }
+    const html = elements
+      .map((element, index) => {
+        const title =
+          elements.length === 1
+            ? report.title
+            : `${report.title} – Chart ${index + 1}`;
+        const figure = buildSvgChartFigure(element as SVGSVGElement, title);
+        return figure.outerHTML;
+      })
+      .join('');
+    archive = await exportChartZip(
+      [{ folder: 'charts', html, report }],
+      format
+    );
+  } else {
+    const charts = await captureDynamicCharts(frame);
+    const { default: JSZip } = await import('jszip');
+    const zip = new JSZip();
+    const folder = createChartZipFolder(zip, 'charts', report);
+    addPngChartsToZip(folder, charts);
+    archive = await zip.generateAsync({ type: 'blob' });
+  }
+  downloadFile(
+    archive,
+    `dynamic-question_charts_${format}_${exportedAt.toISOString().slice(0, 10)}.zip`,
+    'zip'
+  );
+}
+
+export async function exportDynamicQuestionDocument(
+  state: DynamicExportState,
+  templateId: string,
+  sections: ExportSections,
+  format: 'pdf' | 'docx' | 'txt',
+  frame?: HTMLIFrameElement | null
+): Promise<void> {
+  const { report, exportedAt } = buildDynamicReport(
+    state,
+    templateId,
+    sections
+  );
+  const charts =
+    format !== 'txt' && sections.charts && state.chartHtml.trim()
+      ? await captureDynamicCharts(frame)
+      : [];
+  downloadFile(
+    await renderDocument(format, report, charts),
+    `dynamic-question_${exportedAt.toISOString().slice(0, 10)}.${format}`,
+    format
   );
 }
 

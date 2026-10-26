@@ -33,10 +33,22 @@ const exportSections = {
   sparql: 'SPARQL queries',
 };
 
+const formatLabels: Record<ExportFormat, string> = {
+  html: 'HTML (.html)',
+  pdf: 'PDF (.pdf)',
+  txt: 'Plain text (.txt)',
+  docx: 'Word (.docx)',
+  svg: 'Charts – SVG (.zip)',
+  png: 'Charts – PNG (.zip)',
+};
+
 interface QuestionExportDialogProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  formats?: ExportFormat[];
+  availableSections?: (keyof ExportSections)[];
+  description?: string;
   questions?: { id: number; title: string }[];
   progress?: string;
   onExport?: (
@@ -52,10 +64,13 @@ const QuestionExportDialog = ({
   onClose,
   title = 'Export question',
   questions,
+  formats,
+  availableSections,
+  description,
   progress,
   onExport,
 }: QuestionExportDialogProps) => {
-  const [format, setFormat] = useState('html');
+  const [format, setFormat] = useState<ExportFormat>('html');
   const [chartMode, setChartMode] = useState<ExportChartMode>('relative');
   const [sections, setSections] = useState<ExportSections>({
     explanation: true,
@@ -82,6 +97,12 @@ const QuestionExportDialog = ({
     }
   }, [open, collectionExport]);
 
+  useEffect(() => {
+    if (open && formats?.length && !formats.includes(format)) {
+      setFormat(formats[0]);
+    }
+  }, [open, formats, format]);
+
   const chartsOnly = format === 'svg' || format === 'png';
   return (
     <Dialog
@@ -99,16 +120,19 @@ const QuestionExportDialog = ({
           fullWidth
           label="Export format"
           disabled={Boolean(progress)}
-          value={format}
-          onChange={(event) => setFormat(event.target.value)}
+          value={
+            formats?.length && !formats.includes(format) ? formats[0] : format
+          }
+          onChange={(event) => setFormat(event.target.value as ExportFormat)}
           sx={{ mt: 1, mb: 2 }}
         >
-          <MenuItem value="html">HTML (.html)</MenuItem>
-          <MenuItem value="pdf">PDF (.pdf)</MenuItem>
-          <MenuItem value="txt">Plain text (.txt)</MenuItem>
-          <MenuItem value="docx">Word (.docx)</MenuItem>
-          <MenuItem value="svg">Charts – SVG (.zip)</MenuItem>
-          <MenuItem value="png">Charts – PNG (.zip)</MenuItem>
+          {(formats ?? (Object.keys(formatLabels) as ExportFormat[])).map(
+            (value) => (
+              <MenuItem key={value} value={value}>
+                {formatLabels[value]}
+              </MenuItem>
+            )
+          )}
         </TextField>
         {collectionExport &&
           (format === 'pdf' || format === 'docx') &&
@@ -197,6 +221,8 @@ const QuestionExportDialog = ({
               <FormGroup>
                 {Object.entries(exportSections).map(([key, label]) => {
                   const section = key as keyof typeof sections;
+                  if (availableSections && !availableSections.includes(section))
+                    return null;
                   const disabled =
                     Boolean(progress) ||
                     (section === 'charts' && format === 'txt');
@@ -244,6 +270,7 @@ const QuestionExportDialog = ({
         )}
         <DialogContentText role={progress ? 'status' : undefined}>
           {progress ??
+            description ??
             (onExport
               ? format === 'pdf' || format === 'docx'
                 ? collectionExport
@@ -268,6 +295,7 @@ const QuestionExportDialog = ({
           disabled={
             Boolean(progress) ||
             !onExport ||
+            Boolean(formats && !formats.includes(format)) ||
             (collectionExport && selectedIds.length === 0)
           }
           onClick={() => {
