@@ -22,7 +22,7 @@ import type {
   ExportChartMode,
   ExportFormat,
   ExportSections,
-} from '../utils/exportQuestion';
+} from './ExportQuestion';
 
 const exportSections = {
   explanation: 'Question explanation',
