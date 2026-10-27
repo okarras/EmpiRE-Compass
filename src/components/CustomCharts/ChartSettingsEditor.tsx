@@ -235,7 +235,11 @@ function getInitialValue(
   const val = chartSettings[key as keyof ChartSetting];
   if (type === 'boolean') return !!val;
   if (val !== undefined && val !== null) return val as string | number;
-  return type === 'number' ? '' : type === 'string' ? '' : false;
+  return type === 'number'
+    ? ''
+    : type === 'string' || type === 'colors'
+      ? ''
+      : false;
 }
 
 function formToOverride(
@@ -260,7 +264,7 @@ function formToOverride(
       const arr = String(val ?? '')
         .split(',')
         .map((s) => s.trim())
-        .filter(Boolean);
+        .filter((s) => s !== '' && s !== 'false' && s !== 'true');
       if (arr.length) result.colors = arr;
     } else if (key === 'maxLabelLength') {
       const s = String(val ?? '').trim();
@@ -315,7 +319,7 @@ function formToFullOverride(
       const arr = String(val)
         .split(',')
         .map((s) => s.trim())
-        .filter(Boolean);
+        .filter((s) => s !== '' && s !== 'false' && s !== 'true');
       if (arr.length) result.colors = arr;
     } else if (key === 'maxLabelLength') {
       const s = String(val).trim();

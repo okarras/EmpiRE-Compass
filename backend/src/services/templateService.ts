@@ -130,6 +130,16 @@ export async function deleteTemplate(
   return { ok: true };
 }
 
+function extractNumericQuestionId(
+  uidOrDocId: string | undefined
+): number | undefined {
+  if (!uidOrDocId) return undefined;
+  const match = uidOrDocId.match(/query_(\d+)/i);
+  if (match) return parseInt(match[1], 10);
+  const num = parseInt(uidOrDocId, 10);
+  return isNaN(num) ? undefined : num;
+}
+
 export async function getQuestions(
   templateId: string
 ): Promise<QuestionData[]> {
@@ -148,10 +158,16 @@ export async function getQuestions(
 
   const questions: QuestionData[] = [];
   questionsSnapshot.forEach((doc) => {
-    questions.push(doc.data() as QuestionData);
+    const data = doc.data() as QuestionData;
+    const uid = data.uid || doc.id;
+    const id =
+      data.id ??
+      extractNumericQuestionId(uid) ??
+      extractNumericQuestionId(doc.id);
+    questions.push({ ...data, id, uid } as QuestionData);
   });
 
-  questions.sort((a, b) => a.id - b.id);
+  questions.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
 
   questionsCache[templateId] = { data: questions, time: now };
 
@@ -173,7 +189,13 @@ export async function getQuestionById(
     return null;
   }
 
-  return questionDoc.data() as QuestionData;
+  const data = questionDoc.data() as QuestionData;
+  const uid = data.uid || questionDoc.id;
+  const id =
+    data.id ??
+    extractNumericQuestionId(uid) ??
+    extractNumericQuestionId(questionDoc.id);
+  return { ...data, id, uid } as QuestionData;
 }
 
 export function resolveQuestionDocId(questionData: QuestionData): string {

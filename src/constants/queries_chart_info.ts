@@ -164,15 +164,15 @@ export const queries: Query[] = [
     title:
       'number of statistical methods of descriptive statistics used for data analysis',
     id: 6,
-    uid: 'query_6_2',
-    uid_2: 'query_6_1',
+    uid: 'query_6_1',
+    uid_2: 'query_6_2',
     dataProcessingFunction2: Query6DataProcessingFunctionForDataAnalysis,
     dataAnalysisInformation: {
       question: 'How often are which statistical methods used?',
     },
     tabs: {
-      tab1_name: 'Descriptive statistics',
-      tab2_name: 'Inferential statistics',
+      tab1_name: 'Inferential statistics',
+      tab2_name: 'Descriptive statistics',
     },
   },
   // Query 7
@@ -180,16 +180,16 @@ export const queries: Query[] = [
     title:
       'number of statistical methods of descriptive statistics used for data analysis',
     id: 7,
-    uid: 'query_7_2',
-    uid_2: 'query_7_1',
+    uid: 'query_7_1',
+    uid_2: 'query_7_2',
     tabs: {
-      tab1_name: 'Descriptive statistics',
-      tab2_name: 'Inferential statistics',
+      tab1_name: 'Inferential statistics',
+      tab2_name: 'Descriptive statistics',
     },
-    dataProcessingFunction2:
-      Query7DataProcessingFunctionForDescriptiveStatistics,
     dataProcessingFunction:
       Query7DataProcessingFunctionForInferentialStatistics,
+    dataProcessingFunction2:
+      Query7DataProcessingFunctionForDescriptiveStatistics,
     dataAnalysisInformation: {
       question: 'How has the use of statistical methods evolved over time?',
     },

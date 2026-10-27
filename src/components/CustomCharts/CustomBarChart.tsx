@@ -108,7 +108,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
         barTitle,
       });
     },
-    [dataset, chartSetting.xAxis, mappedSeries]
+    [computedDataset, chartSetting.xAxis, mappedSeries]
   );
 
   const closePapersDialog = useCallback(() => {
@@ -167,6 +167,19 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
     };
   });
 
+  const validColors = Array.isArray(chartSetting.colors)
+    ? chartSetting.colors.filter(
+        (c: unknown) =>
+          typeof c === 'string' &&
+          c.trim() !== '' &&
+          c !== 'false' &&
+          c !== 'true' &&
+          c !== 'null' &&
+          c !== 'undefined'
+      )
+    : [];
+  const chartColors = validColors.length > 0 ? validColors : ['#e86161'];
+
   return (
     <div
       className={chartSetting.className}
@@ -185,11 +198,12 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
       )}
       <BarChart
         dataset={computedDataset}
+        borderRadius={chartSetting.borderRadius ?? 8}
         {...restChartSetting}
         xAxis={xAxisWithFormatter}
         yAxis={yAxisWithFormatter}
         series={mappedSeries}
-        colors={chartSetting.colors ?? ['#e86161']}
+        colors={chartColors}
         loading={loading}
         onItemClick={handleBarItemClick}
         slotProps={{
@@ -224,7 +238,7 @@ const CustomBarChart = (props: CustomBarChartInterface) => {
             return { children: <title>{text}</title> };
           },
           legend: {
-            hidden: isSubChart && chartSetting.hideDetailedChartLegend,
+            hidden: isSubChart && Boolean(hideDetailedChartLegend),
             labelStyle: {
               fontSize: 15, // or '10px'
             },

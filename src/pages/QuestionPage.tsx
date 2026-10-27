@@ -38,7 +38,7 @@ const QuestionPage = () => {
         ...fbq,
         id: fbq.id || Number(id) || undefined,
         uid: fbq.uid || String(fbq.id) || id,
-      } as any;
+      } as unknown as typeof targetQuery;
     }
   }
 
@@ -53,10 +53,29 @@ const QuestionPage = () => {
   }
 
   const firebaseTargetQuery = Object.values(firebaseQuestions).find(
-    (q) => q.id === targetQuery.id || q.uid === targetQuery.uid
+    (q) =>
+      (targetQuery.id != null &&
+        (q.id === targetQuery.id || q.id === Number(targetQuery.id))) ||
+      q.uid === targetQuery.uid ||
+      (targetQuery.uid_2 && q.uid === targetQuery.uid_2) ||
+      (q.uid_2 &&
+        (q.uid_2 === targetQuery.uid || q.uid_2 === targetQuery.uid_2))
   ) as unknown as Record<string, unknown>;
 
   const finalQuery = mergeQueryWithFirebase(targetQuery, firebaseTargetQuery);
+
+  const templateResources = getTemplateConfig(templateId);
+  const codeSparql = templateResources.sparql as
+    | Record<string, string>
+    | undefined;
+  if (!finalQuery.sparqlQuery && codeSparql) {
+    finalQuery.sparqlQuery =
+      codeSparql[finalQuery.uid] ||
+      (finalQuery.uid_2 ? codeSparql[finalQuery.uid_2] : undefined);
+  }
+  if (!finalQuery.sparqlQuery2 && codeSparql && finalQuery.uid_2) {
+    finalQuery.sparqlQuery2 = codeSparql[finalQuery.uid_2];
+  }
 
   return (
     <ThemeProvider theme={theme}>
