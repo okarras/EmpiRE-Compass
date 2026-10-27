@@ -9,6 +9,7 @@ export interface FirebaseQuestion {
   id: number;
   title: string;
   uid: string;
+  uid_2?: string;
   dataAnalysisInformation: {
     question: string;
     dataAnalysis: string | string[];
@@ -16,6 +17,7 @@ export interface FirebaseQuestion {
     questionExplanation: string;
     dataInterpretation: string | string[];
   };
+  [key: string]: unknown;
 }
 
 interface QuestionState {

@@ -116,10 +116,10 @@ export function calculateDynamicNormalizedDataset(
       });
     }
 
-    const absoluteKeys = series.map((s) => {
+    const absoluteKeys: string[] = series.map((s) => {
       const seriesKey = s.dataKey;
-      return typeof seriesKey === 'string' &&
-        seriesKey.startsWith('normalized_')
+      if (!seriesKey) return '';
+      return seriesKey.startsWith('normalized_')
         ? seriesKey.replace('normalized_', '')
         : seriesKey === 'normalizedRatio'
           ? 'count'
@@ -129,7 +129,7 @@ export function calculateDynamicNormalizedDataset(
     return dataset.map((row) => {
       let rowSum = 0;
       for (const key of absoluteKeys) {
-        if (typeof row[key] === 'number') {
+        if (key && typeof row[key] === 'number') {
           rowSum += row[key] as number;
         }
       }
@@ -138,10 +138,11 @@ export function calculateDynamicNormalizedDataset(
       for (let i = 0; i < series.length; i++) {
         const seriesKey = series[i].dataKey;
         const absKey = absoluteKeys[i];
+        if (!seriesKey || !absKey) continue;
 
         if (typeof row[absKey] === 'number') {
           const absoluteVal = row[absKey] as number;
-          newRow[seriesKey as string] =
+          newRow[seriesKey] =
             rowSum > 0 ? Number(((absoluteVal / rowSum) * 100).toFixed(2)) : 0;
         }
       }
@@ -149,10 +150,10 @@ export function calculateDynamicNormalizedDataset(
       return newRow;
     });
   } else if (normalizationType === 'across-years') {
-    const absoluteKeys = series.map((s) => {
+    const absoluteKeys: string[] = series.map((s) => {
       const seriesKey = s.dataKey;
-      return typeof seriesKey === 'string' &&
-        seriesKey.startsWith('normalized_')
+      if (!seriesKey) return '';
+      return seriesKey.startsWith('normalized_')
         ? seriesKey.replace('normalized_', '')
         : seriesKey === 'normalizedRatio'
           ? 'count'
@@ -162,8 +163,10 @@ export function calculateDynamicNormalizedDataset(
     const seriesTotals: Record<string, number> = {};
     for (let i = 0; i < series.length; i++) {
       const absKey = absoluteKeys[i];
+      if (!absKey) continue;
       seriesTotals[absKey] = dataset.reduce((sum, row) => {
-        return sum + (typeof row[absKey] === 'number' ? row[absKey] : 0);
+        const val = row[absKey];
+        return sum + (typeof val === 'number' ? (val as number) : 0);
       }, 0);
     }
 
@@ -172,11 +175,12 @@ export function calculateDynamicNormalizedDataset(
       for (let i = 0; i < series.length; i++) {
         const seriesKey = series[i].dataKey;
         const absKey = absoluteKeys[i];
-        const totalForSeries = seriesTotals[absKey];
+        if (!seriesKey || !absKey) continue;
+        const totalForSeries = seriesTotals[absKey] || 0;
 
         if (typeof row[absKey] === 'number') {
           const absoluteVal = row[absKey] as number;
-          newRow[seriesKey as string] =
+          newRow[seriesKey] =
             totalForSeries > 0
               ? Number(((absoluteVal / totalForSeries) * 100).toFixed(2))
               : 0;
