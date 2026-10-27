@@ -7,7 +7,7 @@ import type { RootState } from '../store';
 import { getTemplateConfig } from '../constants/template_config';
 import theme from '../utils/theme';
 import Question from '../components/Question';
-import { mergeQueryWithFirebase } from '../helpers/query';
+import { findFirebaseQuestion, mergeQueryWithFirebase } from '../helpers/query';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
 
 const QuestionPage = () => {
@@ -52,9 +52,10 @@ const QuestionPage = () => {
     return <Navigate to={`/${templateId}/allquestions`} replace />;
   }
 
-  const firebaseTargetQuery = Object.values(firebaseQuestions).find(
-    (q) => q.id === targetQuery.id || q.uid === targetQuery.uid
-  ) as unknown as Record<string, unknown>;
+  const firebaseTargetQuery = findFirebaseQuestion(
+    Object.values(firebaseQuestions),
+    targetQuery
+  ) as unknown as Record<string, unknown> | undefined;
 
   const finalQuery = mergeQueryWithFirebase(targetQuery, firebaseTargetQuery);
 

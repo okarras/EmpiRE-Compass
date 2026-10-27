@@ -80,18 +80,15 @@ export const Query2DataProcessingFunctionForDataCollection = (
   const result = Object.entries(aggregatedData)
     .sort(([a], [b]) => parseInt(a) - parseInt(b))
     .map(([year, methods]) => {
-      // Calculate sum of all absolute values across all categories for this year
-      const totalMethodsCount = Object.values(methods).reduce(
-        (sum, count) => sum + count,
-        0
-      );
+      // Relative value is method occurrences divided by unique papers that year.
+      // A paper can use more than one method, so this is not a share of the method sum.
+      const uniquePaperCount = uniquePapersPerYear[year]?.size || 0;
 
-      // For each method, compute normalized = count / totalMethodsCount
       const normalizedFields = Object.fromEntries(
         Object.entries(methods).map(([method, count]) => [
           `normalized_${method}`,
-          totalMethodsCount > 0
-            ? Number(((count / totalMethodsCount) * 100).toFixed(2))
+          uniquePaperCount > 0
+            ? Number(((count / uniquePaperCount) * 100).toFixed(2))
             : 0,
         ])
       );
@@ -238,8 +235,7 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       }
     });
 
-    const totalMethodsCount =
-      descriptive + inferential + machineLearning + method + others;
+    const totalPapers = yearData.length;
 
     processedData.push({
       year: Number(year),
@@ -247,29 +243,21 @@ export const Query2DataProcessingFunctionForDataAnalysis = (
       itemsBySeries,
       descriptive,
       normalized_descriptive:
-        totalMethodsCount > 0
-          ? +((descriptive * 100) / totalMethodsCount).toFixed(2)
-          : 0,
+        totalPapers > 0 ? +((descriptive * 100) / totalPapers).toFixed(2) : 0,
       inferential,
       normalized_inferential:
-        totalMethodsCount > 0
-          ? +((inferential * 100) / totalMethodsCount).toFixed(2)
-          : 0,
+        totalPapers > 0 ? +((inferential * 100) / totalPapers).toFixed(2) : 0,
       machine_learning: machineLearning,
       normalized_machine_learning:
-        totalMethodsCount > 0
-          ? +((machineLearning * 100) / totalMethodsCount).toFixed(2)
+        totalPapers > 0
+          ? +((machineLearning * 100) / totalPapers).toFixed(2)
           : 0,
       method,
       normalized_method:
-        totalMethodsCount > 0
-          ? +((method * 100) / totalMethodsCount).toFixed(2)
-          : 0,
+        totalPapers > 0 ? +((method * 100) / totalPapers).toFixed(2) : 0,
       others,
       normalized_others:
-        totalMethodsCount > 0
-          ? +((others * 100) / totalMethodsCount).toFixed(2)
-          : 0,
+        totalPapers > 0 ? +((others * 100) / totalPapers).toFixed(2) : 0,
     });
   }
 
@@ -881,6 +869,19 @@ export const Query14DataProcessingFunction = (
 ): Query14DataProcessingFunctionReturnInterface[] => {
   if (!rawData.length) return [];
 
+  const uniquePapers: Record<number, Set<string>> = {};
+  rawData.forEach(({ year, paper }) => {
+    if (!uniquePapers[year]) uniquePapers[year] = new Set();
+    uniquePapers[year].add(paper);
+  });
+
+  const papersPerYear = Object.fromEntries(
+    Object.entries(uniquePapers).map(([year, papers]) => [
+      Number(year),
+      papers.size,
+    ])
+  );
+
   const methodCounts: Record<number, Record<string, number>> = {};
   rawData.forEach(({ year, dc_method_name }) => {
     if (!methodCounts[year]) methodCounts[year] = {};
@@ -893,16 +894,13 @@ export const Query14DataProcessingFunction = (
   const result = Object.entries(methodCounts)
     .map(([year, methods]) => {
       const normalizedRatio: Record<string, number> = {};
-      const totalMethodsCount = Object.values(methods).reduce(
-        (sum, count) => sum + count,
-        0
-      );
+      const totalPapers = papersPerYear[Number(year)] || 0;
 
       Object.entries(methods).forEach(([method, count]) => {
         normalizedRatio[method] = count;
         normalizedRatio[`normalized_${method}`] =
-          totalMethodsCount > 0
-            ? parseFloat(((count / totalMethodsCount) * 100).toFixed(2))
+          totalPapers > 0
+            ? parseFloat(((count / totalPapers) * 100).toFixed(2))
             : 0;
       });
 
