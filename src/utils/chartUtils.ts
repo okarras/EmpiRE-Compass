@@ -41,6 +41,23 @@ export function calculateAutoLabelLength(
   return Math.max(MIN_LENGTH, Math.min(MAX_LENGTH, maxLength));
 }
 
+function seriesDataKey(seriesItem: { dataKey?: unknown }): string {
+  return typeof seriesItem.dataKey === 'string' ? seriesItem.dataKey : '';
+}
+
+/** Chart settings from the main DB use these names for already-computed percentages. */
+function isPrecomputedSeriesKey(seriesKey: string): boolean {
+  return seriesKey.startsWith('normalized_') || seriesKey === 'normalizedRatio';
+}
+
+function absoluteKeyFor(seriesKey: string): string {
+  if (seriesKey.startsWith('normalized_')) {
+    return seriesKey.slice('normalized_'.length);
+  }
+  if (seriesKey === 'normalizedRatio') return 'count';
+  return seriesKey;
+}
+
 export function calculateDynamicNormalizedDataset(
   dataset: any[],
   series: any[],
@@ -51,33 +68,53 @@ export function calculateDynamicNormalizedDataset(
     return dataset;
 
   if (normalizationType === 'per-year') {
-    return dataset.map((row) => {
-      // Map display keys to raw metric names to access the underlying unnormalized counts
-      const absoluteKeys = series.map((s: any) => {
-        const seriesKey = s.dataKey;
-        return typeof seriesKey === 'string' &&
-          seriesKey.startsWith('normalized_')
-          ? seriesKey.replace('normalized_', '')
-          : seriesKey === 'normalizedRatio'
-            ? 'count'
-            : seriesKey;
-      });
+    // One series is already a percentage of the paper population (normalizedRatio).
+    // Dividing that series by itself always yields 100%.
+    if (series.length <= 1) return dataset;
 
+    const keys = series.map(seriesDataKey).filter(Boolean);
+    const usesPrecomputedKeys = keys.every(isPrecomputedSeriesKey);
+    const hasPrecomputedValues = dataset.some((row) =>
+      keys.some((key) => typeof row[key] === 'number')
+    );
+    // Main-DB charts store relative values on normalized_* / normalizedRatio.
+    // Those denominators are papers, not the sum of the visible bars.
+    if (usesPrecomputedKeys && hasPrecomputedValues) return dataset;
+
+    const hasNormalizedTwin = keys.every(
+      (key) =>
+        !isPrecomputedSeriesKey(key) &&
+        dataset.some((row) => typeof row[`normalized_${key}`] === 'number')
+    );
+    if (hasNormalizedTwin) {
+      return dataset.map((row) => {
+        const newRow = { ...row };
+        for (const key of keys) {
+          const precomputed = row[`normalized_${key}`];
+          if (typeof precomputed === 'number') newRow[key] = precomputed;
+        }
+        return newRow;
+      });
+    }
+
+    const absoluteKeys = keys.map(absoluteKeyFor);
+    return dataset.map((row) => {
       let rowSum = 0;
       for (const key of absoluteKeys) {
-        if (typeof row[key] === 'number') {
+        if (key && typeof row[key] === 'number') {
           rowSum += row[key] as number;
         }
       }
 
       const newRow = { ...row };
-      for (let i = 0; i < series.length; i++) {
-        const seriesKey = series[i].dataKey;
+      for (let i = 0; i < keys.length; i++) {
+        const seriesKey = keys[i];
         const absKey = absoluteKeys[i];
+        if (!seriesKey || !absKey) continue;
 
         if (typeof row[absKey] === 'number') {
           const absoluteVal = row[absKey] as number;
-          newRow[seriesKey as string] =
+          newRow[seriesKey] =
             rowSum > 0 ? Number(((absoluteVal / rowSum) * 100).toFixed(2)) : 0;
         }
       }
