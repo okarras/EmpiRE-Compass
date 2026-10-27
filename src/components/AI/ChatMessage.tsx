@@ -1,5 +1,5 @@
 import { Paper, Box, Typography } from '@mui/material';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { DEBUG_AI } from '../../config/debugConfig';
 
 import { useAIAssistantContext } from '../../context/AIAssistantContext';
@@ -102,6 +102,74 @@ const parseChartSuggestions = (content: string): SuggestionsPayload | null => {
   return null;
 };
 
+const CHART_JS_SRC = 'https://cdn.jsdelivr.net/npm/chart.js';
+const RADIAL_CHART_TYPES = new Set(['pie', 'doughnut', 'polararea', 'radar']);
+
+interface GeneratedChartConfig {
+  type?: string;
+  options?: Record<string, unknown>;
+}
+
+interface ChartJsInstance {
+  destroy: () => void;
+  resize: () => void;
+}
+
+type ChartJsConstructor = new (
+  context: CanvasRenderingContext2D,
+  config: GeneratedChartConfig
+) => ChartJsInstance;
+
+const getChartJs = () =>
+  (window as Window & { Chart?: ChartJsConstructor }).Chart;
+
+const isRadialChart = (type?: string) =>
+  RADIAL_CHART_TYPES.has(String(type ?? '').toLowerCase());
+
+const ensureChartJs = (): Promise<void> => {
+  if (getChartJs()) return Promise.resolve();
+
+  const existing = document.querySelector<HTMLScriptElement>(
+    `script[src="${CHART_JS_SRC}"]`
+  );
+  if (existing) {
+    return new Promise((resolve, reject) => {
+      if (getChartJs()) {
+        resolve();
+        return;
+      }
+      existing.addEventListener('load', () => resolve(), { once: true });
+      existing.addEventListener(
+        'error',
+        () => reject(new Error('Failed to load Chart.js')),
+        { once: true }
+      );
+    });
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = CHART_JS_SRC;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Chart.js'));
+    document.head.appendChild(script);
+  });
+};
+
+const prepareChartConfig = (config: GeneratedChartConfig) => {
+  const radial = isRadialChart(config?.type);
+  return {
+    ...config,
+    options: {
+      ...(config?.options ?? {}),
+      responsive: true,
+      maintainAspectRatio: radial,
+      ...(radial ? { aspectRatio: 1 } : {}),
+    },
+  };
+};
+
 interface ChatMessageProps {
   content: string;
   isUser: boolean;
@@ -126,102 +194,120 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   disabledSuggestions = false,
 }) => {
   const chartRef = useRef<HTMLDivElement>(null);
+  const chartInstancesRef = useRef<
+    Array<{ destroy: () => void; resize: () => void }>
+  >([]);
   const { isExpanded } = useAIAssistantContext();
 
   const suggestionsPayload = !isUser ? parseChartSuggestions(content) : null;
+  const hasGeneratedChart = Boolean(
+    chartHtml || (chartConfigs && chartConfigs.length > 0)
+  );
 
-  useEffect(() => {
-    const hasChart = chartHtml || (chartConfigs && chartConfigs.length > 0);
-    if (hasChart && showChart && chartRef.current) {
-      // Load Chart.js if not already loaded
-      if (!window.Chart) {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
-        script.async = true;
-        script.onload = () => {
-          renderChart();
-        };
-        document.head.appendChild(script);
-      } else {
-        renderChart();
-      }
-    }
-  }, [chartHtml, chartConfigs, showChart, isExpanded]);
+  const destroyCharts = useCallback(() => {
+    chartInstancesRef.current.forEach((chart) => {
+      chart.destroy();
+    });
+    chartInstancesRef.current = [];
+  }, []);
 
-  const renderChart = () => {
-    if (chartRef.current) {
-      if (chartConfigs && chartConfigs.length > 0) {
-        chartRef.current.innerHTML = ''; // Clear container
+  const renderChart = useCallback(() => {
+    const container = chartRef.current;
+    if (!container) return;
 
-        chartConfigs.forEach((config, index) => {
-          const canvasId = `chart-${Date.now()}-${index}`;
+    destroyCharts();
+    container.innerHTML = '';
 
-          // Create wrapper div and canvas elements
-          const wrapper = document.createElement('div');
-          wrapper.style.width = '100%';
-          wrapper.style.height = isExpanded ? '400px' : '250px';
-          wrapper.style.position = 'relative';
-          wrapper.style.marginBottom = '32px';
-
-          const canvas = document.createElement('canvas');
-          canvas.id = canvasId;
-          wrapper.appendChild(canvas);
-          chartRef.current?.appendChild(wrapper);
-
-          try {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              new (window as any).Chart(ctx, config);
-            }
-          } catch (error) {
-            console.error(
-              'Chart.js failed to render the generated config:',
-              error
-            );
-          }
-        });
-      } else if (chartHtml) {
-        // Extract all chart configurations from the provided HTML
-        const chartConfigMatches = Array.from(
-          chartHtml.matchAll(/new Chart\(.*?,\s*({[\s\S]*?})\);/g)
-        );
-
-        if (chartConfigMatches.length > 0) {
-          chartRef.current.innerHTML = ''; // Clear container
-
-          chartConfigMatches.forEach((match, index) => {
-            const canvasId = `chart-${Date.now()}-${index}`;
-
-            // Create wrapper div and canvas elements
-            const wrapper = document.createElement('div');
-            wrapper.style.width = '100%';
-            wrapper.style.height = isExpanded ? '400px' : '250px';
-            wrapper.style.position = 'relative';
-            wrapper.style.marginBottom = '32px';
-
-            const canvas = document.createElement('canvas');
-            canvas.id = canvasId;
-            wrapper.appendChild(canvas);
-            chartRef.current?.appendChild(wrapper);
-
+    const configs =
+      chartConfigs && chartConfigs.length > 0
+        ? chartConfigs
+        : Array.from(
+            chartHtml?.matchAll(/new Chart\(.*?,\s*({[\s\S]*?})\);/g) ?? []
+          ).flatMap((match) => {
             try {
-              // Function constructor to evaluate the object literal
-              const chartConfig = new Function(`return ${match[1]}`)();
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                new (window as any).Chart(ctx, chartConfig);
-              }
+              return [new Function(`return ${match[1]}`)()];
             } catch (error) {
               console.error(
-                `Chart.js failed to render the generated config at index ${index}:`,
+                'Chart.js failed to parse the generated config:',
                 error
               );
+              return [];
             }
           });
-        }
+
+    configs.forEach((config, index) => {
+      const radial = isRadialChart(config?.type);
+      const wrapper = document.createElement('div');
+      wrapper.style.width = '100%';
+      wrapper.style.maxWidth = '100%';
+      wrapper.style.minWidth = '0';
+      wrapper.style.height = isExpanded ? '400px' : '250px';
+      wrapper.style.position = 'relative';
+      wrapper.style.boxSizing = 'border-box';
+      wrapper.style.marginBottom = index === configs.length - 1 ? '0' : '32px';
+      wrapper.style.overflow = 'hidden';
+      if (radial) {
+        wrapper.style.display = 'flex';
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.alignItems = 'center';
       }
+
+      const canvas = document.createElement('canvas');
+      canvas.id = `chart-${Date.now()}-${index}`;
+      canvas.style.display = 'block';
+      canvas.style.maxWidth = '100%';
+      canvas.style.minWidth = '0';
+      if (!radial) {
+        canvas.style.setProperty('width', '100%', 'important');
+        canvas.style.setProperty('height', '100%', 'important');
+      }
+      wrapper.appendChild(canvas);
+      container.appendChild(wrapper);
+
+      try {
+        const ctx = canvas.getContext('2d');
+        const ChartImpl = getChartJs();
+        if (!ctx || !ChartImpl) return;
+        const chart = new ChartImpl(ctx, prepareChartConfig(config));
+        chartInstancesRef.current.push(chart);
+
+        let frames = 0;
+        const resizeWhenLaidOut = () => {
+          if (frames > 10 || !chartInstancesRef.current.includes(chart)) return;
+          frames += 1;
+          if (wrapper.clientWidth > 0) {
+            chart.resize();
+            return;
+          }
+          requestAnimationFrame(resizeWhenLaidOut);
+        };
+        requestAnimationFrame(resizeWhenLaidOut);
+      } catch (error) {
+        console.error('Chart.js failed to render the generated config:', error);
+      }
+    });
+  }, [chartConfigs, chartHtml, destroyCharts, isExpanded]);
+
+  useEffect(() => {
+    if (!hasGeneratedChart || !showChart || !chartRef.current) {
+      destroyCharts();
+      return;
     }
-  };
+
+    let cancelled = false;
+    ensureChartJs()
+      .then(() => {
+        if (!cancelled) renderChart();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    return () => {
+      cancelled = true;
+      destroyCharts();
+    };
+  }, [destroyCharts, hasGeneratedChart, renderChart, showChart]);
 
   const processContent = (html: string) => {
     const parser = new DOMParser();
@@ -299,13 +385,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         display: 'flex',
         justifyContent: isUser ? 'flex-end' : 'flex-start',
         mb: 2,
+        width: '100%',
+        minWidth: 0,
       }}
     >
       <Paper
         elevation={0}
         sx={{
           p: 2,
-          maxWidth: '80%',
+          width: hasGeneratedChart && showChart ? '100%' : 'auto',
+          maxWidth: hasGeneratedChart && showChart ? '100%' : '80%',
+          minWidth: 0,
+          boxSizing: 'border-box',
           backgroundColor: isUser ? '#e86161' : 'background.paper',
           color: isUser ? 'white' : 'text.primary',
           borderRadius: 2,
@@ -336,6 +427,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               sx={{
                 mt: 2,
                 width: '100%',
+                maxWidth: '100%',
+                minWidth: 0,
                 position: 'relative',
               }}
             />

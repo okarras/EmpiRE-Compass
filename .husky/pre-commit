@@ -1,3 +1,6 @@
+# GUI git (Cursor, VS Code) does not inherit the shell PATH, so Homebrew bins are missing.
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
 # Secret scanning - block commit if API keys or credentials are staged
 if command -v gitleaks >/dev/null 2>&1; then
   gitleaks protect --staged --no-banner

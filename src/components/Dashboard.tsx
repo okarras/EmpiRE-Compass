@@ -5,6 +5,7 @@ import type { RootState } from '../store';
 import { FirebaseQuestion } from '../store/slices/questionSlice';
 import { useParams } from 'react-router';
 import { getTemplateConfig } from '../constants/template_config';
+import { mergeQueryWithFirebase } from '../helpers/query';
 import { Query } from '../constants/queries_chart_info';
 import InfoIcon from '@mui/icons-material/Info';
 import { useState, useEffect } from 'react';
@@ -69,10 +70,12 @@ const Dashboard = () => {
   }
 
   const mergedQuestions = sortedFirebaseQuestions.map((question) => {
-    return {
-      ...queries.find((q) => q.id === question.id),
-      ...question,
-    };
+    const codeQuery = queries.find((q) => String(q.id) === String(question.id));
+    if (!codeQuery) return question;
+    return mergeQueryWithFirebase(
+      codeQuery,
+      question as unknown as Record<string, unknown>
+    );
   });
 
   // Get template info box content from home content or use fallback
@@ -125,7 +128,9 @@ const Dashboard = () => {
                   mergedQuestions.filter(
                     (question) =>
                       questionIds?.includes(question.id) &&
-                      queries.some((query) => query.id === question.id)
+                      queries.some(
+                        (query) => String(query.id) === String(question.id)
+                      )
                   ) as Query[]
                 ).map((question) => ({
                   ...question,
@@ -149,7 +154,7 @@ const Dashboard = () => {
         }
         questions={mergedQuestions
           .filter((question) =>
-            queries.some((query) => query.id === question.id)
+            queries.some((query) => String(query.id) === String(question.id))
           )
           .map((question) => ({
             id: question.id,
@@ -342,7 +347,7 @@ const Dashboard = () => {
             mb: { xs: 2.5, md: 3.5 },
           }}
         >
-          {queries.find((q) => q.id === query.id) && (
+          {queries.find((q) => String(q.id) === String(query.id)) && (
             <QuestionAccordion query={query} />
           )}
         </Box>

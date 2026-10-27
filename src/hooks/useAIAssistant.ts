@@ -287,7 +287,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         6. Do not include any markdown code blocks or backticks in your response
         7. Provide specific insights and detailed explanations
         ${wantsChart ? '8. Choose the most appropriate chart type based on the data and what you want to show' : ''}
-        ${wantsChart ? '9. The chart width should be 100%' : ''}
+        ${wantsChart ? '9. Do not set a fixed pixel width or height. The chart container is full width. Set options.responsive to true and options.maintainAspectRatio to false so the chart fills that width.' : ''}
         ${
           isAlternativeViews
             ? `10. **CRITICAL REQUIREMENT (VISUALIZE DIFFERENT VARIABLES/DIMENSIONS)**: The alternative charts must plot completely different data variables, categories, subsets, or dimensions (e.g. if Chart 1 plots empirical studies trend over time, Chart 2 MUST plot something completely different, such as a category breakdown, author distribution, or a separate metric). Do NOT just plot the exact same metric in different chart shapes.
@@ -574,6 +574,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               title: {
                 display: true,
@@ -597,7 +598,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
         7. Do not include any markdown code blocks or backticks in your response
         8. Answer based on the data and analysis provided above
         ${wantsChart ? '9. Choose the most appropriate chart type based on the data and what you want to show' : ''}
-        ${wantsChart ? '10. The chart width should be 100%' : ''}
+        ${wantsChart ? '10. Do not set a fixed pixel width or height. The chart container is full width. Set options.responsive to true and options.maintainAspectRatio to false so the chart fills that width.' : ''}
 
         CRITICAL JAVASCRIPT SYNTAX RULES:
         1. If you hardcode object keys that contain spaces or special characters, you MUST wrap them in quotes (e.g., {'case study': [], 'secondary research': []}). Never write case study: [] without quotes.
@@ -642,6 +643,11 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
               const generateChartConfig = new Function('inputData', match[1]);
               const chartConfig = generateChartConfig(questionData);
               if (chartConfig) {
+                if (!chartConfig.options) {
+                  chartConfig.options = {};
+                }
+                chartConfig.options.responsive = true;
+                chartConfig.options.maintainAspectRatio = false;
                 chartConfigs.push(chartConfig);
               }
             } catch (error) {

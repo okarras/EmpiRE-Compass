@@ -160,6 +160,51 @@ export const AssistantMessage: Story = {
   },
 };
 
+const generatedChartConfig = {
+  type: 'bar',
+  data: {
+    labels: ['2020', '2021', '2022', '2023'],
+    datasets: [
+      {
+        label: 'Papers',
+        data: [12, 19, 15, 22],
+        backgroundColor: 'rgba(232, 97, 97, 0.7)',
+      },
+    ],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Papers by year' },
+    },
+  },
+};
+
+export const WithGeneratedChart: Story = {
+  args: {
+    content: '<p>Publication counts by year.</p>',
+    isUser: false,
+    showChart: true,
+    showReasoning: false,
+    chartConfigs: [generatedChartConfig],
+  },
+  decorators: [
+    (Story) => (
+      <div style={{ width: 640 }} data-testid="chat-panel">
+        <Story />
+      </div>
+    ),
+  ],
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An assistant message that renders a generated Chart.js chart. The message and canvas fill the chat column instead of shrinking to the caption.',
+      },
+    },
+  },
+};
+
 export const WithSparqlQuery: Story = {
   args: {
     content: messageWithSparqlContent,
