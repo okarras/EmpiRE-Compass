@@ -64,6 +64,7 @@ export const SILENT_CHART_GENERATION_PROMPT = (chartType: string) => `
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               title: {
                 display: true,
@@ -81,7 +82,7 @@ export const SILENT_CHART_GENERATION_PROMPT = (chartType: string) => `
         2. Do not write explanations unless absolutely necessary.
         3. Base your answer ONLY on the data and analysis provided above
         4. Do not make assumptions or include information not present in the data
-        5. The chart width should be 100%
+        5. Do not set a fixed pixel width or height. The chart container is full width. Set options.responsive to true and options.maintainAspectRatio to false so the chart fills that width.
         
         CRITICAL JAVASCRIPT SYNTAX RULES:
         1. If you hardcode object keys that contain spaces or special characters, you MUST wrap them in quotes (e.g., {'case study': [], 'secondary research': []}). Never write case study: [] without quotes.

@@ -4,6 +4,7 @@ import type { Query } from '../../constants/queries_chart_info';
 import CRUDQuestions from '../../firestore/CRUDQuestions';
 import fetchSPARQLData from '../../helpers/fetch_query';
 import { getTemplateConfig } from '../../constants/template_config';
+import { findFirebaseQuestion } from '../../helpers/query';
 
 export interface FirebaseQuestion {
   id: number;
@@ -81,19 +82,14 @@ const stripFunctions = (obj: any): any => {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
   const { queries } = getTemplateResources(templateId);
-  const questionsMap = new Map(firebaseQuestions.map((q) => [q.uid, q]));
 
   return [...queries]
     .map((query) => {
-      const firebaseData = questionsMap.get(query.uid);
+      const firebaseData = findFirebaseQuestion(firebaseQuestions, query);
       if (!firebaseData) {
-        // Only log warning for queries that should exist (not secondary UIDs)
-        // Secondary UIDs (uid_2) might not exist in Firebase if they're only in code
-        if (!query.uid.includes('_2') || questionsMap.has(query.uid_2 || '')) {
-          console.warn(
-            `Query with uid ${query.uid} not found in Firebase data. Using local query configuration.`
-          );
-        }
+        console.warn(
+          `Query with uid ${query.uid} not found in Firebase data. Using local query configuration.`
+        );
         return query;
       }
       // Merge Firebase data with local query, but preserve functions from local query
@@ -184,7 +180,10 @@ const questionSlice = createSlice({
         return;
       }
 
-      const firebaseData = state.firebaseQuestions[targetQuery.uid];
+      const firebaseData = findFirebaseQuestion(
+        Object.values(state.firebaseQuestions as Record<string, any>),
+        targetQuery
+      );
       if (firebaseData) {
         // Merge but preserve functions from local query config
         // Remove function fields from firebaseData since we always use local functions
