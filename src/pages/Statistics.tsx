@@ -26,7 +26,7 @@ import StatisticsPageLoadingSkeleton from '../components/StatisticsPageLoadingSk
 import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { getTemplateConfig } from '../constants/template_config';
-import GaugeChart from '../components/GaugeChart';
+import ShareOverview from '../components/ShareOverview';
 import { FormControlLabel, Switch, Box } from '@mui/material';
 
 interface VenueData {
@@ -47,7 +47,8 @@ interface StatisticsData {
   global_distinct_literals: number;
   global_distinct_predicates: number;
   totalORKGPapersCount: number;
-  totalORKGResources: number;
+  totalORKGDistinctResources: number;
+  totalORKGResourceOccurrences: number;
   totalORKGStatements: number;
   totalORKGObservatories: number;
 }
@@ -65,7 +66,8 @@ const DEFAULT_STATS: StatisticsData = {
   global_distinct_literals: 0,
   global_distinct_predicates: 0,
   totalORKGPapersCount: 0,
-  totalORKGResources: 0,
+  totalORKGDistinctResources: 0,
+  totalORKGResourceOccurrences: 0,
   totalORKGStatements: 0,
   totalORKGObservatories: 0,
 };
@@ -101,14 +103,18 @@ export default function Statistics() {
           totalORKGResourcesData,
           totalORKGStatementsData,
           totalORKGObservatoriesData,
+          totalORKGResourceOccurrencesData,
         ] = results;
 
         setStatistics((prev) => ({
           ...prev,
           paperCount: Number(paperData[0]?.paper_count ?? 0),
           totalORKGPapersCount: Number(totalORKGData[0]?.total_papers ?? 0),
-          totalORKGResources: Number(
+          totalORKGDistinctResources: Number(
             totalORKGResourcesData[0]?.total_resources ?? 0
+          ),
+          totalORKGResourceOccurrences: Number(
+            totalORKGResourceOccurrencesData[0]?.total_resource_occurrences ?? 0
           ),
           totalORKGStatements: Number(
             totalORKGStatementsData[0]?.total_statements ?? 0
@@ -158,7 +164,8 @@ export default function Statistics() {
     global_distinct_literals,
     global_distinct_predicates,
     totalORKGPapersCount,
-    totalORKGResources,
+    totalORKGDistinctResources,
+    totalORKGResourceOccurrences,
     totalORKGStatements,
     // totalORKGObservatories,
   } = statistics;
@@ -187,59 +194,71 @@ export default function Statistics() {
             }
             label={
               <Typography fontWeight={600} color="text.secondary">
-                {isGaugeMode ? 'Gauge View' : 'Card View'}
+                {isGaugeMode ? 'Share view' : 'Card view'}
               </Typography>
             }
           />
         </Box>
 
         {isGaugeMode ? (
-          <Stack
-            direction="row"
-            flexWrap="wrap"
-            spacing={3}
-            useFlexGap
-            mb={4}
-            justifyContent="center"
-          >
-            {/* Using arbitrary max values for demonstration or relative maxes */}
-            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
-              <GaugeChart
-                label="Papers with Empirical Studies"
-                value={paperCount}
-                max={totalORKGPapersCount}
-                color="#e86161"
-                link="https://orkg.org/papers"
-              />
-            </Box>
-            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
-              <GaugeChart
-                label="Resources"
-                value={total_resources}
-                max={totalORKGResources || total_resources}
-                color="#e86161"
-                link="https://orkg.org/resources"
-              />
-            </Box>
-            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
-              <GaugeChart
-                label="Distinct Resources"
-                value={global_distinct_resources}
-                max={totalORKGResources || total_resources}
-                color="#e86161"
-                link="https://orkg.org/classes"
-              />
-            </Box>
-            <Box sx={{ width: { xs: '100%', sm: 300 } }}>
-              <GaugeChart
-                label="Statements"
-                value={total_statements}
-                max={totalORKGStatements || total_statements}
-                color="#e86161"
-                link="https://orkg.org/rs/statements"
-              />
-            </Box>
-          </Stack>
+          <ShareOverview
+            sections={[
+              {
+                kicker: 'Papers',
+                description:
+                  templateId === 'R1544125'
+                    ? 'Share of NLP4RE papers in the total ORKG'
+                    : 'Share of KG-EmpiRE papers in the total ORKG',
+                metrics: [
+                  {
+                    title: 'Papers',
+                    value: paperCount,
+                    max: totalORKGPapersCount,
+                    totalLabel: 'ORKG papers',
+                    link: 'https://orkg.org/papers',
+                  },
+                ],
+              },
+              {
+                kicker: 'Statements',
+                description:
+                  templateId === 'R1544125'
+                    ? 'Share of NLP4RE statements in the total ORKG'
+                    : 'Share of KG-EmpiRE statements in the total ORKG',
+                metrics: [
+                  {
+                    title: 'Statements',
+                    value: total_statements,
+                    max: totalORKGStatements || total_statements,
+                    totalLabel: 'ORKG statements',
+                    link: 'https://orkg.org/rs/statements',
+                  },
+                ],
+              },
+              {
+                kicker: 'Resources',
+                description:
+                  'Occurrences count every time a resource is used. Distinct resources count each resource once.',
+                metrics: [
+                  {
+                    title: 'Occurrences',
+                    value: total_resources,
+                    max: totalORKGResourceOccurrences || total_resources,
+                    totalLabel: 'resource uses in ORKG',
+                    link: 'https://orkg.org/resources',
+                  },
+                  {
+                    title: 'Distinct',
+                    value: global_distinct_resources,
+                    max:
+                      totalORKGDistinctResources || global_distinct_resources,
+                    totalLabel: 'distinct resources in ORKG',
+                    link: 'https://orkg.org/classes',
+                  },
+                ],
+              },
+            ]}
+          />
         ) : (
           <Stack
             direction="row"

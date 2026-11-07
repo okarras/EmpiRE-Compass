@@ -77,6 +77,7 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   WHERE {
     ?paper a orkgc:Paper .
   }`,
+  // Distinct typed resources. Denominator for the distinct-resources gauge.
   TOTAL_ORKG_RESOURCES_QUERY: `
   SELECT (COUNT(DISTINCT ?resource) AS ?total_resources)
   WHERE {
@@ -92,6 +93,25 @@ const STATISTICS_SPARQL_QUERIES: StatisticalQuerysType = {
   SELECT (COUNT(DISTINCT ?observatory) AS ?total_observatories)
   WHERE {
     ?observatory a orkgc:Observatory .
+  }`,
+  // Resource occurrences (IRI subjects + IRI objects), matching KG total_resources.
+  TOTAL_ORKG_RESOURCE_OCCURRENCES_QUERY: `
+  SELECT ((?subjects + ?objects) AS ?total_resource_occurrences)
+  WHERE {
+    {
+      SELECT (COUNT(*) AS ?subjects)
+      WHERE {
+        ?s ?p ?o .
+        FILTER(isIRI(?s))
+      }
+    }
+    {
+      SELECT (COUNT(*) AS ?objects)
+      WHERE {
+        ?s ?p ?o .
+        FILTER(isIRI(?o))
+      }
+    }
   }`,
 };
 
