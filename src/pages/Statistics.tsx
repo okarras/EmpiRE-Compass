@@ -27,7 +27,6 @@ import CRUDStatistics from '../firestore/CRUDStatistics';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { getTemplateConfig } from '../constants/template_config';
 import ShareOverview from '../components/ShareOverview';
-import { FormControlLabel, Switch, Box } from '@mui/material';
 
 interface VenueData {
   venue: string;
@@ -77,7 +76,6 @@ export default function Statistics() {
   const templateId = params.templateId as string;
   const [loading, setLoading] = useState(true);
   const [statistics, setStatistics] = useState<StatisticsData>(DEFAULT_STATS);
-  const [isGaugeMode, setIsGaugeMode] = useState(false);
 
   useEffect(() => {
     // Reset loading state and statistics when template changes
@@ -183,130 +181,107 @@ export default function Statistics() {
           px: { xs: 2, sm: 3 },
         }}
       >
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={isGaugeMode}
-                onChange={(e) => setIsGaugeMode(e.target.checked)}
-                color="primary"
-              />
-            }
-            label={
-              <Typography fontWeight={600} color="text.secondary">
-                {isGaugeMode ? 'Share view' : 'Card view'}
-              </Typography>
-            }
-          />
-        </Box>
-
-        {isGaugeMode ? (
-          <ShareOverview
-            sections={[
-              {
-                kicker: 'Papers',
-                description:
-                  templateId === 'R1544125'
-                    ? 'Share of NLP4RE papers in the total ORKG'
-                    : 'Share of KG-EmpiRE papers in the total ORKG',
-                metrics: [
-                  {
-                    title: 'Papers',
-                    value: paperCount,
-                    max: totalORKGPapersCount,
-                    totalLabel: 'ORKG papers',
-                    link: 'https://orkg.org/papers',
-                  },
-                ],
-              },
-              {
-                kicker: 'Statements',
-                description:
-                  templateId === 'R1544125'
-                    ? 'Share of NLP4RE statements in the total ORKG'
-                    : 'Share of KG-EmpiRE statements in the total ORKG',
-                metrics: [
-                  {
-                    title: 'Statements',
-                    value: total_statements,
-                    max: totalORKGStatements || total_statements,
-                    totalLabel: 'ORKG statements',
-                    link: 'https://orkg.org/rs/statements',
-                  },
-                ],
-              },
-              {
-                kicker: 'Resources',
-                description:
-                  'Occurrences count every time a resource is used. Distinct resources count each resource once.',
-                metrics: [
-                  {
-                    title: 'Occurrences',
-                    value: total_resources,
-                    max: totalORKGResourceOccurrences || total_resources,
-                    totalLabel: 'resource uses in ORKG',
-                    link: 'https://orkg.org/resources',
-                  },
-                  {
-                    title: 'Distinct',
-                    value: global_distinct_resources,
-                    max:
-                      totalORKGDistinctResources || global_distinct_resources,
-                    totalLabel: 'distinct resources in ORKG',
-                    link: 'https://orkg.org/classes',
-                  },
-                ],
-              },
-            ]}
-          />
-        ) : (
-          <Stack
-            direction="row"
-            flexWrap="wrap"
-            spacing={{ xs: 2, md: 3 }}
-            useFlexGap
-            mb={4}
-            justifyContent={{ xs: 'center', md: 'flex-start' }}
-            alignItems={{ xs: 'center', md: 'stretch' }}
+        <Stack
+          direction="row"
+          flexWrap="wrap"
+          spacing={{ xs: 2, md: 3 }}
+          useFlexGap
+          mb={4}
+          justifyContent={{ xs: 'center', md: 'flex-start' }}
+          alignItems={{ xs: 'center', md: 'stretch' }}
+        >
+          <StatCard value={paperCount} label="Papers">
+            <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={venueCount} label="Venues">
+            <LocationOnIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={total_resources} label="Resources">
+            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={total_literals} label="Literals">
+            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={total_predicates} label="Properties">
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={total_statements} label="Total Statements">
+            <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard
+            value={global_distinct_resources}
+            label="Distinct Resources"
           >
-            <StatCard value={paperCount} label="Papers">
-              <FeedIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard value={venueCount} label="Venues">
-              <LocationOnIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard value={total_resources} label="Resources">
-              <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard value={total_literals} label="Literals">
-              <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard value={total_predicates} label="Properties">
-              <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard value={total_statements} label="Total Statements">
-              <HubIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard
-              value={global_distinct_resources}
-              label="Distinct Resources"
-            >
-              <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard
-              value={global_distinct_literals}
-              label="Distinct Literals"
-            >
-              <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-            <StatCard
-              value={global_distinct_predicates}
-              label="Distinct Properties"
-            >
-              <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
-            </StatCard>
-          </Stack>
-        )}
+            <BubbleChartIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard value={global_distinct_literals} label="Distinct Literals">
+            <LabelIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+          <StatCard
+            value={global_distinct_predicates}
+            label="Distinct Properties"
+          >
+            <AccountTreeIcon sx={{ fontSize: 40, color: '#c0392b' }} />
+          </StatCard>
+        </Stack>
+
+        <ShareOverview
+          sections={[
+            {
+              kicker: 'Papers',
+              description:
+                templateId === 'R1544125'
+                  ? 'Share of NLP4RE papers in the total ORKG'
+                  : 'Share of KG-EmpiRE papers in the total ORKG',
+              metrics: [
+                {
+                  title: 'Papers',
+                  value: paperCount,
+                  max: totalORKGPapersCount,
+                  totalLabel: 'ORKG papers',
+                  link: 'https://orkg.org/papers',
+                },
+              ],
+            },
+            {
+              kicker: 'Statements',
+              description:
+                templateId === 'R1544125'
+                  ? 'Share of NLP4RE statements in the total ORKG'
+                  : 'Share of KG-EmpiRE statements in the total ORKG',
+              metrics: [
+                {
+                  title: 'Statements',
+                  value: total_statements,
+                  max: totalORKGStatements || total_statements,
+                  totalLabel: 'ORKG statements',
+                  link: 'https://orkg.org/rs/statements',
+                },
+              ],
+            },
+            {
+              kicker: 'Resources',
+              description:
+                'Occurrences count every time a resource is used. Distinct resources count each resource once.',
+              metrics: [
+                {
+                  title: 'Occurrences',
+                  value: total_resources,
+                  max: totalORKGResourceOccurrences || total_resources,
+                  totalLabel: 'resource uses in ORKG',
+                  link: 'https://orkg.org/resources',
+                },
+                {
+                  title: 'Distinct',
+                  value: global_distinct_resources,
+                  max: totalORKGDistinctResources || global_distinct_resources,
+                  totalLabel: 'distinct resources in ORKG',
+                  link: 'https://orkg.org/classes',
+                },
+              ],
+            },
+          ]}
+        />
 
         <Divider sx={{ mt: 2 }} />
 
