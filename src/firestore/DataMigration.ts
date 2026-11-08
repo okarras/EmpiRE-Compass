@@ -63,6 +63,9 @@ const prepareQuestionsForFirebase = (
     // Add uid_2_merge if exists (for merged queries)
     if (query.uid_2_merge) {
       questionData.uid_2_merge = query.uid_2_merge;
+      if (sparqlQueries[query.uid_2_merge]) {
+        questionData.sparqlQuery2 = sparqlQueries[query.uid_2_merge];
+      }
     }
 
     // Add chart type

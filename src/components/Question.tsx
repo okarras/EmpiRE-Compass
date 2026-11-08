@@ -21,6 +21,7 @@ import QuestionExportDialog from './QuestionExportDialog';
 import HeaderExportAction from './HeaderExportAction';
 
 import fetchSPARQLData from '../helpers/fetch_query';
+import { getTemplateConfig } from '../constants/template_config';
 import QuestionInformationView from './QuestionInformationView';
 import QuestionChartView from './QuestionChartView';
 import QuestionDataGridView from './QuestionDataGridView';
@@ -199,13 +200,27 @@ const Question: React.FC<QuestionProps> = ({
 
     if (textOnlyReport) return;
 
-    if ((query.uid_2 || query.uid_2_merge) && query.sparqlQuery2) {
+    // Deployed (Firestore) docs for merged questions (e.g. Q15/Q16) may lack the
+    // secondary SPARQL text, so fall back to the repo constants.
+    const secondaryUid = query.uid_2_merge ?? query.uid_2;
+    const sparql2 =
+      query.sparqlQuery2 ||
+      (secondaryUid
+        ? (
+            getTemplateConfig(templateId as string).sparql as Record<
+              string,
+              string
+            >
+          )[secondaryUid]
+        : undefined);
+
+    if ((query.uid_2 || query.uid_2_merge) && sparql2) {
       const fetchData = async () => {
         try {
           setLoading2(true);
           setError2(null);
 
-          const data = await fetchSPARQLData(query.sparqlQuery2!);
+          const data = await fetchSPARQLData(sparql2);
           setDataAnalysis(data);
         } catch (err) {
           setError2('Failed to load secondary data');
