@@ -98,7 +98,7 @@ export const validateGenerateTextRequest = (
   res: Response,
   next: NextFunction
 ) => {
-  const { prompt, provider, model, temperature, maxTokens } = req.body;
+  const { prompt, provider, temperature, maxTokens } = req.body;
 
   if (!prompt || typeof prompt !== 'string') {
     return res

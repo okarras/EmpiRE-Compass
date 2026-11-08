@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Divider,
 } from '@mui/material';
 import AIContentGenerator from '../../src/components/AI/AIContentGenerator';
 import aiReducer from '../../src/store/slices/aiSlice';

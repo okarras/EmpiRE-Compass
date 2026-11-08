@@ -41,7 +41,6 @@ export function useTemplateIntroText(templateId: string | null | undefined) {
       setIntroCustomText(text);
     };
     void loadIntroText();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
   return { introCustomText, setIntroCustomText };

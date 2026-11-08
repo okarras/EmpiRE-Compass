@@ -94,35 +94,6 @@ const processQueryResults = (queryResults) => {
   return { processedData, groupedByYear, trendData };
 };`;
 
-// Complex SPARQL query with aggregation
-const complexSparqlQuery = `PREFIX orkgr: <http://orkg.org/orkg/resource/>
-PREFIX orkgp: <http://orkg.org/orkg/predicate/>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-
-SELECT ?researchField (COUNT(DISTINCT ?paper) AS ?paperCount) 
-       (AVG(?citationCount) AS ?avgCitations)
-WHERE {
-  ?paper a orkgr:Paper ;
-         rdfs:label ?title ;
-         orkgp:P29 ?year ;
-         orkgp:P32 ?researchField .
-  
-  OPTIONAL {
-    ?paper orkgp:P33 ?citationCount .
-  }
-  
-  # Filter for recent papers (2020-2024)
-  FILTER(?year >= "2020"^^xsd:gYear && ?year <= "2024"^^xsd:gYear)
-  
-  # Focus on empirical research
-  FILTER(EXISTS { ?paper orkgp:P31 orkgr:EmpiricalStudy })
-}
-GROUP BY ?researchField
-HAVING (COUNT(DISTINCT ?paper) > 10)
-ORDER BY DESC(?paperCount)
-LIMIT 20`;
-
 // Simple code snippet
 const simpleCode = `const result = await fetch('https://orkg.org/api/papers');
 const papers = await result.json();
