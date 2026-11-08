@@ -17,7 +17,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const BACKUP = resolve(
   ROOT,
-  'backups/firebase-backup-2026-03-30T08-56-42-479Z.json'
+  'public/backups/firebase-backup-2026-03-30T08-56-42-479Z.json'
 );
 const OUT_DIR = resolve(ROOT, 'exports/charts');
 const ENDPOINT = 'https://orkg.org/triplestore';

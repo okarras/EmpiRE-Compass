@@ -5,7 +5,7 @@ and plot details from a Firebase backup into an HTML report (and optionally PDF)
 
 Usage:
   python scripts/export_erp_questions_pdf.py
-  python scripts/export_erp_questions_pdf.py --backup backups/....json --out exports/
+  python scripts/export_erp_questions_pdf.py --backup public/backups/....json --out exports/
 """
 
 from __future__ import annotations
@@ -410,7 +410,7 @@ def main() -> None:
     parser.add_argument(
         "--backup",
         type=Path,
-        default=Path("backups/firebase-backup-2026-03-30T08-56-42-479Z.json"),
+        default=Path("public/backups/firebase-backup-2026-03-30T08-56-42-479Z.json"),
     )
     parser.add_argument("--out", type=Path, default=Path("exports"))
     parser.add_argument("--skip-pdf", action="store_true")

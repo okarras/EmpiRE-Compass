@@ -60,7 +60,7 @@ const AdminBackupMetadata = () => {
     setIsLoading(true);
     setGlobalError(null);
     try {
-      const files = BackupService.getAvailableBackups();
+      const files = await BackupService.getAvailableBackups();
       const params =
         files.length > 0 ? `?files=${encodeURIComponent(files.join(','))}` : '';
       const data = await apiRequest<ApiListResponse>(
