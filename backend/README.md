@@ -79,7 +79,7 @@ python3 -c "import json; print(json.dumps(json.load(open('../scripts/firebase-se
 
 Copy the output and paste into your `.env` file.
 
-**For detailed deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
+**Running without a service account.** `FIREBASE_SERVICE_ACCOUNT_KEY` is optional for local development. Without it, `npm run dev` still starts the server and `/api/health` and `/api-docs` (Swagger) work; routes that read or write Firestore (team, templates, questions, request logs, statistics updater) return an error explaining that the key is missing. Request logging is skipped.
 
 ## API Endpoints
 

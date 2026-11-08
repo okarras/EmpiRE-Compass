@@ -27,6 +27,7 @@ import statementsRouter from './routes/statements.js';
 import restoreRouter from './routes/restore.js';
 import questionOverridesRouter from './routes/questionOverrides.js';
 import backupRouter from './routes/backup.js';
+import { isFirebaseConfigured } from './config/firebase.js';
 import aiEvaluationsRouter from './routes/aiEvaluations.js';
 
 dotenv.config();
@@ -217,5 +218,10 @@ if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
     console.log(`Server running on port ${PORT}`);
     console.log(`AI Service configured: ${aiService.isConfigured()}`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    if (!isFirebaseConfigured()) {
+      console.warn(
+        'FIREBASE_SERVICE_ACCOUNT_KEY is not set: Firestore-backed routes will return errors (see backend/README.md)'
+      );
+    }
   });
 }
