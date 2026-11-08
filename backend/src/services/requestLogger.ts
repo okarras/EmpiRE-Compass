@@ -1,4 +1,4 @@
-import { db } from '../config/firebase.js';
+import { db, isFirebaseConfigured } from '../config/firebase.js';
 import { Timestamp } from 'firebase-admin/firestore';
 
 export interface FirebaseRequest {
@@ -63,6 +63,9 @@ export const logRequest = async (
 
     // Remove undefined values before saving to Firestore
     const cleanedEntry = removeUndefined(logEntry as Record<string, any>);
+
+    // Local setups without a service account have nowhere to write logs
+    if (!isFirebaseConfigured()) return;
 
     await db.collection('FirebaseRequestLogs').add(cleanedEntry);
   } catch (logError) {
