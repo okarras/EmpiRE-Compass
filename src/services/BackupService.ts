@@ -37,18 +37,27 @@ const emitBackupChange = () => {
   window.dispatchEvent(new CustomEvent(BACKUP_CHANGE_EVENT));
 };
 
-// Load available backups from file system using Vite's glob import
-const backupFiles = import.meta.glob('../../backups/*.json');
+// Sanitized snapshots live in public/backups/ (see scripts/sanitize-backup.mjs)
+// and are fetched at runtime, so they are never bundled into the JS build.
+const BACKUP_BASE_URL = `${import.meta.env.BASE_URL}backups/`;
+let availableBackupsPromise: Promise<string[]> | null = null;
 
-export const getAvailableBackups = () => {
-  return Object.keys(backupFiles).map((path) => {
-    // Extract filename from path (e.g., "../../backups/backup.json" -> "backup.json")
-    return path.split('/').pop() || path;
-  });
+export const getAvailableBackups = (): Promise<string[]> => {
+  if (!availableBackupsPromise) {
+    availableBackupsPromise = fetch(`${BACKUP_BASE_URL}index.json`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((files) => (Array.isArray(files) ? files : []))
+      .catch((error) => {
+        console.error('Failed to load backup index:', error);
+        availableBackupsPromise = null;
+        return [];
+      });
+  }
+  return availableBackupsPromise;
 };
 
-const getLatestBackupFilename = (): string => {
-  const backups = getAvailableBackups();
+const getLatestBackupFilename = async (): Promise<string> => {
+  const backups = await getAvailableBackups();
   if (backups.length === 0) return '';
   // Sort descending - newest first (ISO-like filenames sort correctly)
   const sorted = [...backups].sort((a, b) => b.localeCompare(a));
@@ -61,7 +70,7 @@ const initializeDefaultData = async () => {
   try {
     const defaultFilename = import.meta.env.VITE_DEFAULT_BACKUP_FILENAME;
     const storedFilename = localStorage.getItem(STORAGE_KEY);
-    const availableBackups = getAvailableBackups();
+    const availableBackups = await getAvailableBackups();
 
     let fileToLoad = '';
 
@@ -92,7 +101,7 @@ const initializeDefaultData = async () => {
     // Don't persist - this is a temporary fallback, not an explicit user choice
     let persistSelection = true;
     if (!fileToLoad && availableBackups.length > 0) {
-      fileToLoad = getLatestBackupFilename();
+      fileToLoad = await getLatestBackupFilename();
       persistSelection = false;
       console.log(
         'BackupService: Using latest backup as temporary fallback (live may recover):',
@@ -122,17 +131,18 @@ export const loadBackupFile = async (
   const persistSelection = options?.persistSelection !== false;
 
   try {
-    // Reconstruct the path key used in glob
-    const pathKey = `../../backups/${filename}`;
-    const loader = backupFiles[pathKey];
-
-    if (!loader) {
+    const availableBackups = await getAvailableBackups();
+    if (!availableBackups.includes(filename)) {
       throw new Error(`Backup file not found: ${filename}`);
     }
 
-    const module = (await loader()) as any;
-    // Handle both default export and direct JSON content
-    const rawData = module.default || module;
+    const res = await fetch(
+      `${BACKUP_BASE_URL}${encodeURIComponent(filename)}`
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to fetch backup ${filename}: ${res.status}`);
+    }
+    const rawData = await res.json();
     const backupData = (rawData.data || rawData) as BackupData;
 
     // Clear all existing data and caches before loading new backup
