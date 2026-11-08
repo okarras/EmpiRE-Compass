@@ -1,4 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// The mapper is pure; stub Firestore so the suite loads without a service
+// account or the backend's own node_modules (firebase-admin).
+vi.mock('../config/firebase.js', () => ({ db: {} }));
+
 import type { ORKGStatement } from './orkgStatisticsService.js';
 import { mapPaperStatementsToAnswers } from './orkgPaperMapper.js';
 import r742443Fixture from './__fixtures__/orkgPaperR742443.json' with { type: 'json' };

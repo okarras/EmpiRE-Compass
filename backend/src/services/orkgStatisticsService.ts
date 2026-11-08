@@ -5,7 +5,6 @@
  * Fetches papers from ORKG, calculates RPL metrics, and updates Firebase.
  */
 
-import fetch from 'node-fetch';
 import { db } from '../config/firebase.js';
 
 // ──────────────────────────────────────────────────────────────────────────────
