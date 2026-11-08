@@ -3,6 +3,31 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
+/**
+ * Dedup rule for data-collection method rows: count each paper once per method
+ * category. A paper can have several `dc_method` nodes of the same type (and the
+ * SPARQL joins repeat rows), so rows are reduced to unique
+ * (paper, year, category) combinations, where every label that is not one of
+ * `knownCategories` falls into the `others` category.
+ */
+const dedupeByPaperAndMethodCategory = <
+  T extends { paper: string; year?: string; dc_method_type_label: string },
+>(
+  rawData: T[],
+  knownCategories: string[],
+  normalizeLabel: (label: string) => string = (label) => label
+): T[] => {
+  const seen = new Set<string>();
+  return rawData.filter((item) => {
+    const label = normalizeLabel(item.dc_method_type_label);
+    const category = knownCategories.includes(label) ? label : 'others';
+    const key = `${item.paper}|${item.year ?? ''}|${category}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
 export const Query1DataProcessingFunction = (
   rawData: { year: number; dc_label: string; da_label: string }[]
 ) => {
@@ -49,16 +74,8 @@ interface Query2DataCollenctionRawDataInterface {
 }
 
 export const Query2DataProcessingFunctionForDataCollection = (
-  rawData: Query2DataCollenctionRawDataInterface[] = []
+  allRawData: Query2DataCollenctionRawDataInterface[] = []
 ): Record<string, unknown>[] => {
-  const uniquePapersPerYear: Record<string, Set<string>> = {};
-  rawData.forEach(({ paper, year }) => {
-    if (!uniquePapersPerYear[year]) {
-      uniquePapersPerYear[year] = new Set();
-    }
-    uniquePapersPerYear[year].add(paper as string);
-  });
-
   const dataKeys = [
     'case study',
     'experiment',
@@ -67,6 +84,16 @@ export const Query2DataProcessingFunctionForDataCollection = (
     'secondary research',
     'action research',
   ];
+  // Count each paper once per method category (see helper above).
+  const rawData = dedupeByPaperAndMethodCategory(allRawData, dataKeys);
+
+  const uniquePapersPerYear: Record<string, Set<string>> = {};
+  rawData.forEach(({ paper, year }) => {
+    if (!uniquePapersPerYear[year]) {
+      uniquePapersPerYear[year] = new Set();
+    }
+    uniquePapersPerYear[year].add(paper as string);
+  });
 
   const aggregatedData: Record<string, Record<string, number>> = {};
   rawData.forEach(({ dc_method_type_label, year }) => {
@@ -339,7 +366,7 @@ export const Query4DataProcessingFunctionForDataAnalysis = (
 };
 
 export const Query4DataProcessingFunctionForDataCollection = (
-  rawData: { dc_method_type_label: string }[]
+  allRawData: { paper: string; year?: string; dc_method_type_label: string }[]
 ): RawDataItem[] => {
   const keys_to_count = [
     'secondary research',
@@ -349,6 +376,13 @@ export const Query4DataProcessingFunctionForDataCollection = (
     'interview',
     'action research',
   ];
+
+  // Count each paper once per method category (see helper above).
+  const rawData = dedupeByPaperAndMethodCategory(
+    allRawData,
+    keys_to_count,
+    (label) => label?.toLowerCase()
+  );
 
   const labelCounts: { [key: string]: number } = {
     'secondary research': 0,
@@ -753,9 +787,28 @@ export const Query12DataProcessingFunction = (rawData: RawDataItem[]) => {
     highlighted_a: item.highlighted_a === '1',
   }));
 
-  // 1) Dedupe by paper URI
+  // 1) Paper-level aggregation (independent of SPARQL row order).
+  // The query returns one row per research question (x answer) of a paper.
+  // Rule: a paper has a research question if ANY of its rows has a question
+  // other than 'No question'; its question is highlighted if ANY row has
+  // highlighted_q, and its answer is highlighted if ANY row has highlighted_a.
   const paperMap = new Map<string, RawDataItem>();
-  cleaned.forEach((item) => paperMap.set(item.paper as string, item));
+  cleaned.forEach((item) => {
+    const key = item.paper as string;
+    const existing = paperMap.get(key);
+    if (!existing) {
+      paperMap.set(key, { ...item });
+      return;
+    }
+    if (
+      existing.question === 'No question' &&
+      item.question !== 'No question'
+    ) {
+      existing.question = item.question;
+    }
+    existing.highlighted_q = existing.highlighted_q || item.highlighted_q;
+    existing.highlighted_a = existing.highlighted_a || item.highlighted_a;
+  });
   const uniquePapers = Array.from(paperMap.values());
 
   const papersByYear: Record<string, RawDataItem[]> = {};
