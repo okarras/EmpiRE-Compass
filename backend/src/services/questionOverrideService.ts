@@ -170,7 +170,7 @@ export async function saveQuestionVersion(params: {
 
   // Merge versionData into existing latest so partial updates (e.g. only dataInterpretation)
   // preserve other fields (chartSettings, title, etc.)
-  const base = existingLatest
+  const base: Partial<QuestionVersion> = existingLatest
     ? {
         ...existingLatest,
         dataAnalysisInformation: existingLatest.dataAnalysisInformation

@@ -451,8 +451,6 @@ router.post(
 
         // Import cost calculator
         const { calculateCost } = await import('../utils/costCalculator.js');
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-expect-error
         costInfo = calculateCost(
           actualProvider,
           actualModel,
