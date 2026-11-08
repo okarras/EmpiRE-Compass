@@ -62,3 +62,6 @@ MANIFEST
 orkg-cache/
 orkg-cache-*
 josspaper
+# Raw Firestore exports contain personal data (Users, request logs, rate limits).
+# Keep them out of the repo; publish only sanitized snapshots via scripts/sanitize-backup.mjs.
+/backups/

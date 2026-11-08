@@ -71,12 +71,12 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
 
   useEffect(() => {
     if (open) {
-      const backups = BackupService.getAvailableBackups();
-      setAvailableBackups(backups);
       setCurrentBackup(BackupService.getCurrentBackupName());
       const loadMetadata = async () => {
         try {
           setIsLoadingMetadata(true);
+          const backups = await BackupService.getAvailableBackups();
+          setAvailableBackups(backups);
           const params =
             backups.length > 0
               ? `?files=${encodeURIComponent(backups.join(','))}`
@@ -402,7 +402,7 @@ const BackupSelector: React.FC<BackupSelectorProps> = ({
             ))}
             {availableBackups.length === 0 && (
               <ListItem>
-                <ListItemText primary="No backup files found in backups/" />
+                <ListItemText primary="No backup files found in public/backups/" />
               </ListItem>
             )}
           </List>
