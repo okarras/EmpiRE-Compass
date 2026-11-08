@@ -72,6 +72,8 @@ We explain the main trade-offs, the design we chose, and why it matters for a re
 
 **Privacy and key management.** A **unified AI service** chooses at runtime: if the user supplies their own API keys, calls go **directly from the frontend** to the provider (OpenAI, Groq, Mistral, Google); if they use environment keys, calls go through our **Node.js backend**. We thus support both **privacy-first** use (sensitive questions never touch our servers) and **shared/demo** use without per-user key setup.
 
+**Versioned logic, editable configuration.** Question definitions (wording, SPARQL text, chart settings, and curated interpretations) are stored in Firestore so that curators can correct or extend a question from the admin interface without a redeployment. The JavaScript data-processing functions that turn SPARQL bindings into chart data are deliberately _not_ editable at runtime: they ship with the versioned code base and are covered by unit tests, including explicit rules for de-duplicating joined rows and aggregating per paper. When the backend is unreachable, the frontend falls back to sanitized, versioned snapshots of the public configuration. The cost of this split is that live configuration can drift from the repository, and that static interpretations age while the KG keeps growing; we therefore date each interpretation by the ORKG snapshot it was written against and keep the repository's query definitions as the reference from which the deployment is migrated.
+
 **Technology.** The frontend uses **React** and **Material-UI**; the backend uses **Node.js** and the **Vercel AI SDK** for model-agnostic LLM calls across providers. **Firestore** holds template metadata and community questions with real-time sync and Keycloak integration. These choices keep the symbolic layer (KG + SPARQL) as the definitive source of truth while supporting maintainability and community-driven use.
 
 # Research Impact Statement
@@ -79,7 +81,7 @@ We explain the main trade-offs, the design we chose, and why it matters for a re
 **[EmpiRE-Compass](https://empire-compass.tib.eu/)** is developed in direct connection to peer-reviewed work on **KG-EmpiRE** [@Karras.2023] and public ORKG infrastructure [@Auer.2023]. It has been applied to two curated research datasets that illustrate end-to-end use for the software engineering community:
 
 1. **KG-EmpiRE**: interactive visualization and analytics over empirical RE literature encoded in the graph (776 papers in the deployment described in the repository documentation).
-2. **NLP4RE ID Card**: dynamic access to 49 detailed “ID cards” for NLP-for-RE tools, aligned with replication-oriented discussion in the field [@Abualhaija.2024].
+2. **NLP4RE ID Card**: dynamic access to detailed “ID cards” for NLP-for-RE tools from 48 papers (ORKG data as of October 2026), aligned with replication-oriented discussion in the field [@Abualhaija.2024].
 
 The software is **publicly hosted**, versioned, and **archived on Zenodo** with a DOI for citation and reproducibility [@EmpiRECompassZenodo], alongside a machine-readable **CITATION.cff** file in the repository. Together with Storybook-hosted UI documentation and open issue tracking, these artifacts provide concrete, checkable signals of community-oriented release practice beyond a one-off prototype.
 
@@ -89,7 +91,16 @@ By making these datasets interactive, the dashboard supports “living” litera
 
 **Manuscript.** The authors used **Microsoft Copilot** and **Grammarly** for initial drafting, grammar refinement, and spelling checks of this manuscript. The core software design, architectural decisions, and the neuro-symbolic integration logic were conceived and implemented by the human authors. All AI-generated text was reviewed, edited, and validated by the authors to ensure accuracy and compliance with JOSS standards.
 
-**Software.** EmpiRE-Compass integrates **third-party large language model APIs** as an optional runtime feature (user-configured providers and keys). During development, team members may have used **AI-assisted coding or refactoring tools**; all changes were reviewed, tested, and validated by the human authors, and the symbolic layer (ORKG/SPARQL) remains the source of factual answers.
+**Software development.** The authors used the following generative AI coding tools during development:
+
+- **GitHub Copilot** (in-editor completions, pull-request review suggestions, and the Copilot coding agent) [MODEL(S) AND SCOPE: authors to confirm]. The coding agent drafted the first version of `AGENTS.md` (April 2026); `.github/copilot-instructions.md` holds the repository guidance given to Copilot.
+- **Cursor and Claude** (editor and agent mode) [MODEL(S) AND SCOPE: authors to confirm], used for code generation and refactoring. The rules in `.cursor/rules/` and `.cursor/skills/` encode the project's architecture conventions for these agents.
+
+- An LLM accessed through OpenRouter (`scripts/enhance-issue.mjs`) to expand short bug reports into the repository's issue templates.
+
+Every AI-assisted change was reviewed, tested, and validated by the human authors, who take full responsibility for the code. The overall architecture and the neuro-symbolic design were conceived by the authors.
+
+**Runtime.** EmpiRE-Compass integrates **third-party large language model APIs** as an optional runtime feature (user-configured providers and keys). The symbolic layer (ORKG/SPARQL) remains the only source of factual answers.
 
 # Acknowledgements
 
