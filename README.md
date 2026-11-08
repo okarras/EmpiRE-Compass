@@ -92,9 +92,10 @@ In the following, we explain how to install and run the project locally using a 
 
 ## 1. Ensure prerequisites are installed
 
-- **Node.js** (version 18 or higher recommended)
+- **Node.js** 18 or higher (CI uses Node.js 20) and **npm**
 - **Modern web browser** (e.g., Chrome, Firefox)
 - **Git** (optional, for version control)
+- **Python 3.10 or higher** (only for the statistics scripts in [`scripts/`](scripts/); see [Statistics Automation](#statistics-automation))
 
 ## 2. Clone the repository
 
@@ -116,6 +117,8 @@ Using **npm**:
 npm install
 ```
 
+This installs everything needed for the frontend and for `npm test`. Running the backend locally additionally needs `cd backend && npm install` (see below).
+
 ## 5. Configure environment variables
 
 ### Frontend Configuration
@@ -136,8 +139,9 @@ Edit the `.env` file with your actual values. The `.env.example` file contains a
 **Note:**
 
 - The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available.
-- AI API keys can also be configured directly in the UI. If you set them in `.env`, enable "Use Environment Keys" in the AI configuration settings.
-- The dashboard and public features will function normally in unauthenticated mode.
+- The dashboard and public features (statistics, curated questions and charts, schema graph) function normally in unauthenticated mode.
+- **The AI features require signing in with an ORKG account** (free registration at [orkg.org](https://orkg.org/)). This covers the _Dynamic Question_ page (`/<templateId>/dynamic-question`: SPARQL generation, query retry, LLM interpretation) and the _Explain Chart Insights_ assistant. Signed-out users see an "Authentication Required" prompt.
+- Once signed in, AI API keys can be configured directly in the UI. If you set them in `.env`, enable "Use Environment Keys" in the AI configuration settings.
 
 ### Backend Configuration (if running backend locally)
 
@@ -148,8 +152,16 @@ cd backend
 cp .env.example .env
 ```
 
+Then install the backend dependencies and start it:
+
+```sh
+npm install
+npm run dev   # http://localhost:5001, Swagger UI at http://localhost:5001/api-docs
+```
+
 Edit `backend/.env` with your backend configuration including:
 
+- **Firebase Admin key** (optional for local use): `FIREBASE_SERVICE_ACCOUNT_KEY`. Without it the server still starts and `/api/health` and `/api-docs` work, but Firestore-backed routes return an error. See [backend/README.md](backend/README.md#3-firebase-service-account-setup).
 - **Server Port**: `PORT`
 - **AI Provider**: `AI_PROVIDER` (openai, groq, mistral, or google)
 - **AI Models**: `OPENAI_MODEL`, `GROQ_MODEL`, `MISTRAL_MODEL`, `GOOGLE_MODEL`
@@ -170,6 +182,16 @@ Visit:
 ```
 http://localhost:5173
 ```
+
+## 8. Run the checks
+
+```sh
+npm test         # unit tests (frontend, shared and backend)
+npm run lint     # ESLint
+npm run build    # type-check and production build
+```
+
+The same checks run in CI on every pull request ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -437,23 +459,28 @@ service cloud.firestore {
 
 ## Local Development
 
+Requires Python 3.10 or higher.
+
 ```bash
-# Validate your Firebase JSON file
 cd scripts
-python validate_firebase_json.py path/to/your/service-account.json
+pip install -r requirements.txt
+
+# Provide the service account either as scripts/firebase-service-account.json
+# or as a single-line JSON string in FIREBASE_SERVICE_ACCOUNT_KEY
+export FIREBASE_SERVICE_ACCOUNT_KEY="$(python -c 'import json; print(json.dumps(json.load(open("path/to/service-account.json"))))')"
 
 # Test Firebase integration
 python firebase_integration.py
 
-# Run statistics update locally
-python empire-statistics.py --service_account path/to/service-account.json --limit 5
+# Run statistics update locally (5 papers)
+python orkg-statistics.py --template empire --limit 5
 ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 # Statistics Automation
 
-EmpiRE-Compass automatically updates statistics using GitHub Actions that run the `empire-statistics.py` script:
+EmpiRE-Compass automatically updates statistics using GitHub Actions that run the `orkg-statistics.py` script for each template (`empire` for KG-EmpiRE, `nlp4re` for the NLP4RE ID Card). `empire-statistics.py` and `nlp4re-statistics.py` are deprecated and kept only for reference.
 
 ## Automated Updates
 
@@ -473,15 +500,20 @@ EmpiRE-Compass automatically updates statistics using GitHub Actions that run th
 
 ## Manual Execution
 
+Requires Python 3.10 or higher and `pip install -r scripts/requirements.txt`. Run from the `scripts/` directory:
+
 ```bash
-# Process all papers and update Firebase
-python scripts/empire-statistics.py --service_account path/to/service-account.json
+cd scripts
 
-# Test with limited papers
-python scripts/empire-statistics.py --limit 10 --service_account path/to/service-account.json
+# Process all KG-EmpiRE papers and update Firebase
+# (credentials from firebase-service-account.json or FIREBASE_SERVICE_ACCOUNT_KEY)
+python orkg-statistics.py --template empire
 
-# Skip Firebase update (CSV only)
-python scripts/empire-statistics.py --no_firebase
+# NLP4RE ID Card template
+python orkg-statistics.py --template nlp4re
+
+# Test with limited papers, skip Firebase update (CSV only)
+python orkg-statistics.py --template empire --limit 10 --no_firebase
 ```
 
 ## Monitoring
