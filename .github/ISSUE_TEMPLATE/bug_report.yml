@@ -8,7 +8,7 @@ body:
       value: |
         Write a short rough note if you prefer — then use **GitHub Copilot** in chat
         (`Create a bug report: …`) or run `npm run issue:enhance -- --type bug --text "…"`
-        to expand it into this template. See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+        to expand it into this template. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
   - type: textarea
     id: summary

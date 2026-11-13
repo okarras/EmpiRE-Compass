@@ -49,7 +49,7 @@ We use a **hybrid workflow**: structured GitHub templates plus optional AI expan
 3. **Detailed Description**: Include expected vs actual behavior (bugs), acceptance criteria (features), or scope (refactors)
 4. **Labels**: Applied automatically by templates where configured
 
-Copilot and the enhance script follow guidance in [`.github/copilot-instructions.md`](../.github/copilot-instructions.md). Keep issues **concise and specific** (~125 words) for best results with AI coding agents.
+Copilot and the enhance script follow guidance in [`.github/copilot-instructions.md`](.github/copilot-instructions.md). Keep issues **concise and specific** (~125 words) for best results with AI coding agents.
 
 ### Branch Naming Convention
 
@@ -134,7 +134,7 @@ docs: update API documentation
 
 ### Architecture & Conventions
 
-For detailed architecture rules, file-size targets, and agent directions, see **[AGENTS.md](../AGENTS.md)** at the repo root.
+For detailed architecture rules, file-size targets, and agent directions, see **[AGENTS.md](AGENTS.md)** at the repo root.
 
 Key conventions:
 
@@ -142,7 +142,7 @@ Key conventions:
 - **Data layer**: `src/firestore/*` files are backend API adapters with backup fallback (not direct Firestore SDK).
 - **AI**: route through `UnifiedAIService` in `src/services/backendAIService.ts`; shared types in `shared/`.
 - **File size**: aim for ≤ ~300 lines per component/hook; split when mixing UI, API, and prompts.
-- **Cursor rules**: file-specific guidance in [`.cursor/rules/`](../.cursor/rules/).
+- **Cursor rules**: file-specific guidance in [`.cursor/rules/`](.cursor/rules/).
 
 ### Code Style
 
@@ -154,29 +154,13 @@ Key conventions:
 ### Testing
 
 - Write unit tests for new features
-- Ensure all tests pass before submitting PR
+- Run `npm test`, `npm run lint` and `npm run build` before submitting a PR (CI runs the same checks)
 - Include both positive and negative test cases
 - Maintain test coverage standards
 
 ## Code of Conduct
 
-### Our Pledge
-
-We pledge to make participation in our project a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
-
-### Our Standards
-
-Examples of behavior that contributes to creating a positive environment include:
-
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints and experiences
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the community
-- Showing empathy towards other community members
-
-### Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the project team. All complaints will be reviewed and investigated promptly and fairly.
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold it. Report unacceptable behavior to [oliver.karras@tib.eu](mailto:oliver.karras@tib.eu).
 
 ## License
 
@@ -184,4 +168,4 @@ By contributing, you agree that your contributions will be licensed under the pr
 
 ## Questions?
 
-Don't hesitate to ask questions by creating an issue or contacting the maintainers directly.
+Don't hesitate to ask questions by [opening an issue](https://github.com/okarras/EmpiRE-Compass/issues/new/choose) or contacting the maintainers directly ([oliver.karras@tib.eu](mailto:oliver.karras@tib.eu)).

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { db } from '../config/firebase.js';
+import { sanitizeLogRecord } from '../services/logSanitizer.js';
 import {
   validateKeycloakToken,
   requireAdmin,
@@ -27,10 +28,6 @@ const router = Router();
  *         timestamp:
  *           type: string
  *           format: date-time
- *         userId:
- *           type: string
- *         userEmail:
- *           type: string
  *         error:
  *           type: string
  *     RequestLogsResponse:
@@ -126,13 +123,15 @@ router.get(
       }
 
       const snapshot = await query.get();
-      const logs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        timestamp:
-          doc.data().timestamp?.toDate?.()?.toISOString() ||
-          doc.data().timestamp,
-      }));
+      const logs = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return sanitizeLogRecord({
+          id: doc.id,
+          ...data,
+          timestamp:
+            data.timestamp?.toDate?.()?.toISOString() || data.timestamp,
+        });
+      });
 
       res.json({
         logs,

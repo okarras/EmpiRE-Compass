@@ -141,8 +141,7 @@ const AdminRequestMonitor = () => {
       filtered = filtered.filter(
         (req) =>
           req.collection.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          req.documentId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          req.userEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+          req.documentId?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -457,9 +456,6 @@ const AdminRequestMonitor = () => {
                   Document ID
                 </TableCell>
                 <TableCell sx={{ fontWeight: 700, backgroundColor: '#f5f5f5' }}>
-                  User
-                </TableCell>
-                <TableCell sx={{ fontWeight: 700, backgroundColor: '#f5f5f5' }}>
                   Timestamp
                 </TableCell>
                 <TableCell sx={{ fontWeight: 700, backgroundColor: '#f5f5f5' }}>
@@ -518,11 +514,6 @@ const AdminRequestMonitor = () => {
                         sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}
                       >
                         {request.documentId || '-'}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="caption">
-                        {request.userEmail || request.userId || 'System'}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -619,14 +610,6 @@ const AdminRequestMonitor = () => {
                   </Typography>
                   <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                     {selectedRequest.documentId || 'N/A'}
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    User:
-                  </Typography>
-                  <Typography variant="body2">
-                    {selectedRequest.userEmail ||
-                      selectedRequest.userId ||
-                      'System'}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     Timestamp:

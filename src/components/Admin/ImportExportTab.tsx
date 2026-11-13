@@ -29,7 +29,7 @@ const ImportExportTab = ({
       const text = await file.text();
       const jsonData = JSON.parse(text);
       onImport(jsonData);
-    } catch (err) {
+    } catch {
       onError('Failed to import template');
     }
   };

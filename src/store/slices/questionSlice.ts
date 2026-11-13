@@ -94,7 +94,6 @@ const mergeQuestionsData = (firebaseQuestions: any[], templateId: string) => {
       }
       // Merge Firebase data with local query, but preserve functions from local query
       // Firebase stores function names as strings, not actual functions
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {
         dataProcessingFunction: firebaseFn,
         dataProcessingFunction2: firebaseFn2,

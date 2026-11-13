@@ -304,6 +304,7 @@ export const Query9DataProcessingFunction = (
 };
 
 type RawRow = {
+  contribution?: unknown;
   NLPTaskTypeLabel?: unknown;
   numberOfAnnotators?: unknown;
 };
@@ -315,7 +316,22 @@ export const Query10DataProcessingFunction = (
 
   if (!Array.isArray(rawData) || rawData.length === 0) return [];
 
-  const points = rawData
+  // The query joins annotator assignment / expertise / identity labels, which
+  // repeats the same (contribution, NLP task, number of annotators) point.
+  // Plot each unique combination once.
+  const seen = new Set<string>();
+  const uniqueRows = rawData.filter((r) => {
+    const key = [
+      String(r?.contribution ?? ''),
+      String(r?.NLPTaskTypeLabel ?? '').trim(),
+      String(r?.numberOfAnnotators ?? ''),
+    ].join('|');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const points = uniqueRows
     .map((r) => {
       const label = String(r?.NLPTaskTypeLabel ?? '').trim();
       const y = Number(r?.numberOfAnnotators ?? NaN);

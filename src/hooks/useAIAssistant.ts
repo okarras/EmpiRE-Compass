@@ -330,10 +330,10 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
                     const borderColors: string[] = [];
 
                     originalDatasets.forEach((ds: any) => {
-                      let rawArr = Array.isArray(ds.data[0])
+                      const rawArr = Array.isArray(ds.data[0])
                         ? ds.data[0]
                         : ds.data;
-                      let numbers = rawArr
+                      const numbers = rawArr
                         .map(Number)
                         .filter((n: number) => !isNaN(n));
 
@@ -483,7 +483,7 @@ ${CHART_GENERATION_SUGGESTION_PROMPT}`,
             if (parsedData.Suggestions) {
               isValidJson = true;
             }
-          } catch (e) {
+          } catch {
             // Parsing failed
           }
         }
@@ -765,8 +765,10 @@ ${SILENT_CHART_GENERATION_PROMPT(chartType)}`
                 const borderColors: string[] = [];
 
                 originalDatasets.forEach((ds: any) => {
-                  let rawArr = Array.isArray(ds.data[0]) ? ds.data[0] : ds.data;
-                  let numbers = rawArr
+                  const rawArr = Array.isArray(ds.data[0])
+                    ? ds.data[0]
+                    : ds.data;
+                  const numbers = rawArr
                     .map(Number)
                     .filter((n: number) => !isNaN(n));
 

@@ -10,6 +10,7 @@ import type {
   MistralModel,
   GoogleModel,
 } from '../../shared/aiModels.js';
+import { redactString } from './services/logSanitizer.js';
 
 export type {
   AIProvider,
@@ -326,12 +327,10 @@ export class AIService {
       };
     } catch (error) {
       // Enhanced error logging
-      console.error('Error in generateText:', {
-        error,
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        provider: this.getEffectiveProvider(request.provider),
-      });
+      console.error(
+        'Error in generateText:',
+        redactString(error instanceof Error ? error.message : 'Unknown error')
+      );
 
       // Re-throw with more context
       if (error instanceof Error) {

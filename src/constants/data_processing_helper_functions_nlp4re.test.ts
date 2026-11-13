@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { Query1DataProcessingFunction } from './data_processing_helper_functions_nlp4re';
+import {
+  Query10DataProcessingFunction,
+  Query1DataProcessingFunction,
+} from './data_processing_helper_functions_nlp4re';
 
 describe('processQuery via Query1DataProcessingFunction', () => {
   it('returns empty array for empty input', () => {
@@ -34,5 +37,32 @@ describe('processQuery via Query1DataProcessingFunction', () => {
     const result = Query1DataProcessingFunction(raw);
     const f1 = result.find((r) => r.label === 'F1');
     expect(f1?.count).toBe(2);
+  });
+});
+
+describe('Query10DataProcessingFunction', () => {
+  it('plots each (contribution, NLP task, annotators) combination once', () => {
+    const raw = [
+      {
+        contribution: 'c1',
+        NLPTaskTypeLabel: 'Classification',
+        numberOfAnnotators: '3',
+      },
+      {
+        contribution: 'c1',
+        NLPTaskTypeLabel: 'Classification',
+        numberOfAnnotators: '3',
+      },
+      {
+        contribution: 'c2',
+        NLPTaskTypeLabel: 'Classification',
+        numberOfAnnotators: '3',
+      },
+    ];
+    const result = Query10DataProcessingFunction(raw);
+    const points = result
+      .map((r) => r['Classification_y'])
+      .filter((v) => v !== null);
+    expect(points).toEqual([3, 3]);
   });
 });

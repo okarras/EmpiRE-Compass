@@ -1,13 +1,12 @@
-import { db } from '../config/firebase.js';
+import { db, isFirebaseConfigured } from '../config/firebase.js';
 import { Timestamp } from 'firebase-admin/firestore';
+import { sanitizeLogRecord } from './logSanitizer.js';
 
 export interface FirebaseRequest {
   timestamp: Timestamp;
   operation: 'read' | 'write' | 'update' | 'delete' | 'query';
   collection: string;
   documentId?: string;
-  userId?: string;
-  userEmail?: string;
   success: boolean;
   error?: string;
   metadata?: Record<string, unknown>;
@@ -39,34 +38,37 @@ export const logRequest = async (
   collection: string,
   documentId: string | undefined,
   success: boolean,
-  userId?: string,
-  userEmail?: string,
+  _userId?: string,
+  _userEmail?: string,
   error?: string,
   metadata?: FirebaseRequest['metadata'],
   requestBody?: any,
   responseData?: any
 ): Promise<void> => {
   try {
-    const logEntry: FirebaseRequest = {
+    const logEntry = sanitizeLogRecord({
       timestamp: Timestamp.now(),
       operation,
       collection,
       documentId,
-      userId,
-      userEmail,
       success,
       error,
       metadata,
       requestBody,
       responseData,
-    };
+    }) as unknown as FirebaseRequest;
 
     // Remove undefined values before saving to Firestore
     const cleanedEntry = removeUndefined(logEntry as Record<string, any>);
 
+    // Local setups without a service account have nowhere to write logs
+    if (!isFirebaseConfigured()) return;
+
     await db.collection('FirebaseRequestLogs').add(cleanedEntry);
   } catch (logError) {
     // Don't throw - logging failures shouldn't break the app
-    console.error('Failed to log request:', logError);
+    const message =
+      logError instanceof Error ? logError.message : 'Unknown error';
+    console.error('Failed to log request:', message);
   }
 };

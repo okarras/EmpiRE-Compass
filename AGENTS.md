@@ -10,7 +10,7 @@ Directions for AI agents and contributors working on this repository.
 | Backend  | [`backend/src/`](backend/src/) | Express API: auth, CRUD, AI proxy, Firebase Admin    |
 | Shared   | [`shared/`](shared/)           | Cross-package types and utilities (cost, AI models)  |
 | Scripts  | [`scripts/`](scripts/)         | Python statistics automation                         |
-| Docs     | [`docs/`](docs/)               | Contributing, Firebase, versioning                   |
+| Docs     | [`docs/`](docs/)               | Firebase, versioning, deployment                     |
 
 See [`README.md`](README.md) for installation and architecture overview. Backend setup: [`backend/README.md`](backend/README.md).
 
@@ -18,7 +18,7 @@ See [`README.md`](README.md) for installation and architecture overview. Backend
 
 1. **Minimal diffs** — change only what the task requires; no drive-by refactors.
 2. **Behavior first** — refactor PRs must not change user-visible behavior unless explicitly scoped.
-3. **Conventional Commits** — `feat:`, `fix:`, `refactor:`, etc. (see [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md)).
+3. **Conventional Commits** — `feat:`, `fix:`, `refactor:`, etc. (see [`CONTRIBUTING.md`](CONTRIBUTING.md)).
 4. **No secrets** — never commit `.env`, service account keys, or API keys.
 5. **One concern per PR** — standards, dedup, each god-file split, and tests are separate PRs.
 

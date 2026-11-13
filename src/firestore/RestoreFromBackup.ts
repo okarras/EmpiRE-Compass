@@ -135,6 +135,12 @@ export const convertBackupQuestionsToNewFormat = (
 
     if (backupQ.uid_2_merge || codeQuery?.uid_2_merge) {
       questionDoc.uid_2_merge = backupQ.uid_2_merge || codeQuery.uid_2_merge;
+      const mergeSparql =
+        backupQ.sparqlQuery2 ||
+        SPARQL_QUERIES[questionDoc.uid_2_merge as keyof typeof SPARQL_QUERIES];
+      if (mergeSparql) {
+        questionDoc.sparqlQuery2 = mergeSparql;
+      }
     }
 
     if (backupQ.tabs || codeQuery?.tabs) {

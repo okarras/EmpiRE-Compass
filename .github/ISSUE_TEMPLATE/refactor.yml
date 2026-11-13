@@ -8,7 +8,7 @@ body:
       value: |
         Use **GitHub Copilot** or
         `npm run issue:enhance -- --type refactor --text "…"` to expand a rough note.
-        See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
+        See [CONTRIBUTING.md](CONTRIBUTING.md).
 
   - type: textarea
     id: summary

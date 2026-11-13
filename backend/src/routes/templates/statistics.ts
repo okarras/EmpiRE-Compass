@@ -50,7 +50,7 @@ router.get('/:templateId/statistics', async (req, res) => {
     const { templateId } = req.params;
     const statistics = await getStatistics(templateId);
     res.json(statistics);
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });

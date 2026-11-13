@@ -6,8 +6,6 @@ export interface RequestLog {
   operation: 'read' | 'write' | 'update' | 'delete' | 'query';
   collection: string;
   documentId?: string;
-  userId?: string;
-  userEmail?: string;
   success: boolean;
   error?: string;
   metadata?: Record<string, unknown>;

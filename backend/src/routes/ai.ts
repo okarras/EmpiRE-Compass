@@ -9,6 +9,7 @@ import { createUserRateLimiter } from '../middleware/aiRateLimit.js';
 import { db } from '../config/firebase.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { isAdminEmail } from '../config/constants.js';
+import { redactString } from '../services/logSanitizer.js';
 
 interface UserRateLimit {
   userId: string;
@@ -451,8 +452,6 @@ router.post(
 
         // Import cost calculator
         const { calculateCost } = await import('../utils/costCalculator.js');
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-expect-error
         costInfo = calculateCost(
           actualProvider,
           actualModel,
@@ -466,13 +465,10 @@ router.post(
         cost: costInfo,
       });
     } catch (error) {
-      console.error('Error generating text:', {
-        error,
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        provider: req.body?.provider,
-        hasOpenRouterKeyHeader: !!req.headers['x-openrouter-api-key'],
-      });
+      console.error(
+        'Error generating text:',
+        redactString(error instanceof Error ? error.message : 'Unknown error')
+      );
 
       if (error instanceof Error) {
         const errorMessage = error.message.toLowerCase();
