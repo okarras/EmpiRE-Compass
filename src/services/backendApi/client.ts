@@ -12,13 +12,12 @@ const getBackendUrl = () => {
     return (
       import.meta.env.VITE_BACKEND_FEATURE_URL ||
       import.meta.env.VITE_BACKEND_URL ||
-      'https://empirecompassbackend.vercel.app'
+      'https://empire-compass-backend.tib.eu'
     );
   }
 
   return (
-    import.meta.env.VITE_BACKEND_URL ||
-    'https://empirecompassbackend.vercel.app'
+    import.meta.env.VITE_BACKEND_URL || 'https://empire-compass-backend.tib.eu'
   );
 };
 

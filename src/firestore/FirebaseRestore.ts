@@ -27,7 +27,7 @@ export interface BackupFileStructure {
 }
 
 const getBackendUrl = () =>
-  import.meta.env.VITE_BACKEND_URL || 'https://empirecompassbackend.vercel.app';
+  import.meta.env.VITE_BACKEND_URL || 'https://empire-compass-backend.tib.eu';
 
 export const parseBackupFile = (content: string): Record<string, any[]> => {
   const parsed = JSON.parse(content) as

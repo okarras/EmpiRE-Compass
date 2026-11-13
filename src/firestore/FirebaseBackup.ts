@@ -30,8 +30,7 @@ const COLLECTIONS_TO_BACKUP = [
 
 const getBackendUrl = () => {
   return (
-    import.meta.env.VITE_BACKEND_URL ||
-    'https://empirecompassbackend.vercel.app'
+    import.meta.env.VITE_BACKEND_URL || 'https://empire-compass-backend.tib.eu'
   );
 };
 
