@@ -40,69 +40,35 @@ export const INTERPRETATION_UPDATES: InterpretationUpdate[] = [
       replace,
     }))
   ),
-  // R186491 Q4: data collection counts after paper/category dedup (889 combinations)
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>case study</em> (242 times)',
-    replace: '<em>case study</em> (230 times)',
-  },
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>experiment</em> (155 times)',
-    replace: '<em>experiment</em> (141 times)',
-  },
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>survey</em> (116 times)',
-    replace: '<em>survey</em> (108 times)',
-  },
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>secondary research</em> (116 times)',
-    replace: '<em>secondary research</em> (111 times)',
-  },
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>interview</em> (110 times)',
-    replace: '<em>interview</em> (103 times)',
-  },
-  {
-    templateId: 'R186491',
-    questionId: 4,
-    find: '<em>others</em> as a default category (229 times)',
-    replace: '<em>others</em> as a default category (186 times)',
-  },
-  // R186491 Q2: same data collection counts as Q4, worded slightly differently
+  // R186491 Q4: data collection counts. Every method row counts, as in the
+  // EmpiRE-Analysis notebook (978 rows). Reverts an earlier per-paper dedup
+  // (889 combinations) that had already been applied to the stored text.
   ...[
-    ['<em>case study</em> (242  times)', '<em>case study</em> (230 times)'],
-    ['<em>experiment</em> (155 times)', '<em>experiment</em> (141 times)'],
-    ['<em>survey</em> (116 times)', '<em>survey</em> (108 times)'],
+    ['<em>case study</em> (230 times)', '<em>case study</em> (242 times)'],
+    ['<em>experiment</em> (141 times)', '<em>experiment</em> (155 times)'],
+    ['<em>survey</em> (108 times)', '<em>survey</em> (116 times)'],
     [
-      '<em>secondary research</em> (116 times)',
       '<em>secondary research</em> (111 times)',
+      '<em>secondary research</em> (116 times)',
     ],
-    ['<em>interview</em> (110 times)', '<em>interview</em> (103 times)'],
+    ['<em>interview</em> (103 times)', '<em>interview</em> (110 times)'],
     [
-      '<em>other methods</em> as a default category (229 times)',
-      '<em>other methods</em> as a default category (186 times)',
+      '<em>others</em> as a default category (186 times)',
+      '<em>others</em> as a default category (229 times)',
     ],
   ].map(([find, replace]) => ({
     templateId: 'R186491' as const,
-    questionId: 2,
+    questionId: 4,
     find,
     replace,
   })),
-  // R186491 Q15: combined collection + analysis methods (607 papers)
+  // R186491 Q15: combined collection + analysis methods, outer merge of both
+  // queries as in the notebook (611 papers)
   {
     templateId: 'R186491',
     questionId: 15,
-    find: 'three (29.1%) to four (22.4%)',
-    replace: 'three (29.3%) to four (22.6%)',
+    find: 'three (29.3%) to four (22.6%)',
+    replace: 'three (29.1%) to four (22.4%)',
   },
   // NLP4RE
   {

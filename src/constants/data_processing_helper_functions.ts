@@ -3,31 +3,6 @@ export interface RawDataItem {
   [key: string]: unknown;
 }
 
-/**
- * Dedup rule for data-collection method rows: count each paper once per method
- * category. A paper can have several `dc_method` nodes of the same type (and the
- * SPARQL joins repeat rows), so rows are reduced to unique
- * (paper, year, category) combinations, where every label that is not one of
- * `knownCategories` falls into the `others` category.
- */
-const dedupeByPaperAndMethodCategory = <
-  T extends { paper: string; year?: string; dc_method_type_label: string },
->(
-  rawData: T[],
-  knownCategories: string[],
-  normalizeLabel: (label: string) => string = (label) => label
-): T[] => {
-  const seen = new Set<string>();
-  return rawData.filter((item) => {
-    const label = normalizeLabel(item.dc_method_type_label);
-    const category = knownCategories.includes(label) ? label : 'others';
-    const key = `${item.paper}|${item.year ?? ''}|${category}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-};
-
 export const Query1DataProcessingFunction = (
   rawData: { year: number; dc_label: string; da_label: string }[]
 ) => {
@@ -74,7 +49,7 @@ interface Query2DataCollenctionRawDataInterface {
 }
 
 export const Query2DataProcessingFunctionForDataCollection = (
-  allRawData: Query2DataCollenctionRawDataInterface[] = []
+  rawData: Query2DataCollenctionRawDataInterface[] = []
 ): Record<string, unknown>[] => {
   const dataKeys = [
     'case study',
@@ -84,8 +59,8 @@ export const Query2DataProcessingFunctionForDataCollection = (
     'secondary research',
     'action research',
   ];
-  // Count each paper once per method category (see helper above).
-  const rawData = dedupeByPaperAndMethodCategory(allRawData, dataKeys);
+  // Every data-collection method row counts, as in the EmpiRE-Analysis notebook
+  // (value_counts over the query rows): a paper with two case studies counts twice.
 
   const uniquePapersPerYear: Record<string, Set<string>> = {};
   rawData.forEach(({ paper, year }) => {
@@ -366,7 +341,7 @@ export const Query4DataProcessingFunctionForDataAnalysis = (
 };
 
 export const Query4DataProcessingFunctionForDataCollection = (
-  allRawData: { paper: string; year?: string; dc_method_type_label: string }[]
+  rawData: { paper?: string; year?: string; dc_method_type_label: string }[]
 ): RawDataItem[] => {
   const keys_to_count = [
     'secondary research',
@@ -377,13 +352,8 @@ export const Query4DataProcessingFunctionForDataCollection = (
     'action research',
   ];
 
-  // Count each paper once per method category (see helper above).
-  const rawData = dedupeByPaperAndMethodCategory(
-    allRawData,
-    keys_to_count,
-    (label) => label?.toLowerCase()
-  );
-
+  // Every method row counts and the relative value is a share of all method
+  // rows, as in the EmpiRE-Analysis notebook.
   const labelCounts: { [key: string]: number } = {
     'secondary research': 0,
     experiment: 0,
@@ -527,18 +497,27 @@ export const Query7DataProcessingFunctionForInferentialStatistics = (
     });
 
     // Normalize rowSum
-    result.normalized_rowSum =
-      number_of_all_papers_with_da > 0
-        ? Number((result.rowSum / number_of_all_papers_with_da).toFixed(3))
-        : 0;
+    // Python script: result_2['RowSum'] = result_2.sum(axis=1), i.e. the sum of the
+    // per-test values that were already rounded to 3 decimals
+    result.normalized_rowSum = Number(
+      testColumns
+        .reduce(
+          (sum, testValue) =>
+            sum +
+            result[
+              `normalized_${testValue.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase()}`
+            ],
+          0
+        )
+        .toFixed(3)
+    );
 
     return result;
   });
 
   const finalData = processedData.map((item) => {
-    // Python script: (result[column] / number_of_all_papers_with_da).round(3)
-    // normalized_rowSum is already calculated as (rowSum / number_of_all_papers_with_da).toFixed(3)
-    // So we just need to ensure it's rounded to 3 decimals and handle edge case where > 0 but rounds to 0
+    // normalized_rowSum is already the sum of the per-test rounded values;
+    // handle the edge case where rowSum > 0 but it rounds to 0
     let normalizedRatio = item.normalized_rowSum;
 
     // If rowSum > 0 but normalized_rowSum rounds to 0.000, set to 0.001 to ensure bar has width
@@ -787,60 +766,68 @@ export const Query12DataProcessingFunction = (rawData: RawDataItem[]) => {
     highlighted_a: item.highlighted_a === '1',
   }));
 
-  // 1) Paper-level aggregation (independent of SPARQL row order).
-  // The query returns one row per research question (x answer) of a paper.
-  // Rule: a paper has a research question if ANY of its rows has a question
-  // other than 'No question'; its question is highlighted if ANY row has
-  // highlighted_q, and its answer is highlighted if ANY row has highlighted_a.
-  const paperMap = new Map<string, RawDataItem>();
-  cleaned.forEach((item) => {
-    const key = item.paper as string;
-    const existing = paperMap.get(key);
-    if (!existing) {
-      paperMap.set(key, { ...item });
-      return;
-    }
-    if (
-      existing.question === 'No question' &&
-      item.question !== 'No question'
-    ) {
-      existing.question = item.question;
-    }
-    existing.highlighted_q = existing.highlighted_q || item.highlighted_q;
-    existing.highlighted_a = existing.highlighted_a || item.highlighted_a;
-  });
-  const uniquePapers = Array.from(paperMap.values());
-
+  // Same rule as the EmpiRE-Analysis notebook: the query returns one row per
+  // research question (x answer) of a paper, and a paper counts in a category if
+  // ANY of its rows matches that category (rows filtered, then drop_duplicates by
+  // paper). A paper with one highlighted and one hidden question therefore counts
+  // in both categories. The denominator is all papers of the year.
   const papersByYear: Record<string, RawDataItem[]> = {};
-  uniquePapers.forEach((item) => {
+  const rowsByYear: Record<string, typeof cleaned> = {};
+  const seenPapers = new Set<string>();
+  cleaned.forEach((item) => {
     const y = item.year as string;
+    if (!rowsByYear[y]) rowsByYear[y] = [];
+    rowsByYear[y].push(item);
+    if (seenPapers.has(item.paper as string)) return;
+    seenPapers.add(item.paper as string);
     if (!papersByYear[y]) papersByYear[y] = [];
     papersByYear[y].push(item);
   });
+
+  const uniqueByPaper = (rows: typeof cleaned) => {
+    const map = new Map<string, RawDataItem>();
+    rows.forEach((row) => {
+      if (!map.has(row.paper as string)) map.set(row.paper as string, row);
+    });
+    return Array.from(map.values());
+  };
 
   const result = Object.keys(papersByYear)
     .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
     .map((year) => {
       const yearPapers = papersByYear[year];
       const total = yearPapers.length;
+      const yearRows = rowsByYear[year];
 
-      const noRQYear = yearPapers.filter((p) => p.question === 'No question');
-      const hasRQYear = yearPapers.filter((p) => p.question !== 'No question');
+      const noRQYear = yearRows.filter((p) => p.question === 'No question');
+      const hasRQYear = yearRows.filter((p) => p.question !== 'No question');
 
-      const noRQHighlighted = noRQYear.filter((p) => p.highlighted_a === true);
-      const noRQHidden = noRQYear.filter((p) => p.highlighted_a === false);
+      const noRQHighlighted = uniqueByPaper(
+        noRQYear.filter((p) => p.highlighted_a === true)
+      );
+      const noRQHidden = uniqueByPaper(
+        noRQYear.filter((p) => p.highlighted_a === false)
+      );
 
-      const hqha = hasRQYear.filter(
-        (p) => p.highlighted_q === true && p.highlighted_a === true
+      const hqha = uniqueByPaper(
+        hasRQYear.filter(
+          (p) => p.highlighted_q === true && p.highlighted_a === true
+        )
       );
-      const hqhaHidden = hasRQYear.filter(
-        (p) => p.highlighted_q === true && p.highlighted_a === false
+      const hqhaHidden = uniqueByPaper(
+        hasRQYear.filter(
+          (p) => p.highlighted_q === true && p.highlighted_a === false
+        )
       );
-      const hidqha = hasRQYear.filter(
-        (p) => p.highlighted_q === false && p.highlighted_a === true
+      const hidqha = uniqueByPaper(
+        hasRQYear.filter(
+          (p) => p.highlighted_q === false && p.highlighted_a === true
+        )
       );
-      const hidqhid = hasRQYear.filter(
-        (p) => p.highlighted_q === false && p.highlighted_a === false
+      const hidqhid = uniqueByPaper(
+        hasRQYear.filter(
+          (p) => p.highlighted_q === false && p.highlighted_a === false
+        )
       );
 
       const c1 = noRQHighlighted.length;
@@ -968,20 +955,28 @@ export const Query14DataProcessingFunction = (
   return result;
 };
 
+/**
+ * Outer merge of the data collection and data analysis method counts on
+ * (paper, year), as in the notebook: pd.merge(..., how='outer').fillna(0).
+ * Papers that only appear in one of the two queries are kept.
+ */
+const outerMergeByPaperAndYear = (
+  rawData: RawDataItem[],
+  rawData2: RawDataItem[]
+): RawDataItem[] => {
+  const merged = new Map<string, RawDataItem>();
+  [...rawData, ...rawData2].forEach((item) => {
+    const key = `${item.paper}|${item.year}`;
+    merged.set(key, { ...merged.get(key), ...item });
+  });
+  return Array.from(merged.values());
+};
+
 export const Query15DataProcessingFunction = (
   rawData: RawDataItem[],
   rawData2: RawDataItem[]
 ) => {
-  //merge rawData and rawData2 based on paper and year in each object
-  const mergedData = rawData.map((item) => {
-    const item2 = rawData2.find(
-      (item2) => item2.paper === item.paper && item2.year === item.year
-    );
-    return {
-      ...item,
-      ...item2,
-    };
-  });
+  const mergedData = outerMergeByPaperAndYear(rawData, rawData2);
 
   const countedData = mergedData.map((item) => {
     const keys = Object.keys(item).filter(
@@ -1028,23 +1023,7 @@ export const Query16DataProcessingFunction = (
 ): any[] => {
   if (!rawData.length || !rawData2.length) return [];
 
-  //merge rawData and rawData2 based on paper and year in each object
-  const mergedData = rawData.map((item) => {
-    const item2 = rawData2.find(
-      (item2) => item2.paper === item.paper && item2.year === item.year
-    );
-    return {
-      ...item,
-      ...item2,
-    };
-  });
-
-  //Deduplicate mergedData based on paper and year
-  const deduplicatedData = mergedData.filter(
-    (item, index, self) =>
-      index ===
-      self.findIndex((t) => t.paper === item.paper && t.year === item.year)
-  );
+  const deduplicatedData: any[] = outerMergeByPaperAndYear(rawData, rawData2);
 
   const dataByYear: Record<number, Record<string, number>> = {};
   const totalByYear: Record<number, number> = {};

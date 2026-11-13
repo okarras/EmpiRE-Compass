@@ -5,6 +5,9 @@ import {
   Query4DataProcessingFunctionForDataCollection,
   Query2DataProcessingFunctionForDataAnalysis,
   Query2DataProcessingFunctionForDataCollection,
+  Query15DataProcessingFunction,
+  Query16DataProcessingFunction,
+  Query7DataProcessingFunctionForInferentialStatistics,
 } from './data_processing_helper_functions';
 
 describe('relative chart denominators', () => {
@@ -58,7 +61,7 @@ describe('relative chart denominators', () => {
   });
 });
 
-describe('data collection dedup (one count per paper and method category)', () => {
+describe('data collection counts every method row (as in the notebook)', () => {
   const rows = [
     { paper: 'p1', year: '2020', dc_method_type_label: 'case study' },
     { paper: 'p1', year: '2020', dc_method_type_label: 'case study' },
@@ -67,31 +70,31 @@ describe('data collection dedup (one count per paper and method category)', () =
     { paper: 'p2', year: '2020', dc_method_type_label: 'case study' },
   ];
 
-  it('Q2 counts each paper once per category, with others merged', () => {
+  it('Q2 counts every row and divides by unique papers', () => {
     const result = Query2DataProcessingFunctionForDataCollection(rows);
-    expect(result[0]['case study']).toBe(2);
-    expect(result[0].others).toBe(1);
-    expect(result[0]['normalized_case study']).toBe(100);
+    expect(result[0]['case study']).toBe(3);
+    expect(result[0].others).toBe(2);
+    expect(result[0]['normalized_case study']).toBe(150);
   });
 
-  it('Q4 counts each paper once per category', () => {
+  it('Q4 counts every row and divides by all method rows', () => {
     const result = Query4DataProcessingFunctionForDataCollection(rows);
     const caseStudy = result.find((r) => r.methodType === 'Case study');
     const others = result.find((r) => r.methodType === 'Others');
-    expect(caseStudy?.count).toBe(2);
-    expect(others?.count).toBe(1);
-    expect(caseStudy?.normalizedRatio).toBeCloseTo(66.67, 2);
+    expect(caseStudy?.count).toBe(3);
+    expect(others?.count).toBe(2);
+    expect(caseStudy?.normalizedRatio).toBe(60);
   });
 });
 
-describe('Query12 paper-level aggregation', () => {
+describe('Query12 per-category counting (as in the notebook)', () => {
   const row = (
     question: string,
     highlighted_q: string,
     highlighted_a: string
   ) => ({ paper: 'p1', year: '2020', question, highlighted_q, highlighted_a });
 
-  it('is independent of row order: any highlighted row wins', () => {
+  it('is independent of row order and counts a paper in every matching category', () => {
     const a = Query12DataProcessingFunction([
       row('RQ1', '1', '1'),
       row('RQ2', '0', '0'),
@@ -100,17 +103,74 @@ describe('Query12 paper-level aggregation', () => {
       row('RQ2', '0', '0'),
       row('RQ1', '1', '1'),
     ]);
-    expect(a[0].hqha).toBe(1);
-    expect(b[0].hqha).toBe(1);
-    expect(a[0].hidqhid).toBe(0);
+    for (const result of [a, b]) {
+      expect(result[0].hqha).toBe(1);
+      expect(result[0].hidqhid).toBe(1);
+      expect(result[0].normalized_hqha).toBe(100);
+    }
   });
 
-  it('treats a paper as having a question if any row has one', () => {
+  it('counts a paper once per category and divides by all papers of the year', () => {
     const result = Query12DataProcessingFunction([
-      row('No question', '0', '0'),
-      row('RQ1', '0', '0'),
+      row('RQ1', '1', '0'),
+      row('RQ2', '1', '0'),
+      { ...row('No question', '0', '0'), paper: 'p2' },
     ]);
-    expect(result[0].hidqhid).toBe(1);
-    expect(result[0].noRQHidden).toBe(0);
+    expect(result[0].hqhaHidden).toBe(1);
+    expect(result[0].normalized_hqhaHidden).toBe(50);
+    expect(result[0].noRQHidden).toBe(1);
+  });
+});
+
+describe('Q15/Q16 outer merge of collection and analysis methods', () => {
+  const dc = [{ paper: 'p1', year: '2020', number_of_dc_methods: '2' }];
+  const da = [
+    {
+      paper: 'p1',
+      year: '2020',
+      number_of_inf_methods: '0',
+      number_of_des_methods: '1',
+      number_of_ml_methods: '0',
+      number_of_other_methods: '0',
+    },
+    {
+      paper: 'p2',
+      year: '2020',
+      number_of_inf_methods: '1',
+      number_of_des_methods: '0',
+      number_of_ml_methods: '0',
+      number_of_other_methods: '0',
+    },
+  ];
+
+  it('Q15 keeps papers that only have data analysis methods', () => {
+    const result = Query15DataProcessingFunction(dc, da);
+    expect(result).toEqual([
+      { numberOfMethodsUsed: '1', count: 1, normalizedRatio: 50 },
+      { numberOfMethodsUsed: '3', count: 1, normalizedRatio: 50 },
+    ]);
+  });
+
+  it('Q16 keeps papers that only have data analysis methods', () => {
+    const result = Query16DataProcessingFunction(dc, da);
+    expect(result[0]['1.0']).toBe(1);
+    expect(result[0]['3.0']).toBe(1);
+    expect(result[0]['normalized_3.0']).toBe(50);
+  });
+});
+
+describe('Query7 inferential relative value', () => {
+  it('sums the per-test values rounded to 3 decimals', () => {
+    // 1/600 rounds to 0.002 per test, so two tests give 0.004 (0.4%), not 0.003
+    const rows = Array.from({ length: 600 }, (_, i) => ({
+      paper: `p${i}`,
+      year: '2020',
+      da_label: 'analysis',
+    })) as { paper: string; year: string; da_label: string; test?: string }[];
+    rows[0].test = 't-test';
+    rows[1].test = 'anova';
+    const result = Query7DataProcessingFunctionForInferentialStatistics(rows);
+    expect(result[0].count).toBe(2);
+    expect(result[0].normalizedRatio).toBe(0.4);
   });
 });
