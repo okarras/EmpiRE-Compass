@@ -17,6 +17,7 @@ import {
   Query9DataProcessingFunction,
   Query12DataProcessingFunction,
   Query14DataProcessingFunction,
+  Query15DataProcessingFunction,
   Query16DataProcessingFunction,
   Query7DataProcessingFunctionForInferentialStatistics,
 } from './data_processing_helper_functions';
@@ -276,51 +277,7 @@ export const queries: Query[] = [
     id: 15,
     uid: 'query_15_1',
     uid_2_merge: 'query_15_2',
-    dataProcessingFunction2: (rawData: any[], rawData2: any[]) => {
-      //merge rawData and rawData2 based on paper and year in each object
-      const mergedData = rawData.map((item) => {
-        const item2 = rawData2.find(
-          (item2) => item2.paper === item.paper && item2.year === item.year
-        );
-        return {
-          ...item,
-          ...item2,
-        };
-      });
-
-      const countedData = mergedData.map((item) => {
-        const keys = Object.keys(item).filter(
-          (key) => key !== 'paper' && key !== 'year'
-        );
-        let numberOfMethodsUsed = 0;
-        keys.forEach((key) => {
-          numberOfMethodsUsed += Number(item[key]);
-        });
-        return {
-          ...item,
-          numberOfMethodsUsed,
-        };
-      });
-
-      //sort data by count
-      countedData.sort((a, b) => b.count - a.count);
-
-      const result = countedData.reduce((acc, item) => {
-        acc[item.numberOfMethodsUsed] =
-          (acc[item.numberOfMethodsUsed] || 0) + 1;
-        return acc;
-      }, {});
-
-      const arrayResult = Object.entries(result).map(([key, value]) => ({
-        numberOfMethodsUsed: key,
-        count: value,
-        normalizedRatio:
-          Number((((value as number) / countedData.length) * 100).toFixed(2)) ||
-          0,
-      }));
-
-      return arrayResult;
-    },
+    dataProcessingFunction2: Query15DataProcessingFunction,
     dataAnalysisInformation: {
       question: 'How many different research methods are used per publication?',
     },

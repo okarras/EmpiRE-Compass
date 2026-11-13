@@ -327,7 +327,6 @@ const QuestionChartView: React.FC<QuestionChartViewProps> = ({
                     defaultChartType={query.chartType ?? 'bar'}
                     availableCharts={['bar', 'pie']}
                     isSubChart={true}
-                    normalizationType="across-years"
                   />
                 ))}
                 <Typography

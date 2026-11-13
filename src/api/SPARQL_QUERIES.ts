@@ -32,7 +32,7 @@ export const SPARQL_QUERIES = {
 `,
 
   query_2_1: `
-    SELECT DISTINCT ?paper ?year ?dc_method_type_label
+    SELECT ?paper ?year ?dc_method_type_label
         WHERE {
                 ?paper orkgp:P31 ?contribution;
                        orkgp:P29 ?year.
@@ -104,7 +104,7 @@ export const SPARQL_QUERIES = {
 `,
 
   query_4_1: `
-    SELECT DISTINCT ?paper ?year ?dc_method_type_label
+    SELECT ?paper ?year ?dc_method_type_label
             WHERE {
                     ?paper orkgp:P31 ?contribution;
                         orkgp:P29 ?year.
