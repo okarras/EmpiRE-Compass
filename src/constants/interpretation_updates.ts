@@ -77,6 +77,26 @@ export const INTERPRETATION_UPDATES: InterpretationUpdate[] = [
     find: '<em>others</em> as a default category (229 times)',
     replace: '<em>others</em> as a default category (186 times)',
   },
+  // R186491 Q2: same data collection counts as Q4, worded slightly differently
+  ...[
+    ['<em>case study</em> (242  times)', '<em>case study</em> (230 times)'],
+    ['<em>experiment</em> (155 times)', '<em>experiment</em> (141 times)'],
+    ['<em>survey</em> (116 times)', '<em>survey</em> (108 times)'],
+    [
+      '<em>secondary research</em> (116 times)',
+      '<em>secondary research</em> (111 times)',
+    ],
+    ['<em>interview</em> (110 times)', '<em>interview</em> (103 times)'],
+    [
+      '<em>other methods</em> as a default category (229 times)',
+      '<em>other methods</em> as a default category (186 times)',
+    ],
+  ].map(([find, replace]) => ({
+    templateId: 'R186491' as const,
+    questionId: 2,
+    find,
+    replace,
+  })),
   // R186491 Q15: combined collection + analysis methods (607 papers)
   {
     templateId: 'R186491',

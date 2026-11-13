@@ -65,4 +65,19 @@ describe('Query10DataProcessingFunction', () => {
       .filter((v) => v !== null);
     expect(points).toEqual([3, 3]);
   });
+
+  it('places points at the same x positions on every call', () => {
+    const raw = ['c1', 'c2', 'c3'].map((contribution) => ({
+      contribution,
+      NLPTaskTypeLabel: 'Classification',
+      numberOfAnnotators: '2',
+    }));
+    const xs = Query10DataProcessingFunction(raw).map(
+      (r) => r['Classification_x']
+    );
+    expect(xs).toEqual([0.85, 1, 1.15]);
+    expect(
+      Query10DataProcessingFunction(raw).map((r) => r['Classification_x'])
+    ).toEqual(xs);
+  });
 });

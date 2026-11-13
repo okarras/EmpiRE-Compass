@@ -362,9 +362,11 @@ export const Query10DataProcessingFunction = (
     labels.forEach((lbl) => {
       const key = safe(lbl);
       const baseX = labelIndex[lbl];
-      const jitterOffset = jitterAmount
-        ? (Math.random() - 0.5) * jitterAmount
-        : 0;
+      // Spread a task's points evenly across the jitter band so the plot is
+      // the same on every render.
+      const count = grouped[lbl].length;
+      const jitterOffset =
+        count > 1 ? (i / (count - 1) - 0.5) * jitterAmount : 0;
       row[`${key}_x`] = baseX + jitterOffset;
       row[`${key}_xLabel`] = lbl;
       row[`${key}_y`] = grouped[lbl][i] ?? null;

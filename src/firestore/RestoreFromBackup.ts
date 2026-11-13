@@ -214,7 +214,7 @@ export const convertStatisticsToNewFormat = (
 };
 
 const getBackendUrl = () =>
-  import.meta.env.VITE_BACKEND_URL || 'https://empirecompassbackend.vercel.app';
+  import.meta.env.VITE_BACKEND_URL || 'https://empire-compass-backend.tib.eu';
 
 export const restoreFromBackup = async (
   backupData: any,

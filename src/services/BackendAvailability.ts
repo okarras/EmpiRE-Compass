@@ -13,7 +13,7 @@ export const checkBackendAvailability = async (): Promise<boolean> => {
   try {
     const backendUrl =
       import.meta.env.VITE_BACKEND_URL ||
-      'https://empirecompassbackend.vercel.app';
+      'https://empire-compass-backend.tib.eu';
     const response = await fetch(`${backendUrl}/api/health`, {
       method: 'GET',
       headers: {

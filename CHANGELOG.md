@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.13.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.4.0...v1.13.0) (2026-11-13)
+
+Release for the JOSS review (openjournals/joss-reviews#11242).
+
+### Bug Fixes
+
+- run the secondary SPARQL query for merged questions (Q15, Q16)
+- define explicit de-duplication and aggregation rules (Q2, Q4, Q12, NLP4RE Q10)
+- use a deterministic jitter in the NLP4RE Q10 scatter plot
+- start the backend without a Firebase service account; fix backend type errors
+- make `npm test` pass after a root-only install; stop bundling raw Firestore backups
+- point the default backend URL to https://empire-compass-backend.tib.eu
+
+### Documentation
+
+- fix installation, ORKG login and statistics instructions in the README
+- add `CODE_OF_CONDUCT.md` and move `CONTRIBUTING.md` to the repository root
+- paper: rewrite Software Design, update data counts, list AI tools and models
+
+### CI
+
+- run lint, tests, build and backend type check on every PR
+
 ## [1.12.0](https://github.com/okarras/EmpiRE-Compass/compare/v1.11.0...v1.12.0) (2025-12-03)
 
 ### Features
