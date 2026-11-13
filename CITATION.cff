@@ -35,8 +35,8 @@ authors:
     affiliation: Leibniz University Hannover
 identifiers:
   - type: doi
-    value: 10.5281/zenodo.18170203
-    description: The DOI of the corresponding release on Zenodo.
+    value: 10.5281/zenodo.18170202
+    description: The concept DOI of EmpiRE-Compass on Zenodo (resolves to the latest release).
 repository-code: 'https://github.com/okarras/EmpiRE-Compass'
 url: 'https://empire-compass.tib.eu/R186491/'
 abstract: >-
@@ -64,5 +64,5 @@ keywords:
   - large language model
 license: MIT
 commit: 44af8533a0fbd18191d03f8c59fab5cc09b67ac6
-version: 1.4.0
-date-released: '2026-01-07'
+version: 1.13.0
+date-released: '2026-11-13'
