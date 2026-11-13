@@ -89,14 +89,14 @@ By making these datasets interactive, the dashboard supports “living” litera
 
 # AI Usage Disclosure
 
-**Manuscript.** The authors used **Microsoft Copilot** and **Grammarly** for initial drafting, grammar refinement, and spelling checks of this manuscript. The core software design, architectural decisions, and the neuro-symbolic integration logic were conceived and implemented by the human authors. All AI-generated text was reviewed, edited, and validated by the authors to ensure accuracy and compliance with JOSS standards.
+**Manuscript.** The authors used **Microsoft Copilot** and **Grammarly** for initial drafting, grammar refinement, and spelling checks of this manuscript. **Claude Opus 5.5** (Anthropic, via Claude Code) drafted the revisions made in response to the JOSS review. The core software design, architectural decisions, and the neuro-symbolic integration logic were conceived and implemented by the human authors. All AI-generated text was reviewed, edited, and validated by the authors to ensure accuracy and compliance with JOSS standards.
 
 **Software development.** The authors used the following generative AI coding tools during development:
 
-- **GitHub Copilot** (in-editor completions, pull-request review suggestions, and the Copilot coding agent) [MODEL(S) AND SCOPE: authors to confirm]. The coding agent drafted the first version of `AGENTS.md` (April 2026); `.github/copilot-instructions.md` holds the repository guidance given to Copilot.
-- **Cursor and Claude** (editor and agent mode) [MODEL(S) AND SCOPE: authors to confirm], used for code generation and refactoring. The rules in `.cursor/rules/` and `.cursor/skills/` encode the project's architecture conventions for these agents.
-
-- An LLM accessed through OpenRouter (`scripts/enhance-issue.mjs`) to expand short bug reports into the repository's issue templates.
+- **GitHub Copilot** with GitHub's default model at the time (no specific model was selected), for in-editor completions, pull-request review suggestions, and the Copilot coding agent (April 2026). `.github/copilot-instructions.md` holds the repository guidance given to Copilot.
+- **Cursor** in editor and agent mode with **Claude Sonnet 4.6 and 5.5**, **Claude Opus 4.5, 4.6, and 5.5** (Anthropic), **Grok 4.5 and 4.7** (xAI), and **Cursor Composer 1.5 and 2.5**, for code generation and refactoring. The Cursor agent drafted the first version of `AGENTS.md` (June 2026); the rules in `.cursor/rules/` and `.cursor/skills/` encode the project's architecture conventions for these agents.
+- **Claude Code** with **Claude Opus 5.5** (Anthropic), for code changes and fixes made during the JOSS review (November 2026).
+- A configurable LLM (by default `openai/gpt-4o-mini` via OpenRouter) in `scripts/enhance-issue.mjs`, to expand short bug reports into the repository's issue templates.
 
 Every AI-assisted change was reviewed, tested, and validated by the human authors, who take full responsibility for the code. The overall architecture and the neuro-symbolic design were conceived by the authors.
 
