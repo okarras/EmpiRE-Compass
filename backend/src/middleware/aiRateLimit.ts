@@ -10,25 +10,32 @@ interface UserRateLimit {
   resetAt: Timestamp;
 }
 
+/** Shared LLM quota: 25 requests per 24 hours for non-admin callers. */
+export const AI_RATE_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
+export const AI_RATE_LIMIT_MAX_REQUESTS = 25;
+
+/** Authenticated callers are keyed by user id; everyone else by client IP. */
+export const getAiRateLimitSubject = (req: AuthenticatedRequest): string => {
+  if (req.userId) return req.userId;
+  const ip = req.ip || req.socket?.remoteAddress || 'unknown';
+  return `anon_${ip}`;
+};
+
 /**
  * Per-user rate limiter for AI requests
  * - Admin users: Unlimited requests
- * - Non-admin users: 25 requests per 24 hours
+ * - Signed-in and anonymous users: 25 requests per 24 hours
  */
 export const createUserRateLimiter = () => {
-  const WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
-  const MAX_REQUESTS = 25;
+  const WINDOW_MS = AI_RATE_LIMIT_WINDOW_MS;
+  const MAX_REQUESTS = AI_RATE_LIMIT_MAX_REQUESTS;
   return async (
     req: AuthenticatedRequest,
     res: Response,
     next: NextFunction
   ) => {
     try {
-      // For anonymous users, use IP-based rate limiting
-      // For authenticated users, use user-based rate limiting
-      const userId =
-        req.userId ||
-        `anon_${req.ip || req.connection?.remoteAddress || 'unknown'}`;
+      const userId = getAiRateLimitSubject(req);
       const isAnonymous = !req.userId;
       // Skip rate limiting for admin users
       if (req.isAdmin) {

@@ -89,6 +89,42 @@ export const validateKeycloakToken = async (
 };
 
 /**
+ * Attach a Keycloak identity when credentials are present, and continue
+ * anonymously when they are not. A Bearer token that fails verification is
+ * still rejected.
+ */
+export const optionalKeycloakAuth = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
+  const hasToken = Boolean(authHeader && authHeader.startsWith('Bearer '));
+
+  if (hasToken) {
+    return validateKeycloakToken(req, res, next);
+  }
+
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  if (isDevelopment) {
+    const userId =
+      (req.headers['x-user-id'] as string) ||
+      (req.headers['X-User-Id'] as string);
+    const userEmail =
+      (req.headers['x-user-email'] as string) ||
+      (req.headers['X-User-Email'] as string);
+
+    if (userId && userEmail) {
+      req.userId = userId;
+      req.userEmail = userEmail;
+      req.isAdmin = isAdminEmail(userEmail);
+    }
+  }
+
+  return next();
+};
+
+/**
  * Optional auth for ORKG Ask routes: allows requests when ORKG_ASK_API_KEY is configured,
  * even without Keycloak login. When a token is provided, it is still validated.
  */

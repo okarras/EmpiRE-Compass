@@ -168,7 +168,7 @@ export interface BackendAiConfigResponse {
   apiKeyConfigured: boolean;
 }
 
-/** GET /api/ai/config — server default provider and model (requires same auth as other AI routes). */
+/** GET /api/ai/config — server default provider and model. Authentication is not required. */
 export async function fetchBackendAiConfig(): Promise<BackendAiConfigResponse | null> {
   const base = getBackendBaseUrl().replace(/\/$/, '');
   const res = await fetch(`${base}/api/ai/config`, {

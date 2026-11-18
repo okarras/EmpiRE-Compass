@@ -381,7 +381,7 @@ Return ONLY the explanation text.`;
         questionInterpretationPrompt,
         {
           temperature: 0.3,
-          maxTokens: 200,
+          maxTokens: 2000,
         }
       );
 
@@ -416,7 +416,7 @@ Return ONLY the explanation text.`;
         dataCollectionInterpretationPrompt,
         {
           temperature: 0.3,
-          maxTokens: 200,
+          maxTokens: 2000,
         }
       );
 
@@ -471,7 +471,7 @@ Return ONLY the explanation text.`;
         dataAnalysisInterpretationPrompt,
         {
           temperature: 0.3,
-          maxTokens: 200,
+          maxTokens: 2000,
         }
       );
 

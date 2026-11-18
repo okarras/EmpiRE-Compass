@@ -11,6 +11,7 @@ import type {
   GoogleModel,
 } from '../../shared/aiModels.js';
 import { redactString } from './services/logSanitizer.js';
+import { readGeneratedText } from '../../shared/aiText.js';
 
 export type {
   AIProvider,
@@ -260,29 +261,10 @@ export class AIService {
         throw new Error('AI service returned empty result');
       }
 
-      // Normalize text response
-      let normalizedText = '';
-      if (result.text) {
-        normalizedText =
-          typeof result.text === 'string' ? result.text : String(result.text);
-      }
-
-      // Handle reasoning
-      const reasoningVal = (result as any).reasoning;
-      let normalizedReasoning: string | undefined = undefined;
-
-      if (reasoningVal !== undefined && reasoningVal !== null) {
-        if (Array.isArray(reasoningVal)) {
-          normalizedReasoning = JSON.stringify(reasoningVal);
-        } else if (typeof reasoningVal === 'string') {
-          normalizedReasoning = reasoningVal;
-        } else {
-          normalizedReasoning = String(reasoningVal);
-        }
-      }
-
-      // Use reasoning as fallback if text is empty
-      const finalText = normalizedText.trim() || normalizedReasoning || '';
+      // Reasoning models return an array of parts. Empty parts must not be
+      // stringified into the answer shown in the question sections.
+      const { text: finalText, reasoning: normalizedReasoning } =
+        readGeneratedText(result);
 
       // Extract usage information - check multiple possible locations
       // Type the usage as any to access properties that may vary by provider

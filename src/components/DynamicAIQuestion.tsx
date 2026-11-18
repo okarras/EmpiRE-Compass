@@ -1,15 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import HeaderExportAction from './HeaderExportAction';
-import {
-  Box,
-  Button,
-  Snackbar,
-  Alert,
-  Paper,
-  Typography,
-  CircularProgress,
-} from '@mui/material';
-import { Undo, Login, Psychology } from '@mui/icons-material';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
+import { Undo } from '@mui/icons-material';
 import fetchSPARQLData from '../helpers/fetch_query';
 import LLMContextHistoryDialog from './AI/LLMContextHistoryDialog';
 import { HistoryManager, HistoryItem } from './AI/HistoryManager';
@@ -563,25 +555,8 @@ const DynamicAIQuestion = () => {
     costs: CostBreakdown[];
   } | null>(null);
 
-  const {
-    isAuthenticated,
-    isLoading: authLoading,
-    login,
-    user,
-  } = useAuthData();
+  const { user } = useAuthData();
   const isAdmin = user?.is_admin === true;
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  const handleLogin = async () => {
-    setIsLoggingIn(true);
-    try {
-      await login();
-    } catch (err) {
-      console.error('Login failed:', err);
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
 
   const handleOpenHistory = (type: HistoryItem['type']) => {
     setHistoryType(type);
@@ -848,6 +823,12 @@ const DynamicAIQuestion = () => {
       return;
     }
 
+    if (!user) {
+      const message = 'Sign in to save or share this question.';
+      setSaveError(message);
+      throw new Error(message);
+    }
+
     setSavingExample(true);
     setSaveError(null);
 
@@ -904,87 +885,6 @@ const DynamicAIQuestion = () => {
       setSavingExample(false);
     }
   };
-
-  // Show loading state while checking authentication
-  if (authLoading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '60vh',
-          gap: 2,
-        }}
-      >
-        <CircularProgress sx={{ color: '#e86161' }} />
-        <Typography variant="body2" color="text.secondary">
-          Checking authentication...
-        </Typography>
-      </Box>
-    );
-  }
-
-  // Show login prompt if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <Box sx={{ width: '100%' }}>
-        <Paper
-          elevation={3}
-          sx={{
-            p: 6,
-            maxWidth: 600,
-            mx: 'auto',
-            mt: 4,
-            textAlign: 'center',
-            border: '2px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Psychology
-            sx={{ fontSize: 80, color: '#e86161', mb: 3, opacity: 0.7 }}
-          />
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 600 }}>
-            Authentication Required
-          </Typography>
-          <Alert severity="info" sx={{ mb: 4, textAlign: 'left' }}>
-            <Typography variant="body1" sx={{ mb: 1 }}>
-              Please sign in to use the AI-powered Dynamic Question feature.
-            </Typography>
-            <Typography variant="body2">
-              This feature requires authentication to generate SPARQL queries,
-              process data, and create visualizations using AI assistance.
-            </Typography>
-          </Alert>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={handleLogin}
-            disabled={isLoggingIn}
-            startIcon={
-              isLoggingIn ? (
-                <CircularProgress size={20} sx={{ color: 'white' }} />
-              ) : (
-                <Login />
-              )
-            }
-            sx={{
-              backgroundColor: '#e86161',
-              '&:hover': {
-                backgroundColor: '#d45151',
-              },
-              minWidth: 250,
-              py: 1.5,
-              fontSize: '1.1rem',
-            }}
-          >
-            {isLoggingIn ? 'Signing in...' : 'Sign In to Continue'}
-          </Button>
-        </Paper>
-      </Box>
-    );
-  }
 
   const exportButton = (
     <Button

@@ -33,6 +33,9 @@ import aiEvaluationsRouter from './routes/aiEvaluations.js';
 dotenv.config();
 
 const app = express();
+// Vercel (and local proxies) sit in front of this app. Trust one hop so
+// anonymous LLM rate limits use the client IP from X-Forwarded-For.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5001;
 
 // Get __dirname equivalent in ES modules

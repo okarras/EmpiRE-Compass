@@ -2,10 +2,14 @@ import { Router, Response, Request } from 'express';
 import { AIService, type AIConfig, type GroqModel } from '../aiService.js';
 import { validateGenerateTextRequest } from '../middleware.js';
 import {
-  validateKeycloakToken,
+  optionalKeycloakAuth,
   type AuthenticatedRequest,
 } from '../middleware/auth.js';
-import { createUserRateLimiter } from '../middleware/aiRateLimit.js';
+import {
+  AI_RATE_LIMIT_MAX_REQUESTS,
+  createUserRateLimiter,
+  getAiRateLimitSubject,
+} from '../middleware/aiRateLimit.js';
 import { db } from '../config/firebase.js';
 import { Timestamp } from 'firebase-admin/firestore';
 import { isAdminEmail } from '../config/constants.js';
@@ -265,11 +269,10 @@ router.get('/config', async (req: AuthenticatedRequest, res: Response) => {
  * @swagger
  * /api/ai/rate-limit:
  *   get:
- *     summary: Get current user's rate limit status
+ *     summary: Get the caller's LLM rate limit status
+ *     description: Authentication is optional. Signed-in users are counted by account; anonymous callers are counted by IP. A presented Bearer token that fails verification returns 401.
  *     tags:
  *       - AI
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       '200':
  *         description: Rate limit status retrieved successfully
@@ -278,27 +281,21 @@ router.get('/config', async (req: AuthenticatedRequest, res: Response) => {
  *             schema:
  *               $ref: '#/components/schemas/RateLimitStatus'
  *       '401':
- *         description: Unauthorized - missing or invalid Keycloak token
+ *         description: Invalid or expired Keycloak token
  *       '500':
  *         description: Failed to get rate limit status
  */
 router.get(
   '/rate-limit',
-  validateKeycloakToken,
+  optionalKeycloakAuth,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
-      if (!req.userId) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-
       // Check admin status
-      let isAdmin = req.isAdmin;
-      if (!isAdmin) {
-        // Check email-based admin first
+      let isAdmin = req.isAdmin === true;
+      if (!isAdmin && req.userId) {
         if (req.userEmail && isAdminEmail(req.userEmail)) {
           isAdmin = true;
         } else {
-          // Check Firebase
           try {
             const userDoc = await db.collection('Users').doc(req.userId).get();
             const userData = userDoc.data();
@@ -321,11 +318,11 @@ router.get(
         });
       }
 
-      const userId = req.userId;
+      const userId = getAiRateLimitSubject(req);
       const rateLimitRef = db.collection('AIRateLimits').doc(userId);
       const rateLimitDoc = await rateLimitRef.get();
 
-      const MAX_REQUESTS = 5;
+      const MAX_REQUESTS = AI_RATE_LIMIT_MAX_REQUESTS;
       const now = Timestamp.now();
 
       if (!rateLimitDoc.exists) {
@@ -372,11 +369,9 @@ router.get(
  * /api/ai/generate:
  *   post:
  *     summary: Generate text using AI
- *     description: Rate limited per user (5 requests per window, unlimited for admins)
+ *     description: Authentication is optional. Non-admin callers are limited to 25 requests per 24 hours (by account when signed in, by IP otherwise). Admins are unlimited. A presented Bearer token that fails verification returns 401.
  *     tags:
  *       - AI
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -398,7 +393,7 @@ router.get(
  *       '400':
  *         description: Invalid request body
  *       '401':
- *         description: Unauthorized - missing or invalid Keycloak token
+ *         description: Invalid or expired Keycloak token
  *       '429':
  *         description: Rate limit exceeded
  *       '500':
@@ -406,7 +401,7 @@ router.get(
  */
 router.post(
   '/generate',
-  validateKeycloakToken,
+  optionalKeycloakAuth,
   createUserRateLimiter(),
   validateGenerateTextRequest,
   async (req: AuthenticatedRequest, res: Response) => {

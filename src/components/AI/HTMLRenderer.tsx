@@ -33,6 +33,7 @@ import { useAIService } from '../../services/backendAIService';
 import { useDynamicQuestion } from '../../context/DynamicQuestionContext';
 import { HistoryItem } from './HistoryManager';
 import { CodeEditor } from '../CodeEditor';
+import { fitChartDocument } from './chartFrame';
 
 interface HTMLRendererProps {
   html: string;
@@ -427,7 +428,9 @@ ${bodyMatch[0]}
           }}
         >
           <iframe
-            srcDoc={htmlContent}
+            srcDoc={
+              type === 'chart' ? fitChartDocument(htmlContent) : htmlContent
+            }
             style={{
               width: '100%',
               height: '100%',
