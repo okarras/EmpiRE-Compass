@@ -140,7 +140,7 @@ Edit the `.env` file with your actual values. The `.env.example` file contains a
 
 - The application will work without Keycloak configuration, but authentication features (login/logout) and admin routes will not be available.
 - The dashboard and public features (statistics, curated questions and charts, schema graph) function normally in unauthenticated mode.
-- **The AI features require signing in with an ORKG account** (free registration at [orkg.org](https://orkg.org/)). This covers the _Dynamic Question_ page (`/<templateId>/dynamic-question`: SPARQL generation, query retry, LLM interpretation) and the _Explain Chart Insights_ assistant. Signed-out users see an "Authentication Required" prompt.
+- **AI generation works without signing in.** The _Dynamic Question_ page (`/<templateId>/dynamic-question`: SPARQL generation, query retry, LLM interpretation) and the _Explain Chart Insights_ assistant call the shared backend model and are limited to 25 LLM requests per 24 hours per account, or per IP when signed out. Saving or sharing a question, submitting feedback, and admin routes still require an ORKG account ([orkg.org](https://orkg.org/)).
 - Once signed in, AI API keys can be configured directly in the UI. If you set them in `.env`, enable "Use Environment Keys" in the AI configuration settings.
 
 ### Backend Configuration (if running backend locally)

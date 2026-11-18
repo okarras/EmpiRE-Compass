@@ -151,31 +151,22 @@ export class BackendAIService {
           headers['x-user-email'] = userInfo.userEmail;
         }
       }
-    } else {
-      // No token available - try to get user info from other sources in development
-      if (isDev && typeof window !== 'undefined') {
-        // Try localStorage as fallback
-        try {
-          const authData = localStorage.getItem('auth-data');
-          if (authData) {
-            const parsed = JSON.parse(authData);
-            if (parsed.userId) {
-              headers['x-user-id'] = parsed.userId;
-            }
-            if (parsed.userEmail) {
-              headers['x-user-email'] = parsed.userEmail;
-            }
+    } else if (isDev && typeof window !== 'undefined') {
+      // Dev header fallback so a local session still gets a per-user quota.
+      // Signed-out callers are allowed; the backend rate-limits them by IP.
+      try {
+        const authData = localStorage.getItem('auth-data');
+        if (authData) {
+          const parsed = JSON.parse(authData);
+          if (parsed.userId) {
+            headers['x-user-id'] = parsed.userId;
           }
-        } catch (error) {
-          console.warn('Error getting user info from localStorage:', error);
+          if (parsed.userEmail) {
+            headers['x-user-email'] = parsed.userEmail;
+          }
         }
-
-        // Log warning if no authentication available
-        if (!headers['x-user-id'] && !headers['x-user-email']) {
-          console.warn(
-            '⚠️  No authentication token or headers available. Backend request may fail. Please log in to use backend AI service.'
-          );
-        }
+      } catch (error) {
+        console.warn('Error getting user info from localStorage:', error);
       }
     }
 
@@ -194,7 +185,7 @@ export class BackendAIService {
         const errorMessage =
           errorData.error ||
           errorData.message ||
-          'Authentication required. Please log in to use the backend AI service.';
+          'The AI service rejected the session token.';
         const error = new Error(errorMessage) as Error & {
           status: number;
           requiresAuth: boolean;

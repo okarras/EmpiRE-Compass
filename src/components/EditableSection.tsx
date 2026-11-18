@@ -16,6 +16,7 @@ import {
   AutoAwesome, // For AI
 } from '@mui/icons-material';
 import { useAIService } from '../services/backendAIService';
+import { isReasoningDump } from '@shared/aiText';
 
 interface EditableSectionProps {
   isEditingInfo?: boolean; // Global edit mode for the page
@@ -24,6 +25,20 @@ interface EditableSectionProps {
   onSave: (newContent: string) => Promise<void>;
   isHtml?: boolean; // If true, render as HTML in read mode
   multiline?: boolean;
+}
+
+const REASONING_TEXT =
+  'The model did not return analysis text. Generate this section again.';
+const REASONING_PLACEHOLDER = `<p>${REASONING_TEXT}</p>`;
+
+function sectionHtml(content: string | string[]): string {
+  const raw = Array.isArray(content) ? content.join('') : content || '';
+  return isReasoningDump(raw) ? REASONING_PLACEHOLDER : raw;
+}
+
+function sectionText(content: string | string[]): string {
+  const raw = Array.isArray(content) ? content.join(', ') : content || '';
+  return isReasoningDump(raw) ? REASONING_TEXT : raw;
 }
 
 const EditableSection: React.FC<EditableSectionProps> = ({
@@ -86,19 +101,9 @@ const EditableSection: React.FC<EditableSectionProps> = ({
   // If not in global edit mode, just render content
   if (!isEditingInfo) {
     if (isHtml) {
-      return (
-        <div
-          dangerouslySetInnerHTML={{
-            __html: Array.isArray(content) ? content.join('') : content,
-          }}
-        />
-      );
+      return <div dangerouslySetInnerHTML={{ __html: sectionHtml(content) }} />;
     }
-    return (
-      <Typography>
-        {Array.isArray(content) ? content.join(', ') : content}
-      </Typography>
-    );
+    return <Typography>{sectionText(content)}</Typography>;
   }
 
   // In global edit mode, we show the content with an edit button (hover effect or always visible)
@@ -114,11 +119,7 @@ const EditableSection: React.FC<EditableSectionProps> = ({
         }}
       >
         {isHtml ? (
-          <div
-            dangerouslySetInnerHTML={{
-              __html: Array.isArray(content) ? content.join('') : content,
-            }}
-          />
+          <div dangerouslySetInnerHTML={{ __html: sectionHtml(content) }} />
         ) : (
           <Typography>
             {Array.isArray(content) ? content.join(', ') : content}

@@ -12,6 +12,7 @@ import type {
   GoogleModel,
   OpenRouterModel,
 } from '../store/slices/aiSlice';
+import { readGeneratedText } from '@shared/aiText';
 
 export interface AIConfig {
   provider: AIProvider;
@@ -150,22 +151,8 @@ export class AIService {
         : {}),
     });
 
-    // Normalize text to string (handle different response formats)
-    const normalizedText =
-      typeof result.text === 'string'
-        ? result.text
-        : result.text
-          ? String(result.text)
-          : '';
-
-    // Normalize reasoning to string for downstream types
-    const reasoningVal = (result as any).reasoning;
-    const normalizedReasoning =
-      typeof reasoningVal === 'string'
-        ? reasoningVal
-        : Array.isArray(reasoningVal)
-          ? JSON.stringify(reasoningVal)
-          : undefined;
+    const { text: normalizedText, reasoning: normalizedReasoning } =
+      readGeneratedText(result);
 
     // Extract usage information - check multiple possible locations
     // Type the usage as any to access properties that may vary by provider

@@ -16,7 +16,11 @@ vi.mock('../config/firebase.js', () => ({
 }));
 
 import { verifyKeycloakToken } from '../config/keycloak.js';
-import { validateKeycloakToken } from '../middleware/auth.js';
+import {
+  optionalKeycloakAuth,
+  validateKeycloakToken,
+} from '../middleware/auth.js';
+import type { AuthenticatedRequest } from '../middleware/auth.js';
 
 const createMockRes = () => {
   const res = {
@@ -91,6 +95,63 @@ describe('validateKeycloakToken', () => {
     const res = createMockRes();
 
     await validateKeycloakToken(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+});
+
+describe('optionalKeycloakAuth', () => {
+  const next = vi.fn() as NextFunction;
+  const originalEnv = process.env.NODE_ENV;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.NODE_ENV = 'production';
+  });
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalEnv;
+  });
+
+  it('continues anonymously when no credentials are sent', async () => {
+    const req = { headers: {} } as unknown as AuthenticatedRequest;
+    const res = createMockRes();
+
+    await optionalKeycloakAuth(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(req.userId).toBeUndefined();
+  });
+
+  it('attaches the user when a valid Bearer token is sent', async () => {
+    vi.mocked(verifyKeycloakToken).mockResolvedValue({
+      userId: 'user-1',
+      userEmail: 'person@example.com',
+    });
+
+    const req = {
+      headers: { authorization: 'Bearer valid-token' },
+    } as unknown as AuthenticatedRequest;
+    const res = createMockRes();
+
+    await optionalKeycloakAuth(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.userId).toBe('user-1');
+    expect(req.userEmail).toBe('person@example.com');
+  });
+
+  it('rejects an invalid Bearer token', async () => {
+    vi.mocked(verifyKeycloakToken).mockRejectedValue(new Error('invalid'));
+
+    const req = {
+      headers: { authorization: 'Bearer bad-token' },
+    } as unknown as Request;
+    const res = createMockRes();
+
+    await optionalKeycloakAuth(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(next).not.toHaveBeenCalled();

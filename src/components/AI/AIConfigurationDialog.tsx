@@ -418,8 +418,8 @@ const AIConfigurationDialog: React.FC<AIConfigurationDialogProps> = ({
                   </Typography>
                 ) : (
                   <Alert severity="warning">
-                    Could not load server AI settings (you may need to sign in).
-                    Saving will fall back to OpenRouter /{' '}
+                    Could not load server AI settings. Check that the backend is
+                    reachable. Saving will fall back to OpenRouter /{' '}
                     {OPENROUTER_DEFAULT_MODEL} for request routing; the server
                     may still use its own defaults.
                   </Alert>
