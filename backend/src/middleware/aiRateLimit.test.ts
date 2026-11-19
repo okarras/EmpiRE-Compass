@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { AuthenticatedRequest } from './auth.js';
 
+// Subject keying is pure. Stub Firestore so this file loads under the root
+// `npm test` job, which does not install the backend's firebase-admin.
 vi.mock('../config/firebase.js', () => ({
   db: {},
 }));

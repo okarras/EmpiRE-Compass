@@ -9,6 +9,10 @@ import {
 import fetchSPARQLData from '../helpers/fetch_query';
 import promptTemplate from '../prompts/GENERATE_SPARQL.txt?raw';
 import { generateDynamicSPARQLPrompt } from '../utils/promptGenerator';
+import {
+  isAllZeroMeasure,
+  shouldAdoptQueryResult,
+} from '../utils/queryResultQuality';
 import { PredicatesMapping } from '../components/Graph/types';
 
 interface QueryEvaluation {
@@ -255,6 +259,7 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
       let previousFeedback: string | null = null;
       let bestRawData: Record<string, unknown>[] = [];
       let bestSparqlBlocks: SPARQLBlock[] = [];
+      let zeroOnlyFeedback = '';
       const history: IterationDetail[] = [];
 
       for (let iteration = 1; iteration <= maxIterations; iteration++) {
@@ -340,12 +345,25 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
 
         previousQuery = combineSparqlBlocks(sparqlBlocks);
 
-        const evaluation = evaluateQueryResults(
+        const evaluated = evaluateQueryResults(
           rawData,
           question,
           executionError,
           previousQuery
         );
+        const zeroOnly = !executionError && isAllZeroMeasure(rawData);
+        const evaluation: QueryEvaluation = zeroOnly
+          ? {
+              needsImprovement: true,
+              feedback: evaluated.needsImprovement
+                ? evaluated.feedback
+                : `Query returned ${rawData.length} row(s) but every numeric value is zero. A grouped query can emit one zero per bucket even when it matches nothing. Fix the class, predicates, and filters so the counts are real.`,
+            }
+          : evaluated;
+
+        if (zeroOnly) {
+          zeroOnlyFeedback = evaluation.feedback;
+        }
 
         setIterationFeedback(
           `Iteration ${iteration}/${maxIterations}: ${evaluation.feedback}`
@@ -371,7 +389,7 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
         history.push(iterationDetail);
         setIterationHistory([...history]);
 
-        // If results are good, stop iterating
+        // Stop only when the counts are usable. All-zero rows stay in the loop.
         if (!evaluation.needsImprovement) {
           bestRawData = rawData;
           bestSparqlBlocks = sparqlBlocks;
@@ -381,8 +399,7 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
           break;
         }
 
-        // Store best results so far
-        if (rawData.length > bestRawData.length) {
+        if (shouldAdoptQueryResult(rawData, bestRawData.length)) {
           bestRawData = rawData;
           bestSparqlBlocks = sparqlBlocks;
         }
@@ -394,6 +411,10 @@ ${schemaBlock ? `\n**Schema & rules:**\n${schemaBlock}` : ''}
           if (bestRawData.length > 0) {
             setIterationFeedback(
               `⚠️ Completed ${maxIterations} iterations. Using best results found (${bestRawData.length} rows).`
+            );
+          } else if (zeroOnlyFeedback) {
+            throw new Error(
+              `After ${maxIterations} iterations, the query only returned zero values, so those rows were not used. ${zeroOnlyFeedback}`
             );
           } else {
             throw new Error(

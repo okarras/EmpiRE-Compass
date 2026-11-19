@@ -1,6 +1,14 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import {
+  getFirestore,
+  Timestamp,
+  type Firestore,
+} from 'firebase-admin/firestore';
 import dotenv from 'dotenv';
+
+// Re-export so callers (and root `npm test`) can depend on this module, which
+// tests already mock, instead of resolving `firebase-admin` themselves.
+export { Timestamp };
 
 dotenv.config();
 
