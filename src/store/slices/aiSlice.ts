@@ -109,8 +109,6 @@ const loadAIConfig = (): Partial<InitialState> => {
       localStorage.removeItem(STORAGE_KEYS.LEGACY);
     }
 
-    // OpenRouter-only: provider and keys are normalized below
-
     return config;
   } catch (error) {
     console.warn('Failed to load AI configuration:', error);
@@ -196,9 +194,7 @@ const normalizeAIState = (state: InitialState): void => {
   if (typeof state.useEnvironmentKeys !== 'boolean') {
     state.useEnvironmentKeys = false;
   }
-  if (state.useEnvironmentKeys && state.provider !== 'openrouter') {
-    state.provider = 'openrouter';
-  }
+  // System default keeps the provider saved from the server config.
   state.isConfigured = computeIsConfigured(state);
 };
 
@@ -271,9 +267,6 @@ const aiSlice = createSlice({
     },
     setUseEnvironmentKeys: (state, action: PayloadAction<boolean>) => {
       state.useEnvironmentKeys = action.payload;
-      if (action.payload && state.provider !== 'openrouter') {
-        state.provider = 'openrouter';
-      }
       state.isConfigured = computeIsConfigured(state);
       saveSettings(state);
     },

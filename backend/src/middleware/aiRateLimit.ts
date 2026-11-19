@@ -1,6 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { db } from '../config/firebase.js';
-import { Timestamp } from 'firebase-admin/firestore';
+import { db, Timestamp } from '../config/firebase.js';
 import { AuthenticatedRequest } from './auth.js';
 import { isAdminEmail } from '../config/constants.js';
 
